@@ -1,0 +1,215 @@
+
+'use client';
+
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
+import * as z from 'zod';
+import { Button } from '@/components/ui/button';
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
+  SheetFooter,
+} from '@/components/ui/sheet';
+import type { PortfolioItem } from '@/lib/portfolio-data';
+import { useEffect } from 'react';
+
+const formSchema = z.object({
+  title: z.string().min(2, {
+    message: 'Title must be at least 2 characters.',
+  }),
+  description: z.string().min(10, {
+    message: 'Description must be at least 10 characters.',
+  }),
+  type: z.enum(['image', 'video']),
+  thumbnailUrl: z.string().url({ message: 'Please enter a valid URL.' }),
+  sourceUrl: z.string().url({ message: 'Please enter a valid URL.' }),
+  thumbnailHint: z.string().optional(),
+  featured: z.boolean().optional(),
+});
+
+type PortfolioItemFormValues = z.infer<typeof formSchema>;
+
+interface PortfolioItemFormProps {
+  item: PortfolioItem | null;
+  onSubmit: (values: PortfolioItem) => void;
+  onCancel: () => void;
+}
+
+export function PortfolioItemForm({ item, onSubmit, onCancel }: PortfolioItemFormProps) {
+  const defaultValues = item ? {
+      ...item,
+      featured: item.featured || false,
+      thumbnailHint: item.thumbnailHint || '',
+  } : {
+      title: '',
+      description: '',
+      type: 'image' as 'image' | 'video',
+      thumbnailUrl: '',
+      sourceUrl: '',
+      thumbnailHint: '',
+      featured: false,
+  };
+  
+  const form = useForm<PortfolioItemFormValues>({
+    resolver: zodResolver(formSchema),
+    defaultValues,
+  });
+
+  useEffect(() => {
+    form.reset(defaultValues);
+  }, [item, form]);
+
+
+  const handleSubmit = (values: PortfolioItemFormValues) => {
+    onSubmit({
+      ...values,
+      id: item?.id || '', // id will be handled by parent
+    });
+  };
+
+  return (
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8">
+        <FormField
+          control={form.control}
+          name="title"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Title</FormLabel>
+              <FormControl>
+                <Input placeholder="Project Title" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="description"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Description</FormLabel>
+              <FormControl>
+                <Textarea placeholder="A short description of the project" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="type"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Type</FormLabel>
+              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a type" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  <SelectItem value="image">Image</SelectItem>
+                  <SelectItem value="video">Video</SelectItem>
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="thumbnailUrl"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Thumbnail URL</FormLabel>
+              <FormControl>
+                <Input placeholder="https://example.com/thumbnail.jpg" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+         <FormField
+          control={form.control}
+          name="thumbnailHint"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Thumbnail Hint</FormLabel>
+              <FormControl>
+                <Input placeholder="e.g. 'abstract art'" {...field} />
+              </FormControl>
+              <FormDescription>
+                AI hint for image generation (1-2 words).
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="sourceUrl"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Source URL</FormLabel>
+              <FormControl>
+                <Input placeholder="https://example.com/full-image.jpg" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <div className="flex justify-end space-x-4">
+            <Button type="button" variant="outline" onClick={onCancel}>Cancel</Button>
+            <Button type="submit">Save</Button>
+        </div>
+      </form>
+    </Form>
+  );
+}
+
+interface PortfolioItemFormSheetProps {
+    isOpen: boolean;
+    setIsOpen: (isOpen: boolean) => void;
+    item: PortfolioItem | null;
+    onSubmit: (values: PortfolioItem) => void;
+}
+
+export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit}: PortfolioItemFormSheetProps) {
+    return (
+        <Sheet open={isOpen} onOpenChange={setIsOpen}>
+            <SheetContent className="w-[400px] sm:w-[540px] overflow-y-auto">
+                <SheetHeader>
+                <SheetTitle>{item ? 'Edit' : 'Add'} Portfolio Item</SheetTitle>
+                <SheetDescription>
+                    {item ? 'Update the details of your portfolio item.' : 'Add a new item to your portfolio.'}
+                </SheetDescription>
+                </SheetHeader>
+                <div className="py-8">
+                   <PortfolioItemForm item={item} onSubmit={onSubmit} onCancel={() => setIsOpen(false)} />
+                </div>
+            </SheetContent>
+        </Sheet>
+    )
+}

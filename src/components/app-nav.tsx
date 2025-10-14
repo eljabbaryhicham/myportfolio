@@ -3,12 +3,13 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Images, Cat } from "lucide-react";
+import { Home, Images, Cat, Cog } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navItems = [
   { href: "/", label: "Home", icon: Home },
   { href: "/work", label: "Work", icon: Images },
+  { href: "/admin", label: "Admin", icon: Cog },
 ];
 
 export function AppNav() {
