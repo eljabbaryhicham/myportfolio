@@ -1,0 +1,82 @@
+/**
+ * @fileoverview Firestore Security Rules for Liquid Folio.
+ *
+ * Core Philosophy:
+ * This ruleset enforces a role-based access control for admins and ownership-based access control for other entities.
+ * It ensures that only authorized users can create, read, update, or delete specific documents.
+ *
+ * Data Structure:
+ * - /videos/{videoId}: Stores video entities.
+ * - /images/{imageId}: Stores image entities.
+ * - /admins/{adminId}: Stores admin user profiles.
+ *
+ * Key Security Decisions:
+ * - Admin users are stored in a separate `admins` collection for role-based access control.
+ * - Read permissions for `/videos` and `/images` are public.
+ * - Write permissions for `/videos` and `/images` are restricted to owners.
+ *
+ * Denormalization for Authorization:
+ *  - It is expected that Videos and Images collections will include an `ownerId` or `authorId` field to simplify and secure write rules.
+ */
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    /**
+     * @description Allows public read access to video documents, but restricts write access to the owner.
+     * @path /videos/{videoId}
+     * @allow (get, list): if true
+     * @allow (create): if request.auth.uid != null && request.resource.data.ownerId == request.auth.uid
+     * @allow (update, delete): if request.auth.uid != null && resource.data.ownerId == request.auth.uid && resource != null
+     * @deny (create): if request.auth.uid == null || request.resource.data.ownerId != request.auth.uid
+     * @deny (update, delete): if request.auth.uid == null || resource.data.ownerId != request.auth.uid || resource == null
+     * @principle Allows public read, enforces document ownership for writes, validates owner on create, and ensures document exists on update/delete.
+     */
+    match /videos/{videoId} {
+      allow get, list: if true;
+      allow create: if isSignedIn() && request.resource.data.ownerId == request.auth.uid;
+      allow update, delete: if isSignedIn() && isExistingOwner(resource.data.ownerId);
+    }
+
+    /**
+     * @description Allows public read access to image documents, but restricts write access to the owner.
+     * @path /images/{imageId}
+     * @allow (get, list): if true
+     * @allow (create): if request.auth.uid != null && request.resource.data.ownerId == request.auth.uid
+     * @allow (update, delete): if request.auth.uid != null && resource.data.ownerId == request.auth.uid && resource != null
+     * @deny (create): if request.auth.uid == null || request.resource.data.ownerId != request.auth.uid
+     * @deny (update, delete): if request.auth.uid == null || resource.data.ownerId != request.auth.uid || resource == null
+     * @principle Allows public read, enforces document ownership for writes, validates owner on create, and ensures document exists on update/delete.
+     */
+    match /images/{imageId} {
+      allow get, list: if true;
+      allow create: if isSignedIn() && request.resource.data.ownerId == request.auth.uid;
+      allow update, delete: if isSignedIn() && isExistingOwner(resource.data.ownerId);
+    }
+
+    /**
+     * @description Allows administrators to manage admin user profiles.
+     * @path /admins/{adminId}
+     * @allow (get, list, create, update, delete): if request.auth.uid == adminId
+     * @deny (get, list, create, update, delete): if request.auth.uid != adminId
+     * @principle Enforces that only an administrator can manage their own profile.
+     */
+    match /admins/{adminId} {
+      allow get, list, create, update, delete: if isOwner(adminId);
+    }
+
+    // --- Helper Functions ---
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+
+    function isExistingOwner(userId) {
+      return isOwner(userId) && resource != null;
+    }
+  }
+}
