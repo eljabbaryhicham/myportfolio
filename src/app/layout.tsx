@@ -1,0 +1,33 @@
+import type { Metadata } from 'next';
+import './globals.css';
+import { Toaster } from '@/components/ui/toaster';
+import { cn } from '@/lib/utils';
+import { AppNav } from '@/components/app-nav';
+
+export const metadata: Metadata = {
+  title: 'Liquid Folio',
+  description: 'A portfolio showcasing creative work with a liquid glass aesthetic.',
+};
+
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
+  return (
+    <html lang="en" className="dark h-full" suppressHydrationWarning>
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet" />
+      </head>
+      <body className={cn('font-body antialiased')} suppressHydrationWarning>
+        <div className="flex h-full p-4">
+          <AppNav />
+          <main className="flex-1 h-full w-full bg-card/50 backdrop-blur-xl rounded-lg border border-border/50 overflow-auto">{children}</main>
+        </div>
+        <Toaster />
+      </body>
+    </html>
+  );
+}

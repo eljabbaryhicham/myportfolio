@@ -1,0 +1,138 @@
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html,
+  body,
+  #root,
+  #__next {
+    @apply h-full w-full;
+  }
+  
+  :root {
+    --background: 229 83% 97%;
+    --foreground: 220 25% 15%;
+
+    --card: 229 83% 99%;
+    --card-foreground: 220 25% 15%;
+
+    --popover: 229 83% 99%;
+    --popover-foreground: 220 25% 15%;
+
+    --primary: 220 100% 26%;
+    --primary-foreground: 240 60% 98%;
+
+    --secondary: 240 20% 90%;
+    --secondary-foreground: 220 100% 26%;
+
+    --muted: 240 20% 90%;
+    --muted-foreground: 220 15% 45%;
+
+    --accent: 0 84% 60%;
+    --accent-foreground: 200 60% 98%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 220 20% 85%;
+    --input: 220 20% 90%;
+    --ring: 220 100% 26%;
+
+    --plyr-color-main: hsl(var(--primary));
+    --plyr-video-background: transparent;
+  }
+ 
+  .dark {
+    --background: 229 83% 2%;
+    --foreground: 240 60% 97%;
+
+    --card: 220 15% 12%;
+    --card-foreground: 240 60% 97%;
+
+    --popover: 220 15% 8%;
+    --popover-foreground: 240 60% 97%;
+
+    --primary: 220 80% 75%;
+    --primary-foreground: 220 100% 10%;
+
+    --secondary: 220 15% 20%;
+    --secondary-foreground: 240 60% 97%;
+
+    --muted: 220 15% 20%;
+    --muted-foreground: 240 20% 60%;
+
+    --accent: 0 84% 60%;
+    --accent-foreground: 0 100% 98%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 220 15% 20%;
+    --input: 220 15% 20%;
+    --ring: 220 80% 75%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    background: linear-gradient(
+      45deg,
+      hsl(var(--primary) / 0.3),
+      hsl(var(--accent) / 0.3),
+      hsl(var(--secondary) / 0.3)
+    );
+    background-size: 400% 400%;
+    animation: gradientAnimation 15s ease infinite;
+    filter: blur(100px);
+  }
+}
+
+@keyframes gradientAnimation {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+
+@layer components {
+  .glass-effect {
+    @apply relative overflow-hidden;
+    background-color: rgb(255 255 255 / 5%);
+    backdrop-filter: blur(8px);
+  }
+
+  .glass-effect::before {
+    content: '';
+    @apply absolute inset-0 z-[-1] rounded-[inherit];
+  }
+  
+  .dark .glass-effect {
+     background-color: rgb(255 255 255 / 5%);
+  }
+
+  .dark .glass-effect::before {
+     box-shadow: inset 2px 2px 0px -2px rgba(255, 255, 255, 0.2), inset 0 0 3px 1px rgba(255, 255, 255, 0.2);
+  }
+}
