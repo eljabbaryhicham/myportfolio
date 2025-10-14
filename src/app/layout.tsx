@@ -3,6 +3,7 @@ import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import { cn } from '@/lib/utils';
 import { AppNav } from '@/components/app-nav';
+import { FirebaseClientProvider } from '@/firebase/client-provider';
 
 export const metadata: Metadata = {
   title: 'Liquid Folio',
@@ -22,11 +23,13 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet" />
       </head>
       <body className={cn('font-body antialiased')} suppressHydrationWarning>
-        <div className="flex h-full p-4">
-          <AppNav />
-          <main className="flex-1 h-full w-full bg-card/50 backdrop-blur-xl rounded-lg border border-border/50 overflow-auto">{children}</main>
-        </div>
-        <Toaster />
+        <FirebaseClientProvider>
+          <div className="flex h-full p-4">
+            <AppNav />
+            <main className="flex-1 h-full w-full bg-card/50 backdrop-blur-xl rounded-3xl border border-border/50 overflow-auto">{children}</main>
+          </div>
+          <Toaster />
+        </FirebaseClientProvider>
       </body>
     </html>
   );

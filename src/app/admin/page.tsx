@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { portfolioItems, PortfolioItem } from '@/lib/portfolio-data';
 import { Button } from '@/components/ui/button';
 import {
@@ -20,12 +20,26 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { PortfolioItemForm, PortfolioItemFormSheet } from './portfolio-item-form';
+import { PortfolioItemFormSheet } from './portfolio-item-form';
+import { useUser } from '@/firebase';
+import { useRouter } from 'next/navigation';
 
-export default function AdminPage() {
+function AdminPage() {
   const [items, setItems] = useState<PortfolioItem[]>(portfolioItems);
   const [selectedItem, setSelectedItem] = useState<PortfolioItem | null>(null);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const { user, isUserLoading } = useUser();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!isUserLoading && !user) {
+      router.push('/login');
+    }
+  }, [user, isUserLoading, router]);
+
+  if (isUserLoading || !user) {
+    return <div className="flex h-full w-full items-center justify-center">Loading...</div>;
+  }
 
   const handleAddItem = () => {
     setSelectedItem(null);
@@ -60,7 +74,7 @@ export default function AdminPage() {
           <div>
             <h1 className="text-4xl font-bold tracking-tight">Admin Panel</h1>
             <p className="mt-2 text-lg text-foreground/70">
-              Manage your portfolio items here.
+              Welcome, {user.email}! Manage your portfolio items here.
             </p>
           </div>
           <Button onClick={handleAddItem}>
@@ -69,7 +83,7 @@ export default function AdminPage() {
           </Button>
         </div>
 
-        <div className="border rounded-lg overflow-hidden bg-card/50">
+        <div className="border rounded-3xl overflow-hidden bg-card/50">
           <Table>
             <TableHeader>
               <TableRow>
@@ -130,3 +144,5 @@ export default function AdminPage() {
     </div>
   );
 }
+
+export default AdminPage;
