@@ -1,3 +1,4 @@
+
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -15,14 +16,12 @@ import {
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/firebase';
 import {
-  createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
 } from 'firebase/auth';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 
 
 const formSchema = z.object({
@@ -68,112 +67,49 @@ export default function LoginPage() {
     }
   };
 
-  const handleSignUp = async (values: LoginFormValues) => {
-    setIsSubmitting(true);
-    try {
-      await createUserWithEmailAndPassword(auth, values.email, values.password);
-      toast({
-        title: 'Account Created',
-        description: 'Your account has been created. You are now signed in.',
-      });
-      router.push('/admin');
-    } catch (error: any) {
-      toast({
-        variant: 'destructive',
-        title: 'Uh oh! Something went wrong.',
-        description: error.message || 'Could not create account.',
-      });
-    } finally {
-        setIsSubmitting(false);
-    }
-  };
-
   return (
     <div className="flex h-full w-full items-center justify-center p-4">
-      <Card className="w-full max-w-md glass-effect rounded-3xl">
+      <Card className="w-full max-w-md glass-effect">
         <CardHeader>
             <CardTitle className="text-2xl">Admin Access</CardTitle>
             <CardDescription>
-                Sign in or create an account to manage the portfolio.
+                Sign in to manage the portfolio.
             </CardDescription>
         </CardHeader>
         <CardContent>
-            <Tabs defaultValue="signin">
-                <TabsList className="grid w-full grid-cols-2">
-                    <TabsTrigger value="signin">Sign In</TabsTrigger>
-                    <TabsTrigger value="signup">Sign Up</TabsTrigger>
-                </TabsList>
-                <TabsContent value="signin">
-                    <Form {...form}>
-                        <form onSubmit={form.handleSubmit(handleSignIn)} className="space-y-6 pt-4">
-                        <FormField
-                            control={form.control}
-                            name="email"
-                            render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Email</FormLabel>
-                                <FormControl>
-                                <Input placeholder="manager@example.com" {...field} />
-                                </FormControl>
-                                <FormMessage />
-                            </FormItem>
-                            )}
-                        />
-                        <FormField
-                            control={form.control}
-                            name="password"
-                            render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Password</FormLabel>
-                                <FormControl>
-                                <Input type="password" placeholder="••••••••" {...field} />
-                                </FormControl>
-                                <FormMessage />
-                            </FormItem>
-                            )}
-                        />
-                        <Button type="submit" className="w-full" disabled={isSubmitting}>
-                            {isSubmitting ? 'Signing In...' : 'Sign In'}
-                        </Button>
-                        </form>
-                    </Form>
-                </TabsContent>
-                <TabsContent value="signup">
-                     <Form {...form}>
-                        <form onSubmit={form.handleSubmit(handleSignUp)} className="space-y-6 pt-4">
-                        <FormField
-                            control={form.control}
-                            name="email"
-                            render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Email</FormLabel>
-                                <FormControl>
-                                <Input placeholder="manager@example.com" {...field} />
-                                </FormControl>
-                                <FormMessage />
-                            </FormItem>
-                            )}
-                        />
-                        <FormField
-                            control={form.control}
-                            name="password"
-                            render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Password</FormLabel>
-                                <FormControl>
-                                <Input type="password" placeholder="••••••••" {...field} />
-                                </FormControl>
-                                <FormMessage />
-                            </FormItem>
-                            )}
-                        />
-                        <Button type="submit" className="w-full" disabled={isSubmitting}>
-                           {isSubmitting ? 'Creating Account...' : 'Create Account'}
-                        </Button>
-                        </form>
-                    </Form>
-                </TabsContent>
-            </Tabs>
+            <Form {...form}>
+                <form onSubmit={form.handleSubmit(handleSignIn)} className="space-y-6 pt-4">
+                <FormField
+                    control={form.control}
+                    name="email"
+                    render={({ field }) => (
+                    <FormItem>
+                        <FormLabel>Email</FormLabel>
+                        <FormControl>
+                        <Input placeholder="manager@example.com" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                    </FormItem>
+                    )}
+                />
+                <FormField
+                    control={form.control}
+                    name="password"
+                    render={({ field }) => (
+                    <FormItem>
+                        <FormLabel>Password</FormLabel>
+                        <FormControl>
+                        <Input type="password" placeholder="••••••••" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                    </FormItem>
+                    )}
+                />
+                <Button type="submit" className="w-full" disabled={isSubmitting}>
+                    {isSubmitting ? 'Signing In...' : 'Sign In'}
+                </Button>
+                </form>
+            </Form>
         </CardContent>
       </Card>
     </div>
