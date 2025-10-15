@@ -86,8 +86,8 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit}: Port
 
     const handleSubmit = (values: PortfolioItemFormValues) => {
         onSubmit({
-          ...values,
           id: item?.id || '', // id will be handled by parent
+          ...values,
         });
     };
 
