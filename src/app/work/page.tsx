@@ -11,11 +11,16 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { useState }from "react";
-import { PlayCircle } from "lucide-react";
+import { PlayCircle, ChevronsUpDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import dynamic from "next/dynamic";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 
 const VideoPlayer = dynamic(() => import("@/components/video-player"), {
   ssr: false,
@@ -25,9 +30,17 @@ const VideoPlayer = dynamic(() => import("@/components/video-player"), {
 export default function WorkPage() {
   const [selectedItem, setSelectedItem] = useState<PortfolioItem | null>(null);
   const [visibleItems, setVisibleItems] = useState(6);
+  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
 
   const showMoreItems = () => {
     setVisibleItems((prevVisibleItems) => prevVisibleItems + 6);
+  };
+
+  const handleOpenChange = (open: boolean) => {
+    if (!open) {
+      setSelectedItem(null);
+      setIsDetailsOpen(false); // Reset details when closing dialog
+    }
   };
 
   return (
@@ -89,7 +102,7 @@ export default function WorkPage() {
         </ScrollArea>
       </div>
 
-      <Dialog open={!!selectedItem} onOpenChange={(open) => !open && setSelectedItem(null)}>
+      <Dialog open={!!selectedItem} onOpenChange={handleOpenChange}>
         <DialogContent className="glass-effect max-w-4xl w-full p-0 overflow-hidden">
           {selectedItem && (
             <div>
@@ -106,12 +119,29 @@ export default function WorkPage() {
                 </div>
               )}
               <div className="p-6">
-                <DialogHeader>
-                  <DialogTitle className="text-2xl">{selectedItem.title}</DialogTitle>
-                  <DialogDescription className="text-base text-foreground/70 mt-2">
-                    {selectedItem.description}
-                  </DialogDescription>
-                </DialogHeader>
+                <Collapsible open={isDetailsOpen} onOpenChange={setIsDetailsOpen}>
+                  <DialogHeader>
+                    <DialogTitle className="text-2xl">{selectedItem.title}</DialogTitle>
+                    <DialogDescription className="text-base text-foreground/70 mt-2">
+                      {selectedItem.description}
+                    </DialogDescription>
+                  </DialogHeader>
+
+                  <CollapsibleTrigger asChild>
+                    <Button variant="ghost" className="mt-4 -ml-4">
+                      <ChevronsUpDown className="mr-2 h-4 w-4" />
+                      Expand details
+                    </Button>
+                  </CollapsibleTrigger>
+                  
+                  <CollapsibleContent>
+                    <div className="mt-4 space-y-2 border-t pt-4">
+                      <p><strong className="font-semibold">ID:</strong> {selectedItem.id}</p>
+                      <p><strong className="font-semibold">Type:</strong> {selectedItem.type}</p>
+                      <p><strong className="font-semibold">Featured:</strong> {selectedItem.featured ? 'Yes' : 'No'}</p>
+                    </div>
+                  </CollapsibleContent>
+                </Collapsible>
               </div>
             </div>
           )}
