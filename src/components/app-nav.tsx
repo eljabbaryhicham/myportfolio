@@ -9,6 +9,7 @@ import { useUser, useAuth } from "@/firebase";
 import { signOut } from "firebase/auth";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
 
 const navItems = [
   { href: "/", label: "Home", icon: Home, public: true },
@@ -22,6 +23,12 @@ export function AppNav() {
   const auth = useAuth();
   const { toast } = useToast();
   const router = useRouter();
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
 
   const handleLogout = async () => {
     try {
@@ -44,7 +51,7 @@ export function AppNav() {
 
   return (
     <aside className="w-24 flex-shrink-0 p-4 mr-4">
-      <div className="flex h-full flex-col items-center justify-between rounded-3xl border border-border/50 bg-background/50 backdrop-blur-xl p-4">
+      <div className="flex h-full flex-col items-center justify-between rounded-lg border border-border/50 bg-background/50 backdrop-blur-xl p-4">
         <Link href="/" className="flex items-center gap-2 text-primary">
           <Cat className="h-8 w-8" />
         </Link>
@@ -59,7 +66,7 @@ export function AppNav() {
                 key={item.label}
                 href={item.href}
                 className={cn(
-                  "relative flex h-12 w-12 items-center justify-center rounded-2xl text-foreground/70 transition-all duration-300",
+                  "relative flex h-12 w-12 items-center justify-center rounded-md text-foreground/70 transition-all duration-300",
                   "glass-effect hover:scale-110",
                   isActive && "bg-destructive/80 text-white scale-110"
                 )}
@@ -73,13 +80,13 @@ export function AppNav() {
           })}
         </nav>
         <div className="flex flex-col items-center gap-4">
-          {isUserLoading ? (
-            <div className="h-12 w-12" />
+          {!isClient || isUserLoading ? (
+            <div className="h-12 w-12 rounded-md bg-muted/50" />
           ) : user ? (
             <button
                 onClick={handleLogout}
                 className={cn(
-                    "relative flex h-12 w-12 items-center justify-center rounded-2xl text-foreground/70 transition-all duration-300",
+                    "relative flex h-12 w-12 items-center justify-center rounded-md text-foreground/70 transition-all duration-300",
                     "glass-effect hover:scale-110"
                 )}
             >
@@ -92,7 +99,7 @@ export function AppNav() {
             <Link
                 href="/login"
                 className={cn(
-                    "relative flex h-12 w-12 items-center justify-center rounded-2xl text-foreground/70 transition-all duration-300",
+                    "relative flex h-12 w-12 items-center justify-center rounded-md text-foreground/70 transition-all duration-300",
                     "glass-effect hover:scale-110",
                     pathname === "/login" && "bg-destructive/80 text-white scale-110"
                 )}
