@@ -12,7 +12,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { PlusCircle, MoreHorizontal } from 'lucide-react';
+import { PlusCircle, MoreHorizontal, LogOut } from 'lucide-react';
 import Image from 'next/image';
 import {
   DropdownMenu,
@@ -21,14 +21,18 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { PortfolioItemFormSheet } from './portfolio-item-form';
-import { useUser } from '@/firebase';
+import { useUser, useAuth } from '@/firebase';
 import { useRouter } from 'next/navigation';
+import { useToast } from '@/hooks/use-toast';
+import { signOut } from 'firebase/auth';
 
 function AdminPage() {
   const [items, setItems] = useState<PortfolioItem[]>(portfolioItems);
   const [selectedItem, setSelectedItem] = useState<PortfolioItem | null>(null);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const { user, isUserLoading } = useUser();
+  const auth = useAuth();
+  const { toast } = useToast();
   const router = useRouter();
 
   useEffect(() => {
@@ -36,6 +40,23 @@ function AdminPage() {
       router.push('/login');
     }
   }, [user, isUserLoading, router]);
+
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      toast({
+        title: "Signed Out",
+        description: "You have successfully signed out.",
+      });
+      router.push("/login");
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Uh oh! Something went wrong.",
+        description: "Could not sign out.",
+      });
+    }
+  };
 
   if (isUserLoading || !user) {
     return <div className="flex h-full w-full items-center justify-center">Loading...</div>;
@@ -77,10 +98,16 @@ function AdminPage() {
               Welcome, {user.email}! Manage your portfolio items here.
             </p>
           </div>
-          <Button onClick={handleAddItem}>
-            <PlusCircle className="mr-2" />
-            Add New Item
-          </Button>
+          <div className="flex items-center gap-4">
+            <Button onClick={handleAddItem}>
+              <PlusCircle className="mr-2" />
+              Add New Item
+            </Button>
+            <Button onClick={handleLogout} variant="secondary">
+              <LogOut className="mr-2" />
+              Sign Out
+            </Button>
+          </div>
         </div>
 
         <div className="border rounded-3xl overflow-hidden bg-card/50">
