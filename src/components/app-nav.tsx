@@ -3,7 +3,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Images, Cat, Cog } from "lucide-react";
+import { Home, Images, Cat, LogIn } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useUser } from "@/firebase";
 import { useState, useEffect } from "react";
@@ -11,22 +11,27 @@ import { useState, useEffect } from "react";
 const navItems = [
   { href: "/", label: "Home", icon: Home, public: true },
   { href: "/work", label: "Work", icon: Images, public: true },
-  { href: "/admin", label: "Admin", icon: Cog, public: false },
 ];
 
 export function AppNav() {
   const pathname = usePathname();
-  const { user } = useUser();
+  const { user, isUserLoading } = useUser();
+  const [isClient, setIsClient] = useState(false);
 
-  const visibleNavItems = navItems.filter(item => item.public || (!item.public && user));
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+
+  const visibleNavItems = navItems.filter(item => item.public);
 
   return (
-    <aside className="w-24 flex-shrink-0 p-4 mr-4">
-      <div className="flex h-full flex-col items-center justify-between rounded-3xl border border-border/50 bg-background/50 backdrop-blur-xl p-4">
+    <aside className="w-full md:w-24 flex-shrink-0 p-0 md:p-4 md:ml-4 mt-4 md:mt-0 md:mr-0">
+      <div className="flex h-full flex-row md:flex-col items-center justify-between rounded-3xl border border-border/50 bg-background/50 backdrop-blur-xl p-4">
         <Link href="/" className="flex items-center gap-2 text-primary">
           <Cat className="h-8 w-8" />
         </Link>
-        <nav className="flex flex-col items-center gap-4">
+        <nav className="flex flex-row md:flex-col items-center gap-4">
           {visibleNavItems.map((item) => {
             const isActive =
               item.href === "/"
@@ -43,7 +48,7 @@ export function AppNav() {
                 )}
               >
                 <item.icon className="h-6 w-6" />
-                <span className="absolute left-full ml-4 hidden whitespace-nowrap rounded-md bg-card px-3 py-1.5 text-sm font-medium text-card-foreground group-hover:flex">
+                <span className="absolute bottom-full mb-2 md:left-full md:bottom-auto md:mb-0 md:ml-4 hidden whitespace-nowrap rounded-md bg-card px-3 py-1.5 text-sm font-medium text-card-foreground group-hover:flex">
                   {item.label}
                 </span>
               </Link>
@@ -51,7 +56,7 @@ export function AppNav() {
           })}
         </nav>
         <div className="flex flex-col items-center gap-4">
-          <div className="h-12 w-12"></div>
+          <div className="h-12 w-12 hidden md:block"></div>
         </div>
       </div>
     </aside>
