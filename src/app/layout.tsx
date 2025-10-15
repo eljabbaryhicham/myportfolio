@@ -2,8 +2,8 @@ import type { Metadata } from 'next';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import { cn } from '@/lib/utils';
-import { AppNav } from '@/components/app-nav';
 import { FirebaseClientProvider } from '@/firebase/client-provider';
+import { ConditionalNav } from '@/components/conditional-nav';
 
 export const metadata: Metadata = {
   title: 'Liquid Folio',
@@ -26,7 +26,7 @@ export default function RootLayout({
         <FirebaseClientProvider>
           <div className="flex h-full flex-col md:flex-row p-4">
             <main className="flex-1 h-full w-full bg-card/50 backdrop-blur-xl rounded-3xl border border-border/50 overflow-auto">{children}</main>
-            <AppNav />
+            <ConditionalNav />
           </div>
           <Toaster />
         </FirebaseClientProvider>
