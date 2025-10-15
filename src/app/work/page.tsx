@@ -55,27 +55,28 @@ const PortfolioDetails = ({ item }: { item: PortfolioItem }) => {
 
   return (
     <div className="p-6 max-h-[40vh] overflow-y-auto">
-      <Collapsible open={isDetailsOpen} onOpenChange={setIsDetailsOpen}>
-        <DialogHeader>
-          <DialogTitle className="text-2xl">{item.title}</DialogTitle>
-          <DialogDescription className="text-base text-foreground/70 mt-2">
-            {item.description}
-          </DialogDescription>
-        </DialogHeader>
-
-        <CollapsibleTrigger asChild>
-          <Button variant="ghost" className="mt-4 -ml-4">
-            <ChevronsUpDown className="mr-2 h-4 w-4" />
-            {isDetailsOpen ? 'Hide' : 'Show'} details
-          </Button>
-        </CollapsibleTrigger>
-        
-        <CollapsibleContent>
-          <div className="mt-4 space-y-4 border-t pt-4 text-sm text-foreground/80 whitespace-pre-wrap">
-            <p>{item.details}</p>
-          </div>
-        </CollapsibleContent>
-      </Collapsible>
+      <DialogHeader>
+        <DialogTitle className="text-2xl">{item.title}</DialogTitle>
+        <DialogDescription className="text-base text-foreground/70 mt-2">
+          {item.description}
+        </DialogDescription>
+      </DialogHeader>
+      {item.details && (
+        <Collapsible open={isDetailsOpen} onOpenChange={setIsDetailsOpen} className="mt-4">
+          <CollapsibleTrigger asChild>
+            <Button variant="ghost" className="-ml-4">
+              <ChevronsUpDown className="mr-2 h-4 w-4" />
+              {isDetailsOpen ? 'Hide' : 'Show'} details
+            </Button>
+          </CollapsibleTrigger>
+          
+          <CollapsibleContent>
+            <div className="mt-4 space-y-4 border-t pt-4 text-sm text-foreground/80 whitespace-pre-wrap">
+              <p>{item.details}</p>
+            </div>
+          </CollapsibleContent>
+        </Collapsible>
+      )}
     </div>
   )
 }
