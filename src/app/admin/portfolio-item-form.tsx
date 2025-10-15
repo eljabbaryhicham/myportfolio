@@ -44,6 +44,7 @@ const formSchema = z.object({
   type: z.enum(['image', 'video']),
   thumbnailUrl: z.string().url({ message: 'Please enter a valid URL.' }),
   sourceUrl: z.string().url({ message: 'Please enter a valid URL.' }),
+  details: z.string().optional(),
   thumbnailHint: z.string().optional(),
   featured: z.boolean().optional(),
 });
@@ -61,6 +62,7 @@ export function PortfolioItemForm({ item, onSubmit, onCancel }: PortfolioItemFor
       ...item,
       featured: item.featured || false,
       thumbnailHint: item.thumbnailHint || '',
+      details: item.details || '',
   } : {
       title: '',
       description: '',
@@ -69,6 +71,7 @@ export function PortfolioItemForm({ item, onSubmit, onCancel }: PortfolioItemFor
       sourceUrl: '',
       thumbnailHint: '',
       featured: false,
+      details: '',
   };
   
   const form = useForm<PortfolioItemFormValues>({
@@ -113,6 +116,26 @@ export function PortfolioItemForm({ item, onSubmit, onCancel }: PortfolioItemFor
               <FormControl>
                 <Textarea placeholder="A short description of the project" {...field} />
               </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="details"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Project Details</FormLabel>
+              <FormControl>
+                <Textarea
+                  placeholder="Add rich details about the project. You can use Markdown for formatting."
+                  className="min-h-[150px]"
+                  {...field}
+                />
+              </FormControl>
+               <FormDescription>
+                Use Markdown for lists, bold text, etc.
+              </FormDescription>
               <FormMessage />
             </FormItem>
           )}

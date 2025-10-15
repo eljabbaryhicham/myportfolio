@@ -9,6 +9,7 @@ export interface PortfolioItem {
   thumbnailHint: string;
   sourceUrl: string;
   featured?: boolean;
+  details?: string;
 }
 
 export const portfolioItems: PortfolioItem[] = [
@@ -21,6 +22,10 @@ export const portfolioItems: PortfolioItem[] = [
     thumbnailHint: placeholderImages['vid1-thumb'].imageHint,
     sourceUrl: 'https://cdn.plyr.io/static/demo/View_From_A_Blue_Moon_Trailer-576p.mp4',
     featured: true,
+    details: `This project was created using a combination of Adobe After Effects and Cinema 4D. The goal was to create a visceral experience through motion. 
+
+**Client:** Fictional Brand Inc.
+**Year:** 2023`
   },
   {
     id: 'img1',
@@ -31,6 +36,7 @@ export const portfolioItems: PortfolioItem[] = [
     thumbnailHint: placeholderImages['img1'].imageHint,
     sourceUrl: 'https://picsum.photos/seed/liquid1/1600/1200',
     featured: true,
+    details: 'Created with a mix of digital painting and procedural generation techniques in Processing.'
   },
   {
     id: 'img2',
@@ -41,6 +47,7 @@ export const portfolioItems: PortfolioItem[] = [
     thumbnailHint: placeholderImages['img2'].imageHint,
     sourceUrl: 'https://picsum.photos/seed/liquid2/1200/1600',
     featured: false,
+    details: 'A personal project exploring the themes of growth and nature. Photoshoot combined with digital illustration.'
   },
   {
     id: 'vid2',

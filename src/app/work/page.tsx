@@ -118,7 +118,7 @@ export default function WorkPage() {
                   <Image src={selectedItem.sourceUrl} alt={selectedItem.title} fill className="object-contain" />
                 </div>
               )}
-              <div className="p-6">
+              <div className="p-6 max-h-[40vh] overflow-y-auto">
                 <Collapsible open={isDetailsOpen} onOpenChange={setIsDetailsOpen}>
                   <DialogHeader>
                     <DialogTitle className="text-2xl">{selectedItem.title}</DialogTitle>
@@ -130,15 +130,13 @@ export default function WorkPage() {
                   <CollapsibleTrigger asChild>
                     <Button variant="ghost" className="mt-4 -ml-4">
                       <ChevronsUpDown className="mr-2 h-4 w-4" />
-                      Expand details
+                      {isDetailsOpen ? 'Hide' : 'Show'} details
                     </Button>
                   </CollapsibleTrigger>
                   
                   <CollapsibleContent>
-                    <div className="mt-4 space-y-2 border-t pt-4">
-                      <p><strong className="font-semibold">ID:</strong> {selectedItem.id}</p>
-                      <p><strong className="font-semibold">Type:</strong> {selectedItem.type}</p>
-                      <p><strong className="font-semibold">Featured:</strong> {selectedItem.featured ? 'Yes' : 'No'}</p>
+                    <div className="mt-4 space-y-4 border-t pt-4 text-sm text-foreground/80 whitespace-pre-wrap">
+                      <p>{selectedItem.details}</p>
                     </div>
                   </CollapsibleContent>
                 </Collapsible>
