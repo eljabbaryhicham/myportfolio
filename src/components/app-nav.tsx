@@ -65,7 +65,7 @@ export function AppNav() {
                 )}
               >
                 <item.icon className="h-6 w-6" />
-                <span className="absolute left-full ml-4 hidden whitespace-nowrap bg-card px-3 py-1.5 text-sm font-medium text-card-foreground group-hover:flex">
+                <span className="absolute left-full ml-4 hidden whitespace-nowrap rounded-md bg-card px-3 py-1.5 text-sm font-medium text-card-foreground group-hover:flex">
                   {item.label}
                 </span>
               </Link>
@@ -73,35 +73,35 @@ export function AppNav() {
           })}
         </nav>
         <div className="flex flex-col items-center gap-4">
-          {!isUserLoading && (
-             user ? (
-                <button
-                    onClick={handleLogout}
-                    className={cn(
-                        "relative flex h-12 w-12 items-center justify-center rounded-2xl text-foreground/70 transition-all duration-300",
-                        "glass-effect hover:scale-110"
-                    )}
-                >
-                    <LogOut className="h-6 w-6" />
-                    <span className="absolute left-full ml-4 hidden whitespace-nowrap bg-card px-3 py-1.5 text-sm font-medium text-card-foreground group-hover:flex">
-                        Logout
-                    </span>
-                </button>
-             ) : (
-                <Link
-                    href="/login"
-                    className={cn(
-                        "relative flex h-12 w-12 items-center justify-center rounded-2xl text-foreground/70 transition-all duration-300",
-                        "glass-effect hover:scale-110",
-                        pathname === "/login" && "bg-destructive/80 text-white scale-110"
-                    )}
-                >
-                    <LogIn className="h-6 w-6" />
-                     <span className="absolute left-full ml-4 hidden whitespace-nowrap bg-card px-3 py-1.5 text-sm font-medium text-card-foreground group-hover:flex">
-                        Login
-                    </span>
-                </Link>
-             )
+          {isUserLoading ? (
+            <div className="h-12 w-12" />
+          ) : user ? (
+            <button
+                onClick={handleLogout}
+                className={cn(
+                    "relative flex h-12 w-12 items-center justify-center rounded-2xl text-foreground/70 transition-all duration-300",
+                    "glass-effect hover:scale-110"
+                )}
+            >
+                <LogOut className="h-6 w-6" />
+                <span className="absolute left-full ml-4 hidden whitespace-nowrap rounded-md bg-card px-3 py-1.5 text-sm font-medium text-card-foreground group-hover:flex">
+                    Logout
+                </span>
+            </button>
+          ) : (
+            <Link
+                href="/login"
+                className={cn(
+                    "relative flex h-12 w-12 items-center justify-center rounded-2xl text-foreground/70 transition-all duration-300",
+                    "glass-effect hover:scale-110",
+                    pathname === "/login" && "bg-destructive/80 text-white scale-110"
+                )}
+            >
+                <LogIn className="h-6 w-6" />
+                  <span className="absolute left-full ml-4 hidden whitespace-nowrap rounded-md bg-card px-3 py-1.5 text-sm font-medium text-card-foreground group-hover:flex">
+                    Login
+                </span>
+            </Link>
           )}
         </div>
       </div>
