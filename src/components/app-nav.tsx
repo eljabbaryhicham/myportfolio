@@ -3,7 +3,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Images, Cat, Cog, LogIn } from "lucide-react";
+import { Home, Images, Cat, Cog } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useUser } from "@/firebase";
 import { useState, useEffect } from "react";
@@ -16,12 +16,7 @@ const navItems = [
 
 export function AppNav() {
   const pathname = usePathname();
-  const { user, isUserLoading } = useUser();
-  const [isClient, setIsClient] = useState(false);
-
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
+  const { user } = useUser();
 
   const visibleNavItems = navItems.filter(item => item.public || (!item.public && user));
 
@@ -56,23 +51,7 @@ export function AppNav() {
           })}
         </nav>
         <div className="flex flex-col items-center gap-4">
-          {(!isClient || isUserLoading) ? (
-            <div className="h-12 w-12 rounded-2xl bg-muted/50" />
-          ) : !user ? (
-            <Link
-                href="/login"
-                className={cn(
-                    "group relative flex h-12 w-12 items-center justify-center rounded-2xl text-foreground/70 transition-all duration-300",
-                    "glass-effect hover:scale-110",
-                    pathname === "/login" && "bg-destructive text-white scale-110"
-                )}
-            >
-                <LogIn className="h-6 w-6" />
-                  <span className="absolute left-full ml-4 hidden whitespace-nowrap rounded-md bg-card px-3 py-1.5 text-sm font-medium text-card-foreground group-hover:flex">
-                    Login
-                </span>
-            </Link>
-          ) : <div className="h-12 w-12"></div>}
+          <div className="h-12 w-12"></div>
         </div>
       </div>
     </aside>
