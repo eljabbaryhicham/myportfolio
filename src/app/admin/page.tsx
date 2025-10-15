@@ -79,8 +79,8 @@ function AdminPage() {
 
   const handleFormSubmit = (values: PortfolioItem) => {
     // This is a mock implementation. In a real app, you'd call an API.
-    if (selectedItem) {
-      setItems(items.map((item) => (item.id === selectedItem.id ? values : item)));
+    if (selectedItem && values.id) {
+      setItems(items.map((item) => (item.id === values.id ? values : item)));
     } else {
       setItems([...items, { ...values, id: `new-${Date.now()}` }]);
     }

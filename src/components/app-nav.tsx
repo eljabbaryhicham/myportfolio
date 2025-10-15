@@ -44,7 +44,7 @@ export function AppNav() {
                 className={cn(
                   "group relative flex h-12 w-12 items-center justify-center rounded-2xl text-foreground/70 transition-all duration-300",
                   "glass-effect hover:scale-110",
-                  isActive && "bg-destructive text-white scale-110"
+                  isActive && "bg-primary text-primary-foreground scale-110"
                 )}
               >
                 <item.icon className="h-6 w-6" />

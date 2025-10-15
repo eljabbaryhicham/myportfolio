@@ -119,7 +119,7 @@ export default function WorkPage() {
                   <div
                     key={item.id}
                     className={cn(
-                      "group relative cursor-pointer overflow-hidden bg-card/50 backdrop-blur-md transition-all duration-300 hover:scale-[1.02] aspect-square"
+                      "group relative cursor-pointer overflow-hidden rounded-md bg-card/50 backdrop-blur-md transition-all duration-300 hover:scale-[1.02] aspect-square"
                     )}
                     onClick={() => setSelectedItem(item)}
                   >
