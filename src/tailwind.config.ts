@@ -1,3 +1,4 @@
+
 import type {Config} from 'tailwindcss';
 
 export default {
@@ -50,9 +51,9 @@ export default {
         ring: 'hsl(var(--ring))',
       },
       borderRadius: {
-        lg: '1rem',
-        md: 'calc(1rem - 4px)',
-        sm: 'calc(1rem - 8px)',
+        lg: '3rem',
+        md: 'calc(3rem - 4px)',
+        sm: 'calc(3rem - 8px)',
       },
       keyframes: {
         'accordion-down': {
