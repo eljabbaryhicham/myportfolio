@@ -10,7 +10,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-import { useState }from "react";
+import { useState, memo } from "react";
 import { PlayCircle, ChevronsUpDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import dynamic from "next/dynamic";
@@ -26,11 +26,65 @@ const VideoPlayer = dynamic(() => import("@/components/video-player"), {
   ssr: false,
 });
 
+const MemoizedVideoPlayer = memo(VideoPlayer);
+const MemoizedImage = memo(Image);
+
+const PortfolioMedia = ({ item }: { item: PortfolioItem }) => {
+  if (item.type === "video") {
+    return (
+      <MemoizedVideoPlayer
+        source={{
+          type: "video",
+          sources: [{ src: item.sourceUrl }],
+        }}
+      />
+    );
+  }
+
+  return (
+    <div className="relative aspect-video bg-black/50">
+      <MemoizedImage src={item.sourceUrl} alt={item.title} fill className="object-contain" />
+    </div>
+  );
+};
+PortfolioMedia.displayName = 'PortfolioMedia';
+
+
+const PortfolioDetails = ({ item }: { item: PortfolioItem }) => {
+  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+
+  return (
+    <div className="p-6 max-h-[40vh] overflow-y-auto">
+      <Collapsible open={isDetailsOpen} onOpenChange={setIsDetailsOpen}>
+        <DialogHeader>
+          <DialogTitle className="text-2xl">{item.title}</DialogTitle>
+          <DialogDescription className="text-base text-foreground/70 mt-2">
+            {item.description}
+          </DialogDescription>
+        </DialogHeader>
+
+        <CollapsibleTrigger asChild>
+          <Button variant="ghost" className="mt-4 -ml-4">
+            <ChevronsUpDown className="mr-2 h-4 w-4" />
+            {isDetailsOpen ? 'Hide' : 'Show'} details
+          </Button>
+        </CollapsibleTrigger>
+        
+        <CollapsibleContent>
+          <div className="mt-4 space-y-4 border-t pt-4 text-sm text-foreground/80 whitespace-pre-wrap">
+            <p>{item.details}</p>
+          </div>
+        </CollapsibleContent>
+      </Collapsible>
+    </div>
+  )
+}
+PortfolioDetails.displayName = 'PortfolioDetails';
+
 
 export default function WorkPage() {
   const [selectedItem, setSelectedItem] = useState<PortfolioItem | null>(null);
   const [visibleItems, setVisibleItems] = useState(6);
-  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
 
   const showMoreItems = () => {
     setVisibleItems((prevVisibleItems) => prevVisibleItems + 6);
@@ -39,7 +93,6 @@ export default function WorkPage() {
   const handleOpenChange = (open: boolean) => {
     if (!open) {
       setSelectedItem(null);
-      setIsDetailsOpen(false); // Reset details when closing dialog
     }
   };
 
@@ -106,41 +159,8 @@ export default function WorkPage() {
         <DialogContent className="glass-effect max-w-4xl w-full p-0 overflow-hidden">
           {selectedItem && (
             <div>
-              {selectedItem.type === "video" ? (
-                <VideoPlayer
-                  source={{
-                    type: "video",
-                    sources: [{ src: selectedItem.sourceUrl }],
-                  }}
-                />
-              ) : (
-                <div className="relative aspect-video bg-black/50">
-                  <Image src={selectedItem.sourceUrl} alt={selectedItem.title} fill className="object-contain" />
-                </div>
-              )}
-              <div className="p-6 max-h-[40vh] overflow-y-auto">
-                <Collapsible open={isDetailsOpen} onOpenChange={setIsDetailsOpen}>
-                  <DialogHeader>
-                    <DialogTitle className="text-2xl">{selectedItem.title}</DialogTitle>
-                    <DialogDescription className="text-base text-foreground/70 mt-2">
-                      {selectedItem.description}
-                    </DialogDescription>
-                  </DialogHeader>
-
-                  <CollapsibleTrigger asChild>
-                    <Button variant="ghost" className="mt-4 -ml-4">
-                      <ChevronsUpDown className="mr-2 h-4 w-4" />
-                      {isDetailsOpen ? 'Hide' : 'Show'} details
-                    </Button>
-                  </CollapsibleTrigger>
-                  
-                  <CollapsibleContent>
-                    <div className="mt-4 space-y-4 border-t pt-4 text-sm text-foreground/80 whitespace-pre-wrap">
-                      <p>{selectedItem.details}</p>
-                    </div>
-                  </CollapsibleContent>
-                </Collapsible>
-              </div>
+              <PortfolioMedia item={selectedItem} />
+              <PortfolioDetails item={selectedItem} />
             </div>
           )}
         </DialogContent>
