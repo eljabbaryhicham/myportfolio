@@ -5,6 +5,7 @@ import { Toaster } from '@/components/ui/toaster';
 import { cn } from '@/lib/utils';
 import { FirebaseClientProvider } from '@/firebase/client-provider';
 import { ConditionalNav } from '@/components/layout/conditional-nav';
+import { PageTransition } from '@/components/layout/page-transition';
 
 export const metadata: Metadata = {
   title: 'Liquid Folio',
@@ -42,7 +43,7 @@ export default function RootLayout({
         <FirebaseClientProvider>
           <div className="flex h-full flex-col md:flex-row p-2 md:p-4 pb-[calc(10vh+5%*2)] md:pb-4">
             <main className="flex-1 w-full glass-effect rounded-lg border border-border/50">
-              {children}
+              <PageTransition>{children}</PageTransition>
             </main>
             <ConditionalNav />
           </div>
