@@ -85,7 +85,7 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit}: Port
             thumbnailHint: '',
             featured: false,
             details: '',
-            order: undefined,
+            order: undefined, // Let parent component decide the order for new items
         };
         form.reset(defaultValues);
       }

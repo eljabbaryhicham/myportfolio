@@ -142,31 +142,33 @@ function AdminPage() {
     setIsSheetOpen(false);
   };
 
-  const handleOrderChange = (item: PortfolioItem, direction: 'up' | 'down') => {
+  const handleOrderChange = (itemToMove: PortfolioItem, direction: 'up' | 'down') => {
     if (!firestore || !sortedItems) return;
     
-    const currentIndex = sortedItems.findIndex(i => i.id === item.id);
+    const currentIndex = sortedItems.findIndex(i => i.id === itemToMove.id);
     if (currentIndex === -1) return;
 
-    let otherItem: PortfolioItem | undefined;
+    let otherItemIndex: number;
 
-    if (direction === 'up' && currentIndex > 0) {
-      otherItem = sortedItems[currentIndex - 1];
-    } else if (direction === 'down' && currentIndex < sortedItems.length - 1) {
-      otherItem = sortedItems[currentIndex + 1];
+    if (direction === 'up') {
+      if (currentIndex === 0) return;
+      otherItemIndex = currentIndex - 1;
+    } else {
+      if (currentIndex === sortedItems.length - 1) return;
+      otherItemIndex = currentIndex + 1;
     }
+    
+    const otherItem = sortedItems[otherItemIndex];
 
-    if (otherItem) {
-      const itemRef = doc(firestore, 'projects', item.id);
+    if (itemToMove && otherItem) {
+      const itemRef = doc(firestore, 'projects', itemToMove.id);
       const otherItemRef = doc(firestore, 'projects', otherItem.id);
 
-      // Ensure both items have a valid order number before swapping
-      const itemOrder = item.order ?? 0;
+      const itemOrder = itemToMove.order ?? 0;
       const otherItemOrder = otherItem.order ?? 0;
 
       const batch = writeBatch(firestore);
       
-      // Perform the swap
       batch.update(itemRef, { order: otherItemOrder });
       batch.update(otherItemRef, { order: itemOrder });
       
