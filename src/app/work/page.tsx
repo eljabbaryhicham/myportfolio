@@ -162,9 +162,9 @@ export default function WorkPage() {
       <Dialog open={!!selectedItem} onOpenChange={handleOpenChange}>
         <DialogContent className="glass-effect w-[90vw] max-w-[90vw] h-[90vh] max-h-[90vh] p-0 flex flex-col transition-all duration-300">
           {selectedItem && (
-            <div className="relative flex-1 flex flex-col overflow-hidden">
-                <div className={cn("flex-1 flex flex-col min-h-0", detailsVisible ? 'h-0' : 'h-full')}>
-                    <div className="flex-1 bg-black/50">
+            <div className="relative flex-1 flex flex-col min-h-0 overflow-hidden">
+                <div className={cn("flex flex-col min-h-0", detailsVisible ? 'h-0 flex-shrink' : 'h-full flex-1')}>
+                    <div className="flex-1 bg-black/50 min-h-0">
                         <PortfolioMedia item={selectedItem} />
                     </div>
                     <div className="flex-shrink-0 p-6 bg-background/80 border-t">
