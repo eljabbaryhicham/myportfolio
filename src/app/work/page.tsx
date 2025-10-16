@@ -165,15 +165,14 @@ export default function WorkPage() {
             <div className="relative flex-1 flex flex-col overflow-hidden">
                 <div
                     className={cn(
-                        "transition-all duration-500 ease-in-out flex-shrink-0 bg-black/50",
-                        detailsVisible ? "h-1/2" : "h-full"
+                        "transition-all duration-500 ease-in-out flex-shrink-0 bg-black/50 h-full"
                     )}
                 >
                     <PortfolioMedia item={selectedItem} />
                 </div>
               <div className={cn(
                   "absolute left-0 right-0 bottom-0 bg-background/80 backdrop-blur-sm transition-all duration-500 ease-in-out flex flex-col",
-                  detailsVisible ? "h-1/2" : "h-0"
+                  detailsVisible ? "h-full" : "h-0"
                 )}>
                   <PortfolioDetails item={selectedItem} />
               </div>
