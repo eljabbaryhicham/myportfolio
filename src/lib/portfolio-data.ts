@@ -48,12 +48,7 @@ export const portfolioItems: PortfolioItem[] = [
     id: 'img2',
     type: 'image',
     title: 'Bloom',
-    description: 'A series of portraits that merges the human form with botanical elements, exploring the symbiotic relationship between humanity and the natural world through a blend of photography and digital illustration.',
-    thumbnailUrl: placeholderImages['img2'].imageUrl,
-    thumbnailHint: placeholderImages['img2'].imageHint,
-    sourceUrl: 'https://picsum.photos/seed/liquid2/1200/1600',
-    featured: false,
-    details: `
+    description: `
 "Bloom" is a deeply personal project that delves into the intricate and symbiotic relationship between humanity and the natural world. It is an exploration of growth, decay, and rebirth, themes that are mirrored in both human life and the cycles of nature.
 
 **Concept & Inspiration**
@@ -71,7 +66,12 @@ The main challenge was to ensure that the digital additions felt organic and int
 
 **Meaning & Reflection**
 Ultimately, "Bloom" is a meditation on our place within the ecosystem. It asks the viewer to consider how we are connected to the world around us, how we grow, and how we leave our mark. It is a celebration of life in all its beautiful, fleeting forms.
-`
+`,
+    thumbnailUrl: placeholderImages['img2'].imageUrl,
+    thumbnailHint: placeholderImages['img2'].imageHint,
+    sourceUrl: 'https://picsum.photos/seed/liquid2/1200/1600',
+    featured: false,
+    details: 'A series of portraits that merges the human form with botanical elements, exploring the symbiotic relationship between humanity and the natural world through a blend of photography and digital illustration.'
   },
   {
     id: 'vid2',
