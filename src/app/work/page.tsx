@@ -48,7 +48,7 @@ const PortfolioMedia = ({
 }) => {
   if (item.type === 'video' && item.sources) {
     return (
-      <div className="w-full h-auto flex-shrink-0 bg-black">
+      <div className="w-full max-w-full max-h-full flex-shrink-0 bg-black">
         <ClientOnlyVideoPlayer
           innerRef={playerRef}
           source={{
@@ -187,11 +187,11 @@ export default function WorkPage() {
       </div>
 
       <Dialog open={!!selectedItem} onOpenChange={handleOpenChange}>
-        <DialogContent className="w-[90vw] md:max-w-[80vw] h-[90vh] glass-effect p-0 flex flex-col">
+        <DialogContent className="w-[90vw] md:max-w-[80vw] h-[90vh] glass-effect p-0 flex flex-col overflow-hidden">
           {selectedItem && (
             <div className="relative flex-1 flex flex-col min-h-0">
               <ScrollArea className="flex-1">
-                <div>
+                <div className='flex flex-col items-center justify-center max-h-full'>
                   <PortfolioMedia item={selectedItem} playerRef={playerRef} />
                 </div>
                 <div className="p-6 pt-4">
