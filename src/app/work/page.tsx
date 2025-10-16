@@ -162,45 +162,48 @@ export default function WorkPage() {
       </div>
 
       <Dialog open={!!selectedItem} onOpenChange={handleOpenChange}>
-        <DialogContent className="glass-effect p-0 flex flex-col w-[90vw] max-w-[90vw] h-auto max-h-[90vh] overflow-y-auto">
+        <DialogContent className="w-[90vw] max-w-[90vw] h-auto max-h-[90vh] overflow-y-auto glass-effect p-0 flex flex-col">
           {selectedItem && (
             <>
               <div className="flex-shrink-0 bg-black/50 flex items-center justify-center">
                 <PortfolioMedia item={selectedItem} />
               </div>
-              <div className="flex flex-col p-6 bg-background/80">
-                <DialogHeader className="text-left">
-                  <DialogTitle className="text-2xl">{selectedItem.title}</DialogTitle>
-                  <DialogDescription className="text-base text-foreground/70 mt-2">
-                    {selectedItem.description}
-                  </DialogDescription>
-                </DialogHeader>
-                {selectedItem.details && (
-                  <Button
-                    variant="secondary"
-                    className="mt-4 self-start"
-                    onClick={() => setDetailsVisible(true)}
-                  >
-                    <ChevronsUpDown className="mr-2" />
-                    Show Details
-                  </Button>
-                )}
-              </div>
-              
-              <div
-                className={cn(
-                  "absolute inset-0 bg-background/80 backdrop-blur-sm transition-transform duration-500 ease-in-out flex flex-col",
-                  detailsVisible ? "translate-y-0" : "translate-y-full"
-                )}
-              >
-                <PortfolioDetails item={selectedItem} />
+
+              <div className="flex-1 flex flex-col">
+                <div className="p-6">
+                  <DialogHeader>
+                    <DialogTitle className="text-2xl">{selectedItem.title}</DialogTitle>
+                    <DialogDescription className="text-base text-foreground/70 mt-2">
+                      {selectedItem.description}
+                    </DialogDescription>
+                  </DialogHeader>
+                  {selectedItem.details && (
+                    <Button
+                      variant="secondary"
+                      className="mt-4 self-start"
+                      onClick={() => setDetailsVisible(true)}
+                    >
+                      <ChevronsUpDown className="mr-2" />
+                      Show Details
+                    </Button>
+                  )}
+                </div>
+
+                <div
+                  className={cn(
+                    "absolute inset-0 bg-background/80 backdrop-blur-sm transition-transform duration-500 ease-in-out flex flex-col",
+                    detailsVisible ? "translate-y-0" : "translate-y-full"
+                  )}
+                >
+                  <PortfolioDetails item={selectedItem} />
+                </div>
               </div>
 
               {detailsVisible && (
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="absolute top-4 right-12 z-30"
+                  className="absolute top-4 right-4 z-30"
                   onClick={() => setDetailsVisible(false)}
                 >
                   <X />
