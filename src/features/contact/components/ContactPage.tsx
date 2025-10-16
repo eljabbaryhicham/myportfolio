@@ -88,72 +88,74 @@ export default function ContactPage() {
           </h1>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+        <div className="flex flex-col md:flex-row gap-8 max-w-4xl mx-auto">
           {/* Column 1: Contact Form */}
-          <Card className="glass-effect p-6 sm:p-8">
-            <CardContent className="p-0">
-              <Form {...form}>
-                <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8">
-                  <FormField
-                    control={form.control}
-                    name="name"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormControl>
-                          <div className="relative">
-                            <User className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-foreground/50" />
-                            <Input placeholder="Name" {...field} className="pl-10 bg-transparent border-0 border-b rounded-none focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-primary transition-colors" />
-                          </div>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="email"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormControl>
-                          <div className="relative">
-                            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-foreground/50" />
-                            <Input type="email" placeholder="Email" {...field} className="pl-10 bg-transparent border-0 border-b rounded-none focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-primary transition-colors" />
-                          </div>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="message"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormControl>
-                          <div className="relative">
-                            <MessageSquare className="absolute left-3 top-4 h-5 w-5 text-foreground/50" />
-                            <Textarea
-                              placeholder="Message"
-                              className="pl-10 bg-transparent border-0 border-b rounded-none focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-primary transition-colors min-h-[100px]"
-                              {...field}
-                            />
-                          </div>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <Button type="submit" size="lg" className="w-full bg-gradient-to-r from-cyan-500 to-blue-500 text-white">
-                    Send Message
-                  </Button>
-                </form>
-              </Form>
-            </CardContent>
-          </Card>
+          <div className="w-full md:w-1/2">
+            <Card className="glass-effect p-6 sm:p-8 h-full">
+              <CardContent className="p-0">
+                <Form {...form}>
+                  <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8">
+                    <FormField
+                      control={form.control}
+                      name="name"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormControl>
+                            <div className="relative">
+                              <User className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-foreground/50" />
+                              <Input placeholder="Name" {...field} className="pl-10 bg-transparent border-0 border-b rounded-none focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-primary transition-colors" />
+                            </div>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="email"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormControl>
+                            <div className="relative">
+                              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-foreground/50" />
+                              <Input type="email" placeholder="Email" {...field} className="pl-10 bg-transparent border-0 border-b rounded-none focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-primary transition-colors" />
+                            </div>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="message"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormControl>
+                            <div className="relative">
+                              <MessageSquare className="absolute left-3 top-4 h-5 w-5 text-foreground/50" />
+                              <Textarea
+                                placeholder="Message"
+                                className="pl-10 bg-transparent border-0 border-b rounded-none focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-primary transition-colors min-h-[100px]"
+                                {...field}
+                              />
+                            </div>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <Button type="submit" size="lg" className="w-full bg-gradient-to-r from-cyan-500 to-blue-500 text-white">
+                      Send Message
+                    </Button>
+                  </form>
+                </Form>
+              </CardContent>
+            </Card>
+          </div>
           
           {/* Column 2: Contact Info */}
-          <div className="flex flex-col gap-8">
-            <Card className="glass-effect p-6 flex flex-col">
+          <div className="w-full md:w-1/2">
+            <Card className="glass-effect p-6 flex flex-col h-full">
               <CardContent className="flex flex-col items-center text-center p-0">
                 <Avatar className="w-24 h-24 mb-4 border-2 border-primary">
                   <AvatarImage src="https://picsum.photos/seed/hicham/200/200" alt="Hicham Eljabbary" data-ai-hint="man portrait" />
@@ -199,3 +201,5 @@ export default function ContactPage() {
     </ScrollArea>
   );
 }
+
+    
