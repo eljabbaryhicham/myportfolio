@@ -7,7 +7,8 @@ export interface PortfolioItem {
   description: string;
   thumbnailUrl: string;
   thumbnailHint: string;
-  sourceUrl: string;
+  sourceUrl?: string; // For images
+  sources?: { src: string; size: number }[]; // For videos
   featured?: boolean;
   details?: string;
 }
@@ -20,7 +21,11 @@ export const portfolioItems: PortfolioItem[] = [
     description: 'An exploration of dynamic typography and fluid motion.',
     thumbnailUrl: placeholderImages['vid1-thumb'].imageUrl,
     thumbnailHint: placeholderImages['vid1-thumb'].imageHint,
-    sourceUrl: 'https://cdn.plyr.io/static/demo/View_From_A_Blue_Moon_Trailer-576p.mp4',
+    sources: [
+        { src: 'https://cdn.plyr.io/static/demo/View_From_A_Blue_Moon_Trailer-1080p.mp4', size: 1080 },
+        { src: 'https://cdn.plyr.io/static/demo/View_From_A_Blue_Moon_Trailer-720p.mp4', size: 720 },
+        { src: 'https://cdn.plyr.io/static/demo/View_From_A_Blue_Moon_Trailer-576p.mp4', size: 576 },
+    ],
     featured: true,
     details: `This project was created using a combination of Adobe After Effects and Cinema 4D. The goal was to create a visceral experience through motion. 
 
@@ -56,7 +61,11 @@ export const portfolioItems: PortfolioItem[] = [
     description: 'A short cinematic piece about solitude and nature.',
     thumbnailUrl: placeholderImages['vid2-thumb'].imageUrl,
     thumbnailHint: placeholderImages['vid2-thumb'].imageHint,
-    sourceUrl: 'https://cdn.plyr.io/static/demo/View_From_A_Blue_Moon_Trailer-1080p.mp4',
+    sources: [
+        { src: 'https://cdn.plyr.io/static/demo/View_From_A_Blue_Moon_Trailer-1080p.mp4', size: 1080 },
+        { src: 'https://cdn.plyr.io/static/demo/View_From_A_Blue_Moon_Trailer-720p.mp4', size: 720 },
+        { src: 'https://cdn.plyr.io/static/demo/View_From_A_Blue_Moon_Trailer-576p.mp4', size: 576 },
+    ],
     featured: false,
   },
   {
@@ -106,7 +115,10 @@ export const portfolioItems: PortfolioItem[] = [
     description: 'A peaceful walk through the woods.',
     thumbnailUrl: 'https://picsum.photos/seed/forest/800/800',
     thumbnailHint: 'forest path',
-    sourceUrl: 'https://cdn.plyr.io/static/demo/View_From_A_Blue_Moon_Trailer-720p.mp4',
+    sources: [
+        { src: 'https://cdn.plyr.io/static/demo/View_From_A_Blue_Moon_Trailer-720p.mp4', size: 720 },
+        { src: 'https://cdn.plyr.io/static/demo/View_From_A_Blue_Moon_Trailer-576p.mp4', size: 576 },
+    ],
     featured: false,
   },
   {
@@ -136,7 +148,9 @@ export const portfolioItems: PortfolioItem[] = [
     description: 'A timelapse of a city at night.',
     thumbnailUrl: 'https://picsum.photos/seed/nightcity/800/800',
     thumbnailHint: 'city timelapse',
-    sourceUrl: 'https://cdn.plyr.io/static/demo/View_From_A_Blue_Moon_Trailer-576p.mp4',
+    sources: [
+        { src: 'https://cdn.plyr.io/static/demo/View_From_A_Blue_Moon_Trailer-576p.mp4', size: 576 },
+    ],
     featured: false,
   },
 ];

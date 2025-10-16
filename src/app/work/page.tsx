@@ -30,22 +30,26 @@ const MemoizedVideoPlayer = memo(VideoPlayer);
 const MemoizedImage = memo(Image);
 
 const PortfolioMedia = ({ item }: { item: PortfolioItem }) => {
-  if (item.type === "video") {
+  if (item.type === "video" && item.sources) {
     return (
       <MemoizedVideoPlayer
         source={{
           type: "video",
-          sources: [{ src: item.sourceUrl }],
+          sources: item.sources.map(s => ({ src: s.src, type: 'video/mp4', size: s.size })),
         }}
       />
     );
   }
 
-  return (
-    <div className="relative aspect-video bg-black/50">
-      <MemoizedImage src={item.sourceUrl} alt={item.title} fill className="object-contain" />
-    </div>
-  );
+  if (item.type === 'image' && item.sourceUrl) {
+    return (
+      <div className="relative aspect-video bg-black/50">
+        <MemoizedImage src={item.sourceUrl} alt={item.title} fill className="object-contain" />
+      </div>
+    );
+  }
+  
+  return null;
 };
 PortfolioMedia.displayName = 'PortfolioMedia';
 

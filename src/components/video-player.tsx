@@ -1,16 +1,18 @@
 
 "use client";
 
-import type { PlyrProps } from "plyr-react";
+import type { PlyrProps, PlyrSource } from "plyr-react";
 import Plyr from "plyr-react";
 import "plyr-react/plyr.css";
 
 interface VideoPlayerProps {
-  source: PlyrProps["source"];
+  source: PlyrSource;
 }
 
 const VideoPlayer = ({ source }: VideoPlayerProps) => {
   if (!source) return null;
+
+  const qualities = source.sources.map(s => (s as any).size).filter(Boolean);
 
   return (
     <Plyr
@@ -33,6 +35,10 @@ const VideoPlayer = ({ source }: VideoPlayerProps) => {
         previewThumbnails: {
           enabled: true,
           src: 'https://cdn.plyr.io/static/demo/thumbs/100p.vtt'
+        },
+        quality: {
+            default: qualities.length > 0 ? Math.min(...qualities) : 576,
+            options: qualities,
         }
       }}
     />
