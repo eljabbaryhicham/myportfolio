@@ -95,24 +95,9 @@ export default function WorkPage() {
 
   const handleOpenChange = (open: boolean) => {
     if (!open) {
-      if (playerRef.current) {
-        playerRef.current.destroy();
-        playerRef.current = null;
-      }
       setSelectedItem(null);
     }
   };
-  
-  useEffect(() => {
-    // Cleanup effect for when the selected item changes or component unmounts
-    return () => {
-      if (playerRef.current) {
-        playerRef.current.destroy();
-        playerRef.current = null;
-      }
-    };
-  }, [selectedItem]);
-
 
   return (
     <>
