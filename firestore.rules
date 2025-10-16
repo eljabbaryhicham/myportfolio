@@ -1,41 +1,45 @@
 /**
- * @fileoverview Firestore Security Rules for Liquid Folio Projects.
+ * @file Firestore Security Rules for Liquid Folio Projects
  *
- * Core Philosophy:
- * This ruleset allows public read access to all projects while restricting write access
- * to authorized administrators, as no role-based access control was defined in user request.
+ * @description This ruleset allows public read access to all projects, while restricting write access to authenticated users.
+ * All project data is stored in the top-level `/projects` collection.
  *
- * Data Structure:
- * The Firestore database contains a single top-level collection, `/projects/{projectId}`, where each
- * document represents a project.
+ * @dataStructure All project documents are stored under the `/projects/{projectId}` path.  Project documents contain project details such as title, description, and image URLs.
  *
- * Key Security Decisions:
- * - Public Read: All users can read project data.
- * - Admin-Only Writes: Only authorized administrators can create, update, or delete projects.  The rules
- *   do NOT implement this authorization; it is expected to be implemented externally to Firestore.
- * - No User Listing Restrictions:  The rules do not restrict listing of any projects.
+ * @keySecurityDecisions
+ *   - Public Read Access:  The `get` and `list` operations are open to the public.
+ *   - Authenticated Write Access: Only authenticated users can create, update, or delete projects. This assumes the existence of an external mechanism (e.g., admin panel authentication) for managing project content.
  *
- * Authorization Independence:
- * Since the requirements do not define user-specific or role-based access control to projects,
- * authorization is likely handled on the client-side via admin credentials or a separate
- * authentication system. If there were roles or ownership, the `projects` documents would
- * contain the authorization information. For example, if specific users were allowed to edit
- * certain projects, a `members` map could be added to each project document.
  */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * @description Allows public read access to projects and restricts write access to administrators.
+     * @description Grants public read access to projects, while restricting write access to authenticated users.
      * @path /projects/{projectId}
-     * @allow (get, list) - Any user can read project data.
-     * @deny (create, update, delete) - Non-admin users cannot modify project data.
-     * @principle Allows public read and restricts write access to administrators.
+     * @allow (get, list): Any user can read project details.
+     * @allow (create, update, delete): Only authenticated users can create, update, or delete projects.
+     * @deny (create, update, delete): Unauthenticated users cannot modify project data.
+     * @principle Allows public read access while restricting write access to authenticated users for managing projects.
      */
     match /projects/{projectId} {
-      allow get, list: if true;
-      allow create, update, delete: if false; // TODO: Add admin validation.
+      allow get: if true;
+      allow list: if true;
+
+      allow create: if isSignedIn();
+      allow update: if isSignedIn() && resource != null;
+      allow delete: if isSignedIn() && resource != null;
+    }
+
+    //------------------- Helper functions -------------------
+
+    /**
+     * @description Checks if the user is signed in.
+     * @return {bool} True if the user is signed in, false otherwise.
+     */
+    function isSignedIn() {
+      return request.auth != null;
     }
   }
 }
