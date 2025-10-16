@@ -22,7 +22,7 @@ export function AppNav() {
 
   return (
     <aside className="w-full md:w-28 flex-shrink-0 p-0 md:p-4 mt-2 md:mt-0">
-      <div className={cn("flex h-auto md:h-full flex-row md:flex-col items-center justify-between rounded-lg border border-border/50 p-4 md:p-8 glass-effect")}>
+      <div className={cn("flex h-auto md:h-full flex-row md:flex-col items-center justify-center md:justify-between rounded-lg border border-border/50 p-4 md:p-8 glass-effect")}>
         <Link href="/" className="flex items-center gap-2 text-primary">
           <Cat className="h-8 w-8" />
         </Link>
