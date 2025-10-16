@@ -94,7 +94,7 @@ export default function ContactPage() {
       <ScrollArea className="flex-1">
         <div className="p-[5%] pt-0">
           <div className="container mx-auto px-0">
-            <div className="flex flex-col md:flex-row gap-8 max-w-4xl mx-auto items-center justify-center">
+            <div className="flex flex-col md:flex-row gap-8 items-center justify-center">
               <div className="md:w-1/2 w-full m-[5%]">
                 <Card className="glass-effect p-6 sm:p-8 h-full">
                   <CardContent className="p-0">
@@ -194,7 +194,7 @@ export default function ContactPage() {
               </div>
             </div>
 
-            <div className="flex items-center justify-center gap-4 mt-12">
+            <div className="flex items-center justify-center gap-4">
               {socialLinks.map((social) => (
                 <Link href={social.href} key={social.color} className={`w-12 h-12 rounded-full flex items-center justify-center text-white ${social.color} transition-all duration-300 hover:scale-110`}>
                   <social.icon className="w-6 h-6" />
