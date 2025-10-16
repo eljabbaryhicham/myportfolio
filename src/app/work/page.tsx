@@ -160,7 +160,7 @@ export default function WorkPage() {
       </div>
 
       <Dialog open={!!selectedItem} onOpenChange={handleOpenChange}>
-        <DialogContent className="glass-effect w-[90vw] max-w-[90vw] h-[90vh] max-h-[90vh] p-0 flex flex-col transition-all duration-300">
+        <DialogContent className="glass-effect w-[90vw] h-[90vh] p-0 flex flex-col transition-all duration-300">
           {selectedItem && (
             <div className="relative flex-1 flex flex-col min-h-0 overflow-hidden">
                 <ScrollArea className="flex-1">
@@ -178,7 +178,7 @@ export default function WorkPage() {
                           {selectedItem.details && (
                               <Button
                                   variant="secondary"
-                                  className="mt-4"
+                                  className="mt-4 self-start"
                                   onClick={() => setDetailsVisible(true)}
                               >
                                   <ChevronsUpDown className="mr-2"/>
