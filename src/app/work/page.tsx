@@ -19,6 +19,7 @@ import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import type { PlyrProps } from 'plyr-react';
 import type Plyr from 'plyr';
+import { useVeryUltrawide } from '@/hooks/use-very-ultrawide';
 
 const VideoPlayer = dynamic(() => import('@/components/video-player'), {
   ssr: false,
@@ -88,6 +89,8 @@ export default function WorkPage() {
   const [visibleItems, setVisibleItems] = useState(6);
   const [detailsModalOpen, setDetailsModalOpen] = useState(false);
   const playerRef = useRef<Plyr | null>(null);
+  const isVeryUltrawide = useVeryUltrawide();
+
 
   useEffect(() => {
     return () => {
@@ -187,7 +190,12 @@ export default function WorkPage() {
       </div>
 
       <Dialog open={!!selectedItem} onOpenChange={handleOpenChange}>
-        <DialogContent className="w-[90vw] md:max-w-[80vw] h-auto 2xl:h-[90vh] glass-effect p-0 flex flex-col overflow-hidden">
+        <DialogContent 
+            className={cn(
+                "w-[90vw] md:max-w-[80vw] glass-effect p-0 flex flex-col overflow-hidden",
+                isVeryUltrawide ? "h-[90vh]" : "h-auto"
+            )}
+        >
           {selectedItem && (
             <div className="relative flex-1 flex flex-col min-h-0">
               <ScrollArea className="flex-1">
