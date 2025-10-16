@@ -107,15 +107,15 @@ export default function ContactPage() {
 
                     <div className="w-full space-y-4 mt-6">
                       {contactLinks.map((link) => (
-                        <Link href={link.href} key={link.label} className="flex items-center group">
-                          <div className={`w-10 h-10 flex-shrink-0 rounded-full flex items-center justify-center mr-4 ${link.color}`}>
+                        <Link href={link.href} key={link.label} className="flex items-center justify-center group gap-4">
+                          <div className={`w-10 h-10 flex-shrink-0 rounded-full flex items-center justify-center ${link.color}`}>
                             <link.icon className="w-5 h-5" />
                           </div>
-                          <div className="flex-grow text-center">
+                          <div className="text-center">
                             <p className="text-sm text-foreground/70">{link.label}</p>
                             <p className="font-medium group-hover:text-primary transition-colors">{link.value}</p>
                           </div>
-                          <ExternalLink className="w-4 h-4 text-foreground/50 group-hover:text-primary transition-colors" />
+                          <ExternalLink className="w-4 h-4 text-foreground/50 group-hover:text-primary transition-colors opacity-0 group-hover:opacity-100" />
                         </Link>
                       ))}
                     </div>
@@ -131,7 +131,7 @@ export default function ContactPage() {
               </div>
               <div className="w-full md:w-1/2">
                 <Card className="glass-effect p-6 sm:p-8 h-full">
-                  <CardContent className="p-0 flex flex-col">
+                  <CardContent className="p-0 flex flex-col items-center">
                     <Form {...form}>
                       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8 w-full">
                         <FormField
