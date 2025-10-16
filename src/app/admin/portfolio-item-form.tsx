@@ -33,6 +33,7 @@ import {
 } from '@/components/ui/sheet';
 import type { PortfolioItem } from '@/lib/portfolio-data';
 import { useEffect } from 'react';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 const formSchema = z.object({
   title: z.string().min(2, {
@@ -93,132 +94,134 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit}: Port
 
     return (
         <Sheet open={isOpen} onOpenChange={setIsOpen}>
-            <SheetContent className="w-[400px] sm:w-[540px] overflow-y-auto">
+            <SheetContent className="w-[400px] sm:w-[540px] h-screen flex flex-col">
                 <SheetHeader>
                 <SheetTitle>{item ? 'Edit' : 'Add'} Portfolio Item</SheetTitle>
                 <SheetDescription>
                     {item ? 'Update the details of your portfolio item.' : 'Add a new item to your portfolio.'}
                 </SheetDescription>
                 </SheetHeader>
-                <div className="py-8">
-                   <Form {...form}>
-                    <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8">
-                        <FormField
-                        control={form.control}
-                        name="title"
-                        render={({ field }) => (
-                            <FormItem>
-                            <FormLabel>Title</FormLabel>
-                            <FormControl>
-                                <Input placeholder="Project Title" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                            </FormItem>
-                        )}
-                        />
-                        <FormField
-                        control={form.control}
-                        name="description"
-                        render={({ field }) => (
-                            <FormItem>
-                            <FormLabel>Description</FormLabel>
-                            <FormControl>
-                                <Textarea placeholder="A short description of the project" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                            </FormItem>
-                        )}
-                        />
-                        <FormField
-                        control={form.control}
-                        name="details"
-                        render={({ field }) => (
-                            <FormItem>
-                            <FormLabel>Project Details</FormLabel>
-                            <FormControl>
-                                <Textarea
-                                placeholder="Add rich details about the project. You can use Markdown for formatting."
-                                className="min-h-[150px]"
-                                {...field}
-                                />
-                            </FormControl>
-                            <FormDescription>
-                                Use Markdown for lists, bold text, etc.
-                            </FormDescription>
-                            <FormMessage />
-                            </FormItem>
-                        )}
-                        />
-                        <FormField
-                        control={form.control}
-                        name="type"
-                        render={({ field }) => (
-                            <FormItem>
-                            <FormLabel>Type</FormLabel>
-                            <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                <FormControl>
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Select a type" />
-                                </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                <SelectItem value="image">Image</SelectItem>
-                                <SelectItem value="video">Video</SelectItem>
-                                </SelectContent>
-                            </Select>
-                            <FormMessage />
-                            </FormItem>
-                        )}
-                        />
-                        <FormField
-                        control={form.control}
-                        name="thumbnailUrl"
-                        render={({ field }) => (
-                            <FormItem>
-                            <FormLabel>Thumbnail URL</FormLabel>
-                            <FormControl>
-                                <Input placeholder="https://example.com/thumbnail.jpg" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                            </FormItem>
-                        )}
-                        />
-                        <FormField
-                        control={form.control}
-                        name="thumbnailHint"
-                        render={({ field }) => (
-                            <FormItem>
-                            <FormLabel>Thumbnail Hint</FormLabel>
-                            <FormControl>
-                                <Input placeholder="e.g. 'abstract art'" {...field} />
-                            </FormControl>
-                            <FormDescription>
-                                AI hint for image generation (1-2 words).
-                            </FormDescription>
-                            <FormMessage />
-                            </FormItem>
-                        )}
-                        />
-                        <FormField
-                        control={form.control}
-                        name="sourceUrl"
-                        render={({ field }) => (
-                            <FormItem>
-                            <FormLabel>Source URL</FormLabel>
-                            <FormControl>
-                                <Input placeholder="https://example.com/full-image.jpg" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                            </FormItem>
-                        )}
-                        />
-                        <div className="flex justify-end space-x-4">
-                            <Button type="button" variant="outline" onClick={() => setIsOpen(false)}>Cancel</Button>
-                            <Button type="submit">Save</Button>
-                        </div>
-                    </form>
-                    </Form>
-                </div>
+                <ScrollArea className="flex-1">
+                  <div className="py-8 pr-6">
+                    <Form {...form}>
+                      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8">
+                          <FormField
+                          control={form.control}
+                          name="title"
+                          render={({ field }) => (
+                              <FormItem>
+                              <FormLabel>Title</FormLabel>
+                              <FormControl>
+                                  <Input placeholder="Project Title" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                              </FormItem>
+                          )}
+                          />
+                          <FormField
+                          control={form.control}
+                          name="description"
+                          render={({ field }) => (
+                              <FormItem>
+                              <FormLabel>Description</FormLabel>
+                              <FormControl>
+                                  <Textarea placeholder="A short description of the project" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                              </FormItem>
+                          )}
+                          />
+                          <FormField
+                          control={form.control}
+                          name="details"
+                          render={({ field }) => (
+                              <FormItem>
+                              <FormLabel>Project Details</FormLabel>
+                              <FormControl>
+                                  <Textarea
+                                  placeholder="Add rich details about the project. You can use Markdown for formatting."
+                                  className="min-h-[150px]"
+                                  {...field}
+                                  />
+                              </FormControl>
+                              <FormDescription>
+                                  Use Markdown for lists, bold text, etc.
+                              </FormDescription>
+                              <FormMessage />
+                              </FormItem>
+                          )}
+                          />
+                          <FormField
+                          control={form.control}
+                          name="type"
+                          render={({ field }) => (
+                              <FormItem>
+                              <FormLabel>Type</FormLabel>
+                              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                  <FormControl>
+                                  <SelectTrigger>
+                                      <SelectValue placeholder="Select a type" />
+                                  </SelectTrigger>
+                                  </FormControl>
+                                  <SelectContent>
+                                  <SelectItem value="image">Image</SelectItem>
+                                  <SelectItem value="video">Video</SelectItem>
+                                  </SelectContent>
+                              </Select>
+                              <FormMessage />
+                              </FormItem>
+                          )}
+                          />
+                          <FormField
+                          control={form.control}
+                          name="thumbnailUrl"
+                          render={({ field }) => (
+                              <FormItem>
+                              <FormLabel>Thumbnail URL</FormLabel>
+                              <FormControl>
+                                  <Input placeholder="https://example.com/thumbnail.jpg" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                              </FormItem>
+                          )}
+                          />
+                          <FormField
+                          control={form.control}
+                          name="thumbnailHint"
+                          render={({ field }) => (
+                              <FormItem>
+                              <FormLabel>Thumbnail Hint</FormLabel>
+                              <FormControl>
+                                  <Input placeholder="e.g. 'abstract art'" {...field} />
+                              </FormControl>
+                              <FormDescription>
+                                  AI hint for image generation (1-2 words).
+                              </FormDescription>
+                              <FormMessage />
+                              </FormItem>
+                          )}
+                          />
+                          <FormField
+                          control={form.control}
+                          name="sourceUrl"
+                          render={({ field }) => (
+                              <FormItem>
+                              <FormLabel>Source URL</FormLabel>
+                              <FormControl>
+                                  <Input placeholder="https://example.com/full-image.jpg" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                              </FormItem>
+                          )}
+                          />
+                          <div className="flex justify-end space-x-4">
+                              <Button type="button" variant="outline" onClick={() => setIsOpen(false)}>Cancel</Button>
+                              <Button type="submit">Save</Button>
+                          </div>
+                      </form>
+                      </Form>
+                  </div>
+                </ScrollArea>
             </SheetContent>
         </Sheet>
     )
