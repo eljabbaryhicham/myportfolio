@@ -139,7 +139,7 @@ export default function ContactPage() {
                           render={({ field }) => (
                             <FormItem>
                               <FormControl>
-                                <Input placeholder="Name" {...field} className="text-center bg-transparent border-0 border-b border-foreground/30 rounded-none focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-primary transition-colors" />
+                                <Input placeholder="Name" {...field} className="text-center bg-transparent border-0 border-b border-foreground/30 rounded-none focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-primary transition-colors placeholder:text-foreground/80" />
                               </FormControl>
                               <FormMessage />
                             </FormItem>
@@ -151,7 +151,7 @@ export default function ContactPage() {
                           render={({ field }) => (
                             <FormItem>
                               <FormControl>
-                                <Input type="email" placeholder="Email" {...field} className="text-center bg-transparent border-0 border-b border-foreground/30 rounded-none focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-primary transition-colors" />
+                                <Input type="email" placeholder="Email" {...field} className="text-center bg-transparent border-0 border-b border-foreground/30 rounded-none focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-primary transition-colors placeholder:text-foreground/80" />
                               </FormControl>
                               <FormMessage />
                             </FormItem>
@@ -165,7 +165,7 @@ export default function ContactPage() {
                               <FormControl>
                                 <Textarea
                                   placeholder="Message"
-                                  className="text-center bg-transparent border-0 border-b border-foreground/30 rounded-none focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-primary transition-colors min-h-[100px]"
+                                  className="text-center bg-transparent border-0 border-b border-foreground/30 rounded-none focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-primary transition-colors min-h-[100px] placeholder:text-foreground/80"
                                   {...field}
                                 />
                               </FormControl>
