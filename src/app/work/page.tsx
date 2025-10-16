@@ -50,8 +50,8 @@ const PortfolioMedia = ({ item }: { item: PortfolioItem }) => {
 
   if (item.type === 'image' && item.sourceUrl) {
     return (
-      <div className="relative aspect-video bg-black/50 w-full">
-        <MemoizedImage src={item.sourceUrl} alt={item.title} fill className="object-contain" />
+      <div className="relative w-full max-w-full">
+         <MemoizedImage src={item.sourceUrl} alt={item.title} width={1280} height={720} className="object-contain w-full h-auto" />
       </div>
     );
   }
@@ -163,29 +163,31 @@ export default function WorkPage() {
         <DialogContent className="glass-effect w-[90vw] max-w-[90vw] h-[90vh] max-h-[90vh] p-0 flex flex-col transition-all duration-300">
           {selectedItem && (
             <div className="relative flex-1 flex flex-col min-h-0 overflow-hidden">
-                <div className="flex-1 flex flex-col min-h-0">
-                    <div className="flex-shrink-0 bg-black/50 flex items-center justify-center">
-                        <PortfolioMedia item={selectedItem} />
-                    </div>
-                    <div className="flex-1 flex flex-col min-h-0 p-6 bg-background/80 border-t">
-                        <DialogHeader className="text-left">
-                            <DialogTitle className="text-2xl">{selectedItem.title}</DialogTitle>
-                            <DialogDescription className="text-base text-foreground/70 mt-2">
-                                {selectedItem.description}
-                            </DialogDescription>
-                        </DialogHeader>
-                        {selectedItem.details && (
-                            <Button
-                                variant="secondary"
-                                className="mt-4"
-                                onClick={() => setDetailsVisible(true)}
-                            >
-                                <ChevronsUpDown className="mr-2"/>
-                                Show Details
-                            </Button>
-                        )}
-                    </div>
-                </div>
+                <ScrollArea className="flex-1">
+                  <div className="flex flex-col min-h-full">
+                      <div className="flex-shrink-0 bg-black/50 flex items-center justify-center p-4">
+                          <PortfolioMedia item={selectedItem} />
+                      </div>
+                      <div className="flex-1 flex flex-col p-6 bg-background/80">
+                          <DialogHeader className="text-left">
+                              <DialogTitle className="text-2xl">{selectedItem.title}</DialogTitle>
+                              <DialogDescription className="text-base text-foreground/70 mt-2">
+                                  {selectedItem.description}
+                              </DialogDescription>
+                          </DialogHeader>
+                          {selectedItem.details && (
+                              <Button
+                                  variant="secondary"
+                                  className="mt-4"
+                                  onClick={() => setDetailsVisible(true)}
+                              >
+                                  <ChevronsUpDown className="mr-2"/>
+                                  Show Details
+                              </Button>
+                          )}
+                      </div>
+                  </div>
+                </ScrollArea>
 
               <div className={cn(
                   "absolute inset-0 bg-background/80 backdrop-blur-sm transition-transform duration-500 ease-in-out flex flex-col",
