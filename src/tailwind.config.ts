@@ -52,9 +52,9 @@ export default {
         ring: 'hsl(var(--ring))',
       },
       borderRadius: {
-        lg: '1.5rem',
-        md: 'calc(1.5rem - 4px)',
-        sm: 'calc(1.5rem - 8px)',
+        lg: '1rem',
+        md: 'calc(1rem - 4px)',
+        sm: 'calc(1rem - 8px)',
       },
       keyframes: {
         'accordion-down': {

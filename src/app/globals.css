@@ -120,7 +120,7 @@
   .glass-effect {
     @apply relative overflow-hidden;
     background-color: rgb(255 255 255 / 5%);
-    backdrop-filter: blur(8px);
+    backdrop-filter: blur(12px);
   }
 
   .glass-effect::before {
