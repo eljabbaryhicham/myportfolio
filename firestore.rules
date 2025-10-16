@@ -1,27 +1,26 @@
 /**
- * @file Firestore Security Rules for Liquid Folio Projects
- *
- * @description This ruleset allows public read access to all projects, while restricting write access to authenticated users.
- * All project data is stored in the top-level `/projects` collection.
- *
- * @dataStructure All project documents are stored under the `/projects/{projectId}` path.  Project documents contain project details such as title, description, and image URLs.
- *
- * @keySecurityDecisions
- *   - Public Read Access:  The `get` and `list` operations are open to the public.
- *   - Authenticated Write Access: Only authenticated users can create, update, or delete projects. This assumes the existence of an external mechanism (e.g., admin panel authentication) for managing project content.
- *
+ * @file Firestore Security Rules
+ * @core-philosophy This ruleset secures the 'projects' collection, allowing public read access but requiring authentication for write access. It assumes administrative access is handled client-side, as the provided data model does not define user-specific roles or ownership.
+ * @data-structure The data is stored in a flat `/projects/{projectId}` collection.
+ * @key-security-decisions Write access is protected via `isSignedIn()`, but no further validation is performed. This is for prototyping only, and a production system would need to check admin roles or perform other authorization. List access is public.
+ * @denormalization Authorization is not denormalized because it's assumed that administrative access is handled on the client-side. In a more complex scenario with user-based permissions, fields like 'ownerId' or a 'members' map would be added to each project.
+ * @structural-segregation All projects are in a single collection, indicating no need to segregate public vs. private data.
  */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * @description Grants public read access to projects, while restricting write access to authenticated users.
-     * @path /projects/{projectId}
-     * @allow (get, list): Any user can read project details.
-     * @allow (create, update, delete): Only authenticated users can create, update, or delete projects.
-     * @deny (create, update, delete): Unauthenticated users cannot modify project data.
-     * @principle Allows public read access while restricting write access to authenticated users for managing projects.
+     * @description Allows read access to all projects, but requires authentication for creating, updating, and deleting projects.
+     * @path /databases/{database}/documents/projects/{projectId}
+     * @allow (get, list) - Any user can read project data.
+     * @allow (create) - Authenticated user can create a project.
+     * @allow (update) - Authenticated user can update a project.
+     * @allow (delete) - Authenticated user can delete a project.
+     * @deny (create) - Unauthenticated user cannot create a project.
+     * @deny (update) - Unauthenticated user cannot update a project.
+     * @deny (delete) - Unauthenticated user cannot delete a project.
+     * @principle Allows public read access with authenticated-only writes.
      */
     match /projects/{projectId} {
       allow get: if true;
@@ -32,12 +31,7 @@ service cloud.firestore {
       allow delete: if isSignedIn() && resource != null;
     }
 
-    //------------------- Helper functions -------------------
-
-    /**
-     * @description Checks if the user is signed in.
-     * @return {bool} True if the user is signed in, false otherwise.
-     */
+    // Define helper functions
     function isSignedIn() {
       return request.auth != null;
     }
