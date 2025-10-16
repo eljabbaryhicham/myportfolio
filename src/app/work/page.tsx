@@ -89,12 +89,30 @@ export default function WorkPage() {
   const [detailsModalOpen, setDetailsModalOpen] = useState(false);
   const playerRef = useRef<Plyr | null>(null);
 
+  useEffect(() => {
+    return () => {
+      if (playerRef.current) {
+        // @ts-ignore
+        playerRef.current.destroy?.();
+      }
+    };
+  }, []);
+
   const showMoreItems = () => {
     setVisibleItems(prevVisibleItems => prevVisibleItems + 6);
   };
 
   const handleOpenChange = (open: boolean) => {
     if (!open) {
+      if (playerRef.current) {
+        try {
+          // @ts-ignore
+          playerRef.current.destroy?.();
+        } catch (e) {
+          console.error('Error destroying Plyr instance on close', e);
+        }
+        playerRef.current = null;
+      }
       setSelectedItem(null);
     }
   };
@@ -122,7 +140,7 @@ export default function WorkPage() {
                   <div
                     key={item.id}
                     className={cn(
-                      'group relative cursor-pointer overflow-hidden rounded-md bg-card/50 backdrop-blur-md transition-all duration-300 hover:scale-[1.02] aspect-square'
+                      'group relative cursor-pointer overflow-hidden rounded-md transition-all duration-300 hover:scale-[1.02] aspect-square glass-effect'
                     )}
                     onClick={() => setSelectedItem(item)}
                   >

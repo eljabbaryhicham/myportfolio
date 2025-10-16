@@ -25,7 +25,7 @@ export default function RootLayout({
       <body className={cn('font-body antialiased')} suppressHydrationWarning>
         <FirebaseClientProvider>
           <div className="flex h-full flex-col md:flex-row p-4">
-            <main className="flex-1 w-full bg-card/50 backdrop-blur-xl rounded-3xl border border-border/50">
+            <main className="flex-1 w-full glass-effect rounded-lg border border-border/50">
               <div className="h-full w-full">{children}</div>
             </main>
             <ConditionalNav />

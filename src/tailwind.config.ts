@@ -7,6 +7,7 @@ export default {
     './src/pages/**/*.{js,ts,jsx,tsx,mdx}',
     './src/components/**/*.{js,ts,jsx,tsx,mdx}',
     './src/app/**/*.{js,ts,jsx,tsx,mdx}',
+    './src/features/**/*.{js,ts,jsx,tsx,mdx}',
   ],
   theme: {
     extend: {
@@ -51,9 +52,9 @@ export default {
         ring: 'hsl(var(--ring))',
       },
       borderRadius: {
-        lg: '3rem',
-        md: 'calc(3rem - 4px)',
-        sm: 'calc(3rem - 8px)',
+        lg: '1.5rem',
+        md: 'calc(1.5rem - 4px)',
+        sm: 'calc(1.5rem - 8px)',
       },
       keyframes: {
         'accordion-down': {

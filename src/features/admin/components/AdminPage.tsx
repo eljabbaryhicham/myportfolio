@@ -110,7 +110,7 @@ function AdminPage() {
           </div>
         </div>
 
-        <div className="border rounded-3xl overflow-hidden bg-card/50">
+        <div className="border rounded-lg overflow-hidden glass-effect">
           <Table>
             <TableHeader>
               <TableRow>
