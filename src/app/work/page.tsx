@@ -230,7 +230,7 @@ export default function WorkPage() {
       
       {/* Nested Dialog for Details */}
       <Dialog open={detailsModalOpen} onOpenChange={setDetailsModalOpen}>
-        <DialogContent className="w-[90vw] md:max-w-[80vw] h-auto md:h-[90vh] glass-effect p-0 flex flex-col">
+        <DialogContent className="w-[90vw] md:max-w-[80vw] h-[90vh] glass-effect p-0 flex flex-col">
             {selectedItem && (
                 <>
                 <DialogHeader className="p-6 pb-0">
