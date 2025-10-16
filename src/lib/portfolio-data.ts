@@ -1,3 +1,4 @@
+
 import { placeholderImages } from './placeholder-images';
 
 export interface PortfolioItem {
@@ -52,7 +53,25 @@ export const portfolioItems: PortfolioItem[] = [
     thumbnailHint: placeholderImages['img2'].imageHint,
     sourceUrl: 'https://picsum.photos/seed/liquid2/1200/1600',
     featured: false,
-    details: 'A personal project exploring the themes of growth and nature. Photoshoot combined with digital illustration.'
+    details: `
+"Bloom" is a deeply personal project that delves into the intricate and symbiotic relationship between humanity and the natural world. It is an exploration of growth, decay, and rebirth, themes that are mirrored in both human life and the cycles of nature.
+
+**Concept & Inspiration**
+The series was born from a period of introspection and a renewed connection with the wild landscapes of my childhood. I wanted to visually represent the feeling of being simultaneously rooted and ephemeral, grounded in the earth yet constantly in a state of change. The primary inspiration came from the Pre-Raphaelite painters, particularly their use of symbolism and their detailed, reverent depiction of flora. I sought to bring a contemporary, photographic sensibility to these classical themes.
+
+**Process & Technique**
+The creation of "Bloom" was a multi-stage process that blended traditional photography with digital artistry. Each portrait began with a carefully planned photoshoot. Models were selected for their ability to convey a sense of quiet contemplation and inner strength.
+
+The shoots took place in a variety of natural settings, from dense forests to overgrown gardens, allowing the environment itself to become a character in the narrative. We used a combination of natural light and subtle, diffused strobes to create a soft, ethereal quality.
+
+Post-production was where the images truly came to life. I meticulously layered digital illustrations of flowers, vines, and other botanical elements over the portraits. Each flower was chosen for its symbolic meaning—lilies for purity, roses for passion, ivy for memory and fidelity. This was not merely a decorative process; it was a form of storytelling, with each element adding a new layer of meaning to the portrait. The final composite images were then color-graded to unify the photographic and illustrative components, resulting in a painterly, dreamlike aesthetic.
+
+**Challenges**
+The main challenge was to ensure that the digital additions felt organic and integrated, rather than simply superimposed. This required a delicate touch and a deep understanding of light, shadow, and texture. Countless hours were spent ensuring that every leaf and petal seemed to grow naturally from the subject, blurring the line between the human and the botanical.
+
+**Meaning & Reflection**
+Ultimately, "Bloom" is a meditation on our place within the ecosystem. It asks the viewer to consider how we are connected to the world around us, how we grow, and how we leave our mark. It is a celebration of life in all its beautiful, fleeting forms.
+`
   },
   {
     id: 'vid2',
