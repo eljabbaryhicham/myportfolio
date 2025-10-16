@@ -47,7 +47,6 @@ function AdminPage() {
 
   const [sortedItems, setSortedItems] = useState<PortfolioItem[]>([]);
   
-  // Drag and Drop state
   const draggingItem = useRef<string | null>(null);
   const dragOverItem = useRef<string | null>(null);
 
@@ -58,9 +57,9 @@ function AdminPage() {
     }
   }, [items]);
 
-  const maxOrder = useMemo(() => {
+  const minOrder = useMemo(() => {
     if (!items || items.length === 0) return 0;
-    return Math.max(...items.map(i => i.order || 0));
+    return Math.min(...items.map(i => i.order || 0));
   }, [items]);
 
   useEffect(() => {
@@ -131,9 +130,10 @@ function AdminPage() {
 
   const handleFormSubmit = (values: PortfolioItem) => {
     if (!firestore) return;
-    const dataToSave = { ...values, order: values.order ?? maxOrder + 1 };
+
     if (values.id) {
       // Existing item
+      const dataToSave = { ...values, order: values.order ?? 0 };
       const docRef = doc(firestore, 'projects', values.id);
       setDocumentNonBlocking(docRef, dataToSave, { merge: true });
        toast({
@@ -141,7 +141,8 @@ function AdminPage() {
         description: 'Your portfolio has been updated.',
       });
     } else {
-      // New item
+      // New item, place it at the beginning
+      const dataToSave = { ...values, order: minOrder - 1 };
       addDocumentNonBlocking(collection(firestore, 'projects'), dataToSave);
        toast({
         title: 'Item Added',
@@ -157,17 +158,23 @@ function AdminPage() {
     const draggingId = draggingItem.current;
     const dragOverId = dragOverItem.current;
 
+    draggingItem.current = null;
+    dragOverItem.current = null;
+    
+    // Clear visual styles
+    document.querySelectorAll('.dragging').forEach(el => el.classList.remove('dragging'));
+    document.querySelectorAll('.drag-over-top').forEach(el => el.classList.remove('drag-over-top'));
+    document.querySelectorAll('.drag-over-bottom').forEach(el => el.classList.remove('drag-over-bottom'));
+
+
     if (!draggingId || !dragOverId || draggingId === dragOverId) {
-      draggingItem.current = null;
-      dragOverItem.current = null;
-      // Reset visual styles if any
-      document.querySelectorAll('.dragging').forEach(el => el.classList.remove('dragging'));
-      document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
       return;
     }
     
     const dragIndex = sortedItems.findIndex(item => item.id === draggingId);
     const hoverIndex = sortedItems.findIndex(item => item.id === dragOverId);
+
+    if (dragIndex === -1 || hoverIndex === -1) return;
 
     const newSortedItems = [...sortedItems];
     const [draggedItem] = newSortedItems.splice(dragIndex, 1);
@@ -191,10 +198,25 @@ function AdminPage() {
         // Revert UI on failure
         setSortedItems([...items].sort((a, b) => (a.order ?? 0) - (b.order ?? 0)));
     });
-
-    draggingItem.current = null;
-    dragOverItem.current = null;
   };
+
+  const handleDragEnter = (e: React.DragEvent<HTMLTableRowElement>, id: string) => {
+    dragOverItem.current = id;
+    const target = e.currentTarget as HTMLTableRowElement;
+    const rect = target.getBoundingClientRect();
+    const midpoint = rect.top + rect.height / 2;
+
+    // Clear previous indicators
+    target.parentElement?.querySelectorAll('.drag-over-top, .drag-over-bottom').forEach(el => {
+      el.classList.remove('drag-over-top', 'drag-over-bottom');
+    });
+
+    if (e.clientY < midpoint) {
+      target.classList.add('drag-over-top');
+    } else {
+      target.classList.add('drag-over-bottom');
+    }
+  }
 
 
   if (isUserLoading || !user) {
@@ -242,27 +264,24 @@ function AdminPage() {
                   <TableHead className="text-center w-[50px]">Actions</TableHead>
                 </TableRow>
               </TableHeader>
-              <TableBody
-                onDragOver={(e) => e.preventDefault()}
-              >
+              <TableBody>
                 {isLoading && (
                   <TableRow>
                     <TableCell colSpan={6} className="text-center">Loading portfolio...</TableCell>
                   </TableRow>
                 )}
-                {!isLoading && sortedItems && sortedItems.map((item) => (
+                {!isLoading && sortedItems && sortedItems.map((item, index) => (
                   <TableRow 
                     key={item.id} 
                     draggable
-                    onDragStart={() => (draggingItem.current = item.id)}
-                    onDragEnter={() => (dragOverItem.current = item.id)}
+                    onDragStart={(e) => {
+                      draggingItem.current = item.id;
+                      e.currentTarget.classList.add('dragging');
+                    }}
+                    onDragEnter={(e) => handleDragEnter(e, item.id)}
                     onDragEnd={handleDragEnd}
                     onDragOver={(e) => e.preventDefault()}
-                    className={cn(
-                      "border-b border-white/10 transition-all cursor-grab",
-                      draggingItem.current === item.id && 'opacity-50 scale-95',
-                      dragOverItem.current === item.id && draggingItem.current !== item.id && 'bg-primary/20'
-                    )}
+                    className={cn("border-b-0 transition-all cursor-grab relative")}
                   >
                     <TableCell className="text-center">
                       <GripVertical className="h-5 w-5 text-foreground/50" />

@@ -242,7 +242,7 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit}: Port
                                             />
                                     </FormControl>
                                     <FormDescription>
-                                        The display order of the project. Leave blank for new items to add to the end.
+                                        The display order of the project. Leave blank for new items to be added to the start.
                                     </FormDescription>
                                     <FormMessage />
                                 </FormItem>
