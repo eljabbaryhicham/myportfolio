@@ -119,6 +119,8 @@ export default function WorkPage() {
       setSelectedItem(null);
     }
   };
+  
+  const isDescriptionLong = selectedItem?.description && selectedItem.description.length > 500;
 
   return (
     <>
@@ -193,7 +195,7 @@ export default function WorkPage() {
         <DialogContent 
             className={cn(
                 "w-[90vw] md:max-w-[80vw] glass-effect p-0 flex flex-col overflow-hidden",
-                isVeryUltrawide ? "h-[90vh]" : "h-auto"
+                isVeryUltrawide || isDescriptionLong ? "h-[90vh]" : "h-auto"
             )}
         >
           {selectedItem && (
@@ -208,7 +210,7 @@ export default function WorkPage() {
                             <DialogTitle className="text-2xl">
                             {selectedItem.title}
                             </DialogTitle>
-                            <DialogDescription className="text-base text-foreground/70 mt-2">
+                            <DialogDescription className="text-base text-foreground/70 mt-2 whitespace-pre-wrap">
                             {selectedItem.description}
                             </DialogDescription>
                         </DialogHeader>
