@@ -204,9 +204,9 @@ export default function WorkPage() {
             <div className="container mx-auto px-0">
                {isLoading && <p>Loading projects...</p>}
               {!isLoading && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 md:gap-4">
                   {filteredItems.slice(0, visibleItems).map(item => (
-                    <div key={item.id} className="p-2 rounded-lg glass-effect">
+                    <div key={item.id} className="p-1 rounded-lg glass-effect">
                       <div
                         className={cn(
                           'group relative cursor-pointer overflow-hidden rounded-lg transition-all duration-300 hover:scale-[1.02] aspect-square'
