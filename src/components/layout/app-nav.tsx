@@ -28,7 +28,7 @@ export function AppNav() {
   if (isMobile) {
     return (
       <motion.div
-        className="fixed bottom-0 left-0 right-0 h-[5vh] z-50"
+        className="fixed bottom-0 left-0 right-0 z-50"
         style={{ margin: '5%', height: '5vh' }}
         initial={{ y: '100%' }}
         animate={{ y: 0 }}
@@ -69,7 +69,7 @@ export function AppNav() {
 
   return (
     <motion.aside
-      className="w-full md:w-28 flex-shrink-0 p-0 md:p-4 mt-2 md:mt-0 h-auto md:h-auto"
+      className="w-full md:w-20 flex-shrink-0 p-0 md:p-4 mt-2 md:mt-0 h-auto md:h-auto"
       initial={{ x: '100%' }}
       animate={{ x: 0 }}
       transition={{ type: 'spring', stiffness: 80, damping: 20 }}
