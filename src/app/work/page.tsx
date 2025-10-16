@@ -206,10 +206,10 @@ export default function WorkPage() {
               {!isLoading && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
                   {filteredItems.slice(0, visibleItems).map(item => (
-                    <div key={item.id} className="p-2 rounded-md glass-effect">
+                    <div key={item.id} className="p-2 rounded-lg glass-effect">
                       <div
                         className={cn(
-                          'group relative cursor-pointer overflow-hidden rounded-md transition-all duration-300 hover:scale-[1.02] aspect-square'
+                          'group relative cursor-pointer overflow-hidden rounded-lg transition-all duration-300 hover:scale-[1.02] aspect-square'
                         )}
                         onClick={() => setSelectedItem(item)}
                       >
@@ -327,12 +327,12 @@ export default function WorkPage() {
                             }]
                           ]}
                           components={{
-                            img: ({node, ...props}) => <img className="w-full rounded-md" {...props} />,
+                            img: ({node, ...props}) => <img className="w-full rounded-lg" {...props} />,
                             video: ({node, ...props}) => {
                               const { src } = props;
                               if (!src) return null;
                               return (
-                                <div className="w-full rounded-md overflow-hidden my-4">
+                                <div className="w-full rounded-lg overflow-hidden my-4">
                                   <ClientOnlyVideoPlayer
                                     innerRef={detailsPlayerRef}
                                     source={{
