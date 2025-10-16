@@ -165,50 +165,52 @@ export default function WorkPage() {
         <DialogContent className="glass-effect p-0 flex flex-col transition-all duration-300 w-[90vw] max-h-[90vh]">
           {selectedItem && (
             <div className="relative flex-1 flex flex-col min-h-0 overflow-hidden">
-                <ScrollArea className="flex-1">
-                  <div className="flex flex-col h-full">
-                      <div className="flex-shrink-0 bg-black/50 flex items-center justify-center">
-                          <PortfolioMedia item={selectedItem} />
-                      </div>
-                      <div className="flex-1 flex flex-col p-6 bg-background/80">
-                          <DialogHeader className="text-left">
-                              <DialogTitle className="text-2xl">{selectedItem.title}</DialogTitle>
-                              <DialogDescription className="text-base text-foreground/70 mt-2">
-                                  {selectedItem.description}
-                              </DialogDescription>
-                          </DialogHeader>
-                          {selectedItem.details && (
-                              <Button
-                                  variant="secondary"
-                                  className="mt-4 self-start"
-                                  onClick={() => setDetailsVisible(true)}
-                              >
-                                  <ChevronsUpDown className="mr-2"/>
-                                  Show Details
-                              </Button>
-                          )}
-                      </div>
+              <ScrollArea className="flex-1">
+                <div className="flex flex-col h-full">
+                  <div className="flex-shrink-0 bg-black/50 flex items-center justify-center">
+                    <PortfolioMedia item={selectedItem} />
                   </div>
-                </ScrollArea>
+                  <div className="flex-1 flex flex-col p-6 bg-background/80">
+                    <DialogHeader className="text-left">
+                      <DialogTitle className="text-2xl">{selectedItem.title}</DialogTitle>
+                      <DialogDescription className="text-base text-foreground/70 mt-2">
+                        {selectedItem.description}
+                      </DialogDescription>
+                    </DialogHeader>
+                    {selectedItem.details && (
+                      <Button
+                        variant="secondary"
+                        className="mt-4 self-start"
+                        onClick={() => setDetailsVisible(true)}
+                      >
+                        <ChevronsUpDown className="mr-2" />
+                        Show Details
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              </ScrollArea>
 
-              <div className={cn(
+              <div
+                className={cn(
                   "absolute inset-0 bg-background/80 backdrop-blur-sm transition-transform duration-500 ease-in-out flex flex-col",
                   detailsVisible ? "translate-y-0" : "translate-y-full"
-                )}>
-                  <PortfolioDetails item={selectedItem} />
-              </div>
-              
-              {detailsVisible && (
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        className="absolute top-4 right-12 z-30"
-                        onClick={() => setDetailsVisible(false)}
-                    >
-                        <X />
-                        <span className="sr-only">Close Details</span>
-                    </Button>
                 )}
+              >
+                <PortfolioDetails item={selectedItem} />
+              </div>
+
+              {detailsVisible && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="absolute top-4 right-12 z-30"
+                  onClick={() => setDetailsVisible(false)}
+                >
+                  <X />
+                  <span className="sr-only">Close Details</span>
+                </Button>
+              )}
             </div>
           )}
         </DialogContent>
