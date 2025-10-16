@@ -13,14 +13,12 @@ export function ConditionalNav() {
     setIsClient(true);
   }, []);
 
-  if (pathname === '/') {
+  // On the server or on the home page, render nothing.
+  if (!isClient || pathname === '/') {
     return null;
   }
 
-  // Only render AppNav on the client to avoid hydration mismatch
-  if (!isClient) {
-    return null;
-  }
-
+  // The key is removed, so AppNav is mounted once and animates in.
+  // It will no longer re-animate when navigating between non-home pages.
   return <AppNav />;
 }

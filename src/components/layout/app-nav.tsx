@@ -26,7 +26,6 @@ export function AppNav() {
 
   return (
     <motion.aside
-      key={pathname}
       initial={isMobile ? { y: "100%" } : { x: "100%" }}
       animate={{ x: 0, y: 0 }}
       transition={{ duration: 0.5, ease: "easeOut" }}
@@ -68,4 +67,3 @@ export function AppNav() {
     </motion.aside>
   );
 }
-
