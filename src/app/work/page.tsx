@@ -218,7 +218,7 @@ export default function WorkPage() {
                         {selectedItem.details && (
                             <div className="mt-4">
                             <Button
-                                variant="secondary"
+                                variant="default"
                                 onClick={() => setDetailsModalOpen(true)}
                             >
                                 <ChevronsUpDown className="mr-2" />
