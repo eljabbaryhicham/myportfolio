@@ -199,15 +199,15 @@ function AdminPage() {
 
         <ScrollArea className="flex-1">
           <div className="border rounded-lg overflow-hidden glass-effect">
-            <Table className="text-left">
+            <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-[60px] md:w-[80px]">Image</TableHead>
-                  <TableHead>Title</TableHead>
-                  <TableHead className="hidden md:table-cell">Type</TableHead>
-                  <TableHead className="hidden lg:table-cell">Description</TableHead>
-                  <TableHead className="hidden sm:table-cell">Order</TableHead>
-                  <TableHead className="text-right w-[50px]">Actions</TableHead>
+                  <TableHead className="w-[80px] text-center">Image</TableHead>
+                  <TableHead className="text-center">Title</TableHead>
+                  <TableHead className="hidden md:table-cell text-center">Type</TableHead>
+                  <TableHead className="hidden lg:table-cell text-center">Description</TableHead>
+                  <TableHead className="hidden sm:table-cell text-center">Order</TableHead>
+                  <TableHead className="text-center w-[50px]">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -218,7 +218,7 @@ function AdminPage() {
                 )}
                 {!isLoading && sortedItems && sortedItems.map((item, index) => (
                   <TableRow key={item.id}>
-                    <TableCell>
+                    <TableCell className="flex justify-center">
                       <Image
                         src={item.thumbnailUrl}
                         alt={item.title}
@@ -227,11 +227,11 @@ function AdminPage() {
                         className="object-cover rounded-md"
                       />
                     </TableCell>
-                    <TableCell className="font-medium max-w-[100px] md:max-w-xs truncate">{item.title}</TableCell>
-                    <TableCell className="hidden md:table-cell">{item.type}</TableCell>
-                    <TableCell className="hidden lg:table-cell max-w-xs truncate">{item.description}</TableCell>
+                    <TableCell className="font-medium max-w-[100px] md:max-w-xs truncate text-center">{item.title}</TableCell>
+                    <TableCell className="hidden md:table-cell text-center">{item.type}</TableCell>
+                    <TableCell className="hidden lg:table-cell max-w-xs truncate text-center">{item.description}</TableCell>
                     <TableCell className="hidden sm:table-cell">
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center justify-center gap-2">
                         <Button
                           variant="ghost"
                           size="icon"
@@ -252,7 +252,7 @@ function AdminPage() {
                         </Button>
                       </div>
                     </TableCell>
-                    <TableCell className="text-right">
+                    <TableCell className="text-center">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button variant="ghost" size="icon">
