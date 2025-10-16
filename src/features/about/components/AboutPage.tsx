@@ -84,7 +84,7 @@ export default function AboutPage() {
   );
 
   return (
-    <div className="h-full w-full flex flex-col items-center justify-center p-4 md:p-8 overflow-auto">
+    <div className="h-full w-full flex flex-col items-center justify-center p-[10%] overflow-auto">
       <div className="w-full max-w-2xl mx-auto">
         <div className="text-center mb-8 md:mb-12">
           <h1 className="text-lg md:text-2xl text-foreground/80 max-w-3xl mx-auto">
@@ -144,3 +144,5 @@ export default function AboutPage() {
     </div>
   );
 }
+
+    

@@ -89,7 +89,7 @@ function AdminPage() {
 
 
   return (
-    <div className="p-4 md:p-8 overflow-auto h-full">
+    <div className="p-[10%] overflow-auto h-full">
       <div className="container mx-auto px-0">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
           <div>
@@ -173,3 +173,5 @@ function AdminPage() {
 }
 
 export default AdminPage;
+
+    
