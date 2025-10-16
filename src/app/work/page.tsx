@@ -10,7 +10,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-import { useState, memo } from "react";
+import { useState, memo, useEffect, forwardRef } from "react";
 import { PlayCircle, ChevronsUpDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import dynamic from "next/dynamic";
@@ -21,18 +21,30 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
+import type { PlyrProps } from "plyr-react";
 
 const VideoPlayer = dynamic(() => import("@/components/video-player"), {
   ssr: false,
 });
 
-const MemoizedVideoPlayer = memo(VideoPlayer);
+const ClientOnlyVideoPlayer = (props: PlyrProps) => {
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  return isClient ? <VideoPlayer {...props} /> : null;
+};
+ClientOnlyVideoPlayer.displayName = 'ClientOnlyVideoPlayer'
+
+
 const MemoizedImage = memo(Image);
 
 const PortfolioMedia = ({ item }: { item: PortfolioItem }) => {
   if (item.type === "video" && item.sources) {
     return (
-      <MemoizedVideoPlayer
+      <ClientOnlyVideoPlayer
         source={{
           type: "video",
           sources: item.sources.map(s => ({ src: s.src, type: 'video/mp4', size: s.size })),
