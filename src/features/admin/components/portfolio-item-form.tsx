@@ -44,7 +44,7 @@ const formSchema = z.object({
   }),
   type: z.enum(['image', 'video']),
   thumbnailUrl: z.string().url({ message: 'Please enter a valid URL.' }),
-  sourceUrl: z.string().url({ message: 'Please enter a valid URL.' }),
+  sourceUrl: z.string().url({ message: 'Please enter a valid URL.' }).optional().or(z.literal('')),
   details: z.string().optional(),
   thumbnailHint: z.string().optional(),
   featured: z.boolean().optional(),
@@ -71,6 +71,7 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit}: Port
             featured: item.featured || false,
             thumbnailHint: item.thumbnailHint || '',
             details: item.details || '',
+            sourceUrl: item.sourceUrl || '',
         } : {
             title: '',
             description: '',
@@ -89,6 +90,10 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit}: Port
         onSubmit({
           id: item?.id || '', // id will be handled by parent
           ...values,
+          type: values.type,
+          description: values.description,
+          title: values.title,
+          thumbnailUrl: values.thumbnailUrl,
         });
     };
 
