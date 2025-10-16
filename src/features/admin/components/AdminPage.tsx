@@ -259,7 +259,7 @@ function AdminPage() {
                             <MoreHorizontal />
                           </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent>
+                        <DropdownMenuContent className="glass-effect">
                           <DropdownMenuItem onClick={() => handleEditItem(item)}>
                             Edit
                           </DropdownMenuItem>
