@@ -1,3 +1,4 @@
+
 "use client";
 
 import type { PlyrProps } from "plyr-react";
@@ -29,6 +30,10 @@ const VideoPlayer = ({ source }: VideoPlayerProps) => {
             'airplay', 
             'fullscreen'
         ],
+        previewThumbnails: {
+          enabled: true,
+          src: 'https://cdn.plyr.io/static/demo/thumbs/100p.vtt'
+        }
       }}
     />
   );
