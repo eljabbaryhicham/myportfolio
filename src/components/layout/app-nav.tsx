@@ -29,7 +29,7 @@ export function AppNav() {
     return (
       <motion.div
         className="fixed bottom-0 left-0 right-0 z-50"
-        style={{ margin: '2%', height: '8vh' }}
+        style={{ margin: '2%', height: '6.5vh' }}
         initial={{ y: '100%' }}
         animate={{ y: 0 }}
         transition={{ type: 'spring', stiffness: 80, damping: 15 }}
