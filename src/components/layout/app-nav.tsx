@@ -48,7 +48,7 @@ export function AppNav() {
                   key={item.label}
                   href={item.href}
                   className={cn(
-                    "group relative flex h-14 w-14 items-center justify-center rounded-md transition-all duration-300 hover:scale-110",
+                    "group relative flex h-12 w-12 items-center justify-center rounded-md transition-all duration-300 hover:scale-110",
                     isActive
                       ? "bg-destructive text-destructive-foreground scale-110"
                       : "text-foreground/70 glass-effect"
@@ -78,7 +78,7 @@ export function AppNav() {
         "flex h-full flex-row md:flex-col items-center justify-around md:justify-between rounded-lg border border-border/50 px-4 py-2 md:p-8 glass-effect"
         )}>
         <Link href="/" className="hidden md:flex items-center gap-2 text-primary">
-          <Cat className="h-10 w-10" />
+          <Cat className="h-8 w-8" />
         </Link>
         <nav className="flex flex-row md:flex-col items-center justify-around md:justify-center w-full md:w-auto md:gap-8">
           {visibleNavItems.map((item) => {
@@ -91,7 +91,7 @@ export function AppNav() {
                 key={item.label}
                 href={item.href}
                 className={cn(
-                  "group relative flex h-12 w-12 items-center justify-center rounded-md transition-all duration-300 hover:scale-110",
+                  "group relative flex h-10 w-10 items-center justify-center rounded-md transition-all duration-300 hover:scale-110",
                   isActive
                     ? "bg-destructive text-destructive-foreground scale-110"
                     : "text-foreground/70 glass-effect"
@@ -106,7 +106,7 @@ export function AppNav() {
           })}
         </nav>
         <div className="hidden md:flex flex-col items-center gap-4">
-          <div className="h-10 w-10 md:h-12 md:w-12 hidden md:block"></div>
+          <div className="h-8 w-8 hidden md:block"></div>
         </div>
       </div>
     </motion.aside>
