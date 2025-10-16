@@ -153,16 +153,20 @@ function AdminPage() {
       const itemRef = doc(firestore, 'projects', item.id);
       const otherItemRef = doc(firestore, 'projects', otherItem.id);
       
-      updateDocumentNonBlocking(itemRef, { order: otherItem.order });
-      updateDocumentNonBlocking(otherItemRef, { order: item.order });
+      const batch = writeBatch(firestore);
+      batch.update(itemRef, { order: otherItem.order });
+      batch.update(otherItemRef, { order: item.order });
+      batch.commit();
 
     } else if (direction === 'down' && currentIndex < sortedItems.length - 1) {
       const otherItem = sortedItems[currentIndex + 1];
       const itemRef = doc(firestore, 'projects', item.id);
       const otherItemRef = doc(firestore, 'projects', otherItem.id);
 
-      updateDocumentNonBlocking(itemRef, { order: otherItem.order });
-      updateDocumentNonBlocking(otherItemRef, { order: item.order });
+      const batch = writeBatch(firestore);
+      batch.update(itemRef, { order: otherItem.order });
+      batch.update(otherItemRef, { order: item.order });
+      batch.commit();
     }
   };
 
@@ -208,7 +212,7 @@ function AdminPage() {
                   <TableHead className="text-center">Title</TableHead>
                   <TableHead className="hidden md:table-cell text-center">Type</TableHead>
                   <TableHead className="hidden lg:table-cell text-center">Description</TableHead>
-                  <TableHead className="hidden sm:table-cell text-center">Order</TableHead>
+                  <TableHead className="text-center">Order</TableHead>
                   <TableHead className="text-center w-[50px]">Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -232,7 +236,7 @@ function AdminPage() {
                     <TableCell className="font-medium max-w-[100px] md:max-w-xs truncate text-center">{item.title}</TableCell>
                     <TableCell className="hidden md:table-cell text-center">{item.type}</TableCell>
                     <TableCell className="hidden lg:table-cell max-w-xs truncate text-center">{item.description}</TableCell>
-                    <TableCell className="hidden sm:table-cell">
+                    <TableCell>
                       <div className="flex items-center justify-center gap-2">
                         <Button
                           variant="ghost"
@@ -243,6 +247,7 @@ function AdminPage() {
                         >
                           <ArrowUp className="h-4 w-4" />
                         </Button>
+                        <span className="text-sm font-medium w-4 text-center">{item.order}</span>
                         <Button
                           variant="ghost"
                           size="icon"
