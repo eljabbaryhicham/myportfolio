@@ -81,7 +81,7 @@ export default function ContactPage() {
 
   return (
     <ScrollArea className="h-full w-full">
-      <div className="container mx-auto p-4 md:p-8">
+      <div className="container mx-auto p-[10%]">
         <div className="text-center mb-8">
           <h1 className="text-xl md:text-2xl text-foreground/80">
             Let's get in touch! Fill out the form below to send me a message.
