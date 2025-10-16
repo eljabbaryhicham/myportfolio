@@ -111,7 +111,7 @@ export default function ContactPage() {
                           <div className={`w-10 h-10 flex-shrink-0 rounded-full flex items-center justify-center mr-4 ${link.color}`}>
                             <link.icon className="w-5 h-5" />
                           </div>
-                          <div className="flex-grow text-left">
+                          <div className="flex-grow text-center">
                             <p className="text-sm text-foreground/70">{link.label}</p>
                             <p className="font-medium group-hover:text-primary transition-colors">{link.value}</p>
                           </div>
@@ -131,7 +131,7 @@ export default function ContactPage() {
               </div>
               <div className="w-full md:w-1/2">
                 <Card className="glass-effect p-6 sm:p-8 h-full">
-                  <CardContent className="p-0 flex flex-col items-center">
+                  <CardContent className="p-0 flex flex-col">
                     <Form {...form}>
                       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8 w-full">
                         <FormField
