@@ -95,11 +95,11 @@ export default function ContactPage() {
         <div className="p-[5%] pt-0">
           <div className="container mx-auto px-0">
             <div className="flex flex-col md:flex-row gap-8 items-start justify-center">
-              <div className="w-full md:w-auto">
+              <div className="w-full md:w-1/2">
                 <Card className="glass-effect p-6 sm:p-8 h-full">
-                  <CardContent className="p-0">
+                  <CardContent className="p-0 flex flex-col items-center">
                     <Form {...form}>
-                      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8">
+                      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8 w-full">
                         <FormField
                           control={form.control}
                           name="name"
@@ -158,7 +158,7 @@ export default function ContactPage() {
                 </Card>
               </div>
               
-              <div className="w-full md:w-auto">
+              <div className="w-full md:w-1/2">
                 <Card className="glass-effect p-6 flex flex-col h-full">
                   <CardContent className="flex flex-col items-center text-center p-0">
                     <Avatar className="w-24 h-24 mb-4 border-2 border-primary">
@@ -194,7 +194,7 @@ export default function ContactPage() {
               </div>
             </div>
 
-            <div className="flex items-center justify-center gap-4">
+            <div className="flex items-center justify-center gap-4 mt-8">
               {socialLinks.map((social) => (
                 <Link href={social.href} key={social.color} className={`w-12 h-12 rounded-full flex items-center justify-center text-white ${social.color} transition-all duration-300 hover:scale-110`}>
                   <social.icon className="w-6 h-6" />
