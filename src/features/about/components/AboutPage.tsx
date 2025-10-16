@@ -64,7 +64,7 @@ const MemoizedImage = memo(Image);
 export default function AboutPage() {
   return (
     <div className="h-full w-full flex flex-col items-center justify-center p-8">
-      <div className="w-full max-w-6xl mx-auto">
+      <div className="w-full max-w-2xl mx-auto">
         <div className="text-center mb-12">
           <h1 className="text-2xl text-foreground/80 max-w-3xl mx-auto">
             Trusted by leading artists and brands from around the world. Here
@@ -81,17 +81,17 @@ export default function AboutPage() {
         >
           <CarouselContent>
             {clients.map((client, index) => (
-              <CarouselItem key={index} className="sm:basis-1/2 md:basis-1/3 lg:basis-1/4 xl:basis-1/5">
+              <CarouselItem key={index}>
                 <div className="p-1">
                   <Card className="overflow-hidden glass-effect group">
-                    <CardContent className="relative aspect-square p-0">
+                    <CardContent className="relative aspect-video p-0">
                       <MemoizedImage
                         src={client.image}
                         alt={client.name}
                         fill
                         className="object-cover transition-transform duration-300 group-hover:scale-105"
                         data-ai-hint={client.hint}
-                        sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, (max-width: 1280px) 25vw, 20vw"
+                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 100vw, 100vw"
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
                       <div className="absolute top-2 left-2">
