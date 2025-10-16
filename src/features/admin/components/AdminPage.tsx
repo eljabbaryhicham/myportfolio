@@ -19,7 +19,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { PortfolioItemForm } from '../../admin/components/portfolio-item-form';
+import { PortfolioItemFormSheet } from '@/app/admin/portfolio-item-form';
 import { useUser, useAuth, useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
@@ -279,7 +279,7 @@ function AdminPage() {
           </div>
         </ScrollArea>
       </div>
-      <PortfolioItemForm 
+      <PortfolioItemFormSheet 
         isOpen={isSheetOpen}
         setIsOpen={setIsSheetOpen}
         item={selectedItem}
