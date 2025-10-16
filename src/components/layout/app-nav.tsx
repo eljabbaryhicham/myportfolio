@@ -20,7 +20,7 @@ export function AppNav() {
 
   return (
     <aside className="w-full md:w-24 flex-shrink-0 p-0 md:p-4 md:ml-4 mt-4 md:mt-0 md:mr-0">
-      <div className={cn("flex h-full flex-row md:flex-col items-center justify-between rounded-lg border border-border/50 bg-card p-4")}>
+      <div className={cn("flex h-full flex-row md:flex-col items-center justify-between rounded-lg border border-border/50 p-4 glass-effect")}>
         <Link href="/" className="flex items-center gap-2 text-primary">
           <Cat className="h-8 w-8" />
         </Link>
