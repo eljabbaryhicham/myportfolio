@@ -39,18 +39,20 @@ const MemoizedImage = memo(Image);
 const PortfolioMedia = ({ item }: { item: PortfolioItem }) => {
   if (item.type === "video" && item.sources) {
     return (
-      <ClientOnlyVideoPlayer
-        source={{
-          type: "video",
-          sources: item.sources.map(s => ({ src: s.src, type: 'video/mp4', size: s.size })),
-        }}
-      />
+      <div className="w-full h-auto flex-shrink-0">
+        <ClientOnlyVideoPlayer
+          source={{
+            type: "video",
+            sources: item.sources.map(s => ({ src: s.src, type: 'video/mp4', size: s.size })),
+          }}
+        />
+      </div>
     );
   }
 
   if (item.type === 'image' && item.sourceUrl) {
     return (
-      <div className="relative w-full max-w-full">
+      <div className="relative w-full h-auto flex-shrink-0">
          <MemoizedImage src={item.sourceUrl} alt={item.title} width={1280} height={720} className="object-contain w-full h-auto" />
       </div>
     );
@@ -164,7 +166,7 @@ export default function WorkPage() {
           {selectedItem && (
             <div className="relative flex-1 flex flex-col min-h-0 overflow-hidden">
                 <ScrollArea className="flex-1">
-                  <div className="flex flex-col">
+                  <div className="flex flex-col h-full">
                       <div className="flex-shrink-0 bg-black/50 flex items-center justify-center">
                           <PortfolioMedia item={selectedItem} />
                       </div>
