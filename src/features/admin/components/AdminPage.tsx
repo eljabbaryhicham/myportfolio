@@ -12,7 +12,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { PlusCircle, MoreHorizontal, LogOut } from 'lucide-react';
+import { PlusCircle, MoreHorizontal, LogOut, Save } from 'lucide-react';
 import Image from 'next/image';
 import {
   DropdownMenu,
@@ -25,6 +25,7 @@ import { useUser, useAuth } from '@/firebase';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import { signOut } from 'firebase/auth';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 function AdminPage() {
   const [items, setItems] = useState<PortfolioItem[]>(portfolioItems);
@@ -56,6 +57,15 @@ function AdminPage() {
         description: "Could not sign out.",
       });
     }
+  };
+  
+  const handleSaveChanges = () => {
+    // This is a mock implementation. In a real app, you'd send `items` to the backend.
+    console.log('Saving items:', items);
+    toast({
+      title: 'Changes Saved',
+      description: 'Your portfolio has been updated.',
+    });
   };
 
   if (isUserLoading || !user) {
@@ -89,8 +99,8 @@ function AdminPage() {
 
 
   return (
-    <div className="p-[5%] overflow-auto h-full">
-      <div className="container mx-auto px-0">
+    <div className="p-[5%] h-full flex flex-col">
+      <div className="container mx-auto px-0 flex flex-col h-full">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
           <div>
             <h1 className="text-2xl md:text-4xl font-bold tracking-tight">Admin Panel</h1>
@@ -103,6 +113,10 @@ function AdminPage() {
               <PlusCircle className="mr-2 h-4 w-4" />
               Add New
             </Button>
+             <Button onClick={handleSaveChanges} variant="destructive">
+              <Save className="mr-2 h-4 w-4" />
+              Save All Changes
+            </Button>
             <Button onClick={handleLogout} variant="secondary">
               <LogOut className="mr-2 h-4 w-4" />
               Sign Out
@@ -110,57 +124,59 @@ function AdminPage() {
           </div>
         </div>
 
-        <div className="border rounded-lg overflow-hidden glass-effect">
-          <Table className="text-left">
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-[60px] md:w-[80px]">Image</TableHead>
-                <TableHead>Title</TableHead>
-                <TableHead className="hidden md:table-cell">Type</TableHead>
-                <TableHead className="hidden lg:table-cell">Description</TableHead>
-                <TableHead className="text-right w-[50px]">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {items.map((item) => (
-                <TableRow key={item.id}>
-                  <TableCell>
-                    <Image
-                      src={item.thumbnailUrl}
-                      alt={item.title}
-                      width={50}
-                      height={50}
-                      className="object-cover rounded-md"
-                    />
-                  </TableCell>
-                  <TableCell className="font-medium max-w-[100px] md:max-w-xs truncate">{item.title}</TableCell>
-                  <TableCell className="hidden md:table-cell">{item.type}</TableCell>
-                  <TableCell className="hidden lg:table-cell max-w-xs truncate">{item.description}</TableCell>
-                  <TableCell className="text-right">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon">
-                          <MoreHorizontal />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent>
-                        <DropdownMenuItem onClick={() => handleEditItem(item)}>
-                          Edit
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onClick={() => handleDeleteItem(item.id)}
-                          className="text-destructive"
-                        >
-                          Delete
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </TableCell>
+        <ScrollArea className="flex-1">
+          <div className="border rounded-lg overflow-hidden glass-effect">
+            <Table className="text-left">
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-[60px] md:w-[80px]">Image</TableHead>
+                  <TableHead>Title</TableHead>
+                  <TableHead className="hidden md:table-cell">Type</TableHead>
+                  <TableHead className="hidden lg:table-cell">Description</TableHead>
+                  <TableHead className="text-right w-[50px]">Actions</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
+              </TableHeader>
+              <TableBody>
+                {items.map((item) => (
+                  <TableRow key={item.id}>
+                    <TableCell>
+                      <Image
+                        src={item.thumbnailUrl}
+                        alt={item.title}
+                        width={50}
+                        height={50}
+                        className="object-cover rounded-md"
+                      />
+                    </TableCell>
+                    <TableCell className="font-medium max-w-[100px] md:max-w-xs truncate">{item.title}</TableCell>
+                    <TableCell className="hidden md:table-cell">{item.type}</TableCell>
+                    <TableCell className="hidden lg:table-cell max-w-xs truncate">{item.description}</TableCell>
+                    <TableCell className="text-right">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon">
+                            <MoreHorizontal />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent>
+                          <DropdownMenuItem onClick={() => handleEditItem(item)}>
+                            Edit
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={() => handleDeleteItem(item.id)}
+                            className="text-destructive"
+                          >
+                            Delete
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        </ScrollArea>
       </div>
       <PortfolioItemFormSheet 
         isOpen={isSheetOpen}
@@ -173,6 +189,3 @@ function AdminPage() {
 }
 
 export default AdminPage;
-
-    
-    
