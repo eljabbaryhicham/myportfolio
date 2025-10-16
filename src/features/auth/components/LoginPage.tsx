@@ -69,7 +69,7 @@ export default function LoginPage() {
 
   return (
     <div className="flex h-full w-full items-center justify-center p-4">
-      <Card className="w-full md:w-1/2 max-w-md glass-effect">
+      <Card className="w-full md:w-1/2 glass-effect">
         <CardHeader>
             <CardTitle className="text-2xl">Admin Access</CardTitle>
             <CardDescription>
@@ -115,5 +115,3 @@ export default function LoginPage() {
     </div>
   );
 }
-
-    
