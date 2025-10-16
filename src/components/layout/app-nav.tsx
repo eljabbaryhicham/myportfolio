@@ -6,7 +6,6 @@ import { usePathname } from "next/navigation";
 import { Home, Images, Cat, Info, Mail, Shield } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useUser } from "@/firebase";
-import { useIsMobile } from "@/hooks/use-mobile";
 import { motion } from "framer-motion";
 import React from "react";
 
@@ -21,19 +20,25 @@ const navItems = [
 export function AppNav() {
   const pathname = usePathname();
   const { user } = useUser();
-  const isMobile = useIsMobile();
 
   const visibleNavItems = navItems.filter(item => item.public || (!item.public && user));
 
   const variants = {
-    hidden: isMobile ? { y: '100%' } : { x: '100%' },
-    visible: { y: 0, x: 0 },
+    hidden: { x: '100%' },
+    visible: { x: 0 },
   };
 
-  const navContent = (
+  return (
+    <motion.aside
+      initial="hidden"
+      animate="visible"
+      exit="hidden"
+      variants={variants}
+      transition={{ ease: "easeInOut", duration: 0.5 }}
+      className="w-full md:w-28 flex-shrink-0 p-0 md:p-4 mt-2 md:mt-0 h-auto md:h-auto"
+    >
       <div className={cn(
-        "flex h-full flex-row md:flex-col items-center justify-around md:justify-between rounded-lg border border-border/50 px-4 py-2 md:p-8 glass-effect",
-        isMobile ? 'w-full' : 'w-auto'
+        "flex h-full flex-row md:flex-col items-center justify-around md:justify-between rounded-lg border border-border/50 px-4 py-2 md:p-8 glass-effect"
         )}>
         <Link href="/" className="hidden md:flex items-center gap-2 text-primary">
           <Cat className="h-10 w-10" />
@@ -67,33 +72,6 @@ export function AppNav() {
           <div className="h-10 w-10 md:h-12 md:w-12 hidden md:block"></div>
         </div>
       </div>
-  );
-
-  return (
-    <>
-      {isMobile ? (
-        <motion.div
-          initial="hidden"
-          animate="visible"
-          exit="hidden"
-          variants={variants}
-          transition={{ ease: "easeInOut", duration: 0.5 }}
-          className="fixed bottom-0 left-0 right-0 p-2 md:p-4 h-[10vh] z-50"
-        >
-         {navContent}
-        </motion.div>
-      ) : (
-        <motion.aside
-          initial="hidden"
-          animate="visible"
-          exit="hidden"
-          variants={variants}
-          transition={{ ease: "easeInOut", duration: 0.5 }}
-          className="w-full md:w-28 flex-shrink-0 p-0 md:p-4 mt-2 md:mt-0 h-auto md:h-auto"
-        >
-          {navContent}
-        </motion.aside>
-      )}
-    </>
+    </motion.aside>
   );
 }
