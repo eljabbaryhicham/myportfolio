@@ -3,7 +3,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Images, Cat, LogIn, Info, Mail } from "lucide-react";
+import { Home, Images, Cat, Info, Mail, Shield } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useUser } from "@/firebase";
 
@@ -12,17 +12,19 @@ const navItems = [
   { href: "/work", label: "Work", icon: Images, public: true },
   { href: "/about", label: "About", icon: Info, public: true },
   { href: "/contact", label: "Contact", icon: Mail, public: true },
+  { href: "/admin", label: "Admin", icon: Shield, public: false },
 ];
 
 export function AppNav() {
   const pathname = usePathname();
   const { user, isUserLoading } = useUser();
 
-  const visibleNavItems = navItems.filter(item => item.public);
+  const visibleNavItems = navItems.filter(item => item.public || (!item.public && user));
 
   return (
     <aside className="w-full md:w-28 flex-shrink-0 p-0 md:p-4 mt-2 md:mt-0">
       <div className={cn("flex h-auto md:h-full flex-row md:flex-col items-center justify-between rounded-lg border border-border/50 p-4 md:p-8 glass-effect")}>
+        <div className="flex md:hidden w-8"></div> {/* Spacer for left side on mobile */}
         <Link href="/" className="flex items-center gap-2 text-primary">
           <Cat className="h-8 w-8" />
         </Link>
@@ -53,7 +55,7 @@ export function AppNav() {
         </nav>
         <div className="flex flex-col items-center gap-4">
           <div className="h-10 w-10 md:h-12 md:w-12 hidden md:block"></div>
-           <div className="h-8 w-8 md:hidden"></div> {/* Spacer for mobile */}
+           <div className="h-8 w-8 md:hidden"></div> {/* Spacer for right side on mobile */}
         </div>
       </div>
     </aside>
