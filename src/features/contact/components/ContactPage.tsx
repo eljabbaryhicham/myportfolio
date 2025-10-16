@@ -199,5 +199,3 @@ export default function ContactPage() {
     </ScrollArea>
   );
 }
-
-    
