@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import Image from 'next/image';
@@ -57,6 +58,7 @@ const PortfolioMedia = ({
               type: 'video/mp4',
               size: s.size,
             })),
+            poster: item.thumbnailUrl,
           }}
         />
       </div>

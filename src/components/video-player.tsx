@@ -9,7 +9,7 @@ import type PlyrInstance from "plyr";
 
 
 interface VideoPlayerProps extends PlyrProps {
-  source: PlyrSource;
+  source: PlyrSource & { poster?: string };
   innerRef?: React.Ref<PlyrInstance>;
 }
 
@@ -37,6 +37,7 @@ const VideoPlayer = ({ source, innerRef }: VideoPlayerProps) => {
             'airplay', 
             'fullscreen'
         ],
+        poster: source.poster,
         previewThumbnails: {
           enabled: true,
           src: 'https://cdn.plyr.io/static/demo/thumbs/100p.vtt'
