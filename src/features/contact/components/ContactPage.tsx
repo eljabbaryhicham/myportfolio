@@ -107,7 +107,7 @@ export default function ContactPage() {
 
                     <div className="w-full space-y-4 mt-6">
                       {contactLinks.map((link) => (
-                        <Link href={link.href} key={link.label} className="flex items-center justify-center group gap-4">
+                        <Link href={link.href} key={link.label} className="flex items-center justify-center group gap-2">
                           <div className={`w-10 h-10 flex-shrink-0 rounded-full flex items-center justify-center ${link.color}`}>
                             <link.icon className="w-5 h-5" />
                           </div>
@@ -140,10 +140,7 @@ export default function ContactPage() {
                           render={({ field }) => (
                             <FormItem>
                               <FormControl>
-                                <div className="relative">
-                                  <User className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-foreground/50" />
-                                  <Input placeholder="Name" {...field} className="pl-10 bg-transparent border-0 border-b rounded-none focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-primary transition-colors" />
-                                </div>
+                                <Input placeholder="Name" {...field} className="text-center bg-transparent border-0 border-b rounded-none focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-primary transition-colors" />
                               </FormControl>
                               <FormMessage />
                             </FormItem>
@@ -155,10 +152,7 @@ export default function ContactPage() {
                           render={({ field }) => (
                             <FormItem>
                               <FormControl>
-                                <div className="relative">
-                                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-foreground/50" />
-                                  <Input type="email" placeholder="Email" {...field} className="pl-10 bg-transparent border-0 border-b rounded-none focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-primary transition-colors" />
-                                </div>
+                                <Input type="email" placeholder="Email" {...field} className="text-center bg-transparent border-0 border-b rounded-none focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-primary transition-colors" />
                               </FormControl>
                               <FormMessage />
                             </FormItem>
@@ -170,14 +164,11 @@ export default function ContactPage() {
                           render={({ field }) => (
                             <FormItem>
                               <FormControl>
-                                <div className="relative">
-                                  <MessageSquare className="absolute left-3 top-4 h-5 w-5 text-foreground/50" />
-                                  <Textarea
-                                    placeholder="Message"
-                                    className="pl-10 bg-transparent border-0 border-b rounded-none focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-primary transition-colors min-h-[100px]"
-                                    {...field}
-                                  />
-                                </div>
+                                <Textarea
+                                  placeholder="Message"
+                                  className="text-center bg-transparent border-0 border-b rounded-none focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-primary transition-colors min-h-[100px]"
+                                  {...field}
+                                />
                               </FormControl>
                               <FormMessage />
                             </FormItem>
