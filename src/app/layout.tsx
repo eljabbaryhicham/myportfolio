@@ -3,7 +3,7 @@ import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import { cn } from '@/lib/utils';
 import { FirebaseClientProvider } from '@/firebase/client-provider';
-import { ConditionalNav } from '@/components/conditional-nav';
+import { ConditionalNav } from '@/components/layout/conditional-nav';
 
 export const metadata: Metadata = {
   title: 'Liquid Folio',
