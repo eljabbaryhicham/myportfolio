@@ -26,12 +26,13 @@ export function AppNav() {
 
   return (
     <motion.aside
+      key={pathname} 
       initial={isMobile ? { y: "100%" } : { x: "100%" }}
       animate={{ x: 0, y: 0 }}
       transition={{ duration: 0.5, ease: "easeOut" }}
-      className="w-full md:w-28 flex-shrink-0 p-0 md:p-4 mt-2 md:mt-0"
+      className="w-full md:w-28 flex-shrink-0 p-0 md:p-4 mt-2 md:mt-0 h-[10vh] md:h-auto"
     >
-      <div className={cn("flex h-auto md:h-full flex-row md:flex-col items-center justify-center md:justify-between rounded-lg border border-border/50 p-2 md:p-8 glass-effect")}>
+      <div className={cn("flex h-full flex-row md:flex-col items-center justify-center md:justify-between rounded-lg border border-border/50 p-2 md:p-8 glass-effect")}>
         <Link href="/" className="hidden md:flex items-center gap-2 text-primary">
           <Cat className="h-8 w-8" />
         </Link>
