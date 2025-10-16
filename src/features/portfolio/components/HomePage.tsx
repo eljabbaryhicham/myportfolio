@@ -28,14 +28,15 @@ export default function Home() {
           <div className="relative flex justify-center">
             {featuredItem && (
               <Link href="/work" className="block w-full max-w-md">
-                <div className="group relative aspect-[4/3] w-full overflow-hidden rounded-md border-2 bg-card/60 backdrop-blur-xl p-2 transition-all duration-300 hover:scale-105">
+                <div className="group relative aspect-[4/3] w-full overflow-hidden rounded-md border-2 border-border/50 bg-card/60 backdrop-blur-xl p-2 transition-all duration-300 hover:scale-105">
                     <Image
                       src={featuredItem.thumbnailUrl}
                       alt={featuredItem.title}
                       fill
-                      className="object-cover"
+                      className="object-cover rounded-md"
                       data-ai-hint={featuredItem.thumbnailHint}
                       priority
+                      sizes="(max-width: 768px) 100vw, 50vw"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent p-4 flex flex-col justify-end">
                       <h3 className="text-xl font-bold text-white">{featuredItem.title}</h3>
