@@ -12,6 +12,7 @@ export interface PortfolioItem {
   sources?: { src: string; size: number }[]; // For videos
   featured?: boolean;
   details?: string;
+  order?: number;
 }
 
 export const defaultPortfolioItems: PortfolioItem[] = [
@@ -31,7 +32,8 @@ export const defaultPortfolioItems: PortfolioItem[] = [
     details: `This project was created using a combination of Adobe After Effects and Cinema 4D. The goal was to create a visceral experience through motion. 
 
 **Client:** Fictional Brand Inc.
-**Year:** 2023`
+**Year:** 2023`,
+    order: 0,
   },
   {
     id: 'img1',
@@ -42,7 +44,8 @@ export const defaultPortfolioItems: PortfolioItem[] = [
     thumbnailHint: placeholderImages['img1'].imageHint,
     sourceUrl: 'https://picsum.photos/seed/liquid1/1600/1200',
     featured: true,
-    details: 'Created with a mix of digital painting and procedural generation techniques in Processing.'
+    details: 'Created with a mix of digital painting and procedural generation techniques in Processing.',
+    order: 1,
   },
   {
     id: 'img2',
@@ -60,7 +63,8 @@ export const defaultPortfolioItems: PortfolioItem[] = [
 The process involved several stages, including a video compilation of the digital layering process.
 
 <video src="https://cdn.plyr.io/static/demo/View_From_A_Blue_Moon_Trailer-576p.mp4" controls />
-`
+`,
+    order: 2,
   },
   {
     id: 'vid2',
@@ -75,6 +79,7 @@ The process involved several stages, including a video compilation of the digita
         { src: 'https://cdn.plyr.io/static/demo/View_From_A_Blue_Moon_Trailer-576p.mp4', size: 576 },
     ],
     featured: false,
+    order: 3,
   },
   {
     id: 'img3',
@@ -85,6 +90,7 @@ The process involved several stages, including a video compilation of the digita
     thumbnailHint: placeholderImages['img3'].imageHint,
     sourceUrl: 'https://picsum.photos/seed/liquid3/1600/1200',
     featured: true,
+    order: 4,
   },
   {
     id: 'img4',
@@ -95,6 +101,7 @@ The process involved several stages, including a video compilation of the digita
     thumbnailHint: placeholderImages['img4'].imageHint,
     sourceUrl: 'https://picsum.photos/seed/liquid4/1200/1600',
     featured: false,
+    order: 5,
   },
   {
     id: 'img5',
@@ -105,6 +112,7 @@ The process involved several stages, including a video compilation of the digita
     thumbnailHint: 'ocean waves',
     sourceUrl: 'https://picsum.photos/seed/ocean/1600/1600',
     featured: false,
+    order: 6,
   },
   {
     id: 'img6',
@@ -115,6 +123,7 @@ The process involved several stages, including a video compilation of the digita
     thumbnailHint: 'city aerial',
     sourceUrl: 'https://picsum.photos/seed/city/1600/1600',
     featured: false,
+    order: 7,
   },
   {
     id: 'vid3',
@@ -128,6 +137,7 @@ The process involved several stages, including a video compilation of the digita
         { src: 'https://cdn.plyr.io/static/demo/View_From_A_Blue_Moon_Trailer-576p.mp4', size: 576 },
     ],
     featured: false,
+    order: 8,
   },
   {
     id: 'img7',
@@ -138,6 +148,7 @@ The process involved several stages, including a video compilation of the digita
     thumbnailHint: 'desert dunes',
     sourceUrl: 'https://picsum.photos/seed/desert/1600/1600',
     featured: false,
+    order: 9,
   },
   {
     id: 'img8',
@@ -148,6 +159,7 @@ The process involved several stages, including a video compilation of the digita
     thumbnailHint: 'mountain peak',
     sourceUrl: 'https://picsum.photos/seed/mountain/1600/1600',
     featured: false,
+    order: 10,
   },
   {
     id: 'vid4',
@@ -160,6 +172,7 @@ The process involved several stages, including a video compilation of the digita
         { src: 'https://cdn.plyr.io/static/demo/View_From_A_Blue_Moon_Trailer-576p.mp4', size: 576 },
     ],
     featured: false,
+    order: 11,
   },
   {
     id: 'img9',
@@ -170,6 +183,7 @@ The process involved several stages, including a video compilation of the digita
     thumbnailHint: 'modern architecture',
     sourceUrl: 'https://picsum.photos/seed/archi1/1600/1600',
     featured: false,
+    order: 12,
   },
   {
     id: 'vid5',
@@ -182,6 +196,7 @@ The process involved several stages, including a video compilation of the digita
       { src: 'https://cdn.plyr.io/static/demo/View_From_A_Blue_Moon_Trailer-720p.mp4', size: 720 },
     ],
     featured: true,
+    order: 13,
   },
   {
     id: 'img10',
@@ -192,6 +207,7 @@ The process involved several stages, including a video compilation of the digita
     thumbnailHint: 'street art',
     sourceUrl: 'https://picsum.photos/seed/graffiti1/1600/1600',
     featured: false,
+    order: 14,
   },
   {
     id: 'vid6',
@@ -204,6 +220,7 @@ The process involved several stages, including a video compilation of the digita
       { src: 'https://cdn.plyr.io/static/demo/View_From_A_Blue_Moon_Trailer-576p.mp4', size: 576 },
     ],
     featured: false,
+    order: 15,
   },
   {
     id: 'img11',
@@ -214,6 +231,7 @@ The process involved several stages, including a video compilation of the digita
     thumbnailHint: 'autumn forest',
     sourceUrl: 'https://picsum.photos/seed/autumn1/1600/1600',
     featured: false,
+    order: 16,
   },
   {
     id: 'vid7',
@@ -226,6 +244,7 @@ The process involved several stages, including a video compilation of the digita
       { src: 'https://cdn.plyr.io/static/demo/View_From_A_Blue_Moon_Trailer-720p.mp4', size: 720 },
     ],
     featured: false,
+    order: 17,
   },
   {
     id: 'img12',
@@ -236,6 +255,7 @@ The process involved several stages, including a video compilation of the digita
     thumbnailHint: 'minimalist room',
     sourceUrl: 'https://picsum.photos/seed/interior1/1600/1600',
     featured: false,
+    order: 18,
   },
   {
     id: 'vid8',
@@ -248,6 +268,7 @@ The process involved several stages, including a video compilation of the digita
       { src: 'https://cdn.plyr.io/static/demo/View_From_A_Blue_Moon_Trailer-576p.mp4', size: 576 },
     ],
     featured: false,
+    order: 19,
   },
   {
     id: 'img13',
@@ -258,6 +279,7 @@ The process involved several stages, including a video compilation of the digita
     thumbnailHint: 'cyberpunk city',
     sourceUrl: 'https://picsum.photos/seed/cyberpunk1/1600/1600',
     featured: true,
+    order: 20,
   },
    {
     id: 'vid9',
@@ -270,5 +292,6 @@ The process involved several stages, including a video compilation of the digita
       { src: 'https://cdn.plyr.io/static/demo/View_From_A_Blue_Moon_Trailer-1080p.mp4', size: 1080 },
     ],
     featured: false,
+    order: 21,
   }
 ];

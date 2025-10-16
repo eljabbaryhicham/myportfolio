@@ -40,7 +40,8 @@
       "required": [
         "id",
         "title",
-        "imageUrl"
+        "imageUrl",
+        "order"
       ]
     }
   },
