@@ -162,7 +162,7 @@ export default function WorkPage() {
       </div>
 
       <Dialog open={!!selectedItem} onOpenChange={handleOpenChange}>
-        <DialogContent className="glass-effect p-0 flex flex-col w-[90vw] max-h-[90vh]">
+        <DialogContent className="glass-effect p-0 flex flex-col max-w-[90vw] max-h-[90vh]">
           {selectedItem && (
             <div className="relative flex-1 flex flex-col min-h-0">
               <ScrollArea className="flex-1">
@@ -170,7 +170,7 @@ export default function WorkPage() {
                   <div className="flex-shrink-0 bg-black/50 flex items-center justify-center">
                     <PortfolioMedia item={selectedItem} />
                   </div>
-                  <div className="flex-1 flex flex-col p-6 bg-background/80">
+                  <div className="flex flex-col p-6 bg-background/80">
                     <DialogHeader className="text-left">
                       <DialogTitle className="text-2xl">{selectedItem.title}</DialogTitle>
                       <DialogDescription className="text-base text-foreground/70 mt-2">
