@@ -191,30 +191,32 @@ export default function WorkPage() {
           {selectedItem && (
             <div className="relative flex-1 flex flex-col min-h-0">
               <ScrollArea className="flex-1">
-                <div className='flex flex-col items-center justify-center max-h-full'>
-                  <PortfolioMedia item={selectedItem} playerRef={playerRef} />
-                </div>
-                <div className="p-6 pt-4">
-                  <DialogHeader>
-                    <DialogTitle className="text-2xl">
-                      {selectedItem.title}
-                    </DialogTitle>
-                    <DialogDescription className="text-base text-foreground/70 mt-2">
-                      {selectedItem.description}
-                    </DialogDescription>
-                  </DialogHeader>
-
-                  {selectedItem.details && (
-                    <div className="mt-4">
-                      <Button
-                        variant="secondary"
-                        onClick={() => setDetailsModalOpen(true)}
-                      >
-                        <ChevronsUpDown className="mr-2" />
-                        Show Details
-                      </Button>
+                <div className="flex flex-col h-full">
+                    <div className="flex-shrink-0">
+                        <PortfolioMedia item={selectedItem} playerRef={playerRef} />
                     </div>
-                  )}
+                    <div className="flex-shrink-0 p-6 pt-4">
+                        <DialogHeader>
+                            <DialogTitle className="text-2xl">
+                            {selectedItem.title}
+                            </DialogTitle>
+                            <DialogDescription className="text-base text-foreground/70 mt-2">
+                            {selectedItem.description}
+                            </DialogDescription>
+                        </DialogHeader>
+
+                        {selectedItem.details && (
+                            <div className="mt-4">
+                            <Button
+                                variant="secondary"
+                                onClick={() => setDetailsModalOpen(true)}
+                            >
+                                <ChevronsUpDown className="mr-2" />
+                                Show Details
+                            </Button>
+                            </div>
+                        )}
+                    </div>
                 </div>
               </ScrollArea>
             </div>
