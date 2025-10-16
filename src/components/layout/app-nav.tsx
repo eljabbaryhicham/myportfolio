@@ -36,7 +36,7 @@ export function AppNav() {
         <Link href="/" className="hidden md:flex items-center gap-2 text-primary">
           <Cat className="h-8 w-8" />
         </Link>
-        <nav className="flex flex-row md:flex-col items-center gap-4 md:gap-6">
+        <nav className="flex flex-row md:flex-col items-center justify-around md:justify-center w-full md:w-auto md:gap-6">
           {visibleNavItems.map((item) => {
             const isActive =
               item.href === "/"
