@@ -90,6 +90,7 @@ export default function WorkPage() {
   const [visibleItems, setVisibleItems] = useState(6);
   const [detailsVisible, setDetailsVisible] = useState(false);
   const playerRef = useRef<Plyr | null>(null);
+  const detailsPlayerRef = useRef<Plyr | null>(null);
 
   const showMoreItems = () => {
     setVisibleItems(prevVisibleItems => prevVisibleItems + 6);
@@ -249,7 +250,18 @@ export default function WorkPage() {
                             img: ({node, ...props}) => <img className="w-full rounded-md" {...props} />,
                             video: ({node, ...props}) => {
                               const { src } = props;
-                              return src ? <video className="w-full rounded-md" src={src} controls /> : null;
+                              if (!src) return null;
+                              return (
+                                <div className="w-full rounded-md overflow-hidden my-4">
+                                  <ClientOnlyVideoPlayer
+                                    innerRef={detailsPlayerRef}
+                                    source={{
+                                      type: 'video',
+                                      sources: [{ src, type: 'video/mp4' }],
+                                    }}
+                                  />
+                                </div>
+                              );
                             }
                           }}
                       >{selectedItem.details || ''}</ReactMarkdown>

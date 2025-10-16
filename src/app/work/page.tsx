@@ -92,6 +92,7 @@ export default function WorkPage() {
   const [visibleItems, setVisibleItems] = useState(6);
   const [detailsModalOpen, setDetailsModalOpen] = useState(false);
   const playerRef = useRef<Plyr | null>(null);
+  const detailsPlayerRef = useRef<Plyr | null>(null);
   const isVeryUltrawide = useVeryUltrawide();
 
 
@@ -100,6 +101,10 @@ export default function WorkPage() {
       if (playerRef.current) {
         // @ts-ignore
         playerRef.current.destroy?.();
+      }
+      if (detailsPlayerRef.current) {
+        // @ts-ignore
+        detailsPlayerRef.current.destroy?.();
       }
     };
   }, []);
@@ -120,6 +125,21 @@ export default function WorkPage() {
         playerRef.current = null;
       }
       setSelectedItem(null);
+    }
+  };
+
+  const handleDetailsOpenChange = (open: boolean) => {
+    setDetailsModalOpen(open);
+    if (!open) {
+      if (detailsPlayerRef.current) {
+        try {
+          // @ts-ignore
+          detailsPlayerRef.current.destroy?.();
+        } catch (e) {
+          console.error('Error destroying details Plyr instance on close', e);
+        }
+        detailsPlayerRef.current = null;
+      }
     }
   };
   
@@ -242,7 +262,7 @@ export default function WorkPage() {
       </Dialog>
       
       {/* Nested Dialog for Details */}
-      <Dialog open={detailsModalOpen} onOpenChange={setDetailsModalOpen}>
+      <Dialog open={detailsModalOpen} onOpenChange={handleDetailsOpenChange}>
         <DialogContent className="w-[90vw] md:max-w-[80vw] h-[90vh] glass-effect p-0 flex flex-col">
             {selectedItem && (
                 <>
@@ -267,7 +287,18 @@ export default function WorkPage() {
                             img: ({node, ...props}) => <img className="w-full rounded-md" {...props} />,
                             video: ({node, ...props}) => {
                               const { src } = props;
-                              return src ? <video className="w-full rounded-md" src={src} controls /> : null;
+                              if (!src) return null;
+                              return (
+                                <div className="w-full rounded-md overflow-hidden my-4">
+                                  <ClientOnlyVideoPlayer
+                                    innerRef={detailsPlayerRef}
+                                    source={{
+                                      type: 'video',
+                                      sources: [{ src, type: 'video/mp4' }],
+                                    }}
+                                  />
+                                </div>
+                              );
                             }
                           }}
                         >{selectedItem.details || ''}</ReactMarkdown>
