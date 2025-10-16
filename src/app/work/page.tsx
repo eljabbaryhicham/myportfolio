@@ -22,7 +22,7 @@ import type Plyr from 'plyr';
 import { useVeryUltrawide } from '@/hooks/use-very-ultrawide';
 import ReactMarkdown from 'react-markdown';
 import rehypeRaw from 'rehype-raw';
-import rehypeSanitize from 'rehype-sanitize';
+import rehypeSanitize, { defaultSchema } from 'rehype-sanitize';
 
 const VideoPlayer = dynamic(() => import('@/components/video-player'), {
   ssr: false,
@@ -252,7 +252,17 @@ export default function WorkPage() {
                 <ScrollArea className="flex-1">
                     <div className="prose dark:prose-invert max-w-none space-y-4 text-sm text-foreground/80 whitespace-pre-wrap p-6">
                         <ReactMarkdown
-                          rehypePlugins={[rehypeRaw, rehypeSanitize]}
+                          rehypePlugins={[
+                            rehypeRaw,
+                            [rehypeSanitize, {
+                                ...defaultSchema,
+                                tagNames: [...(defaultSchema.tagNames || []), 'video'],
+                                attributes: {
+                                    ...defaultSchema.attributes,
+                                    'video': [...(defaultSchema.attributes?.video || []), 'src', 'controls']
+                                }
+                            }]
+                          ]}
                           components={{
                             img: ({node, ...props}) => <img className="w-full rounded-md" {...props} />,
                             video: ({node, ...props}) => {
