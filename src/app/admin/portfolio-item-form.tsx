@@ -225,21 +225,29 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit}: Port
                           )}
                           />
                            <FormField
-                          control={form.control}
-                          name="order"
-                          render={({ field }) => (
-                              <FormItem>
-                                  <FormLabel>Order</FormLabel>
-                                  <FormControl>
-                                      <Input type="number" {...field} onChange={event => field.onChange(+event.target.value)} />
-                                  </FormControl>
-                                  <FormDescription>
-                                      The display order of the project.
-                                  </FormDescription>
-                                  <FormMessage />
-                              </FormItem>
-                          )}
-                          />
+                            control={form.control}
+                            name="order"
+                            render={({ field: { onChange, ...fieldProps } }) => (
+                                <FormItem>
+                                    <FormLabel>Order</FormLabel>
+                                    <FormControl>
+                                        <Input
+                                            type="number"
+                                            {...fieldProps}
+                                            onChange={event => {
+                                                const value = event.target.value;
+                                                // Allow empty string for clearing, otherwise convert to number
+                                                onChange(value === '' ? undefined : Number(value));
+                                            }}
+                                            />
+                                    </FormControl>
+                                    <FormDescription>
+                                        The display order of the project. Leave blank for new items to add to the end.
+                                    </FormDescription>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                            />
                           <div className="flex justify-end space-x-4 pt-4">
                               <Button type="button" variant="outline" onClick={() => setIsOpen(false)}>Cancel</Button>
                               <Button type="submit">Save</Button>
@@ -262,3 +270,5 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit}: Port
         </Dialog>
     )
 }
+
+    

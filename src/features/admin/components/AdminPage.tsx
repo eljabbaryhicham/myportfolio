@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useMemo, useState, useEffect } from 'react';
+import { useMemo, useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   Table,
@@ -11,7 +11,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { PlusCircle, MoreHorizontal, LogOut, UploadCloud, ArrowUp, ArrowDown } from 'lucide-react';
+import { PlusCircle, MoreHorizontal, LogOut, UploadCloud, GripVertical } from 'lucide-react';
 import Image from 'next/image';
 import {
   DropdownMenu,
@@ -29,6 +29,7 @@ import { addDocumentNonBlocking, deleteDocumentNonBlocking, setDocumentNonBlocki
 import { collection, doc, writeBatch } from 'firebase/firestore';
 import { defaultPortfolioItems } from '@/features/portfolio/data/portfolio-data';
 import type { PortfolioItem } from '@/lib/portfolio-data';
+import { cn } from '@/lib/utils';
 
 function AdminPage() {
   const auth = useAuth();
@@ -44,9 +45,17 @@ function AdminPage() {
   const projectsCollection = useMemoFirebase(() => firestore ? collection(firestore, 'projects') : null, [firestore]);
   const { data: items, isLoading } = useCollection<PortfolioItem>(projectsCollection);
 
-  const sortedItems = useMemo(() => {
-    if (!items) return [];
-    return [...items].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+  const [sortedItems, setSortedItems] = useState<PortfolioItem[]>([]);
+  
+  // Drag and Drop state
+  const draggingItem = useRef<string | null>(null);
+  const dragOverItem = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (items) {
+      const newSortedItems = [...items].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+      setSortedItems(newSortedItems);
+    }
   }, [items]);
 
   const maxOrder = useMemo(() => {
@@ -142,45 +151,49 @@ function AdminPage() {
     setIsSheetOpen(false);
   };
 
-  const handleOrderChange = (itemToMove: PortfolioItem, direction: 'up' | 'down') => {
-    if (!firestore || !sortedItems) return;
-    
-    const currentIndex = sortedItems.findIndex(i => i.id === itemToMove.id);
-    if (currentIndex === -1) return;
+  const handleDragEnd = () => {
+    if (!firestore) return;
 
-    let otherItemIndex: number;
+    const draggingId = draggingItem.current;
+    const dragOverId = dragOverItem.current;
 
-    if (direction === 'up') {
-      if (currentIndex === 0) return;
-      otherItemIndex = currentIndex - 1;
-    } else {
-      if (currentIndex === sortedItems.length - 1) return;
-      otherItemIndex = currentIndex + 1;
+    if (!draggingId || !dragOverId || draggingId === dragOverId) {
+      draggingItem.current = null;
+      dragOverItem.current = null;
+      // Reset visual styles if any
+      document.querySelectorAll('.dragging').forEach(el => el.classList.remove('dragging'));
+      document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
+      return;
     }
     
-    const otherItem = sortedItems[otherItemIndex];
+    const dragIndex = sortedItems.findIndex(item => item.id === draggingId);
+    const hoverIndex = sortedItems.findIndex(item => item.id === dragOverId);
 
-    if (itemToMove && otherItem) {
-      const itemRef = doc(firestore, 'projects', itemToMove.id);
-      const otherItemRef = doc(firestore, 'projects', otherItem.id);
+    const newSortedItems = [...sortedItems];
+    const [draggedItem] = newSortedItems.splice(dragIndex, 1);
+    newSortedItems.splice(hoverIndex, 0, draggedItem);
+    
+    setSortedItems(newSortedItems);
 
-      const itemOrder = itemToMove.order ?? 0;
-      const otherItemOrder = otherItem.order ?? 0;
+    const batch = writeBatch(firestore);
+    newSortedItems.forEach((item, index) => {
+        const docRef = doc(firestore, 'projects', item.id);
+        if (item.order !== index) {
+            batch.update(docRef, { order: index });
+        }
+    });
 
-      const batch = writeBatch(firestore);
-      
-      batch.update(itemRef, { order: otherItemOrder });
-      batch.update(otherItemRef, { order: itemOrder });
-      
-      batch.commit().catch(e => {
+    batch.commit().then(() => {
+        toast({ title: "Reordered!", description: "Project order has been updated." });
+    }).catch(e => {
         console.error("Error reordering items:", e);
-        toast({
-          variant: "destructive",
-          title: "Reorder failed",
-          description: e.message
-        });
-      });
-    }
+        toast({ variant: "destructive", title: "Reorder failed", description: e.message });
+        // Revert UI on failure
+        setSortedItems([...items].sort((a, b) => (a.order ?? 0) - (b.order ?? 0)));
+    });
+
+    draggingItem.current = null;
+    dragOverItem.current = null;
   };
 
 
@@ -221,22 +234,39 @@ function AdminPage() {
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead className="w-[40px] text-center"></TableHead>
                   <TableHead className="w-[80px] text-center">Image</TableHead>
                   <TableHead className="text-center">Title</TableHead>
                   <TableHead className="hidden md:table-cell text-center">Type</TableHead>
                   <TableHead className="hidden lg:table-cell text-center">Description</TableHead>
-                  <TableHead className="text-center">Order</TableHead>
                   <TableHead className="text-center w-[50px]">Actions</TableHead>
                 </TableRow>
               </TableHeader>
-              <TableBody>
+              <TableBody
+                onDragOver={(e) => e.preventDefault()}
+              >
                 {isLoading && (
                   <TableRow>
                     <TableCell colSpan={6} className="text-center">Loading portfolio...</TableCell>
                   </TableRow>
                 )}
-                {!isLoading && sortedItems && sortedItems.map((item, index) => (
-                  <TableRow key={item.id} className="border-b border-white/10">
+                {!isLoading && sortedItems && sortedItems.map((item) => (
+                  <TableRow 
+                    key={item.id} 
+                    draggable
+                    onDragStart={() => (draggingItem.current = item.id)}
+                    onDragEnter={() => (dragOverItem.current = item.id)}
+                    onDragEnd={handleDragEnd}
+                    onDragOver={(e) => e.preventDefault()}
+                    className={cn(
+                      "border-b border-white/10 transition-all cursor-grab",
+                      draggingItem.current === item.id && 'opacity-50 scale-95',
+                      dragOverItem.current === item.id && draggingItem.current !== item.id && 'bg-primary/20'
+                    )}
+                  >
+                    <TableCell className="text-center">
+                      <GripVertical className="h-5 w-5 text-foreground/50" />
+                    </TableCell>
                     <TableCell className="flex justify-center">
                       <Image
                         src={item.thumbnailUrl}
@@ -249,29 +279,6 @@ function AdminPage() {
                     <TableCell className="font-medium max-w-[100px] md:max-w-xs truncate text-center">{item.title}</TableCell>
                     <TableCell className="hidden md:table-cell text-center">{item.type}</TableCell>
                     <TableCell className="hidden lg:table-cell max-w-xs truncate text-center">{item.description}</TableCell>
-                    <TableCell>
-                      <div className="flex items-center justify-center gap-2">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleOrderChange(item, 'up')}
-                          disabled={index === 0}
-                          className="h-8 w-8"
-                        >
-                          <ArrowUp className="h-4 w-4" />
-                        </Button>
-                        <span className="text-sm font-medium w-4 text-center">{item.order}</span>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleOrderChange(item, 'down')}
-                          disabled={index === sortedItems.length - 1}
-                          className="h-8 w-8"
-                        >
-                          <ArrowDown className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </TableCell>
                     <TableCell className="text-center">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
@@ -310,3 +317,5 @@ function AdminPage() {
 }
 
 export default AdminPage;
+
+    
