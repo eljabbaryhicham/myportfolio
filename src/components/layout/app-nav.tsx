@@ -35,8 +35,8 @@ export function AppNav() {
                 key={item.label}
                 href={item.href}
                 className={cn(
-                  "group relative flex h-12 w-12 items-center justify-center rounded-md text-foreground/70 transition-all duration-300",
-                  "hover:bg-muted hover:scale-110",
+                  "group relative flex h-12 w-12 items-center justify-center rounded-md text-foreground/70 transition-all duration-300 glass-effect",
+                  "hover:scale-110",
                   isActive && "bg-primary/20 text-primary scale-110"
                 )}
               >
