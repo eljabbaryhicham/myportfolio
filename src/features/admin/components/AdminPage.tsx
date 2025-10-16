@@ -27,7 +27,8 @@ import { signOut } from 'firebase/auth';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { addDocumentNonBlocking, deleteDocumentNonBlocking, setDocumentNonBlocking, updateDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { collection, doc, writeBatch } from 'firebase/firestore';
-import { defaultPortfolioItems, type PortfolioItem } from '@/features/portfolio/data/portfolio-data';
+import { defaultPortfolioItems } from '@/features/portfolio/data/portfolio-data';
+import type { PortfolioItem } from '@/lib/portfolio-data';
 
 function AdminPage() {
   const auth = useAuth();

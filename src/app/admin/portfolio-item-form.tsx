@@ -50,6 +50,7 @@ const formSchema = z.object({
   details: z.string().optional(),
   thumbnailHint: z.string().optional(),
   featured: z.boolean().optional(),
+  order: z.number().optional(),
 });
 
 type PortfolioItemFormValues = z.infer<typeof formSchema>;
@@ -82,6 +83,7 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit}: Port
             thumbnailHint: '',
             featured: false,
             details: '',
+            order: 0,
         };
         form.reset(defaultValues);
       }
@@ -213,6 +215,22 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit}: Port
                                   <Input placeholder="https://example.com/full-image.jpg" {...field} />
                               </FormControl>
                               <FormMessage />
+                              </FormItem>
+                          )}
+                          />
+                           <FormField
+                          control={form.control}
+                          name="order"
+                          render={({ field }) => (
+                              <FormItem>
+                                  <FormLabel>Order</FormLabel>
+                                  <FormControl>
+                                      <Input type="number" {...field} onChange={event => field.onChange(+event.target.value)} />
+                                  </FormControl>
+                                  <FormDescription>
+                                      The display order of the project.
+                                  </FormDescription>
+                                  <FormMessage />
                               </FormItem>
                           )}
                           />
