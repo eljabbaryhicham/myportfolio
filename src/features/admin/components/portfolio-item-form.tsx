@@ -77,7 +77,7 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit}: Port
             type: 'image' as 'image' | 'video',
             thumbnailUrl: '',
             sourceUrl: '',
-thumbnailHint: '',
+            thumbnailHint: '',
             featured: false,
             details: '',
         };
@@ -165,7 +165,7 @@ thumbnailHint: '',
                                   <FormControl>
                                   <SelectTrigger>
                                       <SelectValue placeholder="Select a type" />
-                                  </Trigger>
+                                  </SelectTrigger>
                                   </FormControl>
                                   <SelectContent>
                                   <SelectItem value="image">Image</SelectItem>
