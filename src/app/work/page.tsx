@@ -165,7 +165,7 @@ export default function WorkPage() {
             <div className="relative flex-1 flex flex-col min-h-0 overflow-hidden">
                 <ScrollArea className="flex-1">
                   <div className="flex flex-col min-h-full">
-                      <div className="flex-shrink-0 bg-black/50 flex items-center justify-center p-4">
+                      <div className="flex-shrink-0 bg-black/50 flex items-center justify-center">
                           <PortfolioMedia item={selectedItem} />
                       </div>
                       <div className="flex-1 flex flex-col p-6 bg-background/80">
