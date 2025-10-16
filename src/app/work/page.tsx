@@ -181,12 +181,12 @@ export default function WorkPage() {
                 <div
                   className={cn(
                     'transition-opacity duration-300',
-                    detailsVisible ? 'opacity-0' : 'opacity-100'
+                    detailsVisible ? 'opacity-0 pointer-events-none' : 'opacity-100'
                   )}
                 >
                   <PortfolioMedia item={selectedItem} playerRef={playerRef} />
                 </div>
-                <div className="p-6 pt-4">
+                <div className={cn("p-6 pt-4", detailsVisible ? 'opacity-0 pointer-events-none' : 'opacity-100' )}>
                   <DialogHeader>
                     <DialogTitle className="text-2xl">
                       {selectedItem.title}
