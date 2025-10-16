@@ -89,7 +89,7 @@ export default function ContactPage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-          <Card className="glass-effect p-6 sm:p-8 order-last md:order-first">
+          <Card className="glass-effect p-6 sm:p-8">
             <CardContent className="p-0">
               <Form {...form}>
                 <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8">
@@ -150,7 +150,7 @@ export default function ContactPage() {
             </CardContent>
           </Card>
           
-          <div className="flex flex-col gap-8 md:order-last">
+          <div className="flex flex-col gap-8">
             <Card className="glass-effect p-6 flex flex-col">
               <CardContent className="flex flex-col items-center text-center p-0">
                 <Avatar className="w-24 h-24 mb-4 border-2 border-primary">
