@@ -12,7 +12,7 @@ import {
   DialogClose,
 } from '@/components/ui/dialog';
 import { useState, memo, useEffect, useRef } from 'react';
-import { PlayCircle, ChevronsUpDown, X } from 'lucide-react';
+import { PlayCircle, ChevronsUpDown, X, ImageIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import dynamic from 'next/dynamic';
 import { Button } from '@/components/ui/button';
@@ -164,6 +164,11 @@ export default function WorkPage() {
                       <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/40 transition-colors">
                         <PlayCircle className="h-16 w-16 text-white/80" />
                       </div>
+                    )}
+                    {item.type === 'image' && (
+                        <div className="absolute inset-0 flex items-center justify-center bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                            <ImageIcon className="h-16 w-16 text-white/80" />
+                        </div>
                     )}
                   </div>
                 ))}
