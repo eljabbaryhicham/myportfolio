@@ -86,7 +86,7 @@ PortfolioMedia.displayName = 'PortfolioMedia';
 export default function WorkPage() {
   const [selectedItem, setSelectedItem] = useState<PortfolioItem | null>(null);
   const [visibleItems, setVisibleItems] = useState(6);
-  const [detailsVisible, setDetailsVisible] = useState(false);
+  const [detailsModalOpen, setDetailsModalOpen] = useState(false);
   const playerRef = useRef<Plyr | null>(null);
 
   const showMoreItems = () => {
@@ -96,16 +96,7 @@ export default function WorkPage() {
   const handleOpenChange = (open: boolean) => {
     if (!open) {
       setSelectedItem(null);
-      setDetailsVisible(false); // Reset details visibility on close
     }
-  };
-
-  const handleShowDetails = () => {
-    setDetailsVisible(true);
-  };
-
-  const handleHideDetails = () => {
-    setDetailsVisible(false);
   };
 
   return (
@@ -177,15 +168,10 @@ export default function WorkPage() {
           {selectedItem && (
             <div className="relative flex-1 flex flex-col min-h-0">
               <ScrollArea className="flex-1">
-                <div
-                  className={cn(
-                    'transition-opacity duration-300',
-                    detailsVisible ? 'opacity-0 pointer-events-none' : 'opacity-100'
-                  )}
-                >
+                <div>
                   <PortfolioMedia item={selectedItem} playerRef={playerRef} />
                 </div>
-                <div className={cn("p-6 pt-4", detailsVisible ? 'opacity-0 pointer-events-none' : 'opacity-100' )}>
+                <div className="p-6 pt-4">
                   <DialogHeader>
                     <DialogTitle className="text-2xl">
                       {selectedItem.title}
@@ -195,11 +181,11 @@ export default function WorkPage() {
                     </DialogDescription>
                   </DialogHeader>
 
-                  {selectedItem.details && !detailsVisible && (
+                  {selectedItem.details && (
                     <div className="mt-4">
                       <Button
                         variant="secondary"
-                        onClick={handleShowDetails}
+                        onClick={() => setDetailsModalOpen(true)}
                       >
                         <ChevronsUpDown className="mr-2" />
                         Show Details
@@ -208,34 +194,6 @@ export default function WorkPage() {
                   )}
                 </div>
               </ScrollArea>
-
-              {/* Details Panel */}
-              <div
-                className={cn(
-                  'absolute inset-0 bg-background/80 backdrop-blur-lg transform transition-transform duration-500 ease-in-out',
-                  detailsVisible
-                    ? 'translate-y-0'
-                    : 'translate-y-full'
-                )}
-              >
-                <ScrollArea className="h-full w-full">
-                  <div className="p-6">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="absolute top-4 right-4"
-                      onClick={handleHideDetails}
-                    >
-                      <X />
-                      <span className="sr-only">Hide Details</span>
-                    </Button>
-                    <h3 className="text-2xl font-bold mb-4">{selectedItem.title} - Details</h3>
-                    <div className="space-y-4 text-sm text-foreground/80 whitespace-pre-wrap">
-                      <p>{selectedItem.details}</p>
-                    </div>
-                  </div>
-                </ScrollArea>
-              </div>
             </div>
           )}
         </DialogContent>
@@ -246,6 +204,25 @@ export default function WorkPage() {
             </DialogClose>
         )}
       </Dialog>
+      
+      {/* Nested Dialog for Details */}
+      <Dialog open={detailsModalOpen} onOpenChange={setDetailsModalOpen}>
+        <DialogContent className="glass-effect">
+            {selectedItem && (
+                <>
+                <DialogHeader>
+                    <DialogTitle>{selectedItem.title} - Details</DialogTitle>
+                </DialogHeader>
+                <ScrollArea className="max-h-[60vh] pr-4">
+                    <div className="space-y-4 text-sm text-foreground/80 whitespace-pre-wrap">
+                        <p>{selectedItem.details}</p>
+                    </div>
+                </ScrollArea>
+                </>
+            )}
+        </DialogContent>
+      </Dialog>
+
     </>
   );
 }
