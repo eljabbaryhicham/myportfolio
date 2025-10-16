@@ -94,8 +94,8 @@ export default function ContactPage() {
       <ScrollArea className="flex-1">
         <div className="p-[5%] pt-0">
           <div className="container mx-auto px-0">
-            <div className="flex flex-col md:flex-row gap-8 items-center justify-center">
-              <div className="w-full md:w-[30%] m-[5%]">
+            <div className="flex flex-col md:flex-row gap-8 items-start justify-center">
+              <div className="w-full md:w-auto contact-card">
                 <Card className="glass-effect p-6 sm:p-8 h-full">
                   <CardContent className="p-0">
                     <Form {...form}>
@@ -158,7 +158,7 @@ export default function ContactPage() {
                 </Card>
               </div>
               
-              <div className="w-full md:w-[30%] m-[5%]">
+              <div className="w-full md:w-auto contact-card">
                 <Card className="glass-effect p-6 flex flex-col h-full">
                   <CardContent className="flex flex-col items-center text-center p-0">
                     <Avatar className="w-24 h-24 mb-4 border-2 border-primary">
