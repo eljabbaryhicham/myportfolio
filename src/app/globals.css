@@ -137,3 +137,8 @@
   }
 }
 
+@layer utilities {
+  .plyr__poster {
+    object-fit: cover;
+  }
+}
