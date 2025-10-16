@@ -1,3 +1,4 @@
+
 import { placeholderImages } from './placeholder-images';
 
 export interface PortfolioItem {
@@ -52,7 +53,14 @@ export const portfolioItems: PortfolioItem[] = [
     thumbnailHint: placeholderImages['img2'].imageHint,
     sourceUrl: 'https://picsum.photos/seed/liquid2/1200/1600',
     featured: false,
-    details: 'A personal project exploring the themes of growth and nature. Photoshoot combined with digital illustration.'
+    details: `A personal project exploring the themes of growth and nature. Photoshoot combined with digital illustration.
+
+![A behind the scenes look at the Bloom photoshoot.](https://picsum.photos/seed/bloom-bts/800/600)
+
+The process involved several stages, including a video compilation of the digital layering process.
+
+<video src="https://cdn.plyr.io/static/demo/View_From_A_Blue_Moon_Trailer-576p.mp4" controls />
+`
   },
   {
     id: 'vid2',
