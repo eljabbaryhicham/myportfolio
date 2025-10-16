@@ -176,10 +176,6 @@ export default function WorkPage() {
         <DialogContent className="w-[90vw] md:max-w-[80vw] h-auto glass-effect p-0 flex flex-col">
           {selectedItem && (
             <div className="relative flex-1 flex flex-col min-h-0">
-              <DialogClose className="absolute -top-3 -right-3 z-10 h-8 w-8 rounded-full bg-red-600 text-white flex items-center justify-center opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2">
-                  <X className="h-4 w-4" />
-                  <span className="sr-only">Close</span>
-              </DialogClose>
               <ScrollArea className="flex-1">
                 <div
                   className={cn(
@@ -243,6 +239,12 @@ export default function WorkPage() {
             </div>
           )}
         </DialogContent>
+        {selectedItem && (
+            <DialogClose className="fixed top-4 right-4 z-50 h-8 w-8 rounded-full bg-red-600 text-white flex items-center justify-center opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2">
+                <X className="h-4 w-4" />
+                <span className="sr-only">Close</span>
+            </DialogClose>
+        )}
       </Dialog>
     </>
   );
