@@ -96,6 +96,40 @@ export default function ContactPage() {
           <div className="container mx-auto px-0">
             <div className="flex flex-col md:flex-row gap-8 items-start justify-center">
               <div className="w-full md:w-1/2">
+                <Card className="glass-effect p-6 flex flex-col h-full">
+                  <CardContent className="flex flex-col items-center text-center p-0">
+                    <Avatar className="w-24 h-24 mb-4 border-2 border-primary">
+                      <AvatarImage src="https://picsum.photos/seed/hicham/200/200" alt="Hicham Eljabbary" data-ai-hint="man portrait" />
+                      <AvatarFallback>HE</AvatarFallback>
+                    </Avatar>
+                    <h3 className="text-xl font-bold">Hicham Eljabbary</h3>
+                    <p className="text-foreground/70">Motion Graphics Designer</p>
+
+                    <div className="w-full space-y-4 mt-6">
+                      {contactLinks.map((link) => (
+                        <Link href={link.href} key={link.label} className="flex items-center group">
+                          <div className={`w-10 h-10 flex-shrink-0 rounded-full flex items-center justify-center mr-4 ${link.color}`}>
+                            <link.icon className="w-5 h-5" />
+                          </div>
+                          <div className="flex-grow">
+                            <p className="text-sm text-foreground/70">{link.label}</p>
+                            <p className="font-medium group-hover:text-primary transition-colors">{link.value}</p>
+                          </div>
+                          <ExternalLink className="w-4 h-4 text-foreground/50 group-hover:text-primary transition-colors" />
+                        </Link>
+                      ))}
+                    </div>
+                    <Button className="w-full h-24 bg-gradient-to-r from-green-500 to-teal-500 text-white text-lg mt-6">
+                        <Smartphone className="mr-3 h-8 w-8" />
+                        <div>
+                            <p className="text-base font-light">Make a deal on WhatsApp</p>
+                            <p className="font-bold text-xl">+212 619 665 220</p>
+                        </div>
+                    </Button>
+                  </CardContent>
+                </Card>
+              </div>
+              <div className="w-full md:w-1/2">
                 <Card className="glass-effect p-6 sm:p-8 h-full">
                   <CardContent className="p-0 flex flex-col items-center">
                     <Form {...form}>
@@ -154,41 +188,6 @@ export default function ContactPage() {
                         </Button>
                       </form>
                     </Form>
-                  </CardContent>
-                </Card>
-              </div>
-              
-              <div className="w-full md:w-1/2">
-                <Card className="glass-effect p-6 flex flex-col h-full">
-                  <CardContent className="flex flex-col items-center text-center p-0">
-                    <Avatar className="w-24 h-24 mb-4 border-2 border-primary">
-                      <AvatarImage src="https://picsum.photos/seed/hicham/200/200" alt="Hicham Eljabbary" data-ai-hint="man portrait" />
-                      <AvatarFallback>HE</AvatarFallback>
-                    </Avatar>
-                    <h3 className="text-xl font-bold">Hicham Eljabbary</h3>
-                    <p className="text-foreground/70">Motion Graphics Designer</p>
-
-                    <div className="w-full space-y-4 mt-6">
-                      {contactLinks.map((link) => (
-                        <Link href={link.href} key={link.label} className="flex items-center group">
-                          <div className={`w-10 h-10 flex-shrink-0 rounded-full flex items-center justify-center mr-4 ${link.color}`}>
-                            <link.icon className="w-5 h-5" />
-                          </div>
-                          <div className="flex-grow">
-                            <p className="text-sm text-foreground/70">{link.label}</p>
-                            <p className="font-medium group-hover:text-primary transition-colors">{link.value}</p>
-                          </div>
-                          <ExternalLink className="w-4 h-4 text-foreground/50 group-hover:text-primary transition-colors" />
-                        </Link>
-                      ))}
-                    </div>
-                    <Button className="w-full h-24 bg-gradient-to-r from-green-500 to-teal-500 text-white text-lg mt-6">
-                        <Smartphone className="mr-3 h-8 w-8" />
-                        <div>
-                            <p className="text-base font-light">Make a deal on WhatsApp</p>
-                            <p className="font-bold text-xl">+212 619 665 220</p>
-                        </div>
-                    </Button>
                   </CardContent>
                 </Card>
               </div>
