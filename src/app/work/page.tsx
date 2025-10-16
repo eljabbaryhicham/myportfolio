@@ -207,13 +207,13 @@ export default function WorkPage() {
       
       {/* Nested Dialog for Details */}
       <Dialog open={detailsModalOpen} onOpenChange={setDetailsModalOpen}>
-        <DialogContent className="w-[90vw] md:max-w-[80vw] h-auto glass-effect p-0 flex flex-col">
+        <DialogContent className="w-[90vw] md:max-w-[80vw] min-h-[90vh] glass-effect p-0 flex flex-col">
             {selectedItem && (
                 <>
                 <DialogHeader className="p-6 pb-0">
                     <DialogTitle>{selectedItem.title} - Details</DialogTitle>
                 </DialogHeader>
-                <ScrollArea className="max-h-[60vh] flex-1">
+                <ScrollArea className="flex-1">
                     <div className="space-y-4 text-sm text-foreground/80 whitespace-pre-wrap p-6">
                         <p>{selectedItem.details}</p>
                     </div>
