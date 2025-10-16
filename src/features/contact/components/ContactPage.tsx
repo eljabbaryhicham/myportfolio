@@ -89,6 +89,7 @@ export default function ContactPage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+          {/* Column 1: Contact Form */}
           <Card className="glass-effect p-6 sm:p-8">
             <CardContent className="p-0">
               <Form {...form}>
@@ -150,6 +151,7 @@ export default function ContactPage() {
             </CardContent>
           </Card>
           
+          {/* Column 2: Contact Info */}
           <div className="flex flex-col gap-8">
             <Card className="glass-effect p-6 flex flex-col">
               <CardContent className="flex flex-col items-center text-center p-0">
