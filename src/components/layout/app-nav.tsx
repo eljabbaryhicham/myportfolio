@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 import { useUser } from "@/firebase";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { motion } from "framer-motion";
+import React from "react";
 
 const navItems = [
   { href: "/", label: "Home", icon: Home, public: true },
@@ -26,23 +27,18 @@ export function AppNav() {
 
   const variants = {
     hidden: isMobile ? { y: '100%' } : { x: '100%' },
-    visible: isMobile ? { y: 0 } : { x: 0 },
+    visible: { y: 0, x: 0 },
   };
 
-  return (
-    <motion.aside
-      initial="hidden"
-      animate="visible"
-      exit="hidden"
-      variants={variants}
-      transition={{ ease: "easeInOut", duration: 0.5 }}
-      className="w-full md:w-28 flex-shrink-0 p-0 md:p-4 mt-2 md:mt-0 h-[10vh] md:h-auto"
-    >
-      <div className={cn("flex h-full flex-row md:flex-col items-center justify-center md:justify-between rounded-lg border border-border/50 px-4 py-2 md:p-8 glass-effect")}>
+  const navContent = (
+      <div className={cn(
+        "flex h-full flex-row md:flex-col items-center justify-around md:justify-between rounded-lg border border-border/50 px-4 py-2 md:p-8 glass-effect",
+        isMobile ? 'w-full' : 'w-auto'
+        )}>
         <Link href="/" className="hidden md:flex items-center gap-2 text-primary">
-          <Cat className="h-8 w-8" />
+          <Cat className="h-10 w-10" />
         </Link>
-        <nav className="flex flex-row md:flex-col items-center justify-around md:justify-center w-full md:w-auto md:gap-6">
+        <nav className="flex flex-row md:flex-col items-center justify-around md:justify-center w-full md:w-auto md:gap-8">
           {visibleNavItems.map((item) => {
             const isActive =
               item.href === "/"
@@ -53,13 +49,13 @@ export function AppNav() {
                 key={item.label}
                 href={item.href}
                 className={cn(
-                  "group relative flex h-12 w-12 items-center justify-center rounded-md transition-all duration-300 hover:scale-110",
+                  "group relative flex h-14 w-14 items-center justify-center rounded-md transition-all duration-300 hover:scale-110",
                   isActive
                     ? "bg-destructive text-destructive-foreground scale-110"
                     : "text-foreground/70 glass-effect"
                 )}
               >
-                <item.icon className="h-6 w-6" />
+                <item.icon className="h-8 w-8" />
                 <span className="absolute bottom-full mb-2 md:left-full md:bottom-auto md:mb-0 md:ml-4 hidden whitespace-nowrap rounded-md bg-card px-3 py-1.5 text-sm font-medium text-card-foreground group-hover:flex">
                   {item.label}
                 </span>
@@ -71,6 +67,33 @@ export function AppNav() {
           <div className="h-10 w-10 md:h-12 md:w-12 hidden md:block"></div>
         </div>
       </div>
-    </motion.aside>
+  );
+
+  return (
+    <>
+      {isMobile ? (
+        <motion.div
+          initial="hidden"
+          animate="visible"
+          exit="hidden"
+          variants={variants}
+          transition={{ ease: "easeInOut", duration: 0.5 }}
+          className="fixed bottom-0 left-0 right-0 p-2 md:p-4 h-[10vh] z-50"
+        >
+         {navContent}
+        </motion.div>
+      ) : (
+        <motion.aside
+          initial="hidden"
+          animate="visible"
+          exit="hidden"
+          variants={variants}
+          transition={{ ease: "easeInOut", duration: 0.5 }}
+          className="w-full md:w-28 flex-shrink-0 p-0 md:p-4 mt-2 md:mt-0 h-auto md:h-auto"
+        >
+          {navContent}
+        </motion.aside>
+      )}
+    </>
   );
 }
