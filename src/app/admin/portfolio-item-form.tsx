@@ -145,7 +145,7 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit}: Port
                                   />
                               </FormControl>
                               <FormDescription>
-                                  Use Markdown for lists, bold text, etc.
+                                Use Markdown for styling. Images: `![alt](url)`. Videos: `&lt;video src="url" controls /&gt;`.
                               </FormDescription>
                               <FormMessage />
                               </FormItem>
