@@ -35,7 +35,7 @@ export function AppNav() {
         transition={{ type: 'spring', stiffness: 80, damping: 15 }}
       >
         <div className={cn(
-          "flex h-full flex-row items-center justify-around rounded-lg border border-border/50 glass-effect"
+          "flex h-full flex-row items-center justify-between px-4 rounded-lg border border-border/50 glass-effect"
           )}>
           <nav className="flex flex-row items-center justify-around w-full">
             {visibleNavItems.map((item) => {
@@ -75,7 +75,7 @@ export function AppNav() {
       transition={{ type: 'spring', stiffness: 80, damping: 20 }}
     >
       <div className={cn(
-        "flex h-full flex-row md:flex-col items-center justify-around md:justify-between rounded-lg border border-border/50 px-4 py-2 md:p-8 glass-effect"
+        "flex h-full flex-row md:flex-col items-center justify-between rounded-lg border border-border/50 px-4 py-2 md:p-8 glass-effect"
         )}>
         <Link href="/" className="hidden md:flex items-center gap-2 text-primary">
           <Cat className="h-8 w-8" />
