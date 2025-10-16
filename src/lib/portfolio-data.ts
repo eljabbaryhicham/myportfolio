@@ -10,4 +10,5 @@ export interface PortfolioItem {
   sources?: { src: string; size: number }[]; // For videos
   featured?: boolean;
   details?: string;
+  order?: number;
 }
