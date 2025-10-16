@@ -189,7 +189,7 @@ export default function ContactPage() {
       
        <div className="flex items-center justify-center gap-4 mt-12">
             {socialLinks.map((social) => (
-                <Link href={social.href} key={social.href} className={`w-12 h-12 rounded-full flex items-center justify-center text-white ${social.color} transition-all duration-300 hover:scale-110`}>
+                <Link href={social.href} key={social.color} className={`w-12 h-12 rounded-full flex items-center justify-center text-white ${social.color} transition-all duration-300 hover:scale-110`}>
                     <social.icon className="w-6 h-6" />
                 </Link>
             ))}
