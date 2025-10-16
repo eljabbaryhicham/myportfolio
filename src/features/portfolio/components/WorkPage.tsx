@@ -253,7 +253,7 @@ export default function WorkPage() {
                                 tagNames: [...(defaultSchema.tagNames || []), 'video'],
                                 attributes: {
                                     ...defaultSchema.attributes,
-                                    'video': [...(defaultSchema.attributes?.video || []), 'src', 'controls']
+                                    'video': [...(defaultSchema.attributes?.video || []), 'src', 'controls', 'poster']
                                 }
                             }]
                           ]}
@@ -269,6 +269,7 @@ export default function WorkPage() {
                                     source={{
                                       type: 'video',
                                       sources: [{ src, type: 'video/mp4' }],
+                                      poster: selectedItem.thumbnailUrl,
                                     }}
                                   />
                                 </div>
