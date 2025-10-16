@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import Image from 'next/image';
@@ -86,10 +87,10 @@ const PortfolioMedia = ({
         <Button
           variant="ghost"
           size="icon"
-          className="absolute top-2 left-2 z-10 h-10 w-10 text-white bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity"
+          className="absolute inset-0 m-auto z-10 h-16 w-16 text-white bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity"
           onClick={() => onFullscreenClick(item.sourceUrl!)}
         >
-          <Expand className="h-5 w-5" />
+          <Expand className="h-8 w-8" />
           <span className="sr-only">Fullscreen</span>
         </Button>
       </div>
