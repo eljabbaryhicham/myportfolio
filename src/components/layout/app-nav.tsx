@@ -54,7 +54,7 @@ export function AppNav() {
                       : "text-foreground/70 glass-effect"
                   )}
                 >
-                  <item.icon className="h-10 w-10" />
+                  <item.icon className="h-8 w-8" />
                   <span className="absolute bottom-full mb-2 hidden whitespace-nowrap rounded-md bg-card px-3 py-1.5 text-sm font-medium text-card-foreground group-hover:flex">
                     {item.label}
                   </span>
@@ -97,7 +97,7 @@ export function AppNav() {
                     : "text-foreground/70 glass-effect"
                 )}
               >
-                <item.icon className="h-10 w-10" />
+                <item.icon className="h-8 w-8" />
                 <span className="absolute bottom-full mb-2 md:left-full md:bottom-auto md:mb-0 md:ml-4 hidden whitespace-nowrap rounded-md bg-card px-3 py-1.5 text-sm font-medium text-card-foreground group-hover:flex">
                   {item.label}
                 </span>
