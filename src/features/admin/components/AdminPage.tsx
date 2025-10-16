@@ -89,7 +89,7 @@ function AdminPage() {
 
     defaultPortfolioItems.forEach((item, index) => {
         const docRef = doc(projectsCol, item.id);
-        batch.set(docRef, { ...item, order: item.order || index });
+        batch.set(docRef, { ...item, order: item.order ?? index });
     });
 
     try {
@@ -122,17 +122,18 @@ function AdminPage() {
 
   const handleFormSubmit = (values: PortfolioItem) => {
     if (!firestore) return;
+    const dataToSave = { ...values, order: values.order ?? maxOrder + 1 };
     if (values.id) {
       // Existing item
       const docRef = doc(firestore, 'projects', values.id);
-      setDocumentNonBlocking(docRef, values, { merge: true });
+      setDocumentNonBlocking(docRef, dataToSave, { merge: true });
        toast({
         title: 'Changes Saved',
         description: 'Your portfolio has been updated.',
       });
     } else {
       // New item
-      addDocumentNonBlocking(collection(firestore, 'projects'), {...values, order: maxOrder + 1});
+      addDocumentNonBlocking(collection(firestore, 'projects'), dataToSave);
        toast({
         title: 'Item Added',
         description: 'A new item has been added to your portfolio.',
@@ -291,3 +292,5 @@ function AdminPage() {
 }
 
 export default AdminPage;
+
+    
