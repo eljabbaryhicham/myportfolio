@@ -148,25 +148,36 @@ function AdminPage() {
     const currentIndex = sortedItems.findIndex(i => i.id === item.id);
     if (currentIndex === -1) return;
 
+    let otherItem: PortfolioItem | undefined;
+
     if (direction === 'up' && currentIndex > 0) {
-      const otherItem = sortedItems[currentIndex - 1];
-      const itemRef = doc(firestore, 'projects', item.id);
-      const otherItemRef = doc(firestore, 'projects', otherItem.id);
-      
-      const batch = writeBatch(firestore);
-      batch.update(itemRef, { order: otherItem.order });
-      batch.update(otherItemRef, { order: item.order });
-      batch.commit();
-
+      otherItem = sortedItems[currentIndex - 1];
     } else if (direction === 'down' && currentIndex < sortedItems.length - 1) {
-      const otherItem = sortedItems[currentIndex + 1];
+      otherItem = sortedItems[currentIndex + 1];
+    }
+
+    if (otherItem) {
       const itemRef = doc(firestore, 'projects', item.id);
       const otherItemRef = doc(firestore, 'projects', otherItem.id);
 
+      // Get the order values before creating the batch
+      const itemOrder = item.order;
+      const otherItemOrder = otherItem.order;
+
       const batch = writeBatch(firestore);
-      batch.update(itemRef, { order: otherItem.order });
-      batch.update(otherItemRef, { order: item.order });
-      batch.commit();
+      
+      // Perform the swap
+      batch.update(itemRef, { order: otherItemOrder });
+      batch.update(otherItemRef, { order: itemOrder });
+      
+      batch.commit().catch(e => {
+        console.error("Error reordering items:", e);
+        toast({
+          variant: "destructive",
+          title: "Reorder failed",
+          description: e.message
+        });
+      });
     }
   };
 
