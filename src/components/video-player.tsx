@@ -4,18 +4,23 @@
 import type { PlyrProps, PlyrSource } from "plyr-react";
 import Plyr from "plyr-react";
 import "plyr-react/plyr.css";
+import React from "react";
+import type PlyrInstance from "plyr";
 
-interface VideoPlayerProps {
+
+interface VideoPlayerProps extends PlyrProps {
   source: PlyrSource;
+  innerRef?: React.Ref<PlyrInstance>;
 }
 
-const VideoPlayer = ({ source }: VideoPlayerProps) => {
+const VideoPlayer = ({ source, innerRef }: VideoPlayerProps) => {
   if (!source) return null;
 
   const qualities = source.sources.map(s => (s as any).size).filter(Boolean);
 
   return (
     <Plyr
+      ref={innerRef}
       source={source}
       options={{
         autoplay: true,
