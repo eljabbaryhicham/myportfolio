@@ -7,12 +7,11 @@ import {
   Carousel,
   CarouselContent,
   CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
 } from '@/components/ui/carousel';
 import { Badge } from '@/components/ui/badge';
 import { Star } from 'lucide-react';
-import { memo } from 'react';
+import { memo, useRef } from 'react';
+import Autoplay from 'embla-carousel-autoplay';
 
 const clients = [
   {
@@ -80,6 +79,10 @@ const clients = [
 const MemoizedImage = memo(Image);
 
 export default function AboutPage() {
+  const plugin = useRef(
+    Autoplay({ delay: 2000, stopOnInteraction: true })
+  );
+
   return (
     <div className="h-full w-full flex flex-col items-center justify-center p-8">
       <div className="w-full max-w-2xl mx-auto">
@@ -91,18 +94,20 @@ export default function AboutPage() {
         </div>
 
         <Carousel
+          plugins={[plugin.current]}
           opts={{
             align: 'start',
             loop: true,
           }}
           className="w-full"
+          onMouseEnter={plugin.current.stop}
+          onMouseLeave={plugin.current.reset}
         >
-          <CarouselContent>
+          <CarouselContent className='-ml-0'>
             {clients.map((client, index) => (
-              <CarouselItem key={index}>
+              <CarouselItem key={index} className='pl-0'>
                 <div className="p-1">
-                  <Card className="overflow-hidden glass-effect group">
-                    <CardContent className="relative aspect-video p-0">
+                  <div className="relative aspect-video overflow-hidden rounded-lg group">
                       <MemoizedImage
                         src={client.image}
                         alt={client.name}
@@ -123,14 +128,11 @@ export default function AboutPage() {
                           {client.name}
                         </h3>
                       </div>
-                    </CardContent>
-                  </Card>
+                  </div>
                 </div>
               </CarouselItem>
             ))}
           </CarouselContent>
-          <CarouselPrevious className="hidden lg:flex" />
-          <CarouselNext className="hidden lg:flex" />
         </Carousel>
 
         <div className="text-center mt-12">
