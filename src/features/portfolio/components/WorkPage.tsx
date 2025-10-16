@@ -18,6 +18,7 @@ import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import type { PlyrProps } from 'plyr-react';
 import type Plyr from 'plyr';
+import ReactMarkdown from 'react-markdown';
 
 const VideoPlayer = dynamic(() => import('@/components/media/video-player'), {
   ssr: false,
@@ -229,8 +230,14 @@ export default function WorkPage() {
                       <span className="sr-only">Hide Details</span>
                     </Button>
                     <h3 className="text-2xl font-bold mb-4">{selectedItem.title} - Details</h3>
-                    <div className="space-y-4 text-sm text-foreground/80 whitespace-pre-wrap">
-                      <p>{selectedItem.details}</p>
+                    <div className="prose dark:prose-invert max-w-none space-y-4 text-sm text-foreground/80 whitespace-pre-wrap">
+                      <ReactMarkdown
+                          components={{
+                            // Ensure videos and images fill the width
+                            img: ({node, ...props}) => <img className="w-full rounded-md" {...props} />,
+                            video: ({node, ...props}) => <video className="w-full rounded-md" controls {...props} />
+                          }}
+                      >{selectedItem.details || ''}</ReactMarkdown>
                     </div>
                   </div>
                 </ScrollArea>
