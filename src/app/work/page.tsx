@@ -84,6 +84,7 @@ PortfolioDetails.displayName = 'PortfolioDetails';
 export default function WorkPage() {
   const [selectedItem, setSelectedItem] = useState<PortfolioItem | null>(null);
   const [visibleItems, setVisibleItems] = useState(6);
+  const [detailsVisible, setDetailsVisible] = useState(false);
   const [isDetailsFullScreen, setIsDetailsFullScreen] = useState(false);
 
   const showMoreItems = () => {
@@ -94,8 +95,18 @@ export default function WorkPage() {
     if (!open) {
       setSelectedItem(null);
       setIsDetailsFullScreen(false); // Reset on close
+      setDetailsVisible(false);
     }
   };
+
+  const handleDetailsToggle = () => {
+    if (!detailsVisible) {
+      setDetailsVisible(true);
+      setIsDetailsFullScreen(false);
+    } else {
+      setIsDetailsFullScreen(prev => !prev);
+    }
+  }
 
   return (
     <>
@@ -163,30 +174,55 @@ export default function WorkPage() {
                 <div
                     className={cn(
                         "transition-all duration-500 ease-in-out flex-shrink-0",
-                        isDetailsFullScreen ? "opacity-0 h-0" : "opacity-100"
+                        isDetailsFullScreen ? "h-0" : detailsVisible ? "h-1/2" : "h-full"
                     )}
                 >
                     <PortfolioMedia item={selectedItem} />
                 </div>
               <div className={cn(
-                  "absolute inset-0 transition-all duration-500 ease-in-out",
-                  isDetailsFullScreen ? "z-20 bg-background/95 backdrop-blur-sm" : "z-10"
+                  "absolute left-0 right-0 bottom-0 bg-background/80 backdrop-blur-sm transition-all duration-500 ease-in-out",
+                  detailsVisible ? "h-full" : "h-0",
+                  !isDetailsFullScreen && detailsVisible ? "top-1/2" : "top-0"
                 )}>
                 <ScrollArea className="h-full">
                     <PortfolioDetails item={selectedItem} />
                 </ScrollArea>
                 {selectedItem.details && (
+                  <>
                     <Button
                         variant="ghost"
                         size="icon"
-                        className={cn("absolute top-4 z-30", isDetailsFullScreen ? "left-4" : "right-12")}
-                        onClick={() => setIsDetailsFullScreen(prev => !prev)}
+                        className="absolute top-4 right-12 z-30"
+                        onClick={handleDetailsToggle}
                     >
-                        {isDetailsFullScreen ? <X /> : <ChevronsUpDown />}
-                        <span className="sr-only">{isDetailsFullScreen ? 'Close' : 'Expand'} Details</span>
+                        <ChevronsUpDown />
+                        <span className="sr-only">Toggle Details</span>
                     </Button>
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        className="absolute top-4 left-4 z-30"
+                        onClick={() => {
+                            setDetailsVisible(false);
+                            setIsDetailsFullScreen(false);
+                        }}
+                    >
+                        <X />
+                        <span className="sr-only">Close Details</span>
+                    </Button>
+                  </>
                 )}
               </div>
+               {selectedItem.details && !detailsVisible && (
+                    <Button
+                        variant="secondary"
+                        className="absolute bottom-4 right-4 z-30"
+                        onClick={() => setDetailsVisible(true)}
+                    >
+                        <ChevronsUpDown className="mr-2"/>
+                        Show Details
+                    </Button>
+                )}
             </div>
           )}
         </DialogContent>
