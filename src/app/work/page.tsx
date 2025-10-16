@@ -11,7 +11,7 @@ import {
   DialogDescription,
   DialogClose,
 } from '@/components/ui/dialog';
-import { useState, memo, useEffect, useRef } from 'react';
+import { useState, memo, useEffect, useRef, useMemo } from 'react';
 import { PlayCircle, ChevronsUpDown, X, ImageIcon, Expand } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import dynamic from 'next/dynamic';
@@ -24,8 +24,8 @@ import ReactMarkdown from 'react-markdown';
 import rehypeRaw from 'rehype-raw';
 import rehypeSanitize, { defaultSchema } from 'rehype-sanitize';
 import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
-import { collection } from 'firebase/firestore';
-import { PortfolioItem } from '@/features/portfolio/data/portfolio-data';
+import { collection, query, orderBy } from 'firebase/firestore';
+import { PortfolioItem } from '@/lib/portfolio-data';
 
 const VideoPlayer = dynamic(() => import('@/components/video-player'), {
   ssr: false,
@@ -103,8 +103,15 @@ PortfolioMedia.displayName = 'PortfolioMedia';
 
 export default function WorkPage() {
   const firestore = useFirestore();
-  const projectsCollection = useMemoFirebase(() => firestore ? collection(firestore, 'projects') : null, [firestore]);
-  const { data: portfolioItems, isLoading } = useCollection<PortfolioItem>(projectsCollection);
+  const projectsQuery = useMemoFirebase(
+    () =>
+      firestore
+        ? query(collection(firestore, 'projects'), orderBy('order'))
+        : null,
+    [firestore]
+  );
+  const { data: portfolioItems, isLoading } = useCollection<PortfolioItem>(projectsQuery);
+
 
   const [selectedItem, setSelectedItem] = useState<PortfolioItem | null>(null);
   const [visibleItems, setVisibleItems] = useState(6);
@@ -128,11 +135,13 @@ export default function WorkPage() {
       }
     };
   }, []);
+  
+  const filteredItems = useMemo(() => {
+    if (!portfolioItems) return [];
+    if (filter === 'all') return portfolioItems;
+    return portfolioItems.filter(item => item.type === filter);
+  }, [portfolioItems, filter]);
 
-  const filteredItems = portfolioItems?.filter(item => {
-    if (filter === 'all') return true;
-    return item.type === filter;
-  }) || [];
 
   const showMoreItems = () => {
     setVisibleItems(prevVisibleItems => prevVisibleItems + 6);
@@ -371,7 +380,3 @@ export default function WorkPage() {
     </>
   );
 }
-
-    
-
-    
