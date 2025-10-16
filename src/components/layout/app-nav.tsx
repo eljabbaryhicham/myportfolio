@@ -68,8 +68,11 @@ export function AppNav() {
   }
 
   return (
-    <aside
+    <motion.aside
       className="w-full md:w-28 flex-shrink-0 p-0 md:p-4 mt-2 md:mt-0 h-auto md:h-auto"
+      initial={{ x: '100%' }}
+      animate={{ x: 0 }}
+      transition={{ type: 'spring', stiffness: 80, damping: 20 }}
     >
       <div className={cn(
         "flex h-full flex-row md:flex-col items-center justify-around md:justify-between rounded-lg border border-border/50 px-4 py-2 md:p-8 glass-effect"
@@ -106,6 +109,6 @@ export function AppNav() {
           <div className="h-10 w-10 md:h-12 md:w-12 hidden md:block"></div>
         </div>
       </div>
-    </aside>
+    </motion.aside>
   );
 }
