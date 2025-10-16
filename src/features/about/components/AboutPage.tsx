@@ -1,46 +1,125 @@
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+'use client';
+
 import Image from 'next/image';
+import { Card, CardContent } from '@/components/ui/card';
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from '@/components/ui/carousel';
+import { Badge } from '@/components/ui/badge';
+import { Star } from 'lucide-react';
+import { memo } from 'react';
+
+const clients = [
+  {
+    name: 'Komfortrauschen',
+    category: 'Band',
+    image: 'https://picsum.photos/seed/client1/400/400',
+    hint: 'woman portrait',
+  },
+  {
+    name: 'Alec Troniq',
+    category: 'Live-Act',
+    image: 'https://picsum.photos/seed/client2/400/400',
+    hint: 'person singing',
+  },
+  {
+    name: 'Anda Morts',
+    category: 'Band',
+    image: 'https://picsum.photos/seed/client3/400/400',
+    hint: 'microphone stage',
+  },
+  {
+    name: 'Annett Gapstream',
+    category: 'DJ',
+    image: 'https://picsum.photos/seed/client4/400/400',
+    hint: 'dj performance',
+  },
+  {
+    name: 'Brezel Göring & Psycho',
+    category: 'Band',
+    image: 'https://picsum.photos/seed/client5/400/400',
+    hint: 'man portrait',
+  },
+  {
+    name: 'Client Six',
+    category: 'Solo Artist',
+    image: 'https://picsum.photos/seed/client6/400/400',
+    hint: 'guitar player',
+  },
+  {
+    name: 'Client Seven',
+    category: 'Band',
+    image: 'https://picsum.photos/seed/client7/400/400',
+    hint: 'drummer silhouette',
+  },
+];
+
+const MemoizedImage = memo(Image);
 
 export default function AboutPage() {
   return (
-    <div className="h-full w-full flex items-center justify-center p-8">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <Card className="w-full glass-effect">
-          <CardHeader className="text-center">
-            <h1 className="text-4xl font-bold tracking-tight">About Us</h1>
-            <p className="mt-2 text-lg text-foreground/70">
-              The story behind the creativity.
-            </p>
-          </CardHeader>
-          <CardContent className="prose dark:prose-invert max-w-none text-left">
-            <div className="flex flex-col md:flex-row gap-8">
-              <div className="md:w-1/2">
-                <Image
-                  src="https://picsum.photos/seed/aboutus/800/600"
-                  alt="Our Team"
-                  width={800}
-                  height={600}
-                  className="rounded-lg"
-                  data-ai-hint="team working"
-                />
-              </div>
-              <div className="md:w-1/2">
-                <h2 className="text-2xl font-bold">Our Mission</h2>
-                <p>
-                  Welcome to Liquid Folio, where creativity flows and ideas take shape. We are a passionate team of designers, artists, and storytellers dedicated to pushing the boundaries of visual expression. Our work is a blend of artistry and technology, creating experiences that are both beautiful and meaningful.
-                </p>
-                <p>
-                  Founded on the principle of fluidity, we believe that the best ideas are those that can adapt, evolve, and move people. From stunning visuals to compelling narratives, we strive to create work that not only captures attention but also leaves a lasting impression.
-                </p>
-                <h3 className="text-xl font-bold mt-4">Our Journey</h3>
-                <p>
-                  Our journey began with a simple sketch and a bold vision. Over the years, we have grown into a collective of creative minds, each bringing a unique perspective to the table. We thrive on collaboration and are constantly exploring new techniques and technologies to bring our clients' visions to life.
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+    <div className="h-full w-full flex flex-col items-center justify-center p-8">
+      <div className="w-full max-w-6xl mx-auto">
+        <div className="text-center mb-12">
+          <h1 className="text-2xl text-foreground/80 max-w-3xl mx-auto">
+            Trusted by leading artists and brands from around the world. Here
+            are some of the amazing clients I've had the pleasure to work with.
+          </h1>
+        </div>
+
+        <Carousel
+          opts={{
+            align: 'start',
+            loop: true,
+          }}
+          className="w-full"
+        >
+          <CarouselContent>
+            {clients.map((client, index) => (
+              <CarouselItem key={index} className="sm:basis-1/2 md:basis-1/3 lg:basis-1/4 xl:basis-1/5">
+                <div className="p-1">
+                  <Card className="overflow-hidden glass-effect group">
+                    <CardContent className="relative aspect-square p-0">
+                      <MemoizedImage
+                        src={client.image}
+                        alt={client.name}
+                        fill
+                        className="object-cover transition-transform duration-300 group-hover:scale-105"
+                        data-ai-hint={client.hint}
+                        sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, (max-width: 1280px) 25vw, 20vw"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
+                      <div className="absolute top-2 left-2">
+                        <Badge variant="secondary" className="bg-green-500/20 text-green-300 border-green-500/30">
+                          <Star className="h-3 w-3 mr-1" />
+                          {client.category}
+                        </Badge>
+                      </div>
+                      <div className="absolute bottom-4 left-4">
+                        <h3 className="text-lg font-bold text-white">
+                          {client.name}
+                        </h3>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              </CarouselItem>
+            ))}
+          </CarouselContent>
+          <CarouselPrevious className="hidden lg:flex" />
+          <CarouselNext className="hidden lg:flex" />
+        </Carousel>
+
+        <div className="text-center mt-12">
+          <p className="text-foreground/70">
+            Trusted by {clients.length}+ amazing clients worldwide
+          </p>
+        </div>
       </div>
     </div>
   );
