@@ -23,7 +23,7 @@ const VideoPlayer = ({ source, innerRef }: VideoPlayerProps) => {
       ref={innerRef}
       source={source}
       options={{
-        autoplay: true,
+        autoplay: false,
         controls: [
             'play-large', 
             'play', 
