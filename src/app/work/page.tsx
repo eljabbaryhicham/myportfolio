@@ -10,7 +10,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-import { useState, memo, useEffect, forwardRef } from "react";
+import { useState, memo, useEffect } from "react";
 import { PlayCircle, ChevronsUpDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import dynamic from "next/dynamic";
@@ -86,7 +86,7 @@ const PortfolioDetails = ({ item }: { item: PortfolioItem }) => {
             </Button>
           </CollapsibleTrigger>
           
-          <CollapsibleContent>
+          <CollapsibleContent className="transition-all data-[state=closed]:-translate-y-4 data-[state=closed]:opacity-0 data-[state=open]:opacity-100 data-[state=open]:translate-y-0">
             <div className="mt-4 space-y-4 border-t pt-4 text-sm text-foreground/80 whitespace-pre-wrap">
               <p>{item.details}</p>
             </div>
