@@ -162,7 +162,7 @@ export default function WorkPage() {
       </div>
 
       <Dialog open={!!selectedItem} onOpenChange={handleOpenChange}>
-        <DialogContent className="glass-effect p-0 flex flex-col max-w-[90vw] max-h-[90vh]">
+        <DialogContent className="glass-effect p-0 flex flex-col w-[90vw] max-w-[90vw] max-h-[90vh] overflow-hidden">
           {selectedItem && (
             <div className="relative flex-1 flex flex-col min-h-0">
               <ScrollArea className="flex-1">
