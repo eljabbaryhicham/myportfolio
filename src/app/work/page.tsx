@@ -154,7 +154,7 @@ export default function WorkPage() {
   return (
     <>
       <div className="h-full w-full flex flex-col">
-        <div className="p-[10%] pb-4">
+        <div className="p-[5%] pb-4">
           <div className="container mx-auto px-0">
             <div className="mb-8 text-center">
               <h1 className="text-3xl md:text-4xl font-bold tracking-tight">Our Work</h1>
@@ -172,7 +172,7 @@ export default function WorkPage() {
         </div>
 
         <ScrollArea className="flex-1">
-          <div className="p-[10%] pt-0">
+          <div className="p-[5%] pt-0">
             <div className="container mx-auto px-0">
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
                 {filteredItems.slice(0, visibleItems).map(item => (
@@ -328,5 +328,7 @@ export default function WorkPage() {
     </>
   );
 }
+
+    
 
     

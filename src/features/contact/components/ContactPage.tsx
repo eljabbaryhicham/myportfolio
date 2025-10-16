@@ -81,7 +81,7 @@ export default function ContactPage() {
 
   return (
     <ScrollArea className="h-full w-full">
-      <div className="container mx-auto p-[10%]">
+      <div className="container mx-auto p-[5%]">
         <div className="text-center mb-8">
           <h1 className="text-xl md:text-2xl text-foreground/80">
             Let's get in touch! Fill out the form below to send me a message.
@@ -89,7 +89,6 @@ export default function ContactPage() {
         </div>
 
         <div className="flex flex-col md:flex-row gap-8 max-w-4xl mx-auto">
-          {/* Column 1: Contact Form */}
           <div className="w-full md:w-1/2 m-[5%]">
             <Card className="glass-effect p-6 sm:p-8 h-full">
               <CardContent className="p-0">
@@ -153,7 +152,6 @@ export default function ContactPage() {
             </Card>
           </div>
           
-          {/* Column 2: Contact Info */}
           <div className="w-full md:w-1/2 m-[5%]">
             <Card className="glass-effect p-6 flex flex-col h-full">
               <CardContent className="flex flex-col items-center text-center p-0">
