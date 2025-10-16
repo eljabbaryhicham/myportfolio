@@ -251,11 +251,13 @@ export default function WorkPage() {
                     <div className="prose dark:prose-invert max-w-none space-y-4 text-sm text-foreground/80 whitespace-pre-wrap p-6">
                         <ReactMarkdown
                           components={{
-                            // Ensure videos and images fill the width
                             img: ({node, ...props}) => <img className="w-full rounded-md" {...props} />,
-                            video: ({node, ...props}) => <video className="w-full rounded-md" controls {...props} />
+                            video: ({node, ...props}) => {
+                              const { src } = props;
+                              return src ? <video className="w-full rounded-md" src={src} controls /> : null;
+                            }
                           }}
-                        >{selectedItem.details}</ReactMarkdown>
+                        >{selectedItem.details || ''}</ReactMarkdown>
                     </div>
                 </ScrollArea>
                  <DialogClose className="absolute top-4 right-4 z-[101] h-8 w-8 rounded-full bg-red-600 text-white flex items-center justify-center opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2">
