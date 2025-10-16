@@ -50,7 +50,7 @@ const PortfolioMedia = ({ item }: { item: PortfolioItem }) => {
 
   if (item.type === 'image' && item.sourceUrl) {
     return (
-      <div className="relative aspect-video bg-black/50">
+      <div className="relative aspect-video bg-black/50 h-full w-full">
         <MemoizedImage src={item.sourceUrl} alt={item.title} fill className="object-contain" />
       </div>
     );
@@ -63,19 +63,21 @@ PortfolioMedia.displayName = 'PortfolioMedia';
 
 const PortfolioDetails = ({ item }: { item: PortfolioItem }) => {
   return (
-    <div className="p-6">
-      <DialogHeader>
+    <>
+      <DialogHeader className="p-6 pb-0">
         <DialogTitle className="text-2xl">{item.title}</DialogTitle>
         <DialogDescription className="text-base text-foreground/70 mt-2">
           {item.description}
         </DialogDescription>
       </DialogHeader>
       {item.details && (
-        <div className="mt-4 space-y-4 border-t pt-4 text-sm text-foreground/80 whitespace-pre-wrap">
-            <p>{item.details}</p>
-        </div>
+        <ScrollArea className="flex-1 px-6">
+            <div className="mt-4 space-y-4 border-t pt-4 text-sm text-foreground/80 whitespace-pre-wrap">
+                <p>{item.details}</p>
+            </div>
+        </ScrollArea>
       )}
-    </div>
+    </>
   )
 }
 PortfolioDetails.displayName = 'PortfolioDetails';
@@ -85,7 +87,6 @@ export default function WorkPage() {
   const [selectedItem, setSelectedItem] = useState<PortfolioItem | null>(null);
   const [visibleItems, setVisibleItems] = useState(6);
   const [detailsVisible, setDetailsVisible] = useState(false);
-  const [isDetailsFullScreen, setIsDetailsFullScreen] = useState(false);
 
   const showMoreItems = () => {
     setVisibleItems((prevVisibleItems) => prevVisibleItems + 6);
@@ -94,19 +95,10 @@ export default function WorkPage() {
   const handleOpenChange = (open: boolean) => {
     if (!open) {
       setSelectedItem(null);
-      setIsDetailsFullScreen(false); // Reset on close
       setDetailsVisible(false);
     }
   };
 
-  const handleDetailsToggle = () => {
-    if (!detailsVisible) {
-      setDetailsVisible(true);
-      setIsDetailsFullScreen(false);
-    } else {
-      setIsDetailsFullScreen(prev => !prev);
-    }
-  }
 
   return (
     <>
@@ -173,54 +165,45 @@ export default function WorkPage() {
             <div className="relative flex-1 flex flex-col overflow-hidden">
                 <div
                     className={cn(
-                        "transition-all duration-500 ease-in-out flex-shrink-0",
-                        isDetailsFullScreen ? "h-0" : detailsVisible ? "h-1/2" : "h-full"
+                        "transition-all duration-500 ease-in-out flex-shrink-0 bg-black/50",
+                        detailsVisible ? "h-1/2" : "h-full"
                     )}
                 >
                     <PortfolioMedia item={selectedItem} />
                 </div>
               <div className={cn(
-                  "absolute left-0 right-0 bottom-0 bg-background/80 backdrop-blur-sm transition-all duration-500 ease-in-out",
-                  detailsVisible ? "h-full" : "h-0",
-                  !isDetailsFullScreen && detailsVisible ? "top-1/2" : "top-0"
+                  "absolute left-0 right-0 bottom-0 bg-background/80 backdrop-blur-sm transition-all duration-500 ease-in-out flex flex-col",
+                  detailsVisible ? "h-1/2" : "h-0"
                 )}>
-                <ScrollArea className="h-full">
-                    <PortfolioDetails item={selectedItem} />
-                </ScrollArea>
-                {selectedItem.details && (
-                  <>
+                  <PortfolioDetails item={selectedItem} />
+              </div>
+              <div className={cn("absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black/70 to-transparent transition-opacity duration-300", detailsVisible && "opacity-0 pointer-events-none")}>
+                  <DialogHeader className="text-left">
+                    <DialogTitle className="text-2xl text-white">{selectedItem.title}</DialogTitle>
+                    <DialogDescription className="text-base text-white/80 mt-2">
+                        {selectedItem.description}
+                    </DialogDescription>
+                  </DialogHeader>
+                  {selectedItem.details && (
+                      <Button
+                          variant="secondary"
+                          className="mt-4"
+                          onClick={() => setDetailsVisible(true)}
+                      >
+                          <ChevronsUpDown className="mr-2"/>
+                          Show Details
+                      </Button>
+                  )}
+              </div>
+              {detailsVisible && (
                     <Button
                         variant="ghost"
                         size="icon"
                         className="absolute top-4 right-12 z-30"
-                        onClick={handleDetailsToggle}
-                    >
-                        <ChevronsUpDown />
-                        <span className="sr-only">Toggle Details</span>
-                    </Button>
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        className="absolute top-4 left-4 z-30"
-                        onClick={() => {
-                            setDetailsVisible(false);
-                            setIsDetailsFullScreen(false);
-                        }}
+                        onClick={() => setDetailsVisible(false)}
                     >
                         <X />
                         <span className="sr-only">Close Details</span>
-                    </Button>
-                  </>
-                )}
-              </div>
-               {selectedItem.details && !detailsVisible && (
-                    <Button
-                        variant="secondary"
-                        className="absolute bottom-4 right-4 z-30"
-                        onClick={() => setDetailsVisible(true)}
-                    >
-                        <ChevronsUpDown className="mr-2"/>
-                        Show Details
                     </Button>
                 )}
             </div>
