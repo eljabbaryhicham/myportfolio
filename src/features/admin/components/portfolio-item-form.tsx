@@ -29,7 +29,6 @@ import {
   SheetHeader,
   SheetTitle,
   SheetDescription,
-  SheetFooter,
 } from '@/components/ui/sheet';
 import type { PortfolioItem } from '@/features/portfolio/data/portfolio-data';
 import { useEffect } from 'react';
@@ -78,7 +77,7 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit}: Port
             type: 'image' as 'image' | 'video',
             thumbnailUrl: '',
             sourceUrl: '',
-            thumbnailHint: '',
+thumbnailHint: '',
             featured: false,
             details: '',
         };
@@ -166,7 +165,7 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit}: Port
                                   <FormControl>
                                   <SelectTrigger>
                                       <SelectValue placeholder="Select a type" />
-                                  </SelectTrigger>
+                                  </Trigger>
                                   </FormControl>
                                   <SelectContent>
                                   <SelectItem value="image">Image</SelectItem>
@@ -229,5 +228,5 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit}: Port
                 </ScrollArea>
             </SheetContent>
         </Sheet>
-    )
+    );
 }
