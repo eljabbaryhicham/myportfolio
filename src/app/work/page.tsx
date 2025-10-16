@@ -155,7 +155,7 @@ export default function WorkPage() {
     }
   };
   
-  const isDescriptionLong = selectedItem?.description && selectedItem.description.length > 500;
+  const isDescriptionLong = selectedItem?.description && selectedItem.description.length > 250;
 
   return (
     <>
@@ -337,5 +337,7 @@ export default function WorkPage() {
     </>
   );
 }
+
+    
 
     
