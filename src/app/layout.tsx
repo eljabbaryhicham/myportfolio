@@ -1,3 +1,4 @@
+
 import type { Metadata } from 'next';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
@@ -23,6 +24,21 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet" />
       </head>
       <body className={cn('font-body antialiased text-center')} suppressHydrationWarning>
+        <div className="fixed inset-0 -z-10 overflow-hidden" style={{ filter: 'url(#metaballs)' }}>
+          <div className="absolute w-[25rem] h-[25rem] bg-primary/30 rounded-full blur-3xl opacity-60 top-1/4 left-1/4 blob-1"></div>
+          <div className="absolute w-[20rem] h-[20rem] bg-accent/30 rounded-full blur-3xl opacity-60 bottom-1/4 right-1/4 blob-2"></div>
+          <div className="absolute w-[15rem] h-[15rem] bg-secondary/30 rounded-full blur-3xl opacity-60 top-1/2 left-1/2 blob-3"></div>
+        </div>
+        <svg className="absolute w-0 h-0">
+          <defs>
+            <filter id="metaballs">
+              <feGaussianBlur in="SourceGraphic" stdDeviation="20" result="blur" />
+              <feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 25 -10" result="contrast" />
+              <feBlend in="SourceGraphic" in2="contrast" />
+            </filter>
+          </defs>
+        </svg>
+
         <FirebaseClientProvider>
           <div className="flex h-full flex-col md:flex-row p-2 md:p-4">
             <main className="flex-1 w-full glass-effect rounded-lg border border-border/50">
