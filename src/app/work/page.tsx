@@ -11,16 +11,11 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { useState, memo, useEffect } from "react";
-import { PlayCircle, ChevronsUpDown } from "lucide-react";
+import { PlayCircle, ChevronsUpDown, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import dynamic from "next/dynamic";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
 import type { PlyrProps } from "plyr-react";
 
 const VideoPlayer = dynamic(() => import("@/components/video-player"), {
@@ -67,10 +62,8 @@ PortfolioMedia.displayName = 'PortfolioMedia';
 
 
 const PortfolioDetails = ({ item }: { item: PortfolioItem }) => {
-  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
-
   return (
-    <div className="p-6 max-h-[40vh] overflow-y-auto">
+    <div className="p-6">
       <DialogHeader>
         <DialogTitle className="text-2xl">{item.title}</DialogTitle>
         <DialogDescription className="text-base text-foreground/70 mt-2">
@@ -78,20 +71,9 @@ const PortfolioDetails = ({ item }: { item: PortfolioItem }) => {
         </DialogDescription>
       </DialogHeader>
       {item.details && (
-        <Collapsible open={isDetailsOpen} onOpenChange={setIsDetailsOpen} className="mt-4">
-          <CollapsibleTrigger asChild>
-            <Button variant="ghost" className="-ml-4">
-              <ChevronsUpDown className="mr-2 h-4 w-4" />
-              {isDetailsOpen ? 'Hide' : 'Show'} details
-            </Button>
-          </CollapsibleTrigger>
-          
-          <CollapsibleContent className="transition-all data-[state=closed]:-translate-y-4 data-[state=closed]:opacity-0 data-[state=open]:opacity-100 data-[state=open]:translate-y-0">
-            <div className="mt-4 space-y-4 border-t pt-4 text-sm text-foreground/80 whitespace-pre-wrap">
-              <p>{item.details}</p>
-            </div>
-          </CollapsibleContent>
-        </Collapsible>
+        <div className="mt-4 space-y-4 border-t pt-4 text-sm text-foreground/80 whitespace-pre-wrap">
+            <p>{item.details}</p>
+        </div>
       )}
     </div>
   )
@@ -102,6 +84,7 @@ PortfolioDetails.displayName = 'PortfolioDetails';
 export default function WorkPage() {
   const [selectedItem, setSelectedItem] = useState<PortfolioItem | null>(null);
   const [visibleItems, setVisibleItems] = useState(6);
+  const [isDetailsFullScreen, setIsDetailsFullScreen] = useState(false);
 
   const showMoreItems = () => {
     setVisibleItems((prevVisibleItems) => prevVisibleItems + 6);
@@ -110,6 +93,7 @@ export default function WorkPage() {
   const handleOpenChange = (open: boolean) => {
     if (!open) {
       setSelectedItem(null);
+      setIsDetailsFullScreen(false); // Reset on close
     }
   };
 
@@ -173,14 +157,35 @@ export default function WorkPage() {
       </div>
 
       <Dialog open={!!selectedItem} onOpenChange={handleOpenChange}>
-        <DialogContent className="glass-effect w-[90vw] max-w-[90vw] h-[90vh] max-h-[90vh] p-0 overflow-hidden flex flex-col">
+        <DialogContent className="glass-effect w-[90vw] max-w-[90vw] h-[90vh] max-h-[90vh] p-0 flex flex-col transition-all duration-300">
           {selectedItem && (
-            <div className="flex-1 flex flex-col overflow-hidden">
-              <div className="flex-shrink-0">
-                <PortfolioMedia item={selectedItem} />
-              </div>
-              <div className="flex-1 overflow-y-auto">
-                <PortfolioDetails item={selectedItem} />
+            <div className="relative flex-1 flex flex-col overflow-hidden">
+                <div
+                    className={cn(
+                        "transition-all duration-500 ease-in-out flex-shrink-0",
+                        isDetailsFullScreen ? "opacity-0 h-0" : "opacity-100"
+                    )}
+                >
+                    <PortfolioMedia item={selectedItem} />
+                </div>
+              <div className={cn(
+                  "absolute inset-0 transition-all duration-500 ease-in-out",
+                  isDetailsFullScreen ? "z-20 bg-background/95 backdrop-blur-sm" : "z-10"
+                )}>
+                <ScrollArea className="h-full">
+                    <PortfolioDetails item={selectedItem} />
+                </ScrollArea>
+                {selectedItem.details && (
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        className={cn("absolute top-4 z-30", isDetailsFullScreen ? "left-4" : "right-12")}
+                        onClick={() => setIsDetailsFullScreen(prev => !prev)}
+                    >
+                        {isDetailsFullScreen ? <X /> : <ChevronsUpDown />}
+                        <span className="sr-only">{isDetailsFullScreen ? 'Close' : 'Expand'} Details</span>
+                    </Button>
+                )}
               </div>
             </div>
           )}
