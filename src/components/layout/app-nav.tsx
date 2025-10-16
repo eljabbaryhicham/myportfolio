@@ -54,7 +54,7 @@ export function AppNav() {
                       : "text-foreground/70 glass-effect"
                   )}
                 >
-                  <item.icon className="h-8 w-8" />
+                  <item.icon className="h-10 w-10" />
                   <span className="absolute bottom-full mb-2 hidden whitespace-nowrap rounded-md bg-card px-3 py-1.5 text-sm font-medium text-card-foreground group-hover:flex">
                     {item.label}
                   </span>
@@ -91,13 +91,13 @@ export function AppNav() {
                 key={item.label}
                 href={item.href}
                 className={cn(
-                  "group relative flex h-14 w-14 items-center justify-center rounded-md transition-all duration-300 hover:scale-110",
+                  "group relative flex h-12 w-12 items-center justify-center rounded-md transition-all duration-300 hover:scale-110",
                   isActive
                     ? "bg-destructive text-destructive-foreground scale-110"
                     : "text-foreground/70 glass-effect"
                 )}
               >
-                <item.icon className="h-8 w-8" />
+                <item.icon className="h-10 w-10" />
                 <span className="absolute bottom-full mb-2 md:left-full md:bottom-auto md:mb-0 md:ml-4 hidden whitespace-nowrap rounded-md bg-card px-3 py-1.5 text-sm font-medium text-card-foreground group-hover:flex">
                   {item.label}
                 </span>
