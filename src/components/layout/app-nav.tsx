@@ -7,6 +7,7 @@ import { Home, Images, Cat, Info, Mail, Shield } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useUser } from "@/firebase";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { motion } from "framer-motion";
 
 const navItems = [
   { href: "/", label: "Home", icon: Home, public: true },
@@ -23,8 +24,18 @@ export function AppNav() {
 
   const visibleNavItems = navItems.filter(item => item.public || (!item.public && user));
 
+  const variants = {
+    hidden: isMobile ? { y: '100%' } : { x: '100%' },
+    visible: isMobile ? { y: 0 } : { x: 0 },
+  };
+
   return (
-    <aside
+    <motion.aside
+      initial="hidden"
+      animate="visible"
+      exit="hidden"
+      variants={variants}
+      transition={{ ease: "easeInOut", duration: 0.5 }}
       className="w-full md:w-28 flex-shrink-0 p-0 md:p-4 mt-2 md:mt-0 h-[10vh] md:h-auto"
     >
       <div className={cn("flex h-full flex-row md:flex-col items-center justify-center md:justify-between rounded-lg border border-border/50 px-4 py-2 md:p-8 glass-effect")}>
@@ -60,6 +71,6 @@ export function AppNav() {
           <div className="h-10 w-10 md:h-12 md:w-12 hidden md:block"></div>
         </div>
       </div>
-    </aside>
+    </motion.aside>
   );
 }
