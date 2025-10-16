@@ -164,9 +164,9 @@ export default function WorkPage() {
               </p>
             </div>
             <div className="flex justify-center gap-2 mb-4">
-              <Button variant={filter === 'all' ? 'default' : 'outline'} onClick={() => setFilter('all')}>All</Button>
-              <Button variant={filter === 'image' ? 'default' : 'outline'} onClick={() => setFilter('image')}>Images</Button>
-              <Button variant={filter === 'video' ? 'default' : 'outline'} onClick={() => setFilter('video')}>Videos</Button>
+              <Button variant={filter === 'all' ? 'destructive' : 'outline'} onClick={() => setFilter('all')}>All</Button>
+              <Button variant={filter === 'image' ? 'destructive' : 'outline'} onClick={() => setFilter('image')}>Images</Button>
+              <Button variant={filter === 'video' ? 'destructive' : 'outline'} onClick={() => setFilter('video')}>Videos</Button>
             </div>
           </div>
         </div>
