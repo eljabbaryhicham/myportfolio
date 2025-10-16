@@ -163,37 +163,37 @@ export default function WorkPage() {
         <DialogContent className="glass-effect w-[90vw] max-w-[90vw] h-[90vh] max-h-[90vh] p-0 flex flex-col transition-all duration-300">
           {selectedItem && (
             <div className="relative flex-1 flex flex-col overflow-hidden">
-                <div
-                    className={cn(
-                        "transition-all duration-500 ease-in-out flex-shrink-0 bg-black/50 h-full"
-                    )}
-                >
-                    <PortfolioMedia item={selectedItem} />
+                <div className={cn("flex-1 flex flex-col min-h-0", detailsVisible ? 'h-0' : 'h-full')}>
+                    <div className="flex-1 bg-black/50">
+                        <PortfolioMedia item={selectedItem} />
+                    </div>
+                    <div className="flex-shrink-0 p-6 bg-background/80 border-t">
+                        <DialogHeader className="text-left">
+                            <DialogTitle className="text-2xl">{selectedItem.title}</DialogTitle>
+                            <DialogDescription className="text-base text-foreground/70 mt-2">
+                                {selectedItem.description}
+                            </DialogDescription>
+                        </DialogHeader>
+                        {selectedItem.details && (
+                            <Button
+                                variant="secondary"
+                                className="mt-4"
+                                onClick={() => setDetailsVisible(true)}
+                            >
+                                <ChevronsUpDown className="mr-2"/>
+                                Show Details
+                            </Button>
+                        )}
+                    </div>
                 </div>
+
               <div className={cn(
-                  "absolute left-0 right-0 bottom-0 bg-background/80 backdrop-blur-sm transition-all duration-500 ease-in-out flex flex-col",
-                  detailsVisible ? "h-full" : "h-0"
+                  "absolute inset-0 bg-background/80 backdrop-blur-sm transition-transform duration-500 ease-in-out flex flex-col",
+                  detailsVisible ? "translate-y-0" : "translate-y-full"
                 )}>
                   <PortfolioDetails item={selectedItem} />
               </div>
-              <div className={cn("absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black/70 to-transparent transition-opacity duration-300", detailsVisible && "opacity-0 pointer-events-none")}>
-                  <DialogHeader className="text-left">
-                    <DialogTitle className="text-2xl text-white">{selectedItem.title}</DialogTitle>
-                    <DialogDescription className="text-base text-white/80 mt-2">
-                        {selectedItem.description}
-                    </DialogDescription>
-                  </DialogHeader>
-                  {selectedItem.details && (
-                      <Button
-                          variant="secondary"
-                          className="mt-4"
-                          onClick={() => setDetailsVisible(true)}
-                      >
-                          <ChevronsUpDown className="mr-2"/>
-                          Show Details
-                      </Button>
-                  )}
-              </div>
+              
               {detailsVisible && (
                     <Button
                         variant="ghost"
