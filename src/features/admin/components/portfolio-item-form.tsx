@@ -47,6 +47,7 @@ const formSchema = z.object({
   details: z.string().optional(),
   thumbnailHint: z.string().optional(),
   featured: z.boolean().optional(),
+  order: z.number().optional(),
 });
 
 type PortfolioItemFormValues = z.infer<typeof formSchema>;
@@ -71,6 +72,7 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit}: Port
             thumbnailHint: item.thumbnailHint || '',
             details: item.details || '',
             sourceUrl: item.sourceUrl || '',
+            order: item.order || 0,
         } : {
             title: '',
             description: '',
@@ -80,6 +82,7 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit}: Port
             thumbnailHint: '',
             featured: false,
             details: '',
+            order: 0,
         };
         form.reset(defaultValues);
       }
@@ -93,12 +96,13 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit}: Port
           description: values.description,
           title: values.title,
           thumbnailUrl: values.thumbnailUrl,
+          order: values.order || 0,
         });
     };
 
     return (
         <Sheet open={isOpen} onOpenChange={setIsOpen}>
-            <SheetContent className="w-full sm:max-w-lg h-screen flex flex-col glass-effect border-border/50">
+            <SheetContent className="w-full max-w-[50%] sm:max-w-lg h-screen flex flex-col glass-effect border-border/50">
                 <SheetHeader>
                 <SheetTitle>{item ? 'Edit' : 'Add'} Portfolio Item</SheetTitle>
                 <SheetDescription>
@@ -215,6 +219,22 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit}: Port
                                   <Input placeholder="https://example.com/full-image.jpg" {...field} />
                               </FormControl>
                               <FormMessage />
+                              </FormItem>
+                          )}
+                          />
+                          <FormField
+                          control={form.control}
+                          name="order"
+                          render={({ field }) => (
+                              <FormItem>
+                                  <FormLabel>Order</FormLabel>
+                                  <FormControl>
+                                      <Input type="number" {...field} onChange={event => field.onChange(+event.target.value)} />
+                                  </FormControl>
+                                  <FormDescription>
+                                      The display order of the project.
+                                  </FormDescription>
+                                  <FormMessage />
                               </FormItem>
                           )}
                           />
