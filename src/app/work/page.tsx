@@ -191,7 +191,7 @@ export default function WorkPage() {
                       data-ai-hint={item.thumbnailHint}
                       sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-4 text-left">
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-4">
                       <h3 className="font-bold text-white text-lg">
                         {item.title}
                       </h3>
@@ -265,7 +265,7 @@ export default function WorkPage() {
               </ScrollArea>
             </div>
           )}
-           <DialogClose className="absolute top-4 right-4 z-[101] h-8 w-8 rounded-full bg-red-500 text-white flex items-center justify-center opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2">
+           <DialogClose className="absolute top-4 right-4 z-[101] h-8 w-8 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2">
               <X className="h-4 w-4" />
               <span className="sr-only">Close</span>
           </DialogClose>
@@ -315,7 +315,7 @@ export default function WorkPage() {
                         >{selectedItem.details || ''}</ReactMarkdown>
                     </div>
                 </ScrollArea>
-                 <DialogClose className="absolute top-4 right-4 z-[101] h-8 w-8 rounded-full bg-red-600 text-white flex items-center justify-center opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2">
+                 <DialogClose className="absolute top-4 right-4 z-[101] h-8 w-8 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2">
                     <X className="h-4 w-4" />
                     <span className="sr-only">Close</span>
                 </DialogClose>
