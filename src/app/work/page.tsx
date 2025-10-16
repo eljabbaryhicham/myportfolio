@@ -172,7 +172,7 @@ export default function WorkPage() {
       </div>
 
       <Dialog open={!!selectedItem} onOpenChange={handleOpenChange}>
-        <DialogContent className="w-[90vw] md:max-w-[80vw] max-h-[90vh] glass-effect p-0 flex flex-col">
+        <DialogContent className="w-[90vw] md:max-w-[80vw] h-auto max-h-[90vh] glass-effect p-0 flex flex-col">
           {selectedItem && (
             <div className="relative flex-1 flex flex-col min-h-0">
               <ScrollArea className="flex-1">
