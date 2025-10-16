@@ -94,7 +94,7 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit}: Port
 
     return (
         <Sheet open={isOpen} onOpenChange={setIsOpen}>
-            <SheetContent className="w-[400px] sm:w-[540px] h-auto sm:h-screen flex flex-col text-left">
+            <SheetContent className="w-[400px] sm:w-[540px] h-auto sm:h-screen flex flex-col">
                 <SheetHeader>
                 <SheetTitle>{item ? 'Edit' : 'Add'} Portfolio Item</SheetTitle>
                 <SheetDescription>
@@ -102,7 +102,7 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit}: Port
                 </SheetDescription>
                 </SheetHeader>
                 <ScrollArea className="flex-1">
-                  <div className="py-8 pr-6">
+                  <div className="py-8 pr-6 text-left">
                     <Form {...form}>
                       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8">
                           <FormField

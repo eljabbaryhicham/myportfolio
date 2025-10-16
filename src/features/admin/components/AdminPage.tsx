@@ -89,7 +89,7 @@ function AdminPage() {
 
 
   return (
-    <div className="p-8 text-left">
+    <div className="p-8">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center mb-8">
           <div>
@@ -111,7 +111,7 @@ function AdminPage() {
         </div>
 
         <div className="border rounded-lg overflow-hidden glass-effect">
-          <Table>
+          <Table className="text-left">
             <TableHeader>
               <TableRow>
                 <TableHead className="w-[80px]">Image</TableHead>

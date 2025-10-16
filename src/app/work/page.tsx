@@ -174,7 +174,7 @@ export default function WorkPage() {
         <ScrollArea className="flex-1">
           <div className="p-8 pt-0">
             <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 text-left">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {filteredItems.slice(0, visibleItems).map(item => (
                   <div
                     key={item.id}
@@ -191,7 +191,7 @@ export default function WorkPage() {
                       data-ai-hint={item.thumbnailHint}
                       sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-4">
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-4 text-left">
                       <h3 className="font-bold text-white text-lg">
                         {item.title}
                       </h3>
@@ -228,7 +228,7 @@ export default function WorkPage() {
       <Dialog open={!!selectedItem} onOpenChange={handleOpenChange}>
         <DialogContent 
             className={cn(
-                "w-[90vw] md:max-w-[80vw] glass-effect p-0 flex flex-col overflow-hidden text-left",
+                "w-[90vw] md:max-w-[80vw] glass-effect p-0 flex flex-col overflow-hidden",
                 isVeryUltrawide || isDescriptionLong ? "h-[90vh]" : "h-auto"
             )}
         >
@@ -274,7 +274,7 @@ export default function WorkPage() {
       
       {/* Nested Dialog for Details */}
       <Dialog open={detailsModalOpen} onOpenChange={handleDetailsOpenChange}>
-        <DialogContent className="w-[90vw] md:max-w-[80vw] h-[90vh] glass-effect p-0 flex flex-col text-left">
+        <DialogContent className="w-[90vw] md:max-w-[80vw] h-[90vh] glass-effect p-0 flex flex-col">
             {selectedItem && (
                 <>
                 <DialogHeader className="p-6 pb-0">

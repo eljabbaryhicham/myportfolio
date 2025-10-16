@@ -69,7 +69,7 @@ export default function LoginPage() {
 
   return (
     <div className="flex h-full w-full items-center justify-center p-4">
-      <Card className="w-full max-w-md glass-effect text-left">
+      <Card className="w-full max-w-md glass-effect">
         <CardHeader>
             <CardTitle className="text-2xl">Admin Access</CardTitle>
             <CardDescription>
@@ -78,7 +78,7 @@ export default function LoginPage() {
         </CardHeader>
         <CardContent>
             <Form {...form}>
-                <form onSubmit={form.handleSubmit(handleSignIn)} className="space-y-6 pt-4">
+                <form onSubmit={form.handleSubmit(handleSignIn)} className="space-y-6 pt-4 text-left">
                 <FormField
                     control={form.control}
                     name="email"
