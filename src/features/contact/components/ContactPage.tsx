@@ -80,7 +80,7 @@ export default function ContactPage() {
 
   return (
     <div className="flex h-full w-full flex-col items-center justify-center p-4 sm:p-8">
-      <div className="w-full max-w-5xl mx-auto">
+      <div className="w-full max-w-4xl mx-auto">
         <div className="text-center mb-8">
           <h1 className="text-xl md:text-2xl text-foreground/80">
             Let's get in touch! Fill out the form below to send me a message.
@@ -173,16 +173,16 @@ export default function ContactPage() {
                             </Link>
                         ))}
                     </div>
+                     <div className="w-full mt-6">
+                        <Button className="w-full h-16 bg-gradient-to-r from-green-500 to-teal-500 text-white text-lg">
+                            <Smartphone className="mr-3" />
+                            <div>
+                                <p className="text-sm font-light text-left">Make a deal on WhatsApp</p>
+                                <p className="font-bold">+212 619 665 220</p>
+                            </div>
+                        </Button>
+                    </div>
                 </CardContent>
-                <div className="mt-6">
-                    <Button className="w-full h-16 bg-gradient-to-r from-green-500 to-teal-500 text-white text-lg">
-                        <Smartphone className="mr-3" />
-                        <div>
-                            <p className="text-sm font-light text-left">Make a deal on WhatsApp</p>
-                            <p className="font-bold">+212 619 665 220</p>
-                        </div>
-                    </Button>
-                </div>
             </Card>
           </div>
         </div>
@@ -198,5 +198,3 @@ export default function ContactPage() {
     </div>
   );
 }
-
-    
