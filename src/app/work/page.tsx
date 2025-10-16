@@ -204,7 +204,7 @@ export default function WorkPage() {
             <div className="container mx-auto px-0">
                {isLoading && <p>Loading projects...</p>}
               {!isLoading && (
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
                   {filteredItems.slice(0, visibleItems).map(item => (
                     <div
                       key={item.id}
@@ -219,7 +219,7 @@ export default function WorkPage() {
                         fill
                         className="object-cover transition-transform duration-300 group-hover:scale-105"
                         data-ai-hint={item.thumbnailHint}
-                        sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                        sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-4">
                         <h3 className="font-bold text-white text-lg">
