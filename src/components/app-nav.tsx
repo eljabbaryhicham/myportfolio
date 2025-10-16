@@ -3,13 +3,15 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Images, Cat, LogIn } from "lucide-react";
+import { Home, Images, Cat, LogIn, Info, Mail } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useUser } from "@/firebase";
 
 const navItems = [
   { href: "/", label: "Home", icon: Home, public: true },
   { href: "/work", label: "Work", icon: Images, public: true },
+  { href: "/about", label: "About", icon: Info, public: true },
+  { href: "/contact", label: "Contact", icon: Mail, public: true },
 ];
 
 export function AppNav() {
@@ -37,7 +39,7 @@ export function AppNav() {
                 className={cn(
                   "group relative flex h-12 w-12 items-center justify-center rounded-md transition-all duration-300",
                   "hover:scale-110",
-                  isActive 
+                  isActive
                     ? "bg-destructive text-destructive-foreground scale-110"
                     : "text-foreground/70 glass-effect"
                 )}
