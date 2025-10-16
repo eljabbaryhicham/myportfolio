@@ -111,7 +111,7 @@ export default function ContactPage() {
                           <div className={`w-10 h-10 flex-shrink-0 rounded-full flex items-center justify-center mr-4 ${link.color}`}>
                             <link.icon className="w-5 h-5" />
                           </div>
-                          <div className="flex-grow">
+                          <div className="flex-grow text-left">
                             <p className="text-sm text-foreground/70">{link.label}</p>
                             <p className="font-medium group-hover:text-primary transition-colors">{link.value}</p>
                           </div>
