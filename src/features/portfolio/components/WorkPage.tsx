@@ -19,6 +19,8 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import type { PlyrProps } from 'plyr-react';
 import type Plyr from 'plyr';
 import ReactMarkdown from 'react-markdown';
+import rehypeRaw from 'rehype-raw';
+import rehypeSanitize from 'rehype-sanitize';
 
 const VideoPlayer = dynamic(() => import('@/components/media/video-player'), {
   ssr: false,
@@ -232,6 +234,7 @@ export default function WorkPage() {
                     <h3 className="text-2xl font-bold mb-4">{selectedItem.title} - Details</h3>
                     <div className="prose dark:prose-invert max-w-none space-y-4 text-sm text-foreground/80 whitespace-pre-wrap">
                       <ReactMarkdown
+                          rehypePlugins={[rehypeRaw, rehypeSanitize]}
                           components={{
                             img: ({node, ...props}) => <img className="w-full rounded-md" {...props} />,
                             video: ({node, ...props}) => {
