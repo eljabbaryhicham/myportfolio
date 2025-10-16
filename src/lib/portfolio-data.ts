@@ -48,7 +48,7 @@ export const portfolioItems: PortfolioItem[] = [
     id: 'img2',
     type: 'image',
     title: 'Bloom',
-    description: 'Portraiture blending natural elements with human form.',
+    description: 'A series of portraits that merges the human form with botanical elements, exploring the symbiotic relationship between humanity and the natural world through a blend of photography and digital illustration.',
     thumbnailUrl: placeholderImages['img2'].imageUrl,
     thumbnailHint: placeholderImages['img2'].imageHint,
     sourceUrl: 'https://picsum.photos/seed/liquid2/1200/1600',
