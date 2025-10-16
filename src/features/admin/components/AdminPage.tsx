@@ -217,7 +217,7 @@ function AdminPage() {
                   </TableRow>
                 )}
                 {!isLoading && sortedItems && sortedItems.map((item, index) => (
-                  <TableRow key={item.id}>
+                  <TableRow key={item.id} className="border-b border-white/10">
                     <TableCell className="flex justify-center">
                       <Image
                         src={item.thumbnailUrl}
