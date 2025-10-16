@@ -150,7 +150,7 @@ export default function ContactPage() {
           </Card>
           
           <div className="lg:col-span-2 flex flex-col gap-8">
-            <Card className="glass-effect p-6">
+            <Card className="glass-effect p-6 flex flex-col">
                 <CardContent className="flex flex-col items-center text-center p-0">
                     <Avatar className="w-24 h-24 mb-4 border-2 border-primary">
                         <AvatarImage src="https://picsum.photos/seed/hicham/200/200" alt="Hicham Eljabbary" data-ai-hint="man portrait" />
@@ -173,16 +173,17 @@ export default function ContactPage() {
                             </Link>
                         ))}
                     </div>
-
                 </CardContent>
-            </Card>
-             <Button className="w-full h-16 bg-gradient-to-r from-green-500 to-teal-500 text-white text-lg">
-                <Smartphone className="mr-3" />
-                <div>
-                    <p className="text-sm font-light">Make a deal on WhatsApp</p>
-                    <p className="font-bold">+212 619 665 220</p>
+                <div className="mt-6">
+                    <Button className="w-full h-16 bg-gradient-to-r from-green-500 to-teal-500 text-white text-lg">
+                        <Smartphone className="mr-3" />
+                        <div>
+                            <p className="text-sm font-light text-left">Make a deal on WhatsApp</p>
+                            <p className="font-bold">+212 619 665 220</p>
+                        </div>
+                    </Button>
                 </div>
-            </Button>
+            </Card>
           </div>
         </div>
       </div>
