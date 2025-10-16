@@ -57,6 +57,24 @@ const clients = [
     image: 'https://picsum.photos/seed/client7/400/400',
     hint: 'drummer silhouette',
   },
+  {
+    name: 'Client Eight',
+    category: 'Electronic Duo',
+    image: 'https://picsum.photos/seed/client8/400/400',
+    hint: 'synthesizer setup',
+  },
+  {
+    name: 'Client Nine',
+    category: 'Vocalist',
+    image: 'https://picsum.photos/seed/client9/400/400',
+    hint: 'woman singing',
+  },
+  {
+    name: 'Client Ten',
+    category: 'Producer',
+    image: 'https://picsum.photos/seed/client10/400/400',
+    hint: 'mixing board',
+  },
 ];
 
 const MemoizedImage = memo(Image);
