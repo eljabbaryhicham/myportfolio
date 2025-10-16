@@ -7,6 +7,7 @@ import { Home, Images, Cat, Info, Mail, Shield } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useUser } from "@/firebase";
 import { motion } from "framer-motion";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const navItems = [
   { href: "/", label: "Home", icon: Home, public: true },
@@ -18,23 +19,24 @@ const navItems = [
 
 export function AppNav() {
   const pathname = usePathname();
-  const { user, isUserLoading } = useUser();
+  const { user } = useUser();
+  const isMobile = useIsMobile();
 
   const visibleNavItems = navItems.filter(item => item.public || (!item.public && user));
 
   return (
     <motion.aside
-      initial={{ x: "100%" }}
-      animate={{ x: 0 }}
+      key={pathname}
+      initial={isMobile ? { y: "100%" } : { x: "100%" }}
+      animate={{ x: 0, y: 0 }}
       transition={{ duration: 0.5, ease: "easeOut" }}
       className="w-full md:w-28 flex-shrink-0 p-0 md:p-4 mt-2 md:mt-0"
     >
-      <div className={cn("flex h-auto md:h-full flex-row md:flex-col items-center justify-between rounded-lg border border-border/50 p-4 md:p-8 glass-effect")}>
-        <div className="flex md:hidden w-8"></div> {/* Spacer for left side on mobile */}
-        <Link href="/" className="flex items-center gap-2 text-primary">
+      <div className={cn("flex h-auto md:h-full flex-row md:flex-col items-center justify-center md:justify-between rounded-lg border border-border/50 p-2 md:p-8 glass-effect")}>
+        <Link href="/" className="hidden md:flex items-center gap-2 text-primary">
           <Cat className="h-8 w-8" />
         </Link>
-        <nav className="flex flex-row md:flex-col items-center gap-4 md:gap-6">
+        <nav className="flex flex-row md:flex-col items-center gap-2 md:gap-6">
           {visibleNavItems.map((item) => {
             const isActive =
               item.href === "/"
@@ -45,13 +47,13 @@ export function AppNav() {
                 key={item.label}
                 href={item.href}
                 className={cn(
-                  "group relative flex h-10 w-10 md:h-12 md:w-12 items-center justify-center rounded-md transition-all duration-300 hover:scale-110",
+                  "group relative flex h-10 w-10 items-center justify-center rounded-md transition-all duration-300 hover:scale-110",
                   isActive
                     ? "bg-destructive text-destructive-foreground scale-110"
                     : "text-foreground/70 glass-effect"
                 )}
               >
-                <item.icon className="h-5 w-5 md:h-6 md:w-6" />
+                <item.icon className="h-5 w-5" />
                 <span className="absolute bottom-full mb-2 md:left-full md:bottom-auto md:mb-0 md:ml-4 hidden whitespace-nowrap rounded-md bg-card px-3 py-1.5 text-sm font-medium text-card-foreground group-hover:flex">
                   {item.label}
                 </span>
@@ -59,11 +61,11 @@ export function AppNav() {
             );
           })}
         </nav>
-        <div className="flex flex-col items-center gap-4">
+        <div className="hidden md:flex flex-col items-center gap-4">
           <div className="h-10 w-10 md:h-12 md:w-12 hidden md:block"></div>
-           <div className="h-8 w-8 md:hidden"></div> {/* Spacer for right side on mobile */}
         </div>
       </div>
     </motion.aside>
   );
 }
+
