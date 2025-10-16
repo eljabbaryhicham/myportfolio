@@ -25,7 +25,7 @@ import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import { signOut } from 'firebase/auth';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { addDocumentNonBlocking, deleteDocumentNonBlocking, setDocumentNonBlocking, updateDocumentNonBlocking } from '@/firebase/non-blocking-updates';
+import { addDocumentNonBlocking, deleteDocumentNonBlocking, setDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { collection, doc, writeBatch } from 'firebase/firestore';
 import { defaultPortfolioItems } from '@/features/portfolio/data/portfolio-data';
 import type { PortfolioItem } from '@/lib/portfolio-data';
@@ -46,7 +46,7 @@ function AdminPage() {
 
   const sortedItems = useMemo(() => {
     if (!items) return [];
-    return [...items].sort((a, b) => (a.order || 0) - (b.order || 0));
+    return [...items].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
   }, [items]);
 
   const maxOrder = useMemo(() => {
@@ -87,9 +87,9 @@ function AdminPage() {
     const batch = writeBatch(firestore);
     const projectsCol = collection(firestore, 'projects');
 
-    defaultPortfolioItems.forEach((item, index) => {
+    defaultPortfolioItems.forEach((item) => {
         const docRef = doc(projectsCol, item.id);
-        batch.set(docRef, { ...item, order: item.order ?? index });
+        batch.set(docRef, item);
     });
 
     try {
@@ -160,9 +160,9 @@ function AdminPage() {
       const itemRef = doc(firestore, 'projects', item.id);
       const otherItemRef = doc(firestore, 'projects', otherItem.id);
 
-      // Get the order values before creating the batch
-      const itemOrder = item.order;
-      const otherItemOrder = otherItem.order;
+      // Ensure both items have a valid order number before swapping
+      const itemOrder = item.order ?? 0;
+      const otherItemOrder = otherItem.order ?? 0;
 
       const batch = writeBatch(firestore);
       
@@ -308,5 +308,3 @@ function AdminPage() {
 }
 
 export default AdminPage;
-
-    

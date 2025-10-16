@@ -75,7 +75,7 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit}: Port
             thumbnailHint: item.thumbnailHint || '',
             details: item.details || '',
             sourceUrl: item.sourceUrl || '',
-            order: item.order || 0,
+            order: item.order ?? 0,
         } : {
             title: '',
             description: '',
@@ -262,5 +262,3 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit}: Port
         </Dialog>
     )
 }
-
-    
