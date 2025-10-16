@@ -14,7 +14,7 @@ export interface PortfolioItem {
   details?: string;
 }
 
-export const portfolioItems: PortfolioItem[] = [
+export const defaultPortfolioItems: PortfolioItem[] = [
   {
     id: 'vid1',
     type: 'video',

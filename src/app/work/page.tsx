@@ -91,7 +91,7 @@ PortfolioMedia.displayName = 'PortfolioMedia';
 
 export default function WorkPage() {
   const firestore = useFirestore();
-  const projectsCollection = useMemoFirebase(() => collection(firestore, 'projects'), [firestore]);
+  const projectsCollection = useMemoFirebase(() => firestore ? collection(firestore, 'projects') : null, [firestore]);
   const { data: portfolioItems, isLoading } = useCollection<PortfolioItem>(projectsCollection);
 
   const [selectedItem, setSelectedItem] = useState<PortfolioItem | null>(null);
@@ -337,5 +337,3 @@ export default function WorkPage() {
     </>
   );
 }
-
-    

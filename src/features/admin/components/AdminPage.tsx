@@ -11,7 +11,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { PlusCircle, MoreHorizontal, LogOut } from 'lucide-react';
+import { PlusCircle, MoreHorizontal, LogOut, UploadCloud } from 'lucide-react';
 import Image from 'next/image';
 import {
   DropdownMenu,
@@ -25,13 +25,13 @@ import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import { signOut } from 'firebase/auth';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { PortfolioItem } from '@/features/portfolio/data/portfolio-data';
+import { PortfolioItem, defaultPortfolioItems } from '@/features/portfolio/data/portfolio-data';
 import { addDocumentNonBlocking, deleteDocumentNonBlocking, setDocumentNonBlocking } from '@/firebase/non-blocking-updates';
-import { collection, doc } from 'firebase/firestore';
+import { collection, doc, writeBatch } from 'firebase/firestore';
 
 function AdminPage() {
   const firestore = useFirestore();
-  const projectsCollection = useMemoFirebase(() => collection(firestore, 'projects'), [firestore]);
+  const projectsCollection = useMemoFirebase(() => firestore ? collection(firestore, 'projects') : null, [firestore]);
   const { data: items, isLoading } = useCollection<PortfolioItem>(projectsCollection);
   
   const [selectedItem, setSelectedItem] = useState<PortfolioItem | null>(null);
@@ -46,6 +46,7 @@ function AdminPage() {
   }
 
   const handleLogout = async () => {
+    if (!auth) return;
     try {
       await signOut(auth);
       toast({
@@ -61,6 +62,31 @@ function AdminPage() {
       });
     }
   };
+
+  const handleSeedData = async () => {
+    if (!firestore) {
+        toast({ variant: 'destructive', title: 'Error', description: 'Firestore not available' });
+        return;
+    }
+    const batch = writeBatch(firestore);
+    const projectsCol = collection(firestore, 'projects');
+
+    defaultPortfolioItems.forEach((item) => {
+        // Since defaultPortfolioItems might have a predefined `id`,
+        // we'll use that for the new document ID to maintain consistency.
+        // If `id` isn't provided, Firestore will auto-generate one.
+        const docRef = item.id ? doc(projectsCol, item.id) : doc(projectsCol);
+        batch.set(docRef, item);
+    });
+
+    try {
+        await batch.commit();
+        toast({ title: 'Success', description: 'Default projects have been added.' });
+    } catch (e: any) {
+        console.error("Error seeding data:", e);
+        toast({ variant: 'destructive', title: 'Error seeding data', description: e.message });
+    }
+  }
 
   if (isUserLoading || !user) {
     return <div className="flex h-full w-full items-center justify-center">Loading...</div>;
@@ -117,6 +143,12 @@ function AdminPage() {
             </p>
           </div>
           <div className="flex items-center gap-2 md:gap-4 flex-wrap">
+            {!isLoading && items?.length === 0 && (
+                <Button onClick={handleSeedData} variant="secondary">
+                    <UploadCloud className="mr-2 h-4 w-4" />
+                    Seed Default Projects
+                </Button>
+            )}
             <Button onClick={handleAddItem}>
               <PlusCircle className="mr-2 h-4 w-4" />
               Add New
