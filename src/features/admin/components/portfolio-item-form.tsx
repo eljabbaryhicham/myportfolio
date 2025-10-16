@@ -94,7 +94,7 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit}: Port
 
     return (
         <Sheet open={isOpen} onOpenChange={setIsOpen}>
-            <SheetContent className="w-[400px] sm:w-[540px] h-auto sm:h-screen flex flex-col">
+            <SheetContent className="w-full sm:max-w-lg h-screen flex flex-col">
                 <SheetHeader>
                 <SheetTitle>{item ? 'Edit' : 'Add'} Portfolio Item</SheetTitle>
                 <SheetDescription>
@@ -226,5 +226,3 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit}: Port
         </Sheet>
     )
 }
-
-    

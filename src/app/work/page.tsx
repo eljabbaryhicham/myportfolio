@@ -154,11 +154,11 @@ export default function WorkPage() {
   return (
     <>
       <div className="h-full w-full flex flex-col">
-        <div className="p-8 pb-4">
-          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="mb-8">
-              <h1 className="text-4xl font-bold tracking-tight">Our Work</h1>
-              <p className="mt-2 max-w-2xl mx-auto text-lg text-foreground/70">
+        <div className="p-4 md:p-8 pb-4">
+          <div className="container mx-auto px-0">
+            <div className="mb-8 text-center">
+              <h1 className="text-3xl md:text-4xl font-bold tracking-tight">Our Work</h1>
+              <p className="mt-2 max-w-2xl mx-auto text-base md:text-lg text-foreground/70">
                 Browse our collection of projects. Click on any item to view
                 details.
               </p>
@@ -172,9 +172,9 @@ export default function WorkPage() {
         </div>
 
         <ScrollArea className="flex-1">
-          <div className="p-8 pt-0">
-            <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="p-4 md:p-8 pt-0">
+            <div className="container mx-auto px-0">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
                 {filteredItems.slice(0, visibleItems).map(item => (
                   <div
                     key={item.id}
@@ -201,12 +201,12 @@ export default function WorkPage() {
                     </div>
                     {item.type === 'video' && (
                       <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/40 transition-colors">
-                        <PlayCircle className="h-16 w-16 text-white/80" />
+                        <PlayCircle className="h-12 w-12 md:h-16 md:w-16 text-white/80" />
                       </div>
                     )}
                     {item.type === 'image' && (
                         <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/40 transition-colors">
-                            <ImageIcon className="h-16 w-16 text-white/80" />
+                            <ImageIcon className="h-12 w-12 md:h-16 md:w-16 text-white/80" />
                         </div>
                     )}
                   </div>
@@ -214,7 +214,7 @@ export default function WorkPage() {
               </div>
 
               {visibleItems < filteredItems.length && (
-                <div className="mt-12">
+                <div className="mt-12 text-center">
                   <Button onClick={showMoreItems} size="lg">
                     Show More
                   </Button>
@@ -228,7 +228,7 @@ export default function WorkPage() {
       <Dialog open={!!selectedItem} onOpenChange={handleOpenChange}>
         <DialogContent 
             className={cn(
-                "w-[90vw] md:max-w-[80vw] glass-effect p-0 flex flex-col overflow-hidden",
+                "w-[95vw] md:w-[90vw] md:max-w-[80vw] glass-effect p-0 flex flex-col overflow-hidden",
                 isVeryUltrawide || isDescriptionLong ? "h-[90vh]" : "h-auto"
             )}
         >
@@ -239,9 +239,9 @@ export default function WorkPage() {
                     <div className="flex-shrink-0">
                         <PortfolioMedia item={selectedItem} playerRef={playerRef} />
                     </div>
-                    <div className="flex-shrink-0 p-6 pt-4">
+                    <div className="flex-shrink-0 p-4 md:p-6 pt-4">
                         <DialogHeader>
-                            <DialogTitle className="text-2xl">
+                            <DialogTitle className="text-xl md:text-2xl">
                             {selectedItem.title}
                             </DialogTitle>
                             <DialogDescription className="text-base text-foreground/70 mt-2 whitespace-pre-wrap">
@@ -274,14 +274,14 @@ export default function WorkPage() {
       
       {/* Nested Dialog for Details */}
       <Dialog open={detailsModalOpen} onOpenChange={handleDetailsOpenChange}>
-        <DialogContent className="w-[90vw] md:max-w-[80vw] h-[90vh] glass-effect p-0 flex flex-col">
+        <DialogContent className="w-[95vw] md:w-[90vw] md:max-w-[80vw] h-[90vh] glass-effect p-0 flex flex-col">
             {selectedItem && (
                 <>
-                <DialogHeader className="p-6 pb-0">
+                <DialogHeader className="p-4 md:p-6 pb-0">
                     <DialogTitle>{selectedItem.title} - Details</DialogTitle>
                 </DialogHeader>
                 <ScrollArea className="flex-1">
-                    <div className="prose dark:prose-invert max-w-none space-y-4 text-sm text-foreground/80 whitespace-pre-wrap p-6">
+                    <div className="prose dark:prose-invert max-w-none space-y-4 text-sm text-foreground/80 whitespace-pre-wrap p-4 md:p-6">
                         <ReactMarkdown
                           rehypePlugins={[
                             rehypeRaw,
@@ -328,5 +328,3 @@ export default function WorkPage() {
     </>
   );
 }
-
-    

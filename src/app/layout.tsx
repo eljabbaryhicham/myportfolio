@@ -24,7 +24,7 @@ export default function RootLayout({
       </head>
       <body className={cn('font-body antialiased text-center')} suppressHydrationWarning>
         <FirebaseClientProvider>
-          <div className="flex h-full flex-col md:flex-row p-4">
+          <div className="flex h-full flex-col md:flex-row p-2 md:p-4">
             <main className="flex-1 w-full glass-effect rounded-lg border border-border/50">
               {children}
             </main>

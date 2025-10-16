@@ -21,12 +21,12 @@ export function AppNav() {
   const visibleNavItems = navItems.filter(item => item.public);
 
   return (
-    <aside className="w-full md:w-28 flex-shrink-0 p-0 md:p-4 mt-4 md:mt-0">
-      <div className={cn("flex h-auto md:h-full flex-row md:flex-col items-center justify-between rounded-lg border border-border/50 py-[5%] px-8 md:p-8 glass-effect")}>
+    <aside className="w-full md:w-28 flex-shrink-0 p-0 md:p-4 mt-2 md:mt-0">
+      <div className={cn("flex h-auto md:h-full flex-row md:flex-col items-center justify-between rounded-lg border border-border/50 p-4 md:p-8 glass-effect")}>
         <Link href="/" className="flex items-center gap-2 text-primary">
           <Cat className="h-8 w-8" />
         </Link>
-        <nav className="flex flex-row md:flex-col items-center gap-4">
+        <nav className="flex flex-row md:flex-col items-center gap-2 md:gap-4">
           {visibleNavItems.map((item) => {
             const isActive =
               item.href === "/"
@@ -37,13 +37,13 @@ export function AppNav() {
                 key={item.label}
                 href={item.href}
                 className={cn(
-                  "group relative flex h-12 w-12 items-center justify-center rounded-md transition-all duration-300 hover:scale-110",
+                  "group relative flex h-10 w-10 md:h-12 md:w-12 items-center justify-center rounded-md transition-all duration-300 hover:scale-110",
                   isActive
                     ? "bg-destructive text-destructive-foreground scale-110"
                     : "text-foreground/70 glass-effect"
                 )}
               >
-                <item.icon className="h-6 w-6" />
+                <item.icon className="h-5 w-5 md:h-6 md:w-6" />
                 <span className="absolute bottom-full mb-2 md:left-full md:bottom-auto md:mb-0 md:ml-4 hidden whitespace-nowrap rounded-md bg-card px-3 py-1.5 text-sm font-medium text-card-foreground group-hover:flex">
                   {item.label}
                 </span>
@@ -52,7 +52,7 @@ export function AppNav() {
           })}
         </nav>
         <div className="flex flex-col items-center gap-4">
-          <div className="h-12 w-12 hidden md:block"></div>
+          <div className="h-10 w-10 md:h-12 md:w-12 hidden md:block"></div>
         </div>
       </div>
     </aside>

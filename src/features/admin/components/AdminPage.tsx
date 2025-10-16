@@ -89,22 +89,22 @@ function AdminPage() {
 
 
   return (
-    <div className="p-8">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center mb-8">
+    <div className="p-4 md:p-8 overflow-auto h-full">
+      <div className="container mx-auto px-0">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
           <div>
-            <h1 className="text-4xl font-bold tracking-tight">Admin Panel</h1>
-            <p className="mt-2 text-lg text-foreground/70">
-              Welcome, {user.email}! Manage your portfolio items here.
+            <h1 className="text-2xl md:text-4xl font-bold tracking-tight">Admin Panel</h1>
+            <p className="mt-2 text-md md:text-lg text-foreground/70 break-all">
+              Welcome, {user.email}!
             </p>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 md:gap-4 flex-wrap">
             <Button onClick={handleAddItem}>
-              <PlusCircle className="mr-2" />
-              Add New Item
+              <PlusCircle className="mr-2 h-4 w-4" />
+              Add New
             </Button>
             <Button onClick={handleLogout} variant="secondary">
-              <LogOut className="mr-2" />
+              <LogOut className="mr-2 h-4 w-4" />
               Sign Out
             </Button>
           </div>
@@ -114,10 +114,10 @@ function AdminPage() {
           <Table className="text-left">
             <TableHeader>
               <TableRow>
-                <TableHead className="w-[80px]">Image</TableHead>
+                <TableHead className="w-[60px] md:w-[80px]">Image</TableHead>
                 <TableHead>Title</TableHead>
-                <TableHead>Type</TableHead>
-                <TableHead>Description</TableHead>
+                <TableHead className="hidden md:table-cell">Type</TableHead>
+                <TableHead className="hidden lg:table-cell">Description</TableHead>
                 <TableHead className="text-right w-[50px]">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -133,9 +133,9 @@ function AdminPage() {
                       className="object-cover rounded-md"
                     />
                   </TableCell>
-                  <TableCell className="font-medium">{item.title}</TableCell>
-                  <TableCell>{item.type}</TableCell>
-                  <TableCell className="max-w-xs truncate">{item.description}</TableCell>
+                  <TableCell className="font-medium max-w-[100px] md:max-w-xs truncate">{item.title}</TableCell>
+                  <TableCell className="hidden md:table-cell">{item.type}</TableCell>
+                  <TableCell className="hidden lg:table-cell max-w-xs truncate">{item.description}</TableCell>
                   <TableCell className="text-right">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>

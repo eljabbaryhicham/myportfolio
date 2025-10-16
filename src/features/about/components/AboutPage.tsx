@@ -84,10 +84,10 @@ export default function AboutPage() {
   );
 
   return (
-    <div className="h-full w-full flex flex-col items-center justify-center p-8">
+    <div className="h-full w-full flex flex-col items-center justify-center p-4 md:p-8 overflow-auto">
       <div className="w-full max-w-2xl mx-auto">
-        <div className="text-center mb-12">
-          <h1 className="text-2xl text-foreground/80 max-w-3xl mx-auto">
+        <div className="text-center mb-8 md:mb-12">
+          <h1 className="text-lg md:text-2xl text-foreground/80 max-w-3xl mx-auto">
             Trusted by leading artists and brands from around the world. Here
             are some of the amazing clients I've had the pleasure to work with.
           </h1>
@@ -105,7 +105,7 @@ export default function AboutPage() {
         >
           <CarouselContent className='-ml-0'>
             {clients.map((client, index) => (
-              <CarouselItem key={index} className='pl-0'>
+              <CarouselItem key={index}>
                 <div className="p-1">
                   <div className="relative aspect-video overflow-hidden rounded-lg group">
                       <MemoizedImage
@@ -114,7 +114,7 @@ export default function AboutPage() {
                         fill
                         className="object-cover transition-transform duration-300 group-hover:scale-105"
                         data-ai-hint={client.hint}
-                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 100vw, 100vw"
+                        sizes="(max-width: 768px) 100vw, 50vw"
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
                       <div className="absolute top-2 left-2">
@@ -135,7 +135,7 @@ export default function AboutPage() {
           </CarouselContent>
         </Carousel>
 
-        <div className="text-center mt-12">
+        <div className="text-center mt-8 md:mt-12">
           <p className="text-foreground/70">
             Trusted by {clients.length}+ amazing clients worldwide
           </p>
