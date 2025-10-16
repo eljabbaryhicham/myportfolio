@@ -101,9 +101,6 @@ export default function WorkPage() {
 
   const handleShowDetails = () => {
     setDetailsVisible(true);
-    if (playerRef.current) {
-      playerRef.current.pause();
-    }
   };
 
   const handleHideDetails = () => {
