@@ -102,7 +102,7 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit}: Port
                 </SheetDescription>
                 </SheetHeader>
                 <ScrollArea className="flex-1">
-                  <div className="py-8 pr-6 text-left">
+                  <div className="py-8 pr-6">
                     <Form {...form}>
                       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8">
                           <FormField
@@ -226,3 +226,5 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit}: Port
         </Sheet>
     )
 }
+
+    

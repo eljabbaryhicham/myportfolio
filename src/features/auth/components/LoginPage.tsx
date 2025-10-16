@@ -78,7 +78,7 @@ export default function LoginPage() {
         </CardHeader>
         <CardContent>
             <Form {...form}>
-                <form onSubmit={form.handleSubmit(handleSignIn)} className="space-y-6 pt-4 text-left">
+                <form onSubmit={form.handleSubmit(handleSignIn)} className="space-y-6 pt-4">
                 <FormField
                     control={form.control}
                     name="email"
@@ -115,3 +115,5 @@ export default function LoginPage() {
     </div>
   );
 }
+
+    

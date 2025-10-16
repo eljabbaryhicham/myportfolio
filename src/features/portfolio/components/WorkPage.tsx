@@ -122,7 +122,7 @@ export default function WorkPage() {
       <div className="h-full w-full flex flex-col">
         <div className="p-8 pb-4">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-8">
+            <div className="mb-8">
               <h1 className="text-4xl font-bold tracking-tight">Our Work</h1>
               <p className="mt-2 max-w-2xl mx-auto text-lg text-foreground/70">
                 Browse our collection of projects. Click on any item to view
@@ -157,7 +157,7 @@ export default function WorkPage() {
                       data-ai-hint={item.thumbnailHint}
                       sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-4 text-left">
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-4">
                       <h3 className="font-bold text-white text-lg">
                         {item.title}
                       </h3>
@@ -287,3 +287,5 @@ export default function WorkPage() {
     </>
   );
 }
+
+    
