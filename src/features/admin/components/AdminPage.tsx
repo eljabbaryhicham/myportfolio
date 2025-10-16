@@ -25,9 +25,10 @@ import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import { signOut } from 'firebase/auth';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { PortfolioItem, defaultPortfolioItems } from '@/features/portfolio/data/portfolio-data';
+import { PortfolioItem } from '@/features/portfolio/data/portfolio-data';
 import { addDocumentNonBlocking, deleteDocumentNonBlocking, setDocumentNonBlocking, updateDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { collection, doc, writeBatch } from 'firebase/firestore';
+import { defaultPortfolioItems } from '@/lib/portfolio-data';
 
 function AdminPage() {
   const auth = useAuth();
@@ -172,14 +173,14 @@ function AdminPage() {
   return (
     <div className="p-[5%] h-full flex flex-col">
       <div className="container mx-auto px-0 flex flex-col h-full">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
-          <div>
+        <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
+          <div className="text-center md:text-left">
             <h1 className="text-2xl md:text-4xl font-bold tracking-tight">Admin Panel</h1>
             <p className="mt-2 text-md md:text-lg text-foreground/70 break-all">
               Welcome, {user.email}!
             </p>
           </div>
-          <div className="flex items-center gap-2 md:gap-4 flex-wrap">
+          <div className="flex items-center gap-2 md:gap-4 flex-wrap justify-center">
             {!isLoading && items?.length === 0 && (
                 <Button onClick={handleSeedData} variant="secondary">
                     <UploadCloud className="mr-2 h-4 w-4" />
@@ -217,7 +218,7 @@ function AdminPage() {
                   </TableRow>
                 )}
                 {!isLoading && sortedItems && sortedItems.map((item, index) => (
-                  <TableRow key={item.id} className="border-b border-white/20">
+                  <TableRow key={item.id} className="border-b border-white/10">
                     <TableCell className="flex justify-center">
                       <Image
                         src={item.thumbnailUrl}
