@@ -95,9 +95,24 @@ export default function WorkPage() {
 
   const handleOpenChange = (open: boolean) => {
     if (!open) {
+      if (playerRef.current) {
+        playerRef.current.destroy();
+        playerRef.current = null;
+      }
       setSelectedItem(null);
     }
   };
+  
+  useEffect(() => {
+    // Cleanup effect for when the selected item changes or component unmounts
+    return () => {
+      if (playerRef.current) {
+        playerRef.current.destroy();
+        playerRef.current = null;
+      }
+    };
+  }, [selectedItem]);
+
 
   return (
     <>
@@ -196,7 +211,7 @@ export default function WorkPage() {
               </ScrollArea>
             </div>
           )}
-           <DialogClose className="absolute top-4 right-4 z-[101] h-8 w-8 rounded-full bg-red-600 text-white flex items-center justify-center opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2">
+           <DialogClose className="absolute top-4 right-4 z-[101] h-8 w-8 rounded-full glass-effect bg-red-500/50 text-white flex items-center justify-center opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2">
               <X className="h-4 w-4" />
               <span className="sr-only">Close</span>
           </DialogClose>
