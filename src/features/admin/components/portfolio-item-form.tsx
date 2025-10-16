@@ -24,15 +24,17 @@ import {
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetDescription,
-} from '@/components/ui/sheet';
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogClose,
+} from '@/components/ui/dialog';
 import type { PortfolioItem } from '@/features/portfolio/data/portfolio-data';
 import { useEffect } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { X } from 'lucide-react';
 
 const formSchema = z.object({
   title: z.string().min(2, {
@@ -59,7 +61,7 @@ interface PortfolioItemFormProps {
   setIsOpen: (isOpen: boolean) => void;
 }
 
-export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit}: PortfolioItemFormProps) {
+export function PortfolioItemForm({isOpen, setIsOpen, item, onSubmit}: PortfolioItemFormProps) {
     const form = useForm<PortfolioItemFormValues>({
       resolver: zodResolver(formSchema),
     });
@@ -101,16 +103,16 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit}: Port
     };
 
     return (
-        <Sheet open={isOpen} onOpenChange={setIsOpen}>
-            <SheetContent className="w-full max-w-[50vw] m-[5%] rounded-lg h-[90vh] flex flex-col glass-effect border-border/50">
-                <SheetHeader>
-                <SheetTitle>{item ? 'Edit' : 'Add'} Portfolio Item</SheetTitle>
-                <SheetDescription>
-                    {item ? 'Update the details of your portfolio item.' : 'Add a new item to your portfolio.'}
-                </SheetDescription>
-                </SheetHeader>
-                <ScrollArea className="flex-1 -mr-6">
-                  <div className="py-8 pr-6">
+        <Dialog open={isOpen} onOpenChange={setIsOpen}>
+            <DialogContent className="max-w-[50vw] h-[90vh] flex flex-col glass-effect p-0 rounded-lg">
+                <DialogHeader className="p-6 pb-0">
+                    <DialogTitle>{item ? 'Edit' : 'Add'} Portfolio Item</DialogTitle>
+                    <DialogDescription>
+                        {item ? 'Update the details of your portfolio item.' : 'Add a new item to your portfolio.'}
+                    </DialogDescription>
+                </DialogHeader>
+                <ScrollArea className="flex-1 -mr-2">
+                  <div className="p-6">
                     <Form {...form}>
                       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8">
                           <FormField
@@ -238,7 +240,7 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit}: Port
                               </FormItem>
                           )}
                           />
-                          <div className="flex justify-end space-x-4">
+                          <div className="flex justify-end space-x-4 pt-4">
                               <Button type="button" variant="outline" onClick={() => setIsOpen(false)}>Cancel</Button>
                               <Button type="submit">Save</Button>
                           </div>
@@ -246,7 +248,11 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit}: Port
                       </Form>
                   </div>
                 </ScrollArea>
-            </SheetContent>
-        </Sheet>
+                <DialogClose className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-secondary">
+                    <X className="h-4 w-4" />
+                    <span className="sr-only">Close</span>
+                </DialogClose>
+            </DialogContent>
+        </Dialog>
     );
 }

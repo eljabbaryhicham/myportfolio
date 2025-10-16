@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   Table,
@@ -11,7 +11,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { PlusCircle, MoreHorizontal, LogOut, UploadCloud } from 'lucide-react';
+import { PlusCircle, MoreHorizontal, LogOut, UploadCloud, ArrowUp, ArrowDown } from 'lucide-react';
 import Image from 'next/image';
 import {
   DropdownMenu,
@@ -19,31 +19,46 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { PortfolioItemFormSheet } from './portfolio-item-form';
+import { PortfolioItemForm } from './portfolio-item-form';
 import { useUser, useAuth, useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import { signOut } from 'firebase/auth';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { PortfolioItem, defaultPortfolioItems } from '@/features/portfolio/data/portfolio-data';
-import { addDocumentNonBlocking, deleteDocumentNonBlocking, setDocumentNonBlocking } from '@/firebase/non-blocking-updates';
+import { addDocumentNonBlocking, deleteDocumentNonBlocking, setDocumentNonBlocking, updateDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { collection, doc, writeBatch } from 'firebase/firestore';
 
 function AdminPage() {
+  const auth = useAuth();
   const firestore = useFirestore();
-  const projectsCollection = useMemoFirebase(() => firestore ? collection(firestore, 'projects') : null, [firestore]);
-  const { data: items, isLoading } = useCollection<PortfolioItem>(projectsCollection);
+  const { toast } = useToast();
+  const router = useRouter();
   
   const [selectedItem, setSelectedItem] = useState<PortfolioItem | null>(null);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
+  
   const { user, isUserLoading } = useUser();
-  const auth = useAuth();
-  const { toast } = useToast();
-  const router = useRouter();
+  
+  const projectsCollection = useMemoFirebase(() => firestore ? collection(firestore, 'projects') : null, [firestore]);
+  const { data: items, isLoading } = useCollection<PortfolioItem>(projectsCollection);
 
-  if (!isUserLoading && !user) {
-    router.push('/login');
-  }
+  const sortedItems = useMemo(() => {
+    if (!items) return [];
+    return [...items].sort((a, b) => (a.order || 0) - (b.order || 0));
+  }, [items]);
+
+  const maxOrder = useMemo(() => {
+    if (!items || items.length === 0) return 0;
+    return Math.max(...items.map(i => i.order || 0));
+  }, [items]);
+
+  useEffect(() => {
+    if (!isUserLoading && !user) {
+      router.push('/login');
+    }
+  }, [isUserLoading, user, router]);
+
 
   const handleLogout = async () => {
     if (!auth) return;
@@ -71,12 +86,9 @@ function AdminPage() {
     const batch = writeBatch(firestore);
     const projectsCol = collection(firestore, 'projects');
 
-    defaultPortfolioItems.forEach((item) => {
-        // Since defaultPortfolioItems might have a predefined `id`,
-        // we'll use that for the new document ID to maintain consistency.
-        // If `id` isn't provided, Firestore will auto-generate one.
-        const docRef = item.id ? doc(projectsCol, item.id) : doc(projectsCol);
-        batch.set(docRef, item);
+    defaultPortfolioItems.forEach((item, index) => {
+        const docRef = doc(projectsCol, item.id);
+        batch.set(docRef, { ...item, order: item.order || index });
     });
 
     try {
@@ -86,10 +98,6 @@ function AdminPage() {
         console.error("Error seeding data:", e);
         toast({ variant: 'destructive', title: 'Error seeding data', description: e.message });
     }
-  }
-
-  if (isUserLoading || !user) {
-    return <div className="flex h-full w-full items-center justify-center">Loading...</div>;
   }
 
   const handleAddItem = () => {
@@ -123,7 +131,7 @@ function AdminPage() {
       });
     } else {
       // New item
-      addDocumentNonBlocking(collection(firestore, 'projects'), values);
+      addDocumentNonBlocking(collection(firestore, 'projects'), {...values, order: maxOrder + 1});
        toast({
         title: 'Item Added',
         description: 'A new item has been added to your portfolio.',
@@ -131,6 +139,35 @@ function AdminPage() {
     }
     setIsSheetOpen(false);
   };
+
+  const handleOrderChange = (item: PortfolioItem, direction: 'up' | 'down') => {
+    if (!firestore || !sortedItems) return;
+    
+    const currentIndex = sortedItems.findIndex(i => i.id === item.id);
+    if (currentIndex === -1) return;
+
+    if (direction === 'up' && currentIndex > 0) {
+      const otherItem = sortedItems[currentIndex - 1];
+      const itemRef = doc(firestore, 'projects', item.id);
+      const otherItemRef = doc(firestore, 'projects', otherItem.id);
+      
+      updateDocumentNonBlocking(itemRef, { order: otherItem.order });
+      updateDocumentNonBlocking(otherItemRef, { order: item.order });
+
+    } else if (direction === 'down' && currentIndex < sortedItems.length - 1) {
+      const otherItem = sortedItems[currentIndex + 1];
+      const itemRef = doc(firestore, 'projects', item.id);
+      const otherItemRef = doc(firestore, 'projects', otherItem.id);
+
+      updateDocumentNonBlocking(itemRef, { order: otherItem.order });
+      updateDocumentNonBlocking(otherItemRef, { order: item.order });
+    }
+  };
+
+
+  if (isUserLoading || !user) {
+    return <div className="flex h-full w-full items-center justify-center">Loading...</div>;
+  }
 
   return (
     <div className="p-[5%] h-full flex flex-col">
@@ -169,16 +206,17 @@ function AdminPage() {
                   <TableHead>Title</TableHead>
                   <TableHead className="hidden md:table-cell">Type</TableHead>
                   <TableHead className="hidden lg:table-cell">Description</TableHead>
+                  <TableHead className="hidden sm:table-cell">Order</TableHead>
                   <TableHead className="text-right w-[50px]">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {isLoading && (
                   <TableRow>
-                    <TableCell colSpan={5} className="text-center">Loading portfolio...</TableCell>
+                    <TableCell colSpan={6} className="text-center">Loading portfolio...</TableCell>
                   </TableRow>
                 )}
-                {!isLoading && items && items.map((item) => (
+                {!isLoading && sortedItems && sortedItems.map((item, index) => (
                   <TableRow key={item.id}>
                     <TableCell>
                       <Image
@@ -192,6 +230,28 @@ function AdminPage() {
                     <TableCell className="font-medium max-w-[100px] md:max-w-xs truncate">{item.title}</TableCell>
                     <TableCell className="hidden md:table-cell">{item.type}</TableCell>
                     <TableCell className="hidden lg:table-cell max-w-xs truncate">{item.description}</TableCell>
+                    <TableCell className="hidden sm:table-cell">
+                      <div className="flex items-center gap-2">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleOrderChange(item, 'up')}
+                          disabled={index === 0}
+                          className="h-8 w-8"
+                        >
+                          <ArrowUp className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleOrderChange(item, 'down')}
+                          disabled={index === sortedItems.length - 1}
+                          className="h-8 w-8"
+                        >
+                          <ArrowDown className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </TableCell>
                     <TableCell className="text-right">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
@@ -219,7 +279,7 @@ function AdminPage() {
           </div>
         </ScrollArea>
       </div>
-      <PortfolioItemFormSheet 
+      <PortfolioItemForm 
         isOpen={isSheetOpen}
         setIsOpen={setIsSheetOpen}
         item={selectedItem}
@@ -230,5 +290,3 @@ function AdminPage() {
 }
 
 export default AdminPage;
-
-    
