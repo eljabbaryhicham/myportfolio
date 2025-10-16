@@ -197,8 +197,8 @@ function AdminPage() {
           </div>
         </div>
 
-        <ScrollArea className="flex-1">
-          <div className="border rounded-lg overflow-hidden glass-effect">
+        <div className="flex-1 border rounded-lg overflow-hidden glass-effect">
+          <ScrollArea className="h-full">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -276,8 +276,8 @@ function AdminPage() {
                 ))}
               </TableBody>
             </Table>
-          </div>
-        </ScrollArea>
+          </ScrollArea>
+        </div>
       </div>
       <PortfolioItemFormSheet 
         isOpen={isSheetOpen}
