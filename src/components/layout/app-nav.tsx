@@ -27,9 +27,12 @@ export function AppNav() {
 
   if (isMobile) {
     return (
-      <div
+      <motion.div
         className="fixed bottom-0 left-0 right-0 h-[10vh] z-50"
         style={{ margin: '5%', height: '10vh' }}
+        initial={{ y: '100%' }}
+        animate={{ y: 0 }}
+        transition={{ type: 'spring', stiffness: 80, damping: 15 }}
       >
         <div className={cn(
           "flex h-full flex-row items-center justify-around rounded-lg border border-border/50 glass-effect"
@@ -60,7 +63,7 @@ export function AppNav() {
             })}
           </nav>
         </div>
-      </div>
+      </motion.div>
     );
   }
 
