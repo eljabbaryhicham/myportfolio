@@ -80,8 +80,8 @@ export default function ContactPage() {
   };
 
   return (
-     <div className="h-full w-full flex flex-col">
-       <div className="p-[5%] pb-4">
+    <div className="h-full w-full flex flex-col">
+      <div className="p-[5%] pb-4">
         <div className="container mx-auto px-0">
           <div className="mb-8 text-center">
             <h1 className="text-3xl md:text-4xl font-bold tracking-tight">Contact Us</h1>
@@ -168,7 +168,7 @@ export default function ContactPage() {
                     <h3 className="text-xl font-bold">Hicham Eljabbary</h3>
                     <p className="text-foreground/70">Motion Graphics Designer</p>
 
-                    <div className="w-full space-y-4 mt-6 text-left">
+                    <div className="w-full space-y-4 mt-6">
                       {contactLinks.map((link) => (
                         <Link href={link.href} key={link.label} className="flex items-center group">
                           <div className={`w-10 h-10 flex-shrink-0 rounded-full flex items-center justify-center mr-4 ${link.color}`}>
@@ -184,7 +184,7 @@ export default function ContactPage() {
                     </div>
                     <Button className="w-full h-24 bg-gradient-to-r from-green-500 to-teal-500 text-white text-lg mt-6">
                         <Smartphone className="mr-3 h-8 w-8" />
-                        <div className="text-left">
+                        <div>
                             <p className="text-base font-light">Make a deal on WhatsApp</p>
                             <p className="font-bold text-xl">+212 619 665 220</p>
                         </div>
