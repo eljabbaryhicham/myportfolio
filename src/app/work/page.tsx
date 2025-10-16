@@ -11,7 +11,7 @@ import {
   DialogClose,
 } from '@/components/ui/dialog';
 import { useState, memo, useEffect, useRef } from 'react';
-import { PlayCircle, ChevronsUpDown, X, ImageIcon } from 'lucide-react';
+import { PlayCircle, ChevronsUpDown, X, ImageIcon, Expand } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import dynamic from 'next/dynamic';
 import { Button } from '@/components/ui/button';
@@ -48,9 +48,11 @@ const MemoizedImage = memo(Image);
 const PortfolioMedia = ({
   item,
   playerRef,
+  onFullscreenClick,
 }: {
   item: PortfolioItem;
   playerRef: React.Ref<Plyr>;
+  onFullscreenClick: (url: string) => void;
 }) => {
   if (item.type === 'video' && item.sources) {
     return (
@@ -73,7 +75,7 @@ const PortfolioMedia = ({
 
   if (item.type === 'image' && item.sourceUrl) {
     return (
-      <div className="relative w-full h-auto flex-shrink-0 bg-black flex justify-center items-center">
+      <div className="relative w-full h-auto flex-shrink-0 bg-black flex justify-center items-center group">
         <MemoizedImage
           src={item.sourceUrl}
           alt={item.title}
@@ -81,6 +83,15 @@ const PortfolioMedia = ({
           height={720}
           className="object-contain w-auto h-auto max-w-full max-h-full"
         />
+        <Button
+          variant="ghost"
+          size="icon"
+          className="absolute top-2 left-2 z-10 h-10 w-10 text-white bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity"
+          onClick={() => onFullscreenClick(item.sourceUrl!)}
+        >
+          <Expand className="h-5 w-5" />
+          <span className="sr-only">Fullscreen</span>
+        </Button>
       </div>
     );
   }
@@ -101,6 +112,7 @@ export default function WorkPage() {
   const detailsPlayerRef = useRef<Plyr | null>(null);
   const isVeryUltrawide = useVeryUltrawide();
   const [filter, setFilter] = useState<'all' | 'image' | 'video'>('all');
+  const [fullscreenImageUrl, setFullscreenImageUrl] = useState<string | null>(null);
 
 
   useEffect(() => {
@@ -246,7 +258,7 @@ export default function WorkPage() {
               <ScrollArea className="flex-1">
                 <div className="flex flex-col h-full">
                     <div className="flex-shrink-0">
-                        <PortfolioMedia item={selectedItem} playerRef={playerRef} />
+                        <PortfolioMedia item={selectedItem} playerRef={playerRef} onFullscreenClick={setFullscreenImageUrl} />
                     </div>
                     <div className="flex-shrink-0 p-4 md:p-6 pt-4">
                         <DialogHeader>
@@ -334,10 +346,28 @@ export default function WorkPage() {
         </DialogContent>
       </Dialog>
 
+      {/* Fullscreen Image Dialog */}
+      <Dialog open={!!fullscreenImageUrl} onOpenChange={(open) => !open && setFullscreenImageUrl(null)}>
+        <DialogContent className="w-[95vw] h-[90vh] glass-effect p-0 flex flex-col items-center justify-center bg-black/80 border-0">
+          {fullscreenImageUrl && (
+            <div className="relative w-full h-full">
+              <MemoizedImage
+                src={fullscreenImageUrl}
+                alt="Fullscreen Image"
+                fill
+                className="object-contain"
+                sizes="100vw"
+              />
+            </div>
+          )}
+          <DialogClose className="absolute top-4 right-4 z-[101] h-8 w-8 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2">
+              <X className="h-4 w-4" />
+              <span className="sr-only">Close</span>
+          </DialogClose>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }
-
-    
 
     
