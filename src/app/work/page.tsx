@@ -349,6 +349,7 @@ export default function WorkPage() {
       {/* Fullscreen Image Dialog */}
       <Dialog open={!!fullscreenImageUrl} onOpenChange={(open) => !open && setFullscreenImageUrl(null)}>
         <DialogContent className="w-[95vw] h-[90vh] glass-effect p-0 flex flex-col items-center justify-center bg-black/80 border-0">
+          <DialogTitle className="sr-only">Fullscreen Image</DialogTitle>
           {fullscreenImageUrl && (
             <div className="relative w-full h-full">
               <MemoizedImage
@@ -369,5 +370,7 @@ export default function WorkPage() {
     </>
   );
 }
+
+    
 
     
