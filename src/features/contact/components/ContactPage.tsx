@@ -10,14 +10,13 @@ import {
   FormControl,
   FormField,
   FormItem,
-  FormLabel,
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent } from '@/components/ui/card';
-import { User, Mail, MessageSquare, Briefcase, Linkedin, ExternalLink, Smartphone, Code, Instagram, Facebook, Twitter } from 'lucide-react';
+import { Mail, Briefcase, Linkedin, ExternalLink, Smartphone, Code, Instagram, Facebook, Twitter } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -140,7 +139,7 @@ export default function ContactPage() {
                           render={({ field }) => (
                             <FormItem>
                               <FormControl>
-                                <Input placeholder="Name" {...field} className="text-center bg-transparent border-0 border-b rounded-none focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-primary transition-colors" />
+                                <Input placeholder="Name" {...field} className="text-center bg-transparent border-0 border-b border-foreground/30 rounded-none focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-primary transition-colors" />
                               </FormControl>
                               <FormMessage />
                             </FormItem>
@@ -152,7 +151,7 @@ export default function ContactPage() {
                           render={({ field }) => (
                             <FormItem>
                               <FormControl>
-                                <Input type="email" placeholder="Email" {...field} className="text-center bg-transparent border-0 border-b rounded-none focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-primary transition-colors" />
+                                <Input type="email" placeholder="Email" {...field} className="text-center bg-transparent border-0 border-b border-foreground/30 rounded-none focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-primary transition-colors" />
                               </FormControl>
                               <FormMessage />
                             </FormItem>
@@ -166,7 +165,7 @@ export default function ContactPage() {
                               <FormControl>
                                 <Textarea
                                   placeholder="Message"
-                                  className="text-center bg-transparent border-0 border-b rounded-none focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-primary transition-colors min-h-[100px]"
+                                  className="text-center bg-transparent border-0 border-b border-foreground/30 rounded-none focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-primary transition-colors min-h-[100px]"
                                   {...field}
                                 />
                               </FormControl>
