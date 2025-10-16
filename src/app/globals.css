@@ -21,24 +21,24 @@
     --popover: 229 83% 99%;
     --popover-foreground: 220 25% 15%;
 
-    --primary: 0 84% 60%;
+    --primary: 0 80% 53%;
     --primary-foreground: 0 0% 98%;
 
     --secondary: 240 20% 90%;
-    --secondary-foreground: 0 84% 60%;
+    --secondary-foreground: 0 80% 53%;
 
     --muted: 240 20% 90%;
     --muted-foreground: 220 15% 45%;
 
-    --accent: 0 84% 60%;
+    --accent: 0 80% 53%;
     --accent-foreground: 0 0% 98%;
 
-    --destructive: 340 100% 45%;
+    --destructive: 0 80% 53%;
     --destructive-foreground: 0 0% 98%;
 
     --border: 220 20% 85%;
     --input: 220 20% 90%;
-    --ring: 0 84% 60%;
+    --ring: 0 80% 53%;
 
     --plyr-color-main: hsl(var(--primary));
     --plyr-video-background: transparent;
@@ -54,7 +54,7 @@
     --popover: 220 15% 8%;
     --popover-foreground: 240 60% 97%;
 
-    --primary: 0 72% 51%;
+    --primary: 0 80% 53%;
     --primary-foreground: 0 0% 98%;
 
     --secondary: 220 15% 20%;
@@ -63,15 +63,15 @@
     --muted: 220 15% 20%;
     --muted-foreground: 240 20% 60%;
 
-    --accent: 0 72% 51%;
+    --accent: 0 80% 53%;
     --accent-foreground: 0 0% 98%;
 
-    --destructive: 340 100% 45%;
+    --destructive: 0 80% 53%;
     --destructive-foreground: 0 0% 98%;
 
     --border: 220 15% 20%;
     --input: 220 15% 20%;
-    --ring: 0 72% 51%;
+    --ring: 0 80% 53%;
   }
 }
 
@@ -136,3 +136,4 @@
      box-shadow: inset 2px 2px 0px -2px rgba(255, 255, 255, 0.2), inset 0 0 3px 1px rgba(255, 255, 255, 0.2);
   }
 }
+
