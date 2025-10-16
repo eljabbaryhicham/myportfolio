@@ -91,6 +91,12 @@ export default function WorkPage() {
   const [detailsVisible, setDetailsVisible] = useState(false);
   const playerRef = useRef<Plyr | null>(null);
   const detailsPlayerRef = useRef<Plyr | null>(null);
+  const [filter, setFilter] = useState<'all' | 'image' | 'video'>('all');
+
+  const filteredItems = portfolioItems.filter(item => {
+    if (filter === 'all') return true;
+    return item.type === filter;
+  });
 
   const showMoreItems = () => {
     setVisibleItems(prevVisibleItems => prevVisibleItems + 6);
@@ -114,7 +120,7 @@ export default function WorkPage() {
   return (
     <>
       <div className="h-full w-full flex flex-col">
-        <div className="p-8 pb-0">
+        <div className="p-8 pb-4">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-8">
               <h1 className="text-4xl font-bold tracking-tight">Our Work</h1>
@@ -123,14 +129,19 @@ export default function WorkPage() {
                 details.
               </p>
             </div>
+             <div className="flex justify-center gap-2 mb-4">
+              <Button variant={filter === 'all' ? 'default' : 'outline'} onClick={() => setFilter('all')}>All</Button>
+              <Button variant={filter === 'image' ? 'default' : 'outline'} onClick={() => setFilter('image')}>Images</Button>
+              <Button variant={filter === 'video' ? 'default' : 'outline'} onClick={() => setFilter('video')}>Videos</Button>
+            </div>
           </div>
         </div>
 
         <ScrollArea className="flex-1">
-          <div className="p-8">
+          <div className="p-8 pt-0">
             <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {portfolioItems.slice(0, visibleItems).map(item => (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 text-left">
+                {filteredItems.slice(0, visibleItems).map(item => (
                   <div
                     key={item.id}
                     className={cn(
@@ -163,7 +174,7 @@ export default function WorkPage() {
                 ))}
               </div>
 
-              {visibleItems < portfolioItems.length && (
+              {visibleItems < filteredItems.length && (
                 <div className="text-center mt-12">
                   <Button onClick={showMoreItems} size="lg">
                     Show More
@@ -176,7 +187,7 @@ export default function WorkPage() {
       </div>
 
       <Dialog open={!!selectedItem} onOpenChange={handleOpenChange}>
-        <DialogContent className="w-[90vw] max-w-[90vw] h-auto max-h-[90vh] overflow-hidden glass-effect p-0 flex flex-col">
+        <DialogContent className="w-[90vw] max-w-[90vw] h-auto max-h-[90vh] overflow-hidden glass-effect p-0 flex flex-col text-left">
           {selectedItem && (
             <div className="relative flex-1 flex flex-col min-h-0">
               <ScrollArea className="flex-1">
