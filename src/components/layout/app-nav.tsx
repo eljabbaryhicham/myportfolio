@@ -28,8 +28,8 @@ export function AppNav() {
   if (isMobile) {
     return (
       <motion.div
-        className="fixed bottom-0 left-0 right-0 h-[10vh] z-50"
-        style={{ margin: '5%', height: '10vh' }}
+        className="fixed bottom-0 left-0 right-0 h-[5vh] z-50"
+        style={{ margin: '5%', height: '5vh' }}
         initial={{ y: '100%' }}
         animate={{ y: 0 }}
         transition={{ type: 'spring', stiffness: 80, damping: 15 }}
