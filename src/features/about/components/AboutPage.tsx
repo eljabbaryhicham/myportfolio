@@ -12,6 +12,7 @@ import { Badge } from '@/components/ui/badge';
 import { Star } from 'lucide-react';
 import { memo, useRef } from 'react';
 import Autoplay from 'embla-carousel-autoplay';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 const clients = [
   {
@@ -84,66 +85,70 @@ export default function AboutPage() {
   );
 
   return (
-    <div className="h-full w-full flex flex-col items-center justify-center p-[5%] overflow-auto">
-      <div className="w-full max-w-2xl mx-auto">
-        <div className="text-center mb-8 md:mb-12">
-          <h1 className="text-lg md:text-2xl text-foreground/80 max-w-3xl mx-auto">
-            Trusted by leading artists and brands from around the world. Here
-            are some of the amazing clients I've had the pleasure to work with.
-          </h1>
-        </div>
-
-        <Carousel
-          plugins={[plugin.current]}
-          opts={{
-            align: 'start',
-            loop: true,
-          }}
-          className="w-full"
-          onMouseEnter={plugin.current.stop}
-          onMouseLeave={plugin.current.reset}
-        >
-          <CarouselContent className='-ml-0'>
-            {clients.map((client, index) => (
-              <CarouselItem key={index}>
-                <div className="p-1">
-                  <div className="relative aspect-video overflow-hidden rounded-lg group">
-                      <MemoizedImage
-                        src={client.image}
-                        alt={client.name}
-                        fill
-                        className="object-cover transition-transform duration-300 group-hover:scale-105"
-                        data-ai-hint={client.hint}
-                        sizes="(max-width: 768px) 100vw, 50vw"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
-                      <div className="absolute top-2 left-2">
-                        <Badge variant="secondary" className="bg-green-500/20 text-green-300 border-green-500/30">
-                          <Star className="h-3 w-3 mr-1" />
-                          {client.category}
-                        </Badge>
-                      </div>
-                      <div className="absolute bottom-4 left-4">
-                        <h3 className="text-lg font-bold text-white">
-                          {client.name}
-                        </h3>
-                      </div>
-                  </div>
-                </div>
-              </CarouselItem>
-            ))}
-          </CarouselContent>
-        </Carousel>
-
-        <div className="text-center mt-8 md:mt-12">
-          <p className="text-foreground/70">
-            Trusted by {clients.length}+ amazing clients worldwide
-          </p>
+    <div className="h-full w-full flex flex-col">
+      <div className="p-[5%] pb-4">
+        <div className="container mx-auto px-0">
+            <div className="mb-8 text-center">
+              <h1 className="text-3xl md:text-4xl font-bold tracking-tight">Our Clients</h1>
+              <p className="mt-2 max-w-2xl mx-auto text-base md:text-lg text-foreground/70">
+                Trusted by leading artists and brands from around the world.
+              </p>
+            </div>
         </div>
       </div>
+      <ScrollArea className="flex-1">
+        <div className="p-[5%] pt-0">
+          <div className="w-full max-w-2xl mx-auto">
+            <Carousel
+              plugins={[plugin.current]}
+              opts={{
+                align: 'start',
+                loop: true,
+              }}
+              className="w-full"
+              onMouseEnter={plugin.current.stop}
+              onMouseLeave={plugin.current.reset}
+            >
+              <CarouselContent className='-ml-0'>
+                {clients.map((client, index) => (
+                  <CarouselItem key={index}>
+                    <div className="p-1">
+                      <div className="relative aspect-video overflow-hidden rounded-lg group">
+                          <MemoizedImage
+                            src={client.image}
+                            alt={client.name}
+                            fill
+                            className="object-cover transition-transform duration-300 group-hover:scale-105"
+                            data-ai-hint={client.hint}
+                            sizes="(max-width: 768px) 100vw, 50vw"
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
+                          <div className="absolute top-2 left-2">
+                            <Badge variant="secondary" className="bg-green-500/20 text-green-300 border-green-500/30">
+                              <Star className="h-3 w-3 mr-1" />
+                              {client.category}
+                            </Badge>
+                          </div>
+                          <div className="absolute bottom-4 left-4">
+                            <h3 className="text-lg font-bold text-white">
+                              {client.name}
+                            </h3>
+                          </div>
+                      </div>
+                    </div>
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+            </Carousel>
+
+            <div className="text-center mt-8 md:mt-12">
+              <p className="text-foreground/70">
+                Trusted by {clients.length}+ amazing clients worldwide
+              </p>
+            </div>
+          </div>
+        </div>
+      </ScrollArea>
     </div>
   );
 }
-
-    
-    

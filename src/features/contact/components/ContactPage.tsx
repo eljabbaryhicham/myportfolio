@@ -80,122 +80,130 @@ export default function ContactPage() {
   };
 
   return (
-    <ScrollArea className="h-full w-full">
-      <div className="container mx-auto p-[5%]">
-        <div className="text-center mb-8">
-          <h1 className="text-xl md:text-2xl text-foreground/80">
-            Let's get in touch! Fill out the form below to send me a message.
-          </h1>
-        </div>
-
-        <div className="flex flex-col md:flex-row gap-8 max-w-4xl mx-auto items-center justify-center">
-          <div className="md:w-1/2 m-[5%] w-full">
-            <Card className="glass-effect p-6 sm:p-8 h-full">
-              <CardContent className="p-0">
-                <Form {...form}>
-                  <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8">
-                    <FormField
-                      control={form.control}
-                      name="name"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormControl>
-                            <div className="relative">
-                              <User className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-foreground/50" />
-                              <Input placeholder="Name" {...field} className="pl-10 bg-transparent border-0 border-b rounded-none focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-primary transition-colors" />
-                            </div>
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="email"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormControl>
-                            <div className="relative">
-                              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-foreground/50" />
-                              <Input type="email" placeholder="Email" {...field} className="pl-10 bg-transparent border-0 border-b rounded-none focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-primary transition-colors" />
-                            </div>
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="message"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormControl>
-                            <div className="relative">
-                              <MessageSquare className="absolute left-3 top-4 h-5 w-5 text-foreground/50" />
-                              <Textarea
-                                placeholder="Message"
-                                className="pl-10 bg-transparent border-0 border-b rounded-none focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-primary transition-colors min-h-[100px]"
-                                {...field}
-                              />
-                            </div>
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <Button type="submit" size="lg" className="w-full bg-gradient-to-r from-cyan-500 to-blue-500 text-white">
-                      Send Message
-                    </Button>
-                  </form>
-                </Form>
-              </CardContent>
-            </Card>
+     <div className="h-full w-full flex flex-col">
+       <div className="p-[5%] pb-4">
+        <div className="container mx-auto px-0">
+          <div className="mb-8 text-center">
+            <h1 className="text-3xl md:text-4xl font-bold tracking-tight">Contact Us</h1>
+            <p className="mt-2 max-w-2xl mx-auto text-base md:text-lg text-foreground/70">
+              Let&apos;s get in touch! Fill out the form below to send me a message.
+            </p>
           </div>
-          
-          <div className="md:w-1/2 m-[5%] w-full">
-            <Card className="glass-effect p-6 flex flex-col h-full">
-              <CardContent className="flex flex-col items-center text-center p-0">
-                <Avatar className="w-24 h-24 mb-4 border-2 border-primary">
-                  <AvatarImage src="https://picsum.photos/seed/hicham/200/200" alt="Hicham Eljabbary" data-ai-hint="man portrait" />
-                  <AvatarFallback>HE</AvatarFallback>
-                </Avatar>
-                <h3 className="text-xl font-bold">Hicham Eljabbary</h3>
-                <p className="text-foreground/70">Motion Graphics Designer</p>
-
-                <div className="w-full space-y-4 mt-6 text-left">
-                  {contactLinks.map((link) => (
-                    <Link href={link.href} key={link.label} className="flex items-center group">
-                      <div className={`w-10 h-10 flex-shrink-0 rounded-full flex items-center justify-center mr-4 ${link.color}`}>
-                        <link.icon className="w-5 h-5" />
-                      </div>
-                      <div className="flex-grow">
-                        <p className="text-sm text-foreground/70">{link.label}</p>
-                        <p className="font-medium group-hover:text-primary transition-colors">{link.value}</p>
-                      </div>
-                      <ExternalLink className="w-4 h-4 text-foreground/50 group-hover:text-primary transition-colors" />
-                    </Link>
-                  ))}
-                </div>
-                 <Button className="w-full h-24 bg-gradient-to-r from-green-500 to-teal-500 text-white text-lg mt-6">
-                    <Smartphone className="mr-3 h-8 w-8" />
-                    <div className="text-left">
-                        <p className="text-base font-light">Make a deal on WhatsApp</p>
-                        <p className="font-bold text-xl">+212 619 665 220</p>
-                    </div>
-                </Button>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-
-        <div className="flex items-center justify-center gap-4 mt-12">
-          {socialLinks.map((social) => (
-            <Link href={social.href} key={social.color} className={`w-12 h-12 rounded-full flex items-center justify-center text-white ${social.color} transition-all duration-300 hover:scale-110`}>
-              <social.icon className="w-6 h-6" />
-            </Link>
-          ))}
         </div>
       </div>
-    </ScrollArea>
+      <ScrollArea className="flex-1">
+        <div className="p-[5%] pt-0">
+          <div className="container mx-auto px-0">
+            <div className="flex flex-col md:flex-row gap-8 max-w-4xl mx-auto items-center justify-center">
+              <div className="md:w-1/2 w-full">
+                <Card className="glass-effect p-6 sm:p-8 h-full">
+                  <CardContent className="p-0">
+                    <Form {...form}>
+                      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8">
+                        <FormField
+                          control={form.control}
+                          name="name"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormControl>
+                                <div className="relative">
+                                  <User className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-foreground/50" />
+                                  <Input placeholder="Name" {...field} className="pl-10 bg-transparent border-0 border-b rounded-none focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-primary transition-colors" />
+                                </div>
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="email"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormControl>
+                                <div className="relative">
+                                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-foreground/50" />
+                                  <Input type="email" placeholder="Email" {...field} className="pl-10 bg-transparent border-0 border-b rounded-none focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-primary transition-colors" />
+                                </div>
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="message"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormControl>
+                                <div className="relative">
+                                  <MessageSquare className="absolute left-3 top-4 h-5 w-5 text-foreground/50" />
+                                  <Textarea
+                                    placeholder="Message"
+                                    className="pl-10 bg-transparent border-0 border-b rounded-none focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-primary transition-colors min-h-[100px]"
+                                    {...field}
+                                  />
+                                </div>
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <Button type="submit" size="lg" className="w-full bg-gradient-to-r from-cyan-500 to-blue-500 text-white">
+                          Send Message
+                        </Button>
+                      </form>
+                    </Form>
+                  </CardContent>
+                </Card>
+              </div>
+              
+              <div className="md:w-1/2 w-full">
+                <Card className="glass-effect p-6 flex flex-col h-full">
+                  <CardContent className="flex flex-col items-center text-center p-0">
+                    <Avatar className="w-24 h-24 mb-4 border-2 border-primary">
+                      <AvatarImage src="https://picsum.photos/seed/hicham/200/200" alt="Hicham Eljabbary" data-ai-hint="man portrait" />
+                      <AvatarFallback>HE</AvatarFallback>
+                    </Avatar>
+                    <h3 className="text-xl font-bold">Hicham Eljabbary</h3>
+                    <p className="text-foreground/70">Motion Graphics Designer</p>
+
+                    <div className="w-full space-y-4 mt-6 text-left">
+                      {contactLinks.map((link) => (
+                        <Link href={link.href} key={link.label} className="flex items-center group">
+                          <div className={`w-10 h-10 flex-shrink-0 rounded-full flex items-center justify-center mr-4 ${link.color}`}>
+                            <link.icon className="w-5 h-5" />
+                          </div>
+                          <div className="flex-grow">
+                            <p className="text-sm text-foreground/70">{link.label}</p>
+                            <p className="font-medium group-hover:text-primary transition-colors">{link.value}</p>
+                          </div>
+                          <ExternalLink className="w-4 h-4 text-foreground/50 group-hover:text-primary transition-colors" />
+                        </Link>
+                      ))}
+                    </div>
+                    <Button className="w-full h-24 bg-gradient-to-r from-green-500 to-teal-500 text-white text-lg mt-6">
+                        <Smartphone className="mr-3 h-8 w-8" />
+                        <div className="text-left">
+                            <p className="text-base font-light">Make a deal on WhatsApp</p>
+                            <p className="font-bold text-xl">+212 619 665 220</p>
+                        </div>
+                    </Button>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-center gap-4 mt-12">
+              {socialLinks.map((social) => (
+                <Link href={social.href} key={social.color} className={`w-12 h-12 rounded-full flex items-center justify-center text-white ${social.color} transition-all duration-300 hover:scale-110`}>
+                  <social.icon className="w-6 h-6" />
+                </Link>
+              ))}
+            </div>
+          </div>
+        </div>
+      </ScrollArea>
+    </div>
   );
 }
