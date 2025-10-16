@@ -1,82 +1,54 @@
 /**
- * @fileoverview Firestore Security Rules for Liquid Folio.
+ * @fileoverview Firestore Security Rules for Liquid Folio Projects.
  *
  * Core Philosophy:
- * This ruleset enforces a role-based access control for admins and ownership-based access control for other entities.
- * It ensures that only authorized users can create, read, update, or delete specific documents.
+ * This ruleset allows public read access to all projects while restricting write access (create, update, delete) to authenticated users.
+ * It assumes that authorization is handled separately, such as through an admin panel, as the app requirements don't define user-specific roles.
  *
  * Data Structure:
- * - /videos/{videoId}: Stores video entities.
- * - /images/{imageId}: Stores image entities.
- * - /admins/{adminId}: Stores admin user profiles.
+ * All project data is stored in a flat `/projects` collection.  Each project document contains fields like title, description, imageUrl, etc.
  *
  * Key Security Decisions:
- * - Admin users are stored in a separate `admins` collection for role-based access control.
- * - Read permissions for `/videos` and `/images` are public.
- * - Write permissions for `/videos` and `/images` are restricted to owners.
+ * - Read access (get, list) is public.
+ * - Write access (create, update, delete) requires authentication.
+ * - No validation is performed on the data itself, focusing solely on authentication for write operations to allow for flexible data changes.
  *
  * Denormalization for Authorization:
- *  - It is expected that Videos and Images collections will include an `ownerId` or `authorId` field to simplify and secure write rules.
+ * The current design doesn't require denormalization, as write access is solely based on authentication, not on document content or user roles.
+ * If finer-grained control were required (e.g., allowing specific users to edit certain projects), a `members` map would be added to each project document to store user roles for that project.
+ *
+ * Structural Segregation:
+ * All data is stored in a single, publicly readable collection, which aligns with the admin-centric editing use case.  If the application grows to include draft projects or user-specific project visibility, consider separating into a public `projects` collection and a private `users/{userId}/projects` subcollection.
  */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * @description Allows public read access to video documents, but restricts write access to the owner.
-     * @path /videos/{videoId}
-     * @allow (get, list): if true
-     * @allow (create): if request.auth.uid != null && request.resource.data.ownerId == request.auth.uid
-     * @allow (update, delete): if request.auth.uid != null && resource.data.ownerId == request.auth.uid && resource != null
-     * @deny (create): if request.auth.uid == null || request.resource.data.ownerId != request.auth.uid
-     * @deny (update, delete): if request.auth.uid == null || resource.data.ownerId != request.auth.uid || resource == null
-     * @principle Allows public read, enforces document ownership for writes, validates owner on create, and ensures document exists on update/delete.
+     * @description Grants public read access to projects and restricts write access to authenticated users.
+     * @path /projects/{projectId}
+     * @allow (get, list): Any user can read project data.
+     * @allow (create, update, delete): Only authenticated users can create, update, or delete projects.
+     * @deny (create, update, delete): Unauthenticated users cannot create, update, or delete projects.
+     * @principle Allows public read access while restricting writes to authenticated users (admins).
      */
-    match /videos/{videoId} {
-      allow get, list: if true;
-      allow create: if isSignedIn() && request.resource.data.ownerId == request.auth.uid;
-      allow update, delete: if isSignedIn() && isExistingOwner(resource.data.ownerId);
-    }
+    match /projects/{projectId} {
+      allow get: if true;
+      allow list: if true;
 
-    /**
-     * @description Allows public read access to image documents, but restricts write access to the owner.
-     * @path /images/{imageId}
-     * @allow (get, list): if true
-     * @allow (create): if request.auth.uid != null && request.resource.data.ownerId == request.auth.uid
-     * @allow (update, delete): if request.auth.uid != null && resource.data.ownerId == request.auth.uid && resource != null
-     * @deny (create): if request.auth.uid == null || request.resource.data.ownerId != request.auth.uid
-     * @deny (update, delete): if request.auth.uid == null || resource.data.ownerId != request.auth.uid || resource == null
-     * @principle Allows public read, enforces document ownership for writes, validates owner on create, and ensures document exists on update/delete.
-     */
-    match /images/{imageId} {
-      allow get, list: if true;
-      allow create: if isSignedIn() && request.resource.data.ownerId == request.auth.uid;
-      allow update, delete: if isSignedIn() && isExistingOwner(resource.data.ownerId);
-    }
-
-    /**
-     * @description Allows administrators to manage admin user profiles.
-     * @path /admins/{adminId}
-     * @allow (get, list, create, update, delete): if request.auth.uid == adminId
-     * @deny (get, list, create, update, delete): if request.auth.uid != adminId
-     * @principle Enforces that only an administrator can manage their own profile.
-     */
-    match /admins/{adminId} {
-      allow get, list, create, update, delete: if isOwner(adminId);
+      allow create: if isSignedIn();
+      allow update: if isSignedIn() && resource != null;
+      allow delete: if isSignedIn() && resource != null;
     }
 
     // --- Helper Functions ---
 
+    /**
+     * @description Checks if the user is signed in.
+     * @return True if the user is signed in, false otherwise.
+     */
     function isSignedIn() {
       return request.auth != null;
-    }
-
-    function isOwner(userId) {
-      return request.auth.uid == userId;
-    }
-
-    function isExistingOwner(userId) {
-      return isOwner(userId) && resource != null;
     }
   }
 }

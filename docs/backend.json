@@ -1,109 +1,46 @@
 {
   "entities": {
-    "Video": {
+    "Project": {
       "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "Video",
+      "title": "Project",
       "type": "object",
-      "description": "Represents a video in the portfolio.",
+      "description": "Represents a project in the portfolio.",
       "properties": {
         "id": {
           "type": "string",
-          "description": "Unique identifier for the Video entity."
+          "description": "Unique identifier for the Project entity."
         },
         "title": {
           "type": "string",
-          "description": "Title of the video."
+          "description": "The title of the project."
         },
         "description": {
           "type": "string",
-          "description": "Description of the video."
+          "description": "A brief description of the project."
         },
-        "url": {
+        "imageUrl": {
           "type": "string",
-          "description": "URL of the video file.",
+          "description": "URL of the project's image.",
           "format": "uri"
         },
-        "thumbnailUrl": {
+        "videoUrl": {
           "type": "string",
-          "description": "URL of the video thumbnail image.",
+          "description": "URL of the project's video (if applicable).",
           "format": "uri"
         },
-        "uploadDate": {
-          "type": "string",
-          "description": "Date and time when the video was uploaded.",
-          "format": "date-time"
+        "isFeatured": {
+          "type": "boolean",
+          "description": "Indicates whether the project is featured on the homepage."
+        },
+        "order": {
+          "type": "number",
+          "description": "The order in which the project will be displayed."
         }
       },
       "required": [
         "id",
         "title",
-        "description",
-        "url",
-        "thumbnailUrl",
-        "uploadDate"
-      ]
-    },
-    "Image": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "Image",
-      "type": "object",
-      "description": "Represents an image in the portfolio.",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the Image entity."
-        },
-        "title": {
-          "type": "string",
-          "description": "Title of the image."
-        },
-        "description": {
-          "type": "string",
-          "description": "Description of the image."
-        },
-        "url": {
-          "type": "string",
-          "description": "URL of the image file.",
-          "format": "uri"
-        },
-        "uploadDate": {
-          "type": "string",
-          "description": "Date and time when the image was uploaded.",
-          "format": "date-time"
-        }
-      },
-      "required": [
-        "id",
-        "title",
-        "description",
-        "url",
-        "uploadDate"
-      ]
-    },
-    "AdminUser": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "AdminUser",
-      "type": "object",
-      "description": "Represents an administrator user who manages the portfolio.",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the AdminUser entity."
-        },
-        "username": {
-          "type": "string",
-          "description": "Username of the administrator."
-        },
-        "email": {
-          "type": "string",
-          "description": "Email address of the administrator.",
-          "format": "email"
-        }
-      },
-      "required": [
-        "id",
-        "username",
-        "email"
+        "imageUrl"
       ]
     }
   },
@@ -116,54 +53,22 @@
   "firestore": {
     "structure": [
       {
-        "path": "/videos/{videoId}",
+        "path": "/projects/{projectId}",
         "definition": {
-          "entityName": "Video",
+          "entityName": "Project",
           "schema": {
-            "$ref": "#/backend/entities/Video"
+            "$ref": "#/backend/entities/Project"
           },
-          "description": "Stores video entities for the portfolio. Includes denormalized fields for authorization if needed (e.g., 'ownerId', 'allowedUsers').",
+          "description": "Stores project information, including title, description, image URL, video URL, isFeatured status, and order.",
           "params": [
             {
-              "name": "videoId",
-              "description": "Unique identifier for the video."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/images/{imageId}",
-        "definition": {
-          "entityName": "Image",
-          "schema": {
-            "$ref": "#/backend/entities/Image"
-          },
-          "description": "Stores image entities for the portfolio. Includes denormalized fields for authorization if needed (e.g., 'ownerId', 'allowedUsers').",
-          "params": [
-            {
-              "name": "imageId",
-              "description": "Unique identifier for the image."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/admins/{adminId}",
-        "definition": {
-          "entityName": "AdminUser",
-          "schema": {
-            "$ref": "#/backend/entities/AdminUser"
-          },
-          "description": "Stores administrator user profiles. Used for managing admin-specific features and content. Enables role-based access control using the admin's ID.",
-          "params": [
-            {
-              "name": "adminId",
-              "description": "Unique identifier for the administrator user."
+              "name": "projectId",
+              "description": "The unique identifier for the project."
             }
           ]
         }
       }
     ],
-    "reasoning": "The Firestore data structure is designed to securely manage videos, images, and administrative users for the Liquid Folio application. It emphasizes authorization independence, clarity, and scalability. The structure includes collections for videos, images, and admin users, each with explicit security considerations.\n\n**Authorization Independence:** The design avoids hierarchical authorization dependencies by storing authorization-related data directly within each document. For example, if access to videos needs to be restricted to specific users or roles, relevant user information (e.g., user IDs, roles) is copied directly into the video document. This eliminates the need for `get()` calls in security rules and ensures atomic operations.\n\n**QAPs (Rules are not Filters):** Secure list operations are supported by structurally segregating data based on access needs. Videos and Images are stored in flat collections. The Admin data is stored in its own collection to limit access.\n\n**Admin Segregation:** Admin users are stored in a dedicated `admins` collection, enabling straightforward role-based access control for administrative functions.\n\n**Homepage Showcase**: The design does not include direct support for featuring videos/images on the homepage in terms of database structure. This functionality is expected to be handled via querying and application logic."
+    "reasoning": "The data structure is designed to store project data for the Liquid Folio application. It prioritizes simplicity and ease of management, especially within the admin panel.\n\nThe `/projects` collection is used to store all project documents. This flat structure simplifies queries and updates, which aligns with the user's requirement to easily edit project titles and images from the admin panel.\n\n**Authorization Independence:** Since the requirements do not define user-specific or role-based access control to projects, all projects are stored in a single collection, and authorization is likely handled on the client-side via admin credentials or a separate authentication system. If there were roles or ownership, the `projects` documents would contain the authorization information. For example, if specific users were allowed to edit certain projects, a `members` map could be added to each project document.\n\n**QAPs (Rules are not Filters):** Because all projects reside in the same collection and share similar security needs (admin access for editing), list operations are straightforward. More complex filtering based on user roles or project status can be implemented in the application logic, as no role based access control was defined in user request."
   }
 }
