@@ -111,6 +111,11 @@
 }
 
 @layer utilities {
+  .text-card-foreground {
+    color: hsl(var(--card-foreground));
+    margin: 5%;
+    max-width: 100%;
+  }
   .plyr__poster {
     object-fit: fill !important;
   }
