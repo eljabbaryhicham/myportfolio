@@ -2,53 +2,40 @@
  * @fileoverview Firestore Security Rules for Liquid Folio Projects.
  *
  * Core Philosophy:
- * This ruleset allows public read access to all projects while restricting write access (create, update, delete) to authenticated users.
- * It assumes that authorization is handled separately, such as through an admin panel, as the app requirements don't define user-specific roles.
+ * This ruleset allows public read access to all projects while restricting write access
+ * to authorized administrators, as no role-based access control was defined in user request.
  *
  * Data Structure:
- * All project data is stored in a flat `/projects` collection.  Each project document contains fields like title, description, imageUrl, etc.
+ * The Firestore database contains a single top-level collection, `/projects/{projectId}`, where each
+ * document represents a project.
  *
  * Key Security Decisions:
- * - Read access (get, list) is public.
- * - Write access (create, update, delete) requires authentication.
- * - No validation is performed on the data itself, focusing solely on authentication for write operations to allow for flexible data changes.
+ * - Public Read: All users can read project data.
+ * - Admin-Only Writes: Only authorized administrators can create, update, or delete projects.  The rules
+ *   do NOT implement this authorization; it is expected to be implemented externally to Firestore.
+ * - No User Listing Restrictions:  The rules do not restrict listing of any projects.
  *
- * Denormalization for Authorization:
- * The current design doesn't require denormalization, as write access is solely based on authentication, not on document content or user roles.
- * If finer-grained control were required (e.g., allowing specific users to edit certain projects), a `members` map would be added to each project document to store user roles for that project.
- *
- * Structural Segregation:
- * All data is stored in a single, publicly readable collection, which aligns with the admin-centric editing use case.  If the application grows to include draft projects or user-specific project visibility, consider separating into a public `projects` collection and a private `users/{userId}/projects` subcollection.
+ * Authorization Independence:
+ * Since the requirements do not define user-specific or role-based access control to projects,
+ * authorization is likely handled on the client-side via admin credentials or a separate
+ * authentication system. If there were roles or ownership, the `projects` documents would
+ * contain the authorization information. For example, if specific users were allowed to edit
+ * certain projects, a `members` map could be added to each project document.
  */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * @description Grants public read access to projects and restricts write access to authenticated users.
+     * @description Allows public read access to projects and restricts write access to administrators.
      * @path /projects/{projectId}
-     * @allow (get, list): Any user can read project data.
-     * @allow (create, update, delete): Only authenticated users can create, update, or delete projects.
-     * @deny (create, update, delete): Unauthenticated users cannot create, update, or delete projects.
-     * @principle Allows public read access while restricting writes to authenticated users (admins).
+     * @allow (get, list) - Any user can read project data.
+     * @deny (create, update, delete) - Non-admin users cannot modify project data.
+     * @principle Allows public read and restricts write access to administrators.
      */
     match /projects/{projectId} {
-      allow get: if true;
-      allow list: if true;
-
-      allow create: if isSignedIn();
-      allow update: if isSignedIn() && resource != null;
-      allow delete: if isSignedIn() && resource != null;
-    }
-
-    // --- Helper Functions ---
-
-    /**
-     * @description Checks if the user is signed in.
-     * @return True if the user is signed in, false otherwise.
-     */
-    function isSignedIn() {
-      return request.auth != null;
+      allow get, list: if true;
+      allow create, update, delete: if false; // TODO: Add admin validation.
     }
   }
 }

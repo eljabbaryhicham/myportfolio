@@ -1,8 +1,7 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
-import { portfolioItems, PortfolioItem } from '@/features/portfolio/data/portfolio-data';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   Table,
@@ -12,7 +11,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { PlusCircle, MoreHorizontal, LogOut, Save } from 'lucide-react';
+import { PlusCircle, MoreHorizontal, LogOut } from 'lucide-react';
 import Image from 'next/image';
 import {
   DropdownMenu,
@@ -21,14 +20,20 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { PortfolioItemFormSheet } from './portfolio-item-form';
-import { useUser, useAuth } from '@/firebase';
+import { useUser, useAuth, useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import { signOut } from 'firebase/auth';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { PortfolioItem } from '@/features/portfolio/data/portfolio-data';
+import { addDocumentNonBlocking, deleteDocumentNonBlocking, setDocumentNonBlocking } from '@/firebase/non-blocking-updates';
+import { collection, doc } from 'firebase/firestore';
 
 function AdminPage() {
-  const [items, setItems] = useState<PortfolioItem[]>(portfolioItems);
+  const firestore = useFirestore();
+  const projectsCollection = useMemoFirebase(() => collection(firestore, 'projects'), [firestore]);
+  const { data: items, isLoading } = useCollection<PortfolioItem>(projectsCollection);
+  
   const [selectedItem, setSelectedItem] = useState<PortfolioItem | null>(null);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const { user, isUserLoading } = useUser();
@@ -36,11 +41,9 @@ function AdminPage() {
   const { toast } = useToast();
   const router = useRouter();
 
-  useEffect(() => {
-    if (!isUserLoading && !user) {
-      router.push('/login');
-    }
-  }, [user, isUserLoading, router]);
+  if (!isUserLoading && !user) {
+    router.push('/login');
+  }
 
   const handleLogout = async () => {
     try {
@@ -58,15 +61,6 @@ function AdminPage() {
       });
     }
   };
-  
-  const handleSaveChanges = () => {
-    // This is a mock implementation. In a real app, you'd send `items` to the backend.
-    console.log('Saving items:', items);
-    toast({
-      title: 'Changes Saved',
-      description: 'Your portfolio has been updated.',
-    });
-  };
 
   if (isUserLoading || !user) {
     return <div className="flex h-full w-full items-center justify-center">Loading...</div>;
@@ -83,20 +77,34 @@ function AdminPage() {
   };
   
   const handleDeleteItem = (id: string) => {
-    // This is a mock implementation. In a real app, you'd call an API.
-    setItems(items.filter((item) => item.id !== id));
+    if (!firestore) return;
+    deleteDocumentNonBlocking(doc(firestore, 'projects', id));
+    toast({
+      title: 'Item Deleted',
+      description: 'The portfolio item has been removed.',
+    });
   };
 
   const handleFormSubmit = (values: PortfolioItem) => {
-    // This is a mock implementation. In a real app, you'd call an API.
-    if (selectedItem && values.id) {
-      setItems(items.map((item) => (item.id === values.id ? values : item)));
+    if (!firestore) return;
+    if (values.id) {
+      // Existing item
+      const docRef = doc(firestore, 'projects', values.id);
+      setDocumentNonBlocking(docRef, values, { merge: true });
+       toast({
+        title: 'Changes Saved',
+        description: 'Your portfolio has been updated.',
+      });
     } else {
-      setItems([...items, { ...values, id: `new-${Date.now()}` }]);
+      // New item
+      addDocumentNonBlocking(collection(firestore, 'projects'), values);
+       toast({
+        title: 'Item Added',
+        description: 'A new item has been added to your portfolio.',
+      });
     }
     setIsSheetOpen(false);
   };
-
 
   return (
     <div className="p-[5%] h-full flex flex-col">
@@ -112,10 +120,6 @@ function AdminPage() {
             <Button onClick={handleAddItem}>
               <PlusCircle className="mr-2 h-4 w-4" />
               Add New
-            </Button>
-             <Button onClick={handleSaveChanges} variant="destructive">
-              <Save className="mr-2 h-4 w-4" />
-              Save All Changes
             </Button>
             <Button onClick={handleLogout} variant="secondary">
               <LogOut className="mr-2 h-4 w-4" />
@@ -137,7 +141,12 @@ function AdminPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {items.map((item) => (
+                {isLoading && (
+                  <TableRow>
+                    <TableCell colSpan={5} className="text-center">Loading portfolio...</TableCell>
+                  </TableRow>
+                )}
+                {!isLoading && items && items.map((item) => (
                   <TableRow key={item.id}>
                     <TableCell>
                       <Image
@@ -189,3 +198,5 @@ function AdminPage() {
 }
 
 export default AdminPage;
+
+    

@@ -2,7 +2,6 @@
 'use client';
 
 import Image from 'next/image';
-import { portfolioItems, type PortfolioItem } from '@/lib/portfolio-data';
 import {
   Dialog,
   DialogContent,
@@ -23,6 +22,9 @@ import { useVeryUltrawide } from '@/hooks/use-very-ultrawide';
 import ReactMarkdown from 'react-markdown';
 import rehypeRaw from 'rehype-raw';
 import rehypeSanitize, { defaultSchema } from 'rehype-sanitize';
+import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
+import { collection } from 'firebase/firestore';
+import { PortfolioItem } from '@/features/portfolio/data/portfolio-data';
 
 const VideoPlayer = dynamic(() => import('@/components/video-player'), {
   ssr: false,
@@ -88,6 +90,10 @@ const PortfolioMedia = ({
 PortfolioMedia.displayName = 'PortfolioMedia';
 
 export default function WorkPage() {
+  const firestore = useFirestore();
+  const projectsCollection = useMemoFirebase(() => collection(firestore, 'projects'), [firestore]);
+  const { data: portfolioItems, isLoading } = useCollection<PortfolioItem>(projectsCollection);
+
   const [selectedItem, setSelectedItem] = useState<PortfolioItem | null>(null);
   const [visibleItems, setVisibleItems] = useState(6);
   const [detailsModalOpen, setDetailsModalOpen] = useState(false);
@@ -110,10 +116,10 @@ export default function WorkPage() {
     };
   }, []);
 
-  const filteredItems = portfolioItems.filter(item => {
+  const filteredItems = portfolioItems?.filter(item => {
     if (filter === 'all') return true;
     return item.type === filter;
-  });
+  }) || [];
 
   const showMoreItems = () => {
     setVisibleItems(prevVisibleItems => prevVisibleItems + 6);
@@ -174,44 +180,47 @@ export default function WorkPage() {
         <ScrollArea className="flex-1">
           <div className="p-[5%] pt-0">
             <div className="container mx-auto px-0">
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-                {filteredItems.slice(0, visibleItems).map(item => (
-                  <div
-                    key={item.id}
-                    className={cn(
-                      'group relative cursor-pointer overflow-hidden rounded-md transition-all duration-300 hover:scale-[1.02] aspect-square glass-effect'
-                    )}
-                    onClick={() => setSelectedItem(item)}
-                  >
-                    <Image
-                      src={item.thumbnailUrl}
-                      alt={item.title}
-                      fill
-                      className="object-cover transition-transform duration-300 group-hover:scale-105"
-                      data-ai-hint={item.thumbnailHint}
-                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-4">
-                      <h3 className="font-bold text-white text-lg">
-                        {item.title}
-                      </h3>
-                      <p className="text-white/80 text-sm line-clamp-2">
-                        {item.description}
-                      </p>
-                    </div>
-                    {item.type === 'video' && (
-                      <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/40 transition-colors">
-                        <PlayCircle className="h-12 w-12 md:h-16 md:w-16 text-white/80" />
+               {isLoading && <p>Loading projects...</p>}
+              {!isLoading && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+                  {filteredItems.slice(0, visibleItems).map(item => (
+                    <div
+                      key={item.id}
+                      className={cn(
+                        'group relative cursor-pointer overflow-hidden rounded-md transition-all duration-300 hover:scale-[1.02] aspect-square glass-effect'
+                      )}
+                      onClick={() => setSelectedItem(item)}
+                    >
+                      <Image
+                        src={item.thumbnailUrl}
+                        alt={item.title}
+                        fill
+                        className="object-cover transition-transform duration-300 group-hover:scale-105"
+                        data-ai-hint={item.thumbnailHint}
+                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-4">
+                        <h3 className="font-bold text-white text-lg">
+                          {item.title}
+                        </h3>
+                        <p className="text-white/80 text-sm line-clamp-2">
+                          {item.description}
+                        </p>
                       </div>
-                    )}
-                    {item.type === 'image' && (
+                      {item.type === 'video' && (
                         <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/40 transition-colors">
-                            <ImageIcon className="h-12 w-12 md:h-16 md:w-16 text-white/80" />
+                          <PlayCircle className="h-12 w-12 md:h-16 md:w-16 text-white/80" />
                         </div>
-                    )}
-                  </div>
-                ))}
-              </div>
+                      )}
+                      {item.type === 'image' && (
+                          <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/40 transition-colors">
+                              <ImageIcon className="h-12 w-12 md:h-16 md:w-16 text-white/80" />
+                          </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
 
               {visibleItems < filteredItems.length && (
                 <div className="mt-12 text-center">
@@ -328,7 +337,5 @@ export default function WorkPage() {
     </>
   );
 }
-
-    
 
     
