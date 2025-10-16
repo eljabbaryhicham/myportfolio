@@ -19,7 +19,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { PortfolioItemForm } from './portfolio-item-form';
+import { PortfolioItemForm } from '../../admin/components/portfolio-item-form';
 import { useUser, useAuth, useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
@@ -260,12 +260,12 @@ function AdminPage() {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent className="glass-effect">
-                          <DropdownMenuItem onClick={() => handleEditItem(item)}>
+                          <DropdownMenuItem onClick={() => handleEditItem(item)} className="justify-center">
                             Edit
                           </DropdownMenuItem>
                           <DropdownMenuItem
                             onClick={() => handleDeleteItem(item.id)}
-                            className="text-destructive"
+                            className="text-destructive justify-center"
                           >
                             Delete
                           </DropdownMenuItem>
