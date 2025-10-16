@@ -6,7 +6,6 @@ import { usePathname } from "next/navigation";
 import { Home, Images, Cat, Info, Mail, Shield } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useUser } from "@/firebase";
-import { motion } from "framer-motion";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 const navItems = [
@@ -25,11 +24,7 @@ export function AppNav() {
   const visibleNavItems = navItems.filter(item => item.public || (!item.public && user));
 
   return (
-    <motion.aside
-      key={pathname} 
-      initial={isMobile ? { y: "100%" } : { x: "100%" }}
-      animate={{ x: 0, y: 0 }}
-      transition={{ duration: 0.5, ease: "easeOut" }}
+    <aside
       className="w-full md:w-28 flex-shrink-0 p-0 md:p-4 mt-2 md:mt-0 h-[10vh] md:h-auto"
     >
       <div className={cn("flex h-full flex-row md:flex-col items-center justify-center md:justify-between rounded-lg border border-border/50 px-4 py-2 md:p-8 glass-effect")}>
@@ -65,6 +60,6 @@ export function AppNav() {
           <div className="h-10 w-10 md:h-12 md:w-12 hidden md:block"></div>
         </div>
       </div>
-    </motion.aside>
+    </aside>
   );
 }
