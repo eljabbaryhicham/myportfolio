@@ -6,7 +6,6 @@ import { usePathname } from "next/navigation";
 import { Home, Images, Cat, LogIn } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useUser } from "@/firebase";
-import { useState, useEffect } from "react";
 
 const navItems = [
   { href: "/", label: "Home", icon: Home, public: true },
@@ -16,12 +15,6 @@ const navItems = [
 export function AppNav() {
   const pathname = usePathname();
   const { user, isUserLoading } = useUser();
-  const [isClient, setIsClient] = useState(false);
-
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
-
 
   const visibleNavItems = navItems.filter(item => item.public);
 
