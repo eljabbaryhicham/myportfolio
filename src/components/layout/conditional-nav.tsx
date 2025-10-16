@@ -10,8 +10,8 @@ export function ConditionalNav() {
   const showNav = pathname !== '/';
 
   return (
-    <AnimatePresence>
+    <>
       {showNav && <AppNav />}
-    </AnimatePresence>
+    </>
   );
 }

@@ -25,33 +25,15 @@ export function AppNav() {
 
   const visibleNavItems = navItems.filter(item => item.public || (!item.public && user));
 
-  const desktopVariants = {
-    hidden: { x: '100%' },
-    visible: { x: 0 },
-  };
-
-  const mobileVariants = {
-    hidden: { y: '100%' },
-    visible: { y: 0 },
-  };
-
   if (isMobile) {
     return (
-      <motion.div
-        initial="hidden"
-        animate="visible"
-        exit="hidden"
-        variants={mobileVariants}
-        transition={{ ease: "easeInOut", duration: 0.5 }}
+      <div
         className="fixed bottom-0 left-0 right-0 h-[10vh] z-50"
-        style={{ margin: '5%' }}
+        style={{ margin: '5%', height: '10vh' }}
       >
         <div className={cn(
           "flex h-full flex-row items-center justify-around rounded-lg border border-border/50 glass-effect"
           )}>
-          <Link href="/" className="hidden md:flex items-center gap-2 text-primary">
-            <Cat className="h-10 w-10" />
-          </Link>
           <nav className="flex flex-row items-center justify-around w-full">
             {visibleNavItems.map((item) => {
               const isActive =
@@ -78,17 +60,12 @@ export function AppNav() {
             })}
           </nav>
         </div>
-      </motion.div>
+      </div>
     );
   }
 
   return (
-    <motion.aside
-      initial="hidden"
-      animate="visible"
-      exit="hidden"
-      variants={desktopVariants}
-      transition={{ ease: "easeInOut", duration: 0.5 }}
+    <aside
       className="w-full md:w-28 flex-shrink-0 p-0 md:p-4 mt-2 md:mt-0 h-auto md:h-auto"
     >
       <div className={cn(
@@ -126,6 +103,6 @@ export function AppNav() {
           <div className="h-10 w-10 md:h-12 md:w-12 hidden md:block"></div>
         </div>
       </div>
-    </motion.aside>
+    </aside>
   );
 }
