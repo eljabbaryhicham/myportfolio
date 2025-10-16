@@ -160,11 +160,11 @@ export default function WorkPage() {
       </div>
 
       <Dialog open={!!selectedItem} onOpenChange={handleOpenChange}>
-        <DialogContent className="glass-effect w-[90vw] h-[90vh] p-0 flex flex-col transition-all duration-300">
+        <DialogContent className="glass-effect w-[90vw] max-h-[90vh] p-0 flex flex-col transition-all duration-300">
           {selectedItem && (
             <div className="relative flex-1 flex flex-col min-h-0 overflow-hidden">
                 <ScrollArea className="flex-1">
-                  <div className="flex flex-col min-h-full">
+                  <div className="flex flex-col">
                       <div className="flex-shrink-0 bg-black/50 flex items-center justify-center">
                           <PortfolioMedia item={selectedItem} />
                       </div>
