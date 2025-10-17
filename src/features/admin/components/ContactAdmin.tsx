@@ -17,9 +17,8 @@ import {
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { useDoc, useFirestore, useMemoFirebase, setDocumentNonBlocking } from '@/firebase';
-import { doc, setDoc } from 'firebase/firestore';
+import { doc } from 'firebase/firestore';
 import type { ContactInfo } from '@/lib/contact-data';
-import { defaultContactInfo } from '@/lib/contact-data';
 import { useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -75,15 +74,15 @@ export default function ContactAdmin() {
   }
 
   return (
-    <Card className="glass-effect">
+    <Card className="glass-effect h-full flex flex-col">
       <CardHeader>
         <CardTitle>Contact Page Settings</CardTitle>
         <CardDescription>
           Update the information displayed on your public contact page.
         </CardDescription>
       </CardHeader>
-      <CardContent>
-      <ScrollArea className="h-[60vh]">
+      <CardContent className="flex-1 overflow-hidden">
+      <ScrollArea className="h-full">
         <div className="p-1">
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
@@ -231,7 +230,7 @@ export default function ContactAdmin() {
                   </FormItem>
                 )}
               />
-              <div className="flex justify-end">
+              <div className="flex justify-end pt-4">
                 <Button type="submit">Save Changes</Button>
               </div>
             </form>
