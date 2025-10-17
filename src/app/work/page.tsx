@@ -15,7 +15,6 @@ import { cn } from '@/lib/utils';
 import dynamic from 'next/dynamic';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import type { PlyrProps } from 'plyr-react';
 import type Plyr from 'plyr';
 import { useVeryUltrawide } from '@/hooks/use-very-ultrawide';
 import ReactMarkdown from 'react-markdown';
@@ -29,34 +28,24 @@ import { faUpDown, faXmark, faExpand, faPalette, faFilm } from '@fortawesome/fre
 import { Separator } from '@/components/ui/separator';
 import Preloader from '@/components/preloader';
 
-
 const VideoPlayer = dynamic(() => import('@/components/video-player'), {
   ssr: false,
   loading: () => <div className="aspect-video w-full flex items-center justify-center bg-black"><Preloader /></div>,
 });
 
-const ClientOnlyVideoPlayer = (
-  props: PlyrProps & { innerRef: React.Ref<Plyr> }
-) => {
-  return <VideoPlayer {...props} />;
-};
-ClientOnlyVideoPlayer.displayName = 'ClientOnlyVideoPlayer';
 
 const MemoizedImage = memo(Image);
 
 const PortfolioMedia = ({
   item,
-  playerRef,
   onFullscreenClick,
 }: {
   item: PortfolioItem;
-  playerRef: React.RefObject<Plyr>;
   onFullscreenClick: (url: string) => void;
 }) => {
   const [isPosterLoaded, setIsPosterLoaded] = useState(false);
   
   useEffect(() => {
-    // Reset poster loaded state when the item changes
     setIsPosterLoaded(false);
   }, [item.id]);
 
@@ -65,29 +54,24 @@ const PortfolioMedia = ({
     const vimeoRegex = /(?:https?:\/\/)?(?:www\.)?vimeo\.com\/(?:channels\/(?:\w+\/)?|groups\/(?:[^\/]*)\/videos\/|album\/(?:\d+)\/video\/|)(\d+)/;
 
     let sources = [];
-    if (item.sourceUrl) { // Primarily for YouTube/Vimeo links
+    if (item.sourceUrl) {
       const youtubeMatch = item.sourceUrl.match(youtubeRegex);
-      if (youtubeMatch && youtubeMatch[1]) {
+      if (youtubeMatch?.[1]) {
         return {
           type: 'video',
           sources: [{ src: youtubeMatch[1], provider: 'youtube' }],
-          poster: item.thumbnailUrl,
         };
       }
 
       const vimeoMatch = item.sourceUrl.match(vimeoRegex);
-      if (vimeoMatch && vimeoMatch[1]) {
+      if (vimeoMatch?.[1]) {
         return {
           type: 'video',
           sources: [{ src: vimeoMatch[1], provider: 'vimeo' }],
-          poster: item.thumbnailUrl,
         };
       }
-      
-      // Fallback for single direct .mp4 links
       sources.push({ src: item.sourceUrl, type: 'video/mp4' });
-
-    } else if (item.sources) { // For multi-quality MP4s
+    } else if (item.sources) {
       sources = item.sources.map(s => ({
         src: s.src,
         type: 'video/mp4',
@@ -97,12 +81,10 @@ const PortfolioMedia = ({
 
     if (sources.length > 0) {
       return {
-        type: 'video',
+        type: 'video' as const,
         sources: sources,
-        poster: item.thumbnailUrl,
       };
     }
-
     return null;
   }, [item]);
 
@@ -110,7 +92,6 @@ const PortfolioMedia = ({
   if (item.type === 'video' && videoSource) {
     return (
       <div className="relative aspect-video bg-black flex items-center justify-center">
-        {/* Hidden image to preload the poster and trigger onLoad */}
         <Image
             src={item.thumbnailUrl}
             alt="poster image"
@@ -127,9 +108,10 @@ const PortfolioMedia = ({
           "w-full h-full transition-opacity duration-500",
           isPosterLoaded ? 'opacity-100' : 'opacity-0'
         )}>
-          <ClientOnlyVideoPlayer
-            innerRef={playerRef}
+          <VideoPlayer
             source={videoSource}
+            poster={item.thumbnailUrl}
+            previewThumbnailsSrc={item.previewThumbnailsSrc}
           />
         </div>
       </div>
@@ -240,26 +222,13 @@ export default function WorkPage() {
   const [selectedItem, setSelectedItem] = useState<PortfolioItem | null>(null);
   const [visibleItems, setVisibleItems] = useState(12);
   const [detailsModalOpen, setDetailsModalOpen] = useState(false);
-  const playerRef = useRef<Plyr | null>(null);
-  const detailsPlayerRef = useRef<Plyr | null>(null);
   const isVeryUltrawide = useVeryUltrawide();
   const [filter, setFilter] = useState<'all' | 'image' | 'video'>('all');
   const [fullscreenImageUrl, setFullscreenImageUrl] = useState<string | null>(null);
-
+  const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
-    return () => {
-      if (playerRef.current) {
-        // @ts-ignore
-        playerRef.current.destroy?.();
-        playerRef.current = null;
-      }
-      if (detailsPlayerRef.current) {
-        // @ts-ignore
-        detailsPlayerRef.current.destroy?.();
-        detailsPlayerRef.current = null;
-      }
-    };
+    setIsClient(true);
   }, []);
 
   const filteredItems = useMemo(() => {
@@ -275,32 +244,12 @@ export default function WorkPage() {
 
   const handleOpenChange = (open: boolean) => {
     if (!open) {
-      if (playerRef.current) {
-        try {
-          // @ts-ignore
-          playerRef.current.destroy?.();
-        } catch (e) {
-          console.error('Error destroying Plyr instance on close', e);
-        }
-        playerRef.current = null;
-      }
       setSelectedItem(null);
     }
   };
 
   const handleDetailsOpenChange = (open: boolean) => {
     setDetailsModalOpen(open);
-    if (!open) {
-      if (detailsPlayerRef.current) {
-        try {
-          // @ts-ignore
-          detailsPlayerRef.current.destroy?.();
-        } catch (e) {
-          console.error('Error destroying details Plyr instance on close', e);
-        }
-        detailsPlayerRef.current = null;
-      }
-    }
   };
   
   const isDescriptionLong = selectedItem?.description && selectedItem.description.length > 250;
@@ -375,11 +324,12 @@ export default function WorkPage() {
             <div className="relative flex-1 flex flex-col min-h-0">
               <ScrollArea className="flex-1">
                 <div className="flex flex-col h-full">
-                    <PortfolioMedia
-                        item={selectedItem}
-                        playerRef={playerRef}
-                        onFullscreenClick={setFullscreenImageUrl}
-                    />
+                    {isClient && (
+                      <PortfolioMedia
+                          item={selectedItem}
+                          onFullscreenClick={setFullscreenImageUrl}
+                      />
+                    )}
                     <div className="flex-shrink-0 p-4 md:p-6 pt-4">
                         <DialogHeader>
                             <DialogTitle className="text-xl md:text-2xl">
@@ -439,7 +389,7 @@ export default function WorkPage() {
                             img: ({node, ...props}) => <img className="w-full rounded-lg" {...props} />,
                             video: ({node, ...props}) => {
                               const { src } = props;
-                              if (!src) return null;
+                              if (!isClient || !src) return null;
                               
                               const youtubeRegex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
                               const vimeoRegex = /(?:https?:\/\/)?(?:www\.)?vimeo\.com\/(?:channels\/(?:\w+\/)?|groups\/(?:[^\/]*)\/videos\/|album\/(?:\d+)\/video\/|)(\d+)/;
@@ -468,9 +418,10 @@ export default function WorkPage() {
 
                               return (
                                 <div className="w-full rounded-lg overflow-hidden my-4">
-                                  <ClientOnlyVideoPlayer
-                                    innerRef={detailsPlayerRef}
-                                    source={{...videoSource, poster: selectedItem.thumbnailUrl}}
+                                  <VideoPlayer
+                                    source={videoSource}
+                                    poster={selectedItem.thumbnailUrl}
+                                    previewThumbnailsSrc={selectedItem.previewThumbnailsSrc}
                                   />
                                 </div>
                               );
@@ -512,3 +463,5 @@ export default function WorkPage() {
     </>
   );
 }
+
+    
