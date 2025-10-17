@@ -109,7 +109,7 @@ export default function ContactPage() {
                   <Card className="glass-effect p-6 flex flex-col h-full">
                     <CardContent className="flex flex-col items-center text-center p-0">
                       <div className="mb-4">
-                          <Avatar className="w-24 h-24 border-2 border-primary">
+                          <Avatar className="w-32 h-32 border-2 border-primary">
                             <AvatarImage src={contactInfo.avatarUrl} alt={contactInfo.name} />
                             <AvatarFallback>{contactInfo.name?.substring(0, 2)}</AvatarFallback>
                           </Avatar>
