@@ -320,7 +320,7 @@ export default function WorkPage() {
             )}
         >
           {selectedItem && (
-            <div className="relative flex-1 flex flex-col min-h-0">
+            <div className="relative flex-1 flex flex-col min-h-0 group">
               <ScrollArea className="flex-1">
                 <div className="flex flex-col h-full">
                     {isClient && (
@@ -353,12 +353,12 @@ export default function WorkPage() {
                     </div>
                 </div>
               </ScrollArea>
+              <DialogClose className="absolute top-4 right-4 z-[101] h-8 w-8 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center opacity-0 group-hover:opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2">
+                  <FontAwesomeIcon icon={faXmark} className="h-4 w-4" />
+                  <span className="sr-only">Close</span>
+              </DialogClose>
             </div>
           )}
-           <DialogClose className="absolute top-4 right-4 z-[101] h-8 w-8 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2">
-              <FontAwesomeIcon icon={faXmark} className="h-4 w-4" />
-              <span className="sr-only">Close</span>
-          </DialogClose>
         </DialogContent>
       </Dialog>
       
