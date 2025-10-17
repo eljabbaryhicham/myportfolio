@@ -23,6 +23,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { useDoc, useFirestore, useMemoFirebase } from '@/firebase';
 import { doc } from 'firebase/firestore';
 import type { ContactInfo } from '@/lib/contact-data';
+import { Separator } from '@/components/ui/separator';
 
 
 const formSchema = z.object({
@@ -115,8 +116,8 @@ export default function ContactPage() {
                       </Avatar>
                       <h3 className="text-xl font-bold">{contactInfo.name}</h3>
                       <p className="text-foreground/70">{contactInfo.title}</p>
-
-                      <div className="w-full flex flex-col items-center mt-8">
+                      <Separator className="my-6 bg-foreground/20" />
+                      <div className="w-full flex flex-col items-center">
                         <div className="space-y-4">
                             {contactLinks.map((link) => (
                             link.href && (
@@ -134,15 +135,18 @@ export default function ContactPage() {
                         </div>
                       </div>
                       {contactInfo.whatsApp && (
-                        <Button asChild className="w-full h-24 bg-gradient-to-r from-cyan-500 to-blue-500 text-white text-lg mt-8">
-                            <Link href={`https://wa.me/${contactInfo.whatsApp.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer">
-                                <Smartphone className="mr-3 h-8 w-8" />
-                                <div>
-                                    <p className="text-base font-light">Make a deal on WhatsApp</p>
-                                    <p className="font-bold text-xl">{contactInfo.whatsApp}</p>
-                                </div>
-                            </Link>
-                        </Button>
+                        <>
+                          <Separator className="my-6 bg-foreground/20" />
+                          <Button asChild className="w-full h-24 bg-gradient-to-r from-cyan-500 to-blue-500 text-white text-lg">
+                              <Link href={`https://wa.me/${contactInfo.whatsApp.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer">
+                                  <Smartphone className="mr-3 h-8 w-8" />
+                                  <div>
+                                      <p className="text-base font-light">Make a deal on WhatsApp</p>
+                                      <p className="font-bold text-xl">{contactInfo.whatsApp}</p>
+                                  </div>
+                              </Link>
+                          </Button>
+                        </>
                       )}
                     </CardContent>
                   </Card>
@@ -217,3 +221,5 @@ export default function ContactPage() {
     </div>
   );
 }
+
+    
