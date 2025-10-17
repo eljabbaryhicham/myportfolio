@@ -47,14 +47,17 @@ const sendContactEmailFlow = ai.defineFlow(
     console.log('Received contact form submission:', input);
     
     try {
-      // Step 1: Send the primary email to the site owner
-      const adminEmailPromise = resend.emails.send({
+      // Send one email to the admin and CC the user who submitted the form.
+      // This serves as both the notification and the user's confirmation.
+      const { data, error } = await resend.emails.send({
         from: `Contact Form <${FROM_EMAIL}>`,
         to: TO_EMAIL,
+        cc: input.email, // CC the user
         subject: `New Message from ${input.name}`,
-        reply_to: input.email,
+        reply_to: input.email, // When you reply, it goes to the user
         html: `
-          <p>You received a new message from your website's contact form.</p>
+          <p>You have received a new message from your website's contact form. A copy of this has been sent to ${input.email} for their records.</p>
+          <hr>
           <p><strong>Name:</strong> ${input.name}</p>
           <p><strong>Email:</strong> ${input.email}</p>
           <p><strong>Message:</strong></p>
@@ -62,43 +65,12 @@ const sendContactEmailFlow = ai.defineFlow(
         `,
       });
 
-      // Step 2: Send the confirmation email to the user
-      const userConfirmationPromise = resend.emails.send({
-        from: `Support <${FROM_EMAIL}>`,
-        to: input.email,
-        subject: 'Thank you for your message!',
-        html: `
-          <p>Hi ${input.name},</p>
-          <p>Thank you for contacting us. We have received your message and will get back to you shortly.</p>
-          <p>Best regards,<br/>The Team</p>
-        `,
-      });
-
-      // Await both promises
-      const [adminEmailResult, userEmailResult] = await Promise.allSettled([
-        adminEmailPromise,
-        userConfirmationPromise,
-      ]);
-
-      // Check the result of the primary email to the admin
-      if (adminEmailResult.status === 'rejected') {
-        console.error('Error sending admin email:', adminEmailResult.reason);
-        // This is a critical failure
-        return { success: false, message: 'Failed to send message to support.' };
+      if (error) {
+        console.error('Error sending email:', error);
+        return { success: false, message: 'Failed to send email.' };
       }
       
-      if (userEmailResult.status === 'rejected') {
-        // This is not a critical failure. The admin got the email.
-        // Log it for debugging, but return success to the user interface.
-        console.warn('Failed to send confirmation email to user:', userEmailResult.reason);
-      }
-      
-      console.log('Admin email sent successfully:', adminEmailResult.value);
-      if (userEmailResult.status === 'fulfilled') {
-        console.log('User confirmation email sent successfully:', userEmailResult.value);
-      }
-
-      // Return success as long as the primary email was sent.
+      console.log('Email sent successfully:', data);
       return { success: true, message: 'Email sent successfully.' };
 
     } catch (e) {
