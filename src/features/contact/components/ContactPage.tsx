@@ -28,6 +28,8 @@ import { Icon } from '@/components/icon';
 import { faLinkedin, faBehance, faInstagram, faFacebook, faTwitter, faWhatsapp } from '@fortawesome/free-brands-svg-icons';
 import { cn } from '@/lib/utils';
 import Preloader from '@/components/preloader';
+import { sendContactEmail } from '@/ai/flows/send-contact-email';
+import { useState } from 'react';
 
 
 const formSchema = z.object({
@@ -48,6 +50,7 @@ const FiverrIcon = (props: React.SVGProps<SVGSVGElement>) => (
 export default function ContactPage() {
   const { toast } = useToast();
   const firestore = useFirestore();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const contactDocRef = useMemoFirebase(
     () => firestore ? doc(firestore, 'contact', 'details') : null,
@@ -64,13 +67,33 @@ export default function ContactPage() {
     },
   });
 
-  const handleSubmit = (values: ContactFormValues) => {
-    console.log(values);
-    toast({
-      title: 'Message Sent!',
-      description: "Thanks for reaching out. We'll get back to you soon.",
-    });
-    form.reset();
+  const handleSubmit = async (values: ContactFormValues) => {
+    setIsSubmitting(true);
+    try {
+      const result = await sendContactEmail(values);
+      if (result.success) {
+        toast({
+          title: 'Message Sent!',
+          description: "Thanks for reaching out. We'll get back to you soon.",
+        });
+        form.reset();
+      } else {
+        toast({
+          variant: 'destructive',
+          title: 'Error Sending Message',
+          description: result.message,
+        });
+      }
+    } catch (error) {
+      console.error('Failed to send contact email:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Uh oh! Something went wrong.',
+        description: 'Could not send message. Please try again later.',
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const contactLinks = contactInfo ? [
@@ -202,8 +225,8 @@ export default function ContactPage() {
                               </FormItem>
                             )}
                           />
-                          <Button type="submit" size="lg" className="w-full glass-effect">
-                            Send Message
+                          <Button type="submit" size="lg" className="w-full glass-effect" disabled={isSubmitting}>
+                            {isSubmitting ? 'Sending...' : 'Send Message'}
                           </Button>
                         </form>
                       </Form>
