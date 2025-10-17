@@ -240,8 +240,8 @@ function ProjectAdmin() {
               <TableBody>
                 {isLoading && (
                   <TableRow>
-                    <TableCell colSpan={6}>
-                      <div className="flex justify-center items-center h-full min-h-64">
+                    <TableCell colSpan={6} className="h-96">
+                      <div className="flex justify-center items-center h-full">
                         <Preloader />
                       </div>
                     </TableCell>

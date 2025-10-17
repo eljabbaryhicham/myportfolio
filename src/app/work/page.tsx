@@ -212,7 +212,7 @@ export default function WorkPage() {
           <div className="p-[5%] pt-4">
             <div className="container mx-auto px-0">
                {isLoading && (
-                <div className="flex justify-center items-center h-full min-h-64">
+                <div className="flex justify-center items-center h-full min-h-[50vh]">
                     <Preloader />
                 </div>
                )}
