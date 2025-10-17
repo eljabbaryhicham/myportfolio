@@ -16,7 +16,7 @@ const TO_EMAIL = 'your-email@example.com';
 const FROM_EMAIL = 'onboarding@resend.dev'; // Resend requires this for free tier
 
 // Initialize Resend. You'll need to set up your API key.
-// const resend = new Resend(process.env.RESEND_API_KEY);
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 /**
  * A server-side function to send the contact form data via email.
@@ -44,11 +44,7 @@ const sendContactEmailFlow = ai.defineFlow(
   },
   async (input) => {
     console.log('Received contact form submission:', input);
-
-    // Placeholder for email sending logic.
-    // Since we can't handle API keys securely here, this part is commented out.
-    // You will need to uncomment this and add your Resend API key.
-    /*
+    
     if (!process.env.RESEND_API_KEY) {
       console.error('Resend API key is not configured.');
       return { success: false, message: 'Email service is not configured.' };
@@ -80,11 +76,5 @@ const sendContactEmailFlow = ai.defineFlow(
       console.error('An unexpected error occurred:', e);
       return { success: false, message: 'An unexpected error occurred.' };
     }
-    */
-    
-    // For now, we'll return a success message without sending an email.
-    // ** YOU WILL NEED TO IMPLEMENT THE EMAIL LOGIC ABOVE **
-    await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate network delay
-    return { success: true, message: 'Form submitted (email sending not implemented).' };
   }
 );
