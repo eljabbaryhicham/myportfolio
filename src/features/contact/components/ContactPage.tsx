@@ -23,7 +23,7 @@ import { doc } from 'firebase/firestore';
 import type { ContactInfo } from '@/lib/data-types';
 import { Separator } from '@/components/ui/separator';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEnvelope, faCheckCircle } from '@fortawesome/free-solid-svg-icons';
+import { faEnvelope, faCheckCircle, faWhatsapp as faWhatsappSolid } from '@fortawesome/free-solid-svg-icons';
 import { Icon } from '@/components/icon';
 import { faLinkedin, faBehance, faInstagram, faFacebook, faTwitter, faWhatsapp } from '@fortawesome/free-brands-svg-icons';
 import { cn } from '@/lib/utils';
@@ -199,9 +199,9 @@ export default function ContactPage() {
                         <div className='w-full'>
                             <div className="flex flex-col items-center mb-8">
                                 <p className="font-handwriting text-2xl text-white transform -rotate-6">send a message we are always avalaible</p>
-                                <svg className="w-24 h-24 text-white transform -rotate-12" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M10 10 C 20 80, 80 80, 90 10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                                    <path d="M85 15 L 90 10 L 95 15" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                                <svg className="w-24 h-24 text-white transform rotate-12" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                  <path d="M10 90 C 20 20, 80 20, 90 90" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                                  <path d="M85 85 L 90 90 L 95 85" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                                 </svg>
                             </div>
                             <Form {...form}>
@@ -284,3 +284,5 @@ export default function ContactPage() {
     </div>
   );
 }
+
+    
