@@ -13,6 +13,7 @@ import ProjectAdmin from './ProjectAdmin';
 import ContactAdmin from './ContactAdmin';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faRightFromBracket } from '@fortawesome/free-solid-svg-icons';
+import { Separator } from '@/components/ui/separator';
 
 
 function AdminPage() {
@@ -69,6 +70,8 @@ function AdminPage() {
             </Button>
           </div>
         </div>
+
+        <Separator className="bg-white/10 mb-8" />
 
         <Tabs defaultValue="projects" className="flex-1 flex flex-col min-h-0">
             <TabsList className="w-full">

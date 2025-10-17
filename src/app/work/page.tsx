@@ -27,6 +27,7 @@ import { collection, query, orderBy } from 'firebase/firestore';
 import { PortfolioItem } from '@/features/portfolio/data/portfolio-data';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlayCircle, faUpDown, faXmark, faImage, faExpand } from '@fortawesome/free-solid-svg-icons';
+import { Separator } from '@/components/ui/separator';
 
 
 const VideoPlayer = dynamic(() => import('@/components/video-player'), {
@@ -200,9 +201,10 @@ export default function WorkPage() {
             </div>
           </div>
         </div>
+        <Separator className="bg-white/10" />
 
         <ScrollArea className="flex-1">
-          <div className="p-[5%] pt-0">
+          <div className="p-[5%] pt-4">
             <div className="container mx-auto px-0">
                {isLoading && <p>Loading projects...</p>}
               {!isLoading && (

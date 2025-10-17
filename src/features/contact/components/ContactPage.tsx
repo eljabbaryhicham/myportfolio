@@ -24,7 +24,7 @@ import { doc } from 'firebase/firestore';
 import type { ContactInfo } from '@/lib/data-types';
 import { Separator } from '@/components/ui/separator';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEnvelope } from '@fortawesome/free-solid-svg-icons';
+import { faEnvelope, faMobileAlt } from '@fortawesome/free-solid-svg-icons';
 import { Icon } from '@/components/icon';
 import { faLinkedin, faBehance, faInstagram, faFacebook, faTwitter, faWhatsapp } from '@fortawesome/free-brands-svg-icons';
 import { cn } from '@/lib/utils';
@@ -99,12 +99,13 @@ export default function ContactPage() {
           </div>
         </div>
       </div>
+      <Separator className="bg-white/10" />
       <ScrollArea className="flex-1">
-        <div className="p-[5%] pt-0">
+        <div className="p-[5%] pt-4">
           <div className="container mx-auto px-0">
             {isLoading && <div className="text-center">Loading contact information...</div>}
             {contactInfo && (
-              <div className="flex flex-col md:flex-row gap-4 items-start justify-center">
+              <div className="flex flex-col md:flex-row gap-2 items-start justify-center">
                 <div className="w-full md:w-1/2">
                   <Card className="glass-effect p-6 flex flex-col h-full">
                     <CardContent className="flex flex-col items-center text-center p-0">
@@ -121,8 +122,8 @@ export default function ContactPage() {
                         <div className="space-y-4">
                             {contactLinks.map((link) => (
                             link.href && (
-                                <Link href={link.href} key={link.label} className="flex items-center group" target="_blank" rel="noopener noreferrer">
-                                    <div className={cn("w-12 h-12 flex-shrink-0 rounded-full flex items-center justify-center glass-effect text-white transition-colors duration-300", link.color)}>
+                                <Link href={link.href} key={link.label} className="flex items-center group text-white" target="_blank" rel="noopener noreferrer">
+                                    <div className={cn("w-12 h-12 flex-shrink-0 rounded-full flex items-center justify-center glass-effect transition-colors duration-300", link.color)}>
                                         <Icon icon={link.icon} className="w-6 h-6" />
                                     </div>
                                     <div className="ml-4 text-left">
@@ -138,7 +139,7 @@ export default function ContactPage() {
                       {contactInfo.whatsApp && (
                         <>
                           <Separator className="my-4 bg-white/20" />
-                          <Button asChild className="bg-gradient-to-r from-green-500 to-emerald-600 text-white w-[80%]">
+                          <Button asChild className="bg-gradient-to-r from-green-500 to-emerald-600 w-[80%]">
                               <Link href={`https://wa.me/${contactInfo.whatsApp.replace(/\\D/g, '')}`} target="_blank" rel="noopener noreferrer" className="py-6 px-8">
                                   <FontAwesomeIcon icon={faWhatsapp} className="mr-3 h-6 w-6" />
                                   <div>
@@ -215,7 +216,7 @@ export default function ContactPage() {
                       href={social.href} 
                       key={social.id} 
                       className={cn(
-                        "w-12 h-12 rounded-full flex items-center justify-center text-foreground/70 transition-all duration-300 hover:scale-110 glass-effect",
+                        "w-12 h-12 rounded-full flex items-center justify-center text-white transition-all duration-300 hover:scale-110 glass-effect",
                         social.hoverColor
                       )}
                       target="_blank" 

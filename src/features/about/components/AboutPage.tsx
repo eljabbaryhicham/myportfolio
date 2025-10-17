@@ -14,6 +14,7 @@ import Autoplay from 'embla-carousel-autoplay';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faStar } from '@fortawesome/free-solid-svg-icons';
+import { Separator } from '@/components/ui/separator';
 
 const clients = [
   {
@@ -97,8 +98,9 @@ export default function AboutPage() {
             </div>
         </div>
       </div>
+      <Separator className="bg-white/10" />
       <ScrollArea className="flex-1">
-        <div className="p-[5%] pt-0">
+        <div className="p-[5%] pt-4">
           <div className="w-full max-w-2xl mx-auto">
             <Carousel
               plugins={[plugin.current]}
