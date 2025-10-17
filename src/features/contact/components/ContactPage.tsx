@@ -1,3 +1,4 @@
+
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -24,6 +25,7 @@ import type { ContactInfo } from '@/lib/data-types';
 import { Separator } from '@/components/ui/separator';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEnvelope, faLink, faMobileScreenButton } from '@fortawesome/free-solid-svg-icons';
+import { Icon } from '@/components/icon';
 
 
 const formSchema = z.object({
@@ -125,7 +127,7 @@ export default function ContactPage() {
                             link.href && (
                                 <Link href={link.href} key={link.label} className="flex items-center group" target="_blank" rel="noopener noreferrer">
                                     <div className={`w-12 h-12 flex-shrink-0 rounded-full flex items-center justify-center ${link.color}`}>
-                                        <FontAwesomeIcon icon={link.icon} className="w-6 h-6" />
+                                        <Icon icon={link.icon} className="w-6 h-6" />
                                     </div>
                                     <div className="ml-4 text-left">
                                         <p className="text-sm text-foreground/70">{link.label}</p>
