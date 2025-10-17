@@ -15,7 +15,6 @@ import { cn } from '@/lib/utils';
 import dynamic from 'next/dynamic';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import type Plyr from 'plyr';
 import { useVeryUltrawide } from '@/hooks/use-very-ultrawide';
 import ReactMarkdown from 'react-markdown';
 import rehypeRaw from 'rehype-raw';
