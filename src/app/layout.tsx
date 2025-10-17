@@ -4,8 +4,6 @@ import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import { cn } from '@/lib/utils';
 import { FirebaseClientProvider } from '@/firebase/client-provider';
-import { AppNav } from '@/components/layout/app-nav';
-import { usePathname } from 'next/navigation';
 import { ConditionalLayout } from '@/components/layout/conditional-layout';
 
 export const metadata: Metadata = {
