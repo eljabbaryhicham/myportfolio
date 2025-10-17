@@ -20,7 +20,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { PortfolioItemFormSheet } from '@/app/admin/portfolio-item-form';
-import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
+import { useCollection, useFirestore, useMemoFirebase, errorEmitter, FirestorePermissionError } from '@/firebase';
 import { useToast } from '@/hooks/use-toast';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { addDocumentNonBlocking, deleteDocumentNonBlocking, setDocumentNonBlocking } from '@/firebase/non-blocking-updates';
@@ -73,8 +73,14 @@ function ProjectAdmin() {
         await batch.commit();
         toast({ title: 'Success', description: 'Default projects have been added.' });
     } catch (e: any) {
-        console.error("Error seeding data:", e);
-        toast({ variant: 'destructive', title: 'Error seeding data', description: e.message });
+        errorEmitter.emit(
+          'permission-error',
+          new FirestorePermissionError({
+            path: 'projects',
+            operation: 'write',
+            requestResourceData: { note: `Batch write for seeding ${defaultPortfolioItems.length} documents.` },
+          })
+        );
     }
   }
 
@@ -161,9 +167,20 @@ function ProjectAdmin() {
     batch.commit().then(() => {
         toast({ title: "Reordered!", description: "Project order has been updated." });
     }).catch(e => {
-        console.error("Error reordering items:", e);
-        toast({ variant: "destructive", title: "Reorder failed", description: e.message });
-        setSortedItems([...items].sort((a, b) => (a.order ?? 0) - (b.order ?? 0)));
+        // Reset local state on failure
+        if (items) {
+          setSortedItems([...items].sort((a, b) => (a.order ?? 0) - (b.order ?? 0)));
+        }
+
+        // Emit a contextual error for debugging security rules
+        errorEmitter.emit(
+          'permission-error',
+          new FirestorePermissionError({
+            path: 'projects', // The path for a batch write is ambiguous, so we use the collection name.
+            operation: 'update',
+            requestResourceData: { note: `Batch update to reorder ${newSortedItems.length} documents.` },
+          })
+        );
     });
   };
 
@@ -282,3 +299,5 @@ function ProjectAdmin() {
 }
 
 export default ProjectAdmin;
+
+    
