@@ -1,4 +1,3 @@
-
 'use client';
 
 import Image from 'next/image';
@@ -208,7 +207,7 @@ export default function WorkPage() {
             <div className="container mx-auto px-0">
                {isLoading && (
                 <div className="flex justify-center items-center h-64">
-                    <Preloader isVisible={true} />
+                    <Preloader />
                 </div>
                )}
               {!isLoading && (
@@ -389,5 +388,3 @@ export default function WorkPage() {
     </>
   );
 }
-
-    

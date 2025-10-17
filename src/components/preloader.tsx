@@ -1,36 +1,12 @@
-
 'use client';
 
-import Lottie from 'lottie-react';
-import { AnimatePresence, motion } from 'framer-motion';
-import animationData from '@/lib/preloader-animation.json';
+import { Loader } from 'lucide-react';
 
-interface PreloaderProps {
-  isVisible: boolean;
-  isFullScreen?: boolean;
-}
-
-const Preloader: React.FC<PreloaderProps> = ({ isVisible, isFullScreen = false }) => {
-  const containerClasses = isFullScreen
-    ? "fixed inset-0 z-[200] flex items-center justify-center"
-    : "flex items-center justify-center";
-
+const Preloader = () => {
   return (
-    <AnimatePresence>
-      {isVisible && (
-        <motion.div
-          className={containerClasses}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.3 }}
-        >
-          <div className="w-48 h-48">
-            <Lottie animationData={animationData} loop={true} />
-          </div>
-        </motion.div>
-      )}
-    </AnimatePresence>
+    <div className="flex items-center justify-center">
+      <Loader className="w-12 h-12 animate-spin text-primary" />
+    </div>
   );
 };
 

@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useMemo, useState, useEffect, useRef } from 'react';
@@ -243,7 +242,7 @@ function ProjectAdmin() {
                   <TableRow>
                     <TableCell colSpan={6} className="text-center h-64">
                       <div className="flex justify-center items-center h-full">
-                        <Preloader isVisible={true} />
+                        <Preloader />
                       </div>
                     </TableCell>
                   </TableRow>
@@ -314,5 +313,3 @@ function ProjectAdmin() {
 }
 
 export default ProjectAdmin;
-
-    

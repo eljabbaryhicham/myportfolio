@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useEffect } from 'react';
@@ -53,7 +52,7 @@ function AdminPage() {
   if (isUserLoading || !user) {
     return (
         <div className="fixed inset-0 z-[200] flex items-center justify-center bg-background">
-            <Preloader isVisible={true} />
+            <Preloader />
         </div>
     );
   }
@@ -96,5 +95,3 @@ function AdminPage() {
 }
 
 export default AdminPage;
-
-    

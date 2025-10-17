@@ -1,4 +1,3 @@
-
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -24,7 +23,7 @@ import { doc } from 'firebase/firestore';
 import type { ContactInfo } from '@/lib/data-types';
 import { Separator } from '@/components/ui/separator';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEnvelope, faMobileAlt } from '@fortawesome/free-solid-svg-icons';
+import { faEnvelope } from '@fortawesome/free-solid-svg-icons';
 import { Icon } from '@/components/icon';
 import { faLinkedin, faBehance, faInstagram, faFacebook, faTwitter, faWhatsapp } from '@fortawesome/free-brands-svg-icons';
 import { cn } from '@/lib/utils';
@@ -106,7 +105,7 @@ export default function ContactPage() {
           <div className="container mx-auto px-0">
             {isLoading && (
               <div className="flex justify-center items-center h-64">
-                <Preloader isVisible={true} />
+                <Preloader />
               </div>
             )}
             {contactInfo && (
@@ -145,7 +144,7 @@ export default function ContactPage() {
                         <>
                           <Separator className="my-4 bg-white/20" />
                           <Button asChild className="bg-gradient-to-r from-green-500 to-emerald-600 w-[80%]">
-                              <Link href={`https://wa.me/${contactInfo.whatsApp.replace(/\\D/g, '')}`} target="_blank" rel="noopener noreferrer" className="py-6 px-8">
+                              <Link href={`https://wa.me/${contactInfo.whatsApp.replace(/\\D/g, '')}`} target="_blank" rel="noopener noreferrer" className="py-6 px-6">
                                   <FontAwesomeIcon icon={faWhatsapp} className="mr-3 h-6 w-6" />
                                   <div>
                                       <p className="text-sm font-light">WhatsApp</p>
@@ -239,5 +238,3 @@ export default function ContactPage() {
     </div>
   );
 }
-
-    

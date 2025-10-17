@@ -1,4 +1,3 @@
-
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -99,7 +98,7 @@ export default function ContactAdmin() {
   if (isLoading) {
     return (
         <div className="flex justify-center items-center h-full">
-            <Preloader isVisible={true} />
+            <Preloader />
         </div>
     );
   }
@@ -272,5 +271,3 @@ export default function ContactAdmin() {
     </div>
   );
 }
-
-    
