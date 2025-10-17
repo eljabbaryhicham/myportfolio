@@ -3,6 +3,7 @@
 
 import { usePathname } from 'next/navigation';
 import { AppNav } from './app-nav';
+import { AnimatePresence, motion } from 'framer-motion';
 
 export function ConditionalLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -10,24 +11,40 @@ export function ConditionalLayout({ children }: { children: React.ReactNode }) {
 
   if (isHomePage) {
     return (
-      <div className="h-full w-full p-2 md:p-4">
-        <main className="h-full w-full glass-effect rounded-lg border border-border/50">
-          <div className="h-full w-full">
-            {children}
-          </div>
-        </main>
-      </div>
+      <AnimatePresence>
+        <motion.div
+          className="h-full w-full p-2 md:p-4"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          <main className="h-full w-full glass-effect rounded-lg border border-border/50">
+            <div className="h-full w-full">
+              {children}
+            </div>
+          </main>
+        </motion.div>
+      </AnimatePresence>
     );
   }
 
   return (
-    <div className="flex h-full flex-col md:flex-row p-2 md:p-4 pb-[calc(8vh+2%*2)] md:pb-4">
-      <main className="flex-1 w-full glass-effect rounded-lg border border-border/50">
-        <div className="h-full w-full">
-          {children}
-        </div>
-      </main>
-      <AppNav />
-    </div>
+    <AnimatePresence>
+      <motion.div
+        className="flex h-full flex-col md:flex-row p-2 md:p-4 pb-[calc(8vh+2%*2)] md:pb-4"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.5 }}
+      >
+        <main className="flex-1 w-full glass-effect rounded-lg border border-border/50">
+          <div className="h-full w-full">
+            {children}
+          </div>
+        </main>
+        <AppNav />
+      </motion.div>
+    </AnimatePresence>
   );
 }

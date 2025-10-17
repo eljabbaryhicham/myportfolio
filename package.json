@@ -50,6 +50,7 @@
     "firebase": "^11.9.1",
     "framer-motion": "^11.2.10",
     "genkit": "^1.20.0",
+    "lottie-react": "^2.4.0",
     "next": "15.3.3",
     "patch-package": "^8.0.0",
     "plyr-react": "^5.3.0",

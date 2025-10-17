@@ -4,7 +4,7 @@ import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import { cn } from '@/lib/utils';
 import { FirebaseClientProvider } from '@/firebase/client-provider';
-import { ConditionalLayout } from '@/components/layout/conditional-layout';
+import { LayoutProvider } from '@/components/layout/layout-provider';
 
 export const metadata: Metadata = {
   title: 'Liquid Folio',
@@ -40,9 +40,9 @@ export default function RootLayout({
         </svg>
 
         <FirebaseClientProvider>
-          <ConditionalLayout>
+          <LayoutProvider>
             {children}
-          </ConditionalLayout>
+          </LayoutProvider>
           <Toaster />
         </FirebaseClientProvider>
       </body>
