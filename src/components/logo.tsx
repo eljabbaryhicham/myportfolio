@@ -5,9 +5,9 @@ const Logo = (props: { className?: string }) => (
     <Image
       src="https://i.imgur.com/N9c8oEJ.png"
       alt="belofted logo"
-      width={192}
-      height={52}
-      className={props.className}
+      width={384}
+      height={104}
+      className="w-full h-auto"
       priority
     />
 );
