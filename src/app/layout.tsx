@@ -21,7 +21,7 @@ export default function RootLayout({
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet" />
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&family=Dancing+Script:wght@700&display=swap" rel="stylesheet" />
       </head>
       <body className={cn('font-body antialiased text-center')} suppressHydrationWarning>
         <div className="fixed inset-0 -z-10 overflow-hidden" style={{ filter: 'url(#metaballs)' }}>
