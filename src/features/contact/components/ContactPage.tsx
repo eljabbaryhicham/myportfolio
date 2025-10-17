@@ -116,14 +116,14 @@ export default function ContactPage() {
                       <h3 className="text-xl font-bold">{contactInfo.name}</h3>
                       <p className="text-foreground/70">{contactInfo.title}</p>
 
-                      <div className="w-full grid grid-cols-2 gap-x-4 gap-y-6 mt-8">
+                      <div className="w-full flex flex-col gap-y-6 mt-8">
                         {contactLinks.map((link) => (
                           link.href && (
-                            <Link href={link.href} key={link.label} className="flex flex-col items-center group gap-2" target="_blank" rel="noopener noreferrer">
+                            <Link href={link.href} key={link.label} className="flex flex-row items-center group gap-4" target="_blank" rel="noopener noreferrer">
                               <div className={`w-12 h-12 flex-shrink-0 rounded-full flex items-center justify-center ${link.color}`}>
                                 <link.icon className="w-6 h-6" />
                               </div>
-                              <div className="text-center">
+                              <div className="text-left">
                                 <p className="text-sm text-foreground/70">{link.label}</p>
                                 <p className="font-medium group-hover:text-primary transition-colors">{link.value}</p>
                               </div>
