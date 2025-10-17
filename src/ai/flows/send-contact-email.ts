@@ -54,12 +54,26 @@ const sendContactEmailFlow = ai.defineFlow(
         subject: `New Message from ${input.name}`,
         reply_to: input.email, // When you reply, it goes to the user
         html: `
-          <p>You have received a new message from your website's contact form.</p>
-          <hr>
-          <p><strong>Name:</strong> ${input.name}</p>
-          <p><strong>Email:</strong> ${input.email}</p>
-          <p><strong>Message:</strong></p>
-          <p>${input.message}</p>
+          <body style="background-color: #111827; color: #e5e7eb; margin: 0; padding: 20px; font-family: Arial, sans-serif; font-size: 16px; line-height: 1.6;">
+            <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px; margin: 0 auto; background-color: #1f2937; border-radius: 8px; border: 1px solid #374151;">
+              <tr>
+                <td style="padding: 32px;">
+                  <h1 style="font-size: 24px; font-weight: bold; color: #ffffff; margin: 0 0 24px;">New Contact Form Message</h1>
+                  <p style="margin: 0 0 16px;">You have received a new message from your portfolio website.</p>
+                  
+                  <div style="background-color: #374151; padding: 20px; border-radius: 8px;">
+                    <p style="margin: 0 0 8px;"><strong>Name:</strong> ${input.name}</p>
+                    <p style="margin: 0 0 16px;"><strong>Email:</strong> <a href="mailto:${input.email}" style="color: #60a5fa; text-decoration: none;">${input.email}</a></p>
+                    <hr style="border: none; border-top: 1px solid #4b5563; margin: 16px 0;">
+                    <p style="margin: 0 0 8px; font-weight: bold; color: #d1d5db;">Message:</p>
+                    <p style="margin: 0; white-space: pre-wrap; word-wrap: break-word;">${input.message}</p>
+                  </div>
+
+                  <p style="margin: 24px 0 0; font-size: 12px; color: #9ca3af; text-align: center;">You can reply directly to this email to contact the user.</p>
+                </td>
+              </tr>
+            </table>
+          </body>
         `,
       });
 
