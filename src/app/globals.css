@@ -119,7 +119,7 @@
     max-width: 100%;
   }
   .plyr__poster {
-    object-fit: cover !important;
+    object-fit: fill !important;
   }
   
   .blob-1 {
