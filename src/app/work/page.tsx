@@ -36,7 +36,7 @@ const VideoPlayer = dynamic(() => import('@/components/video-player'), {
 });
 
 const ClientOnlyVideoPlayer = (
-  props: PlyrProps & { innerRef: React.Ref<Plyr>, onReady: (player: Plyr) => void }
+  props: PlyrProps & { innerRef: React.Ref<Plyr>, onReady?: (player: Plyr) => void }
 ) => {
   return <VideoPlayer {...props} />;
 };
@@ -79,7 +79,7 @@ const PortfolioMedia = ({
           })),
           poster: item.thumbnailUrl,
         }}
-        onReady={onVideoReady}
+        onReady={() => onVideoReady()}
       />
     );
   }
