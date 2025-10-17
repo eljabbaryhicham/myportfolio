@@ -31,6 +31,7 @@ import Preloader from '@/components/preloader';
 import { sendContactEmail } from '@/ai/flows/send-contact-email';
 import { useState } from 'react';
 import { ContactFormInputSchema, type ContactFormInput } from '@/features/contact/data/contact-form-types';
+import { motion } from 'framer-motion';
 
 
 const formSchema = ContactFormInputSchema;
@@ -171,7 +172,13 @@ export default function ContactPage() {
                     <CardContent className="p-0 flex flex-col items-center">
                       {isSent ? (
                         <div className="text-center flex flex-col items-center justify-center h-full min-h-[350px]">
-                           <FontAwesomeIcon icon={faCheckCircle} className="w-16 h-16 text-green-400 mb-4" />
+                           <motion.div
+                            initial={{ scale: 0.5, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            transition={{ type: 'spring', stiffness: 260, damping: 20 }}
+                           >
+                            <FontAwesomeIcon icon={faCheckCircle} className="w-16 h-16 text-green-400 mb-4" />
+                           </motion.div>
                           <h3 className="text-xl font-bold">Message Sent!</h3>
                           <p className="text-foreground/80 mt-2 max-w-sm">
                             Thank you for reaching out. We will get back to you shortly.
