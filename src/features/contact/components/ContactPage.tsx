@@ -168,6 +168,13 @@ export default function ContactPage() {
                   </Card>
                 </div>
                 <div className="w-full md:w-1/2">
+                  <div className="flex flex-col items-center mb-4">
+                      <p className="font-handwriting text-2xl text-white transform -rotate-6">send a message we are always avalaible</p>
+                      <svg className="w-24 h-24 text-white transform -rotate-12 -mt-2" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <path d="M10 10 C 20 80, 80 80, 90 10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                          <path d="M85 15 L 90 10 L 95 15" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                  </div>
                   <Card className="glass-effect p-6 sm:p-8 h-full flex flex-col justify-center">
                     <CardContent className="p-0 flex flex-col items-center">
                       {isSent ? (
@@ -197,13 +204,6 @@ export default function ContactPage() {
                         </div>
                       ) : (
                         <div className='w-full'>
-                            <div className="flex flex-col items-end mb-4">
-                                <p className="font-handwriting text-2xl text-white transform -rotate-12">Send a message, we are always available</p>
-                                <svg className="w-24 h-24 text-white transform -rotate-12 -mt-4 -mr-4" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                  <path d="M10 90 Q 50 10, 90 20" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                                  <path d="M75 10 L 90 20 L 70 30" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                                </svg>
-                            </div>
                             <Form {...form}>
                             <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8 w-full">
                                 <FormField
