@@ -57,8 +57,11 @@ const sendContactEmailFlow = ai.defineFlow(
             <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px; margin: 0 auto; background-color: #1a2b42; border-radius: 8px; border: 1px solid #2a3f5f;">
               <tr>
                 <td style="padding: 32px;">
-                  <h1 style="font-size: 24px; font-weight: bold; color: #ffffff; margin: 0 0 24px;">New Contact Form Message</h1>
-                  <p style="margin: 0 0 16px;">You have received a new message from your portfolio website.</p>
+                  <div style="text-align: center; margin-bottom: 24px;">
+                    <img src="https://i.imgur.com/N9c8oEJ.png" alt="Logo" style="max-width: 150px; height: auto;">
+                  </div>
+                  <h1 style="font-size: 24px; font-weight: bold; color: #ffffff; margin: 0 0 24px; text-align: center;">New Contact Form Message</h1>
+                  <p style="margin: 0 0 16px; text-align: center;">You have received a new message from your portfolio website.</p>
                   
                   <div style="background-color: #0d1a2e; padding: 20px; border-radius: 8px;">
                     <p style="margin: 0 0 8px;"><strong>Name:</strong> ${input.name}</p>
