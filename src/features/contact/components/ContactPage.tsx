@@ -28,6 +28,7 @@ import { faEnvelope, faMobileAlt } from '@fortawesome/free-solid-svg-icons';
 import { Icon } from '@/components/icon';
 import { faLinkedin, faBehance, faInstagram, faFacebook, faTwitter, faWhatsapp } from '@fortawesome/free-brands-svg-icons';
 import { cn } from '@/lib/utils';
+import Preloader from '@/components/preloader';
 
 
 const formSchema = z.object({
@@ -103,7 +104,11 @@ export default function ContactPage() {
       <ScrollArea className="flex-1">
         <div className="p-[5%] pt-4">
           <div className="container mx-auto px-0">
-            {isLoading && <div className="text-center">Loading contact information...</div>}
+            {isLoading && (
+              <div className="flex justify-center items-center h-64">
+                <Preloader isVisible={true} />
+              </div>
+            )}
             {contactInfo && (
               <div className="flex flex-col md:flex-row gap-2 items-start justify-center">
                 <div className="w-full md:w-1/2">
@@ -123,7 +128,7 @@ export default function ContactPage() {
                             {contactLinks.map((link) => (
                             link.href && (
                                 <Link href={link.href} key={link.label} className="flex items-center group text-white" target="_blank" rel="noopener noreferrer">
-                                    <div className={cn("w-12 h-12 flex-shrink-0 rounded-full flex items-center justify-center glass-effect transition-colors duration-300", link.color)}>
+                                    <div className={cn("w-12 h-12 flex-shrink-0 rounded-full flex items-center justify-center glass-effect transition-colors duration-300 text-white", link.color)}>
                                         <Icon icon={link.icon} className="w-6 h-6" />
                                     </div>
                                     <div className="ml-4 text-left">
@@ -234,3 +239,5 @@ export default function ContactPage() {
     </div>
   );
 }
+
+    

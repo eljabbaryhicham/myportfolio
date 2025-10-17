@@ -28,6 +28,7 @@ import { defaultPortfolioItems, type PortfolioItem } from '@/features/portfolio/
 import { cn } from '@/lib/utils';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlusCircle, faEllipsisH, faCloudUploadAlt, faGripVertical } from '@fortawesome/free-solid-svg-icons';
+import Preloader from '@/components/preloader';
 
 function ProjectAdmin() {
   const firestore = useFirestore();
@@ -240,7 +241,11 @@ function ProjectAdmin() {
               <TableBody>
                 {isLoading && (
                   <TableRow>
-                    <TableCell colSpan={6} className="text-center">Loading portfolio...</TableCell>
+                    <TableCell colSpan={6} className="text-center h-64">
+                      <div className="flex justify-center items-center h-full">
+                        <Preloader isVisible={true} />
+                      </div>
+                    </TableCell>
                   </TableRow>
                 )}
                 {!isLoading && sortedItems && sortedItems.map((item) => (
@@ -309,3 +314,5 @@ function ProjectAdmin() {
 }
 
 export default ProjectAdmin;
+
+    

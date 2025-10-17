@@ -14,6 +14,7 @@ import ContactAdmin from './ContactAdmin';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faRightFromBracket } from '@fortawesome/free-solid-svg-icons';
 import { Separator } from '@/components/ui/separator';
+import Preloader from '@/components/preloader';
 
 
 function AdminPage() {
@@ -50,7 +51,11 @@ function AdminPage() {
 
 
   if (isUserLoading || !user) {
-    return <div className="flex h-full w-full items-center justify-center">Loading...</div>;
+    return (
+        <div className="flex h-full w-full items-center justify-center">
+            <Preloader isVisible={true} />
+        </div>
+    );
   }
 
   return (
@@ -91,3 +96,5 @@ function AdminPage() {
 }
 
 export default AdminPage;
+
+    

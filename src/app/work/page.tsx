@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import Image from 'next/image';
@@ -28,6 +27,7 @@ import { PortfolioItem } from '@/features/portfolio/data/portfolio-data';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlayCircle, faUpDown, faXmark, faImage, faExpand } from '@fortawesome/free-solid-svg-icons';
 import { Separator } from '@/components/ui/separator';
+import Preloader from '@/components/preloader';
 
 
 const VideoPlayer = dynamic(() => import('@/components/video-player'), {
@@ -206,7 +206,11 @@ export default function WorkPage() {
         <ScrollArea className="flex-1">
           <div className="p-[5%] pt-4">
             <div className="container mx-auto px-0">
-               {isLoading && <p>Loading projects...</p>}
+               {isLoading && (
+                <div className="flex justify-center items-center h-64">
+                    <Preloader isVisible={true} />
+                </div>
+               )}
               {!isLoading && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 md:gap-4">
                   {filteredItems.slice(0, visibleItems).map(item => (
@@ -385,3 +389,5 @@ export default function WorkPage() {
     </>
   );
 }
+
+    

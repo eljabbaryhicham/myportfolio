@@ -21,6 +21,7 @@ import { doc } from 'firebase/firestore';
 import type { ContactInfo } from '@/lib/data-types';
 import { useEffect } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import Preloader from '@/components/preloader';
 
 const formSchema = z.object({
   avatarUrl: z.string().url().optional().or(z.literal('')),
@@ -96,7 +97,11 @@ export default function ContactAdmin() {
   };
 
   if (isLoading) {
-    return <p>Loading contact settings...</p>;
+    return (
+        <div className="flex justify-center items-center h-full">
+            <Preloader isVisible={true} />
+        </div>
+    );
   }
 
   return (
@@ -267,3 +272,5 @@ export default function ContactAdmin() {
     </div>
   );
 }
+
+    
