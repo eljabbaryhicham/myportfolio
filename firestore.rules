@@ -1,27 +1,51 @@
 /**
- * @file Firebase Security Rules for Liquid Folio Projects
- * @core_philosophy This ruleset allows public read access to project data, while restricting write access to authorized administrators.
- * @data_structure All project data is stored in a flat `/projects/{projectId}` collection.
- * @key_security_decisions Write permissions are not granted to the client. It's assumed that authorization is handled on the client-side via admin credentials. If specific users were allowed to edit certain projects, a `members` map could be added to each project document to include that authorization information.
+ * @fileOverview Firestore Security Rules for the portfolio application.
+ *
+ * Core Philosophy:
+ * This ruleset prioritizes security by enforcing strict access control. All
+ * read operations are public. All write operations are disabled.
+ *
+ * Data Structure:
+ * The Firestore database contains two top-level collections: `projects` and `contact`.
+ * - `/projects/{projectId}`: Stores information about individual projects.
+ * - `/contact/{contactId}`: Stores contact information. Only a single document should exists here, so the {contactId} is ignored.
+ *
+ * Key Security Decisions:
+ * - Read access is public to all documents in all collections.
+ * - No write access is allowed via the client SDK. This prevents unauthorized data modification. All writes must happen via the firebase-admin SDK only.
+ *
+ * Denormalization for Authorization:
+ *  - Not applicable as write access is entirely disabled.
+ *
+ * Structural Segregation:
+ *  - Not applicable as there are no concepts of public vs. private data.
  */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * @description Grants public read access to projects, while restricting write access.
+     * @description Grants read access to all projects. Denies all write access.
      * @path /projects/{projectId}
-     * @allow (get, list) Public read access is allowed for all users.
-     * @deny (create, update, delete) Write access is denied for all users.
-     * @principle Public read, admin-only write.
+     * @allow (get, list) Any user can read project details.
+     * @deny (create, update, delete) No user can create, update, or delete projects via client SDK.
+     * @principle Enforces public read-only access to project data.
      */
     match /projects/{projectId} {
-      allow get: if true;
-      allow list: if true;
+      allow get, list: if true;
+      allow create, update, delete: if false;
+    }
 
-      allow create: if false;
-      allow update: if false;
-      allow delete: if false;
+    /**
+     * @description Grants read access to contact information. Denies all write access.
+     * @path /contact/{contactId}
+     * @allow (get, list) Any user can read the contact details.
+     * @deny (create, update, delete) No user can create, update, or delete contact details via client SDK.
+     * @principle Enforces public read-only access to contact data.
+     */
+    match /contact/{contactId} {
+      allow get, list: if true;
+      allow create, update, delete: if false;
     }
   }
 }
