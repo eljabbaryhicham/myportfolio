@@ -36,9 +36,15 @@ const VideoPlayer = dynamic(() => import('@/components/video-player'), {
 });
 
 const ClientOnlyVideoPlayer = (
-  props: PlyrProps & { innerRef: React.Ref<Plyr> }
+  props: PlyrProps & { innerRef: React.Ref<Plyr>; onReady?: () => void }
 ) => {
-  return <VideoPlayer {...props} />;
+  const handleReady = (player: Plyr) => {
+    if (props.onReady) {
+      props.onReady();
+    }
+  };
+  // @ts-ignore
+  return <VideoPlayer {...props} onReady={handleReady} />;
 };
 ClientOnlyVideoPlayer.displayName = 'ClientOnlyVideoPlayer';
 
@@ -53,21 +59,37 @@ const PortfolioMedia = ({
   playerRef: React.Ref<Plyr>;
   onFullscreenClick: (url: string) => void;
 }) => {
+  const [isVideoReady, setIsVideoReady] = useState(false);
+
+  useEffect(() => {
+    if (item.type === 'video') {
+      setIsVideoReady(false);
+    }
+  }, [item]);
+
   if (item.type === 'video' && item.sources) {
     return (
-      <div className="w-full max-w-full max-h-full flex-shrink-0 bg-black">
-        <ClientOnlyVideoPlayer
-          innerRef={playerRef}
-          source={{
-            type: 'video',
-            sources: item.sources.map(s => ({
-              src: s.src,
-              type: 'video/mp4',
-              size: s.size,
-            })),
-            poster: item.thumbnailUrl,
-          }}
-        />
+      <div className="relative w-full max-w-full max-h-full flex-shrink-0 bg-black aspect-video">
+        {!isVideoReady && (
+          <div className="absolute inset-0 flex items-center justify-center z-10">
+            <Preloader />
+          </div>
+        )}
+        <div className={cn(isVideoReady ? 'opacity-100' : 'opacity-0')}>
+          <ClientOnlyVideoPlayer
+            innerRef={playerRef}
+            source={{
+              type: 'video',
+              sources: item.sources.map(s => ({
+                src: s.src,
+                type: 'video/mp4',
+                size: s.size,
+              })),
+              poster: item.thumbnailUrl,
+            }}
+            onReady={() => setIsVideoReady(true)}
+          />
+        </div>
       </div>
     );
   }
