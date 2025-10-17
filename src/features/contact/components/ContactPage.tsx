@@ -82,10 +82,11 @@ export default function ContactPage() {
   ] : [];
 
   const socialLinks = contactInfo ? [
-    { icon: Instagram, href: contactInfo.instagramUrl, color: 'bg-pink-500/80 hover:bg-pink-500' },
-    { icon: Facebook, href: contactInfo.facebookUrl, color: 'bg-blue-600/80 hover:bg-blue-600' },
-    { icon: Twitter, href: contactInfo.twitterUrl, color: 'bg-sky-500/80 hover:bg-sky-500' },
+    { id: 'instagram', icon: Instagram, href: contactInfo.instagramUrl, color: 'bg-pink-500/80 hover:bg-pink-500' },
+    { id: 'facebook', icon: Facebook, href: contactInfo.facebookUrl, color: 'bg-blue-600/80 hover:bg-blue-600' },
+    { id: 'twitter', icon: Twitter, href: contactInfo.twitterUrl, color: 'bg-sky-500/80 hover:bg-sky-500' },
   ] : [];
+
 
   return (
     <div className="h-full w-full flex flex-col">
@@ -203,7 +204,7 @@ export default function ContactPage() {
             {contactInfo && (
               <div className="flex items-center justify-center gap-4 mt-8">
                 {socialLinks.map((social) => (
-                  social.href && <Link href={social.href} key={social.href} className={`w-12 h-12 rounded-full flex items-center justify-center text-white ${social.color} transition-all duration-300 hover:scale-110`} target="_blank" rel="noopener noreferrer">
+                  social.href && <Link href={social.href} key={social.id} className={`w-12 h-12 rounded-full flex items-center justify-center text-white ${social.color} transition-all duration-300 hover:scale-110`} target="_blank" rel="noopener noreferrer">
                     <social.icon className="w-6 h-6" />
                   </Link>
                 ))}
@@ -215,5 +216,3 @@ export default function ContactPage() {
     </div>
   );
 }
-
-    
