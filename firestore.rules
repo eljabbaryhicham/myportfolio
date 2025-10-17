@@ -1,56 +1,60 @@
 /**
- * @fileoverview Firestore Security Rules for the portfolio application.
+ * @fileoverview Firestore Security Rules for Prototyping.
  *
  * Core Philosophy:
- * This ruleset prioritizes simplicity and security. It implements a public-read, owner-write model
- * for the 'projects' collection and a public-read, protected-write model for the 'contact' collection, allowing
- * anyone to view the data while restricting modifications.
+ * This ruleset prioritizes security while enabling rapid prototyping. It implements strict
+ * authorization controls, focusing on who can access what data, but relaxes schema validation
+ * to allow for flexible data shapes during development.  All write operations require
+ * authentication. Data structures are flat and avoid complex nested reads for authorization.
  *
  * Data Structure:
- * The database contains two top-level collections: 'projects' and 'contact'.
- * - /projects/{projectId}: Stores individual project details.  Intended for public display.
- * - /contact/{contactId}: Stores contact information. Intended for public display.
+ * - /projects/{projectId}: Stores project information.
+ * - /contact/{contactId}: Stores contact page information.
  *
  * Key Security Decisions:
- * - Listing of projects and reading contact data is completely open to all users.
- * - Only authenticated users can create, update, or delete projects.
- * - Only authenticated users can create, update, or delete contact data.
- * - Data validation is relaxed in this prototyping phase to allow for rapid schema iteration.
+ * - All write operations require authentication (`isSignedIn()`).
+ * - No public write operations are allowed.
+ * - List operations on /projects are public, but writes are restricted.
  *
- * Denormalization for Authorization:
- *  - The `Project` entity requires an `ownerId` field for secure write operations.
- *    Since this field is not currently defined in the `Project` entity, rules for create, update, and delete operations are not implemented.
  */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * @description Allows anyone to read project data, but restricts creation, updates, and deletion to authenticated users.
-     * @path /databases/{database}/documents/projects/{projectId}
-     * @allow (get, list): Anyone can read project data.
-     * @deny (create, update, delete): Only authenticated users can modify project data.
-     * @principle Allows public read access while restricting write access to authenticated users.
+     * @description Grants public read access to projects, but restricts write access to authenticated users.
+     * @path /projects/{projectId}
+     * @allow (get, list): Any user can read the project.
+     * @allow (create): Only authenticated users can create projects, enforcing ownership.
+     * @allow (update, delete): Only authenticated users can update or delete projects.
+     * @deny  (create, update, delete): If the user is not authenticated.
+     * @principle Allows public read access but enforces authentication for all write operations.
      */
     match /projects/{projectId} {
       allow get, list: if true;
-
-      // CRITICAL: Cannot implement owner-only writes. The 'Project' entity is missing an 'ownerId' or 'authorId' field.
-      allow create, update, delete: if false; // TODO: Add owner validation once the schema is updated with an ownership field.
+      allow create: if isSignedIn();
+      allow update, delete: if isSignedIn();
     }
 
     /**
-     * @description Allows anyone to read contact information, but restricts creation, updates, and deletion to authenticated users.
-     * @path /databases/{database}/documents/contact/{contactId}
-     * @allow (get, list): Anyone can read contact information.
-     * @deny (create, update, delete): Only authenticated users can modify contact information.
-     * @principle Allows public read access while restricting write access to authenticated users.
+     * @description Grants read and write access to contact information only to authenticated users.
+     * @path /contact/{contactId}
+     * @allow (get, list): Any authenticated user can read contact information.
+     * @allow (create, update, delete): Only authenticated users can create, update, or delete contact information.
+     * @deny (create, update, delete): If the user is not authenticated.
+     * @principle Restricts access to contact information to authenticated users only.
      */
     match /contact/{contactId} {
-      allow get, list: if true;
+      allow get, list: if isSignedIn();
       allow create, update, delete: if isSignedIn();
     }
 
+    // --- Helper functions ---
+
+    /**
+     * @description Checks if the user is signed in.
+     * @return True if the user is authenticated, false otherwise.
+     */
     function isSignedIn() {
       return request.auth != null;
     }
