@@ -1,3 +1,4 @@
+
 'use client';
 
 import Image from 'next/image';
@@ -24,7 +25,7 @@ import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection, query, orderBy } from 'firebase/firestore';
 import { PortfolioItem } from '@/features/portfolio/data/portfolio-data';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPlayCircle, faUpDown, faXmark, faImage, faExpand } from '@fortawesome/free-solid-svg-icons';
+import { faPlayCircle, faUpDown, faXmark, faImage, faExpand, faPalette, faFilm } from '@fortawesome/free-solid-svg-icons';
 import { Separator } from '@/components/ui/separator';
 import Preloader from '@/components/preloader';
 
@@ -195,8 +196,14 @@ export default function WorkPage() {
             </div>
             <div className="flex justify-center gap-2 mb-4">
               <Button variant={filter === 'all' ? 'destructive' : 'outline'} onClick={() => setFilter('all')}>All</Button>
-              <Button variant={filter === 'image' ? 'destructive' : 'outline'} onClick={() => setFilter('image')}>Images</Button>
-              <Button variant={filter === 'video' ? 'destructive' : 'outline'} onClick={() => setFilter('video')}>Videos</Button>
+              <Button variant={filter === 'image' ? 'destructive' : 'outline'} onClick={() => setFilter('image')}>
+                <FontAwesomeIcon icon={faPalette} className="mr-2 h-4 w-4" />
+                Graphics
+              </Button>
+              <Button variant={filter === 'video' ? 'destructive' : 'outline'} onClick={() => setFilter('video')}>
+                <FontAwesomeIcon icon={faFilm} className="mr-2 h-4 w-4" />
+                Animation
+              </Button>
             </div>
           </div>
         </div>
