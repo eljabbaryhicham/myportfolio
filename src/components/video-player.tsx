@@ -4,7 +4,7 @@
 import type { PlyrProps, PlyrSource } from "plyr-react";
 import Plyr from "plyr-react";
 import "plyr-react/plyr.css";
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import type PlyrInstance from "plyr";
 
 
@@ -19,9 +19,38 @@ const VideoPlayer = ({ source, innerRef, onReady }: VideoPlayerProps) => {
 
   const qualities = source.sources.map(s => (s as any).size).filter(Boolean);
 
+  const internalRef = useRef<PlyrInstance | null>(null);
+
+  useEffect(() => {
+    const player = internalRef.current;
+    if (player && onReady) {
+      player.on('ready', () => {
+        onReady(player);
+      });
+    }
+
+    // Also handle the case where the component unmounts
+    return () => {
+      if (player) {
+        // Clean up listeners if necessary
+        // player.off('ready', ...);
+      }
+    };
+  }, [onReady]);
+
+
+  const handleRef = (player: PlyrInstance | null) => {
+    internalRef.current = player;
+    if (typeof innerRef === 'function') {
+      innerRef(player);
+    } else if (innerRef) {
+      (innerRef as React.MutableRefObject<PlyrInstance | null>).current = player;
+    }
+  };
+
   return (
     <Plyr
-      ref={innerRef}
+      ref={handleRef}
       source={source}
       options={{
         autoplay: false,
@@ -34,9 +63,7 @@ const VideoPlayer = ({ source, innerRef, onReady }: VideoPlayerProps) => {
             'volume', 
             'captions', 
             'settings', 
-            'pip', 
-            'airplay', 
-            'fullscreen'
+            'pip', 'airplay', 'fullscreen'
         ],
         poster: source.poster,
         previewThumbnails: {
@@ -57,7 +84,6 @@ const VideoPlayer = ({ source, innerRef, onReady }: VideoPlayerProps) => {
           enabled: true,
         }
       }}
-      onReady={onReady}
     />
   );
 };
