@@ -1,11 +1,14 @@
 'use client';
 
-import { Loader } from 'lucide-react';
+import Lottie from 'lottie-react';
+import animationData from '@/lib/preloader-animation.json';
 
 const Preloader = () => {
   return (
     <div className="flex items-center justify-center">
-      <Loader className="w-12 h-12 animate-spin text-primary" />
+      <div className="w-24 h-24">
+        <Lottie animationData={animationData} loop={true} />
+      </div>
     </div>
   );
 };
