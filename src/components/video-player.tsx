@@ -4,53 +4,23 @@
 import type { PlyrProps, PlyrSource } from "plyr-react";
 import Plyr from "plyr-react";
 import "plyr-react/plyr.css";
-import React, { useEffect, useRef } from "react";
+import React from "react";
 import type PlyrInstance from "plyr";
 
 
 interface VideoPlayerProps extends PlyrProps {
   source: PlyrSource;
   innerRef?: React.Ref<PlyrInstance>;
-  onReady?: (player: PlyrInstance) => void;
 }
 
-const VideoPlayer = ({ source, innerRef, onReady }: VideoPlayerProps) => {
+const VideoPlayer = ({ source, innerRef }: VideoPlayerProps) => {
   if (!source) return null;
 
   const qualities = source.sources.map(s => (s as any).size).filter(Boolean);
-
-  const internalRef = useRef<PlyrInstance | null>(null);
-
-  useEffect(() => {
-    const player = internalRef.current;
-    if (player && onReady) {
-      player.on('ready', () => {
-        onReady(player);
-      });
-    }
-
-    // Also handle the case where the component unmounts
-    return () => {
-      if (player) {
-        // Clean up listeners if necessary
-        // player.off('ready', ...);
-      }
-    };
-  }, [onReady]);
-
-
-  const handleRef = (player: PlyrInstance | null) => {
-    internalRef.current = player;
-    if (typeof innerRef === 'function') {
-      innerRef(player);
-    } else if (innerRef) {
-      (innerRef as React.MutableRefObject<PlyrInstance | null>).current = player;
-    }
-  };
-
+  
   return (
     <Plyr
-      ref={handleRef}
+      ref={innerRef}
       source={source}
       options={{
         autoplay: false,

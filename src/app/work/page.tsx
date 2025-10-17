@@ -36,7 +36,7 @@ const VideoPlayer = dynamic(() => import('@/components/video-player'), {
 });
 
 const ClientOnlyVideoPlayer = (
-  props: PlyrProps & { innerRef: React.Ref<Plyr>; onReady?: (player: Plyr) => void }
+  props: PlyrProps & { innerRef: React.Ref<Plyr> }
 ) => {
   return <VideoPlayer {...props} />;
 };
@@ -48,43 +48,55 @@ const PortfolioMedia = ({
   item,
   playerRef,
   onFullscreenClick,
+  onVideoReady,
 }: {
   item: PortfolioItem;
-  playerRef: React.Ref<Plyr>;
+  playerRef: React.RefObject<Plyr>;
   onFullscreenClick: (url: string) => void;
+  onVideoReady: () => void;
 }) => {
-  const [isVideoReady, setIsVideoReady] = useState(false);
+  const [isVideoPlayerMounted, setIsVideoPlayerMounted] = useState(false);
 
   useEffect(() => {
+    // Mount the video player only when the item type is video
     if (item.type === 'video') {
-      setIsVideoReady(false);
+      setIsVideoPlayerMounted(true);
+    } else {
+      setIsVideoPlayerMounted(false);
     }
   }, [item]);
 
-  if (item.type === 'video' && item.sources) {
+  // Effect to handle the 'ready' event from the player
+  useEffect(() => {
+    const player = playerRef.current;
+    if (player) {
+      const handleReady = () => {
+        onVideoReady();
+      };
+      player.on('ready', handleReady);
+
+      // Cleanup
+      return () => {
+        player.off('ready', handleReady);
+      };
+    }
+  }, [playerRef, onVideoReady]);
+
+
+  if (item.type === 'video' && item.sources && isVideoPlayerMounted) {
     return (
-      <div className="relative w-full max-w-full max-h-full flex-shrink-0 bg-black aspect-video">
-        {!isVideoReady && (
-          <div className="absolute inset-0 flex items-center justify-center z-10">
-            <Preloader />
-          </div>
-        )}
-        <div className={cn(isVideoReady ? 'opacity-100' : 'opacity-0')}>
-          <ClientOnlyVideoPlayer
-            innerRef={playerRef}
-            source={{
-              type: 'video',
-              sources: item.sources.map(s => ({
-                src: s.src,
-                type: 'video/mp4',
-                size: s.size,
-              })),
-              poster: item.thumbnailUrl,
-            }}
-            onReady={() => setIsVideoReady(true)}
-          />
-        </div>
-      </div>
+      <ClientOnlyVideoPlayer
+        innerRef={playerRef}
+        source={{
+          type: 'video',
+          sources: item.sources.map(s => ({
+            src: s.src,
+            type: 'video/mp4',
+            size: s.size,
+          })),
+          poster: item.thumbnailUrl,
+        }}
+      />
     );
   }
 
@@ -197,6 +209,7 @@ export default function WorkPage() {
   const isVeryUltrawide = useVeryUltrawide();
   const [filter, setFilter] = useState<'all' | 'image' | 'video'>('all');
   const [fullscreenImageUrl, setFullscreenImageUrl] = useState<string | null>(null);
+  const [isVideoReady, setIsVideoReady] = useState(false);
 
 
   useEffect(() => {
@@ -204,13 +217,21 @@ export default function WorkPage() {
       if (playerRef.current) {
         // @ts-ignore
         playerRef.current.destroy?.();
+        playerRef.current = null;
       }
       if (detailsPlayerRef.current) {
         // @ts-ignore
         detailsPlayerRef.current.destroy?.();
+        detailsPlayerRef.current = null;
       }
     };
   }, []);
+
+  useEffect(() => {
+    if (selectedItem?.type === 'video') {
+      setIsVideoReady(false);
+    }
+  }, [selectedItem]);
   
   const filteredItems = useMemo(() => {
     if (!portfolioItems) return [];
@@ -254,6 +275,8 @@ export default function WorkPage() {
   };
   
   const isDescriptionLong = selectedItem?.description && selectedItem.description.length > 250;
+
+  const showVideoPlayer = selectedItem?.type === 'video';
 
   return (
     <>
@@ -302,7 +325,7 @@ export default function WorkPage() {
                 </div>
               )}
 
-              {visibleItems < filteredItems.length && (
+              {filteredItems.length > 0 && visibleItems < filteredItems.length && (
                 <div className="mt-12 text-center">
                   <Button onClick={showMoreItems} size="lg">
                     Show More
@@ -325,8 +348,16 @@ export default function WorkPage() {
             <div className="relative flex-1 flex flex-col min-h-0">
               <ScrollArea className="flex-1">
                 <div className="flex flex-col h-full">
-                    <div className="flex-shrink-0">
-                        <PortfolioMedia item={selectedItem} playerRef={playerRef} onFullscreenClick={setFullscreenImageUrl} />
+                    <div className="flex-shrink-0 bg-black aspect-video flex items-center justify-center">
+                      {showVideoPlayer && !isVideoReady && <Preloader />}
+                      <div className={cn(showVideoPlayer && !isVideoReady ? 'opacity-0 w-0 h-0' : 'w-full h-full')}>
+                          <PortfolioMedia
+                              item={selectedItem}
+                              playerRef={playerRef}
+                              onFullscreenClick={setFullscreenImageUrl}
+                              onVideoReady={() => setIsVideoReady(true)}
+                          />
+                      </div>
                     </div>
                     <div className="flex-shrink-0 p-4 md:p-6 pt-4">
                         <DialogHeader>
