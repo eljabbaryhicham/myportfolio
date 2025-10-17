@@ -74,170 +74,170 @@ export default function ContactAdmin() {
   }
 
   return (
-    <Card className="glass-effect h-full flex flex-col">
-      <CardHeader>
-        <CardTitle>Contact Page Settings</CardTitle>
-        <CardDescription>
-          Update the information displayed on your public contact page.
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="flex-1 overflow-hidden">
-      <ScrollArea className="h-full">
-        <div className="p-1">
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-              <FormField
-                control={form.control}
-                name="name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Name</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Your Name" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="title"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Title / Profession</FormLabel>
-                    <FormControl>
-                      <Input placeholder="e.g., Motion Graphics Designer" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="avatarUrl"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Avatar Image URL</FormLabel>
-                    <FormControl>
-                      <Input placeholder="https://example.com/your-photo.png" {...field} />
-                    </FormControl>
-                    <FormDescription>The image displayed on your contact card.</FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Email</FormLabel>
-                    <FormControl>
-                      <Input type="email" placeholder="your.email@example.com" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="whatsApp"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>WhatsApp Number</FormLabel>
-                    <FormControl>
-                      <Input placeholder="+1234567890" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="behanceUrl"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Behance URL</FormLabel>
-                    <FormControl>
-                      <Input placeholder="https://www.behance.net/yourprofile" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="linkedinUrl"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>LinkedIn URL</FormLabel>
-                    <FormControl>
-                      <Input placeholder="https://www.linkedin.com/in/yourprofile" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="fiverrUrl"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Fiverr URL</FormLabel>
-                    <FormControl>
-                      <Input placeholder="https://www.fiverr.com/yourprofile" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="instagramUrl"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Instagram URL</FormLabel>
-                    <FormControl>
-                      <Input placeholder="https://www.instagram.com/yourprofile" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="facebookUrl"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Facebook URL</FormLabel>
-                    <FormControl>
-                      <Input placeholder="https://www.facebook.com/yourprofile" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="twitterUrl"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Twitter (X) URL</FormLabel>
-                    <FormControl>
-                      <Input placeholder="https://www.twitter.com/yourprofile" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <div className="flex justify-end pt-4">
-                <Button type="submit">Save Changes</Button>
+    <div className="flex-1 flex flex-col h-full">
+      <div className="flex-1 border rounded-lg overflow-hidden glass-effect">
+          <ScrollArea className="h-full">
+              <div className="p-6">
+                <div className="mb-6">
+                    <h2 className="text-xl font-bold">Contact Page Settings</h2>
+                    <p className="text-muted-foreground">
+                        Update the information displayed on your public contact page.
+                    </p>
+                </div>
+                <Form {...form}>
+                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+                    <FormField
+                        control={form.control}
+                        name="name"
+                        render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Name</FormLabel>
+                            <FormControl>
+                            <Input placeholder="Your Name" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                        )}
+                    />
+                    <FormField
+                        control={form.control}
+                        name="title"
+                        render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Title / Profession</FormLabel>
+                            <FormControl>
+                            <Input placeholder="e.g., Motion Graphics Designer" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                        )}
+                    />
+                    <FormField
+                        control={form.control}
+                        name="avatarUrl"
+                        render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Avatar Image URL</FormLabel>
+                            <FormControl>
+                            <Input placeholder="https://example.com/your-photo.png" {...field} />
+                            </FormControl>
+                            <FormDescription>The image displayed on your contact card.</FormDescription>
+                            <FormMessage />
+                        </FormItem>
+                        )}
+                    />
+                    <FormField
+                        control={form.control}
+                        name="email"
+                        render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Email</FormLabel>
+                            <FormControl>
+                            <Input type="email" placeholder="your.email@example.com" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                        )}
+                    />
+                    <FormField
+                        control={form.control}
+                        name="whatsApp"
+                        render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>WhatsApp Number</FormLabel>
+                            <FormControl>
+                            <Input placeholder="+1234567890" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                        )}
+                    />
+                    <FormField
+                        control={form.control}
+                        name="behanceUrl"
+                        render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Behance URL</FormLabel>
+                            <FormControl>
+                            <Input placeholder="https://www.behance.net/yourprofile" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                        )}
+                    />
+                    <FormField
+                        control={form.control}
+                        name="linkedinUrl"
+                        render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>LinkedIn URL</FormLabel>
+                            <FormControl>
+                            <Input placeholder="https://www.linkedin.com/in/yourprofile" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                        )}
+                    />
+                    <FormField
+                        control={form.control}
+                        name="fiverrUrl"
+                        render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Fiverr URL</FormLabel>
+                            <FormControl>
+                            <Input placeholder="https://www.fiverr.com/yourprofile" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                        )}
+                    />
+                    <FormField
+                        control={form.control}
+                        name="instagramUrl"
+                        render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Instagram URL</FormLabel>
+                            <FormControl>
+                            <Input placeholder="https://www.instagram.com/yourprofile" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                        )}
+                    />
+                    <FormField
+                        control={form.control}
+                        name="facebookUrl"
+                        render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Facebook URL</FormLabel>
+                            <FormControl>
+                            <Input placeholder="https://www.facebook.com/yourprofile" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                        )}
+                    />
+                    <FormField
+                        control={form.control}
+                        name="twitterUrl"
+                        render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Twitter (X) URL</FormLabel>
+                            <FormControl>
+                            <Input placeholder="https://www.twitter.com/yourprofile" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                        )}
+                    />
+                    <div className="flex justify-end pt-4">
+                        <Button type="submit">Save Changes</Button>
+                    </div>
+                    </form>
+                </Form>
               </div>
-            </form>
-          </Form>
-        </div>
-        </ScrollArea>
-      </CardContent>
-    </Card>
+          </ScrollArea>
+      </div>
+    </div>
   );
 }
