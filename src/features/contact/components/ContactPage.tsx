@@ -116,20 +116,22 @@ export default function ContactPage() {
                       <h3 className="text-xl font-bold">{contactInfo.name}</h3>
                       <p className="text-foreground/70">{contactInfo.title}</p>
 
-                      <div className="w-full flex flex-col gap-y-6 mt-8">
-                        {contactLinks.map((link) => (
-                          link.href && (
-                            <Link href={link.href} key={link.label} className="flex flex-row items-center group gap-4" target="_blank" rel="noopener noreferrer">
-                              <div className={`w-12 h-12 flex-shrink-0 rounded-full flex items-center justify-center ${link.color}`}>
-                                <link.icon className="w-6 h-6" />
-                              </div>
-                              <div className="text-left">
-                                <p className="text-sm text-foreground/70">{link.label}</p>
-                                <p className="font-medium group-hover:text-primary transition-colors">{link.value}</p>
-                              </div>
-                            </Link>
-                          )
-                        ))}
+                      <div className="w-full flex flex-col items-center mt-8">
+                        <div className="space-y-4">
+                            {contactLinks.map((link) => (
+                            link.href && (
+                                <Link href={link.href} key={link.label} className="flex items-center group" target="_blank" rel="noopener noreferrer">
+                                    <div className={`w-12 h-12 flex-shrink-0 rounded-full flex items-center justify-center ${link.color}`}>
+                                        <link.icon className="w-6 h-6" />
+                                    </div>
+                                    <div className="ml-4 text-left">
+                                        <p className="text-sm text-foreground/70">{link.label}</p>
+                                        <p className="font-medium group-hover:text-primary transition-colors">{link.value}</p>
+                                    </div>
+                                </Link>
+                            )
+                            ))}
+                        </div>
                       </div>
                       {contactInfo.whatsApp && (
                         <Button asChild className="w-full h-24 bg-gradient-to-r from-cyan-500 to-blue-500 text-white text-lg mt-8">
