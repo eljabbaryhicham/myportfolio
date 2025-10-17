@@ -2,7 +2,8 @@
 
 import * as React from "react"
 import * as MenubarPrimitive from "@radix-ui/react-menubar"
-import { Check, ChevronRight, Circle } from "lucide-react"
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
+import { faCheck, faChevronRight, faCircle } from "@fortawesome/free-solid-svg-icons"
 
 import { cn } from "@/lib/utils"
 
@@ -82,7 +83,7 @@ const MenubarSubTrigger = React.forwardRef<
     {...props}
   >
     {children}
-    <ChevronRight className="ml-auto h-4 w-4" />
+    <FontAwesomeIcon icon={faChevronRight} className="ml-auto h-4 w-4" />
   </MenubarPrimitive.SubTrigger>
 ))
 MenubarSubTrigger.displayName = MenubarPrimitive.SubTrigger.displayName
@@ -160,7 +161,7 @@ const MenubarCheckboxItem = React.forwardRef<
   >
     <span className="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">
       <MenubarPrimitive.ItemIndicator>
-        <Check className="h-4 w-4" />
+        <FontAwesomeIcon icon={faCheck} className="h-4 w-4" />
       </MenubarPrimitive.ItemIndicator>
     </span>
     {children}
@@ -182,7 +183,7 @@ const MenubarRadioItem = React.forwardRef<
   >
     <span className="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">
       <MenubarPrimitive.ItemIndicator>
-        <Circle className="h-2 w-2 fill-current" />
+        <FontAwesomeIcon icon={faCircle} className="h-2 w-2 fill-current" />
       </MenubarPrimitive.ItemIndicator>
     </span>
     {children}
