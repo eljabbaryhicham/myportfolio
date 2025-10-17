@@ -22,6 +22,7 @@ const VideoPlayer = ({ source, innerRef }: VideoPlayerProps) => {
     <Plyr
       ref={innerRef}
       source={source}
+      style={{ '--plyr-poster-object-fit': 'fill' } as React.CSSProperties}
       options={{
         autoplay: false,
         controls: [

@@ -118,11 +118,6 @@
     margin: 5%;
     max-width: 100%;
   }
-  .plyr__poster {
-    object-fit: fill !important;
-    width: 100% !important;
-    height: 100% !important;
-  }
   
   .blob-1 {
     animation: blob-anim-1 25s infinite;
