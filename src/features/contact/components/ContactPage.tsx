@@ -27,6 +27,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEnvelope, faMobileScreenButton } from '@fortawesome/free-solid-svg-icons';
 import { Icon } from '@/components/icon';
 import { faLinkedin, faBehance, faInstagram, faFacebook, faTwitter } from '@fortawesome/free-brands-svg-icons';
+import { cn } from '@/lib/utils';
 
 
 const formSchema = z.object({
@@ -80,9 +81,9 @@ export default function ContactPage() {
   ] : [];
 
   const socialLinks = contactInfo ? [
-    { id: 'instagram', href: contactInfo.instagramUrl, icon: faInstagram, color: 'bg-pink-500/80 hover:bg-pink-500' },
-    { id: 'facebook', href: contactInfo.facebookUrl, icon: faFacebook, color: 'bg-blue-600/80 hover:bg-blue-600' },
-    { id: 'twitter', href: contactInfo.twitterUrl, icon: faTwitter, color: 'bg-sky-500/80 hover:bg-sky-500' },
+    { id: 'instagram', href: contactInfo.instagramUrl, icon: faInstagram, hoverColor: 'hover:text-pink-500' },
+    { id: 'facebook', href: contactInfo.facebookUrl, icon: faFacebook, hoverColor: 'hover:text-blue-600' },
+    { id: 'twitter', href: contactInfo.twitterUrl, icon: faTwitter, hoverColor: 'hover:text-sky-500' },
   ].filter(link => link.href) : [];
 
 
@@ -209,9 +210,20 @@ export default function ContactPage() {
             {contactInfo && (
               <div className="flex items-center justify-center gap-4 mt-8">
                 {socialLinks.map((social) => (
-                  social.href && <Link href={social.href} key={social.id} className={`w-12 h-12 rounded-full flex items-center justify-center text-white ${social.color} transition-all duration-300 hover:scale-110`} target="_blank" rel="noopener noreferrer">
-                    <FontAwesomeIcon icon={social.icon} className="w-6 h-6" />
-                  </Link>
+                  social.href && (
+                    <Link 
+                      href={social.href} 
+                      key={social.id} 
+                      className={cn(
+                        "w-12 h-12 rounded-full flex items-center justify-center text-foreground/70 transition-all duration-300 hover:scale-110 glass-effect",
+                        social.hoverColor
+                      )}
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                    >
+                      <FontAwesomeIcon icon={social.icon} className="w-6 h-6" />
+                    </Link>
+                  )
                 ))}
               </div>
             )}
