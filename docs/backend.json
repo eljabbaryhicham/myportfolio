@@ -43,6 +43,60 @@
         "imageUrl",
         "order"
       ]
+    },
+    "ContactInfo": {
+      "title": "Contact Info",
+      "description": "Stores contact information for the portfolio owner.",
+      "type": "object",
+      "properties": {
+        "avatarUrl": {
+          "type": "string",
+          "format": "uri"
+        },
+        "name": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string",
+          "format": "email"
+        },
+        "whatsApp": {
+          "type": "string"
+        },
+        "behanceUrl": {
+          "type": "string",
+          "format": "uri"
+        },
+        "linkedinUrl": {
+          "type": "string",
+          "format": "uri"
+        },
+        "fiverrUrl": {
+          "type": "string",
+          "format": "uri"
+        },
+        "instagramUrl": {
+          "type": "string",
+          "format": "uri"
+        },
+        "facebookUrl": {
+          "type": "string",
+          "format": "uri"
+        },
+        "twitterUrl": {
+          "type": "string",
+          "format": "uri"
+        }
+      },
+      "required": [
+        "avatarUrl",
+        "name",
+        "title",
+        "email"
+      ]
     }
   },
   "auth": {
@@ -60,7 +114,7 @@
           "schema": {
             "$ref": "#/backend/entities/Project"
           },
-          "description": "Stores project information, including title, description, image URL, video URL, isFeatured status, and order.",
+          "description": "Stores project information.",
           "params": [
             {
               "name": "projectId",
@@ -68,8 +122,23 @@
             }
           ]
         }
+      },
+      {
+        "path": "/contact/{contactId}",
+        "definition": {
+          "entityName": "ContactInfo",
+          "schema": {
+            "$ref": "#/backend/entities/ContactInfo"
+          },
+          "description": "Stores contact page information.",
+          "params": [
+            {
+              "name": "contactId",
+              "description": "The unique identifier for the contact document."
+            }
+          ]
+        }
       }
-    ],
-    "reasoning": "The data structure is designed to store project data for the Liquid Folio application. It prioritizes simplicity and ease of management, especially within the admin panel.\n\nThe `/projects` collection is used to store all project documents. This flat structure simplifies queries and updates, which aligns with the user's requirement to easily edit project titles and images from the admin panel.\n\n**Authorization Independence:** Since the requirements do not define user-specific or role-based access control to projects, all projects are stored in a single collection, and authorization is likely handled on the client-side via admin credentials or a separate authentication system. If there were roles or ownership, the `projects` documents would contain the authorization information. For example, if specific users were allowed to edit certain projects, a `members` map could be added to each project document.\n\n**QAPs (Rules are not Filters):** Because all projects reside in the same collection and share similar security needs (admin access for editing), list operations are straightforward. More complex filtering based on user roles or project status can be implemented in the application logic, as no role based access control was defined in user request."
+    ]
   }
 }
