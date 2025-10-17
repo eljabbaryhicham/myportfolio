@@ -110,6 +110,10 @@
     width: 30%;
     margin: 5%;
   }
+
+  .plyr__poster {
+    background-size: 100% 100% !important;
+  }
 }
 
 @layer utilities {
