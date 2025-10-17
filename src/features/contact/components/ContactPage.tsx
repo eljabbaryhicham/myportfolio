@@ -153,7 +153,7 @@ export default function ContactPage() {
                       {contactInfo.whatsApp && (
                         <>
                           <Separator className="my-4 bg-white/20" />
-                          <Button asChild className="bg-gradient-to-r from-green-500 to-emerald-600 w-[80%]">
+                          <Button asChild className="bg-gradient-to-r from-green-500 to-emerald-600 w-[80%] animate-shake">
                               <Link href={`https://wa.me/${contactInfo.whatsApp.replace(/\\D/g, '')}`} target="_blank" rel="noopener noreferrer" className="py-6 px-6">
                                   <FontAwesomeIcon icon={faWhatsapp} className="mr-3 h-6 w-6" />
                                   <div>
@@ -187,7 +187,7 @@ export default function ContactPage() {
                             Send Another Message
                           </Button>
                           {contactInfo?.whatsApp && (
-                            <Button asChild className="bg-gradient-to-r from-green-500 to-emerald-600 mt-4">
+                            <Button asChild className="bg-gradient-to-r from-green-500 to-emerald-600 mt-4 animate-shake">
                                 <Link href={`https://wa.me/${contactInfo.whatsApp.replace(/\\D/g, '')}`} target="_blank" rel="noopener noreferrer">
                                     <FontAwesomeIcon icon={faWhatsapp} className="mr-2 h-5 w-5" />
                                     Chat on WhatsApp
