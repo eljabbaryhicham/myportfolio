@@ -3,19 +3,20 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Images, Cat, Info, Mail, Shield } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useUser } from "@/firebase";
 import { motion } from "framer-motion";
 import React from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faHouse, faImage, faCircleInfo, faEnvelope, faShieldHalved, faCat } from "@fortawesome/free-solid-svg-icons";
 
 const navItems = [
-  { href: "/", label: "Home", icon: Home, public: true },
-  { href: "/work", label: "Work", icon: Images, public: true },
-  { href: "/about", label: "About", icon: Info, public: true },
-  { href: "/contact", label: "Contact", icon: Mail, public: true },
-  { href: "/admin", label: "Admin", icon: Shield, public: false },
+  { href: "/", label: "Home", icon: faHouse, public: true },
+  { href: "/work", label: "Work", icon: faImage, public: true },
+  { href: "/about", label: "About", icon: faCircleInfo, public: true },
+  { href: "/contact", label: "Contact", icon: faEnvelope, public: true },
+  { href: "/admin", label: "Admin", icon: faShieldHalved, public: false },
 ];
 
 export function AppNav() {
@@ -54,7 +55,7 @@ export function AppNav() {
                       : "text-foreground/70 glass-effect"
                   )}
                 >
-                  <item.icon className="h-6 w-6" />
+                  <FontAwesomeIcon icon={item.icon} className="h-6 w-6" />
                   <span className="absolute bottom-full mb-2 hidden whitespace-nowrap rounded-md bg-card px-3 py-1.5 text-sm font-medium text-card-foreground group-hover:flex">
                     {item.label}
                   </span>
@@ -78,7 +79,7 @@ export function AppNav() {
         "flex h-full flex-row md:flex-col items-center justify-between rounded-lg border border-border/50 px-4 py-2 md:p-8 glass-effect"
         )}>
         <Link href="/" className="hidden md:flex items-center gap-2 text-primary">
-          <Cat className="h-8 w-8" />
+          <FontAwesomeIcon icon={faCat} className="h-8 w-8" />
         </Link>
         <nav className="flex flex-row md:flex-col items-center justify-around md:justify-center w-full md:w-auto md:gap-8">
           {visibleNavItems.map((item) => {
@@ -97,7 +98,7 @@ export function AppNav() {
                     : "text-foreground/70 glass-effect"
                 )}
               >
-                <item.icon className="h-6 w-6" />
+                <FontAwesomeIcon icon={item.icon} className="h-6 w-6" />
                 <span className="absolute bottom-full mb-2 md:left-full md:bottom-auto md:mb-0 md:ml-4 hidden whitespace-nowrap rounded-md bg-card px-3 py-1.5 text-sm font-medium text-card-foreground group-hover:flex">
                   {item.label}
                 </span>

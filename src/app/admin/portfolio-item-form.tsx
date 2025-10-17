@@ -34,8 +34,9 @@ import {
 import type { PortfolioItem } from '@/features/portfolio/data/portfolio-data';
 import { useEffect } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { X } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faXmark } from '@fortawesome/free-solid-svg-icons';
 
 const formSchema = z.object({
   title: z.string().min(2, {
@@ -274,7 +275,7 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit}: Port
                   "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
                   "disabled:pointer-events-none"
                 )}>
-                    <X className="h-4 w-4" />
+                    <FontAwesomeIcon icon={faXmark} className="h-4 w-4" />
                     <span className="sr-only">Close</span>
                 </DialogClose>
             </DialogContent>

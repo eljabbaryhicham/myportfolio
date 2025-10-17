@@ -12,7 +12,6 @@ import {
   DialogClose,
 } from '@/components/ui/dialog';
 import { useState, memo, useEffect, useRef, useMemo } from 'react';
-import { PlayCircle, ChevronsUpDown, X, ImageIcon, Expand } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import dynamic from 'next/dynamic';
 import { Button } from '@/components/ui/button';
@@ -26,6 +25,9 @@ import rehypeSanitize, { defaultSchema } from 'rehype-sanitize';
 import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection, query, orderBy } from 'firebase/firestore';
 import { PortfolioItem } from '@/features/portfolio/data/portfolio-data';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faPlayCircle, faUpDown, faXmark, faImage, faExpand } from '@fortawesome/free-solid-svg-icons';
+
 
 const VideoPlayer = dynamic(() => import('@/components/video-player'), {
   ssr: false,
@@ -90,7 +92,7 @@ const PortfolioMedia = ({
           className="absolute inset-0 m-auto z-10 h-16 w-16 text-white bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity"
           onClick={() => onFullscreenClick(item.sourceUrl!)}
         >
-          <Expand className="h-8 w-8" />
+          <FontAwesomeIcon icon={faExpand} className="h-8 w-8" />
           <span className="sr-only">Fullscreen</span>
         </Button>
       </div>
@@ -231,12 +233,12 @@ export default function WorkPage() {
                         </div>
                         {item.type === 'video' && (
                           <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/40 transition-colors">
-                            <PlayCircle className="h-12 w-12 md:h-16 md:w-16 text-white/80" />
+                            <FontAwesomeIcon icon={faPlayCircle} className="h-12 w-12 md:h-16 md:w-16 text-white/80" />
                           </div>
                         )}
                         {item.type === 'image' && (
                             <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/40 transition-colors">
-                                <ImageIcon className="h-12 w-12 md:h-16 md:w-16 text-white/80" />
+                                <FontAwesomeIcon icon={faImage} className="h-12 w-12 md:h-16 md:w-16 text-white/80" />
                             </div>
                         )}
                       </div>
@@ -287,7 +289,7 @@ export default function WorkPage() {
                                 variant="default"
                                 onClick={() => setDetailsModalOpen(true)}
                             >
-                                <ChevronsUpDown className="mr-2" />
+                                <FontAwesomeIcon icon={faUpDown} className="mr-2" />
                                 Show Details
                             </Button>
                             </div>
@@ -298,7 +300,7 @@ export default function WorkPage() {
             </div>
           )}
            <DialogClose className="absolute top-4 right-4 z-[101] h-8 w-8 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2">
-              <X className="h-4 w-4" />
+              <FontAwesomeIcon icon={faXmark} className="h-4 w-4" />
               <span className="sr-only">Close</span>
           </DialogClose>
         </DialogContent>
@@ -349,7 +351,7 @@ export default function WorkPage() {
                     </div>
                 </ScrollArea>
                  <DialogClose className="absolute top-4 right-4 z-[101] h-8 w-8 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2">
-                    <X className="h-4 w-4" />
+                    <FontAwesomeIcon icon={faXmark} className="h-4 w-4" />
                     <span className="sr-only">Close</span>
                 </DialogClose>
                 </>
@@ -373,7 +375,7 @@ export default function WorkPage() {
             </div>
           )}
           <DialogClose className="absolute top-4 right-4 z-[101] h-8 w-8 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2">
-              <X className="h-4 w-4" />
+              <FontAwesomeIcon icon={faXmark} className="h-4 w-4" />
               <span className="sr-only">Close</span>
           </DialogClose>
         </DialogContent>

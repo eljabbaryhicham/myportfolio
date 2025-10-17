@@ -15,7 +15,6 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent } from '@/components/ui/card';
-import { Mail, ExternalLink, Smartphone, Instagram, Facebook, Twitter, Linkedin } from 'lucide-react';
 import Link from 'next/link';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -23,6 +22,8 @@ import { useDoc, useFirestore, useMemoFirebase } from '@/firebase';
 import { doc } from 'firebase/firestore';
 import type { ContactInfo } from '@/lib/data-types';
 import { Separator } from '@/components/ui/separator';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faEnvelope, faLink, faMobileScreenButton } from '@fortawesome/free-solid-svg-icons';
 
 
 const formSchema = z.object({
@@ -75,16 +76,16 @@ export default function ContactPage() {
   };
 
   const contactLinks = contactInfo ? [
-    { icon: Mail, label: 'Email', value: contactInfo.email, href: `mailto:${contactInfo.email}`, color: 'bg-blue-500/20 text-blue-300' },
+    { icon: faEnvelope, label: 'Email', value: contactInfo.email, href: `mailto:${contactInfo.email}`, color: 'bg-blue-500/20 text-blue-300' },
     { icon: BehanceIcon, label: 'Behance', value: '@BeLofted', href: contactInfo.behanceUrl, color: 'bg-purple-500/20 text-purple-300' },
-    { icon: Linkedin, label: 'LinkedIn', value: 'Hicham Eljabbary', href: contactInfo.linkedinUrl, color: 'bg-sky-500/20 text-sky-300' },
+    { icon: faLink, label: 'LinkedIn', value: 'Hicham Eljabbary', href: contactInfo.linkedinUrl, color: 'bg-sky-500/20 text-sky-300' },
     { icon: FiverrIcon, label: 'Fiverr', value: '@BeLofted', href: contactInfo.fiverrUrl, color: 'bg-green-500/20 text-green-300' },
   ] : [];
 
   const socialLinks = contactInfo ? [
-    { id: 'instagram', icon: Instagram, href: contactInfo.instagramUrl, color: 'bg-pink-500/80 hover:bg-pink-500' },
-    { id: 'facebook', icon: Facebook, href: contactInfo.facebookUrl, color: 'bg-blue-600/80 hover:bg-blue-600' },
-    { id: 'twitter', icon: Twitter, href: contactInfo.twitterUrl, color: 'bg-sky-500/80 hover:bg-sky-500' },
+    { id: 'instagram', href: contactInfo.instagramUrl, color: 'bg-pink-500/80 hover:bg-pink-500' },
+    { id: 'facebook', href: contactInfo.facebookUrl, color: 'bg-blue-600/80 hover:bg-blue-600' },
+    { id: 'twitter', href: contactInfo.twitterUrl, color: 'bg-sky-500/80 hover:bg-sky-500' },
   ].filter((link, index, self) => link.href && self.findIndex(l => l.id === link.id) === index) : [];
 
 
@@ -115,14 +116,16 @@ export default function ContactPage() {
                       </Avatar>
                       <h3 className="text-xl font-bold">{contactInfo.name}</h3>
                       <p className="text-foreground/70">{contactInfo.title}</p>
-                      <Separator className="my-6 bg-foreground/20" />
+                      
+                      <Separator className="my-4 bg-white/20" />
+                      
                       <div className="w-full flex flex-col items-center">
                         <div className="space-y-4">
                             {contactLinks.map((link) => (
                             link.href && (
                                 <Link href={link.href} key={link.label} className="flex items-center group" target="_blank" rel="noopener noreferrer">
                                     <div className={`w-12 h-12 flex-shrink-0 rounded-full flex items-center justify-center ${link.color}`}>
-                                        <link.icon className="w-6 h-6" />
+                                        <FontAwesomeIcon icon={link.icon} className="w-6 h-6" />
                                     </div>
                                     <div className="ml-4 text-left">
                                         <p className="text-sm text-foreground/70">{link.label}</p>
@@ -133,12 +136,13 @@ export default function ContactPage() {
                             ))}
                         </div>
                       </div>
+                      
                       {contactInfo.whatsApp && (
                         <>
-                          <Separator className="my-6 bg-foreground/20" />
+                          <Separator className="my-4 bg-white/20" />
                           <Button asChild className="w-full h-24 bg-gradient-to-r from-cyan-500 to-blue-500 text-white text-lg">
                               <Link href={`https://wa.me/${contactInfo.whatsApp.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer">
-                                  <Smartphone className="mr-3 h-8 w-8" />
+                                  <FontAwesomeIcon icon={faMobileScreenButton} className="mr-3 h-8 w-8" />
                                   <div>
                                       <p className="text-base font-light">Make a deal on WhatsApp</p>
                                       <p className="font-bold text-xl">{contactInfo.whatsApp}</p>
@@ -209,7 +213,7 @@ export default function ContactPage() {
               <div className="flex items-center justify-center gap-4 mt-8">
                 {socialLinks.map((social) => (
                   social.href && <Link href={social.href} key={social.id} className={`w-12 h-12 rounded-full flex items-center justify-center text-white ${social.color} transition-all duration-300 hover:scale-110`} target="_blank" rel="noopener noreferrer">
-                    <social.icon className="w-6 h-6" />
+                    <FontAwesomeIcon icon={faLink} className="w-6 h-6" />
                   </Link>
                 ))}
               </div>

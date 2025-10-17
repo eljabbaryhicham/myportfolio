@@ -1,7 +1,8 @@
 
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { ArrowRight } from "lucide-react";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faArrowRight } from '@fortawesome/free-solid-svg-icons';
 
 export default function HomePage() {
   return (
@@ -9,7 +10,7 @@ export default function HomePage() {
       <Button asChild size="lg" className="group">
         <Link href="/work">
           Explore Work
-          <ArrowRight className="ml-2 transition-transform group-hover:translate-x-1" />
+          <FontAwesomeIcon icon={faArrowRight} className="ml-2 transition-transform group-hover:translate-x-1" />
         </Link>
       </Button>
     </div>

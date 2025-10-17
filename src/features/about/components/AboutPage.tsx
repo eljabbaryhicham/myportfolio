@@ -9,10 +9,11 @@ import {
   CarouselItem,
 } from '@/components/ui/carousel';
 import { Badge } from '@/components/ui/badge';
-import { Star } from 'lucide-react';
 import { memo, useRef } from 'react';
 import Autoplay from 'embla-carousel-autoplay';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faStar } from '@fortawesome/free-solid-svg-icons';
 
 const clients = [
   {
@@ -125,7 +126,7 @@ export default function AboutPage() {
                           <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
                           <div className="absolute top-2 left-2">
                             <Badge variant="secondary" className="bg-green-500/20 text-green-300 border-green-500/30">
-                              <Star className="h-3 w-3 mr-1" />
+                              <FontAwesomeIcon icon={faStar} className="h-3 w-3 mr-1" />
                               {client.category}
                             </Badge>
                           </div>

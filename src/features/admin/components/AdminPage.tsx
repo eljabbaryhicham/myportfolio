@@ -3,7 +3,6 @@
 
 import { useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { LogOut } from 'lucide-react';
 import { useAuth } from '@/firebase';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
@@ -12,6 +11,8 @@ import { useUser } from '@/firebase';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import ProjectAdmin from './ProjectAdmin';
 import ContactAdmin from './ContactAdmin';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faRightFromBracket } from '@fortawesome/free-solid-svg-icons';
 
 
 function AdminPage() {
@@ -63,7 +64,7 @@ function AdminPage() {
           </div>
           <div className="flex items-center gap-2 md:gap-4 flex-wrap justify-center">
             <Button onClick={handleLogout} variant="secondary">
-              <LogOut className="mr-2 h-4 w-4" />
+              <FontAwesomeIcon icon={faRightFromBracket} className="mr-2 h-4 w-4" />
               Sign Out
             </Button>
           </div>

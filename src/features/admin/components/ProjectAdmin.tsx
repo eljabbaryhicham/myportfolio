@@ -11,7 +11,6 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { PlusCircle, MoreHorizontal, UploadCloud, GripVertical } from 'lucide-react';
 import Image from 'next/image';
 import {
   DropdownMenu,
@@ -27,6 +26,8 @@ import { addDocumentNonBlocking, deleteDocumentNonBlocking, setDocumentNonBlocki
 import { collection, doc, writeBatch } from 'firebase/firestore';
 import { defaultPortfolioItems, type PortfolioItem } from '@/features/portfolio/data/portfolio-data';
 import { cn } from '@/lib/utils';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faPlusCircle, faEllipsisH, faCloudUploadAlt, faGripVertical } from '@fortawesome/free-solid-svg-icons';
 
 function ProjectAdmin() {
   const firestore = useFirestore();
@@ -215,12 +216,12 @@ function ProjectAdmin() {
                 <div className="flex items-center gap-2 md:gap-4 flex-wrap justify-end absolute top-6 right-6">
                     {!isLoading && items?.length === 0 && (
                     <Button onClick={handleSeedData} variant="secondary" size="sm">
-                        <UploadCloud className="mr-2 h-4 w-4" />
+                        <FontAwesomeIcon icon={faCloudUploadAlt} className="mr-2 h-4 w-4" />
                         Seed Projects
                     </Button>
                     )}
                     <Button onClick={handleAddItem} size="sm">
-                    <PlusCircle className="mr-2 h-4 w-4" />
+                    <FontAwesomeIcon icon={faPlusCircle} className="mr-2 h-4 w-4" />
                     Add New
                     </Button>
                 </div>
@@ -256,7 +257,7 @@ function ProjectAdmin() {
                     className={cn("border-b-0 transition-all cursor-grab relative")}
                   >
                     <TableCell className="text-center">
-                      <GripVertical className="h-5 w-5 text-foreground/50" />
+                      <FontAwesomeIcon icon={faGripVertical} className="h-5 w-5 text-foreground/50" />
                     </TableCell>
                     <TableCell className="flex justify-center">
                       <Image
@@ -274,7 +275,7 @@ function ProjectAdmin() {
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button variant="ghost" size="icon">
-                            <MoreHorizontal />
+                            <FontAwesomeIcon icon={faEllipsisH} />
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent className="glass-effect">
