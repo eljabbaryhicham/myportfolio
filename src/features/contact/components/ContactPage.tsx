@@ -104,7 +104,7 @@ export default function ContactPage() {
           <div className="container mx-auto px-0">
             {isLoading && <div className="text-center">Loading contact information...</div>}
             {contactInfo && (
-              <div className="flex flex-col md:flex-row gap-8 md:gap-12 items-start justify-center">
+              <div className="flex flex-col md:flex-row gap-4 md:gap-8 items-start justify-center">
                 <div className="w-full md:w-1/2">
                   <Card className="glass-effect p-6 flex flex-col h-full">
                     <CardContent className="flex flex-col items-center text-center p-0">
