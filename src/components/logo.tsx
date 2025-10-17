@@ -3,7 +3,7 @@ import * as React from 'react';
 
 const Logo = (props: { className?: string }) => (
   <Image
-    src="/logo.png"
+    src="https://i.imgur.com/N9c8oEJ.png"
     alt="belofted logo"
     width={128}
     height={35}
