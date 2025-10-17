@@ -9,7 +9,7 @@ import type PlyrInstance from "plyr";
 
 
 interface VideoPlayerProps extends PlyrProps {
-  source: PlyrSource & { poster?: string };
+  source: PlyrSource;
   innerRef?: React.Ref<PlyrInstance>;
 }
 
