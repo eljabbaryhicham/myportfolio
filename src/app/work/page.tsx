@@ -64,7 +64,8 @@ const PortfolioMedia = ({
     const youtubeRegex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
     const vimeoRegex = /(?:https?:\/\/)?(?:www\.)?vimeo\.com\/(?:channels\/(?:\w+\/)?|groups\/(?:[^\/]*)\/videos\/|album\/(?:\d+)\/video\/|)(\d+)/;
 
-    if (item.sourceUrl) {
+    let sources = [];
+    if (item.sourceUrl) { // Primarily for YouTube/Vimeo links
       const youtubeMatch = item.sourceUrl.match(youtubeRegex);
       if (youtubeMatch && youtubeMatch[1]) {
         return {
@@ -83,25 +84,23 @@ const PortfolioMedia = ({
         };
       }
       
-      // Fallback for direct .mp4 links or others
+      // Fallback for single direct .mp4 links
+      sources.push({ src: item.sourceUrl, type: 'video/mp4' });
+
+    } else if (item.sources) { // For multi-quality MP4s
+      sources = item.sources.map(s => ({
+        src: s.src,
+        type: 'video/mp4',
+        size: s.size,
+      }));
+    }
+
+    if (sources.length > 0) {
       return {
         type: 'video',
-        sources: [{ src: item.sourceUrl, type: 'video/mp4' }],
+        sources: sources,
         poster: item.thumbnailUrl,
       };
-    }
-    
-    // Default to item.sources if sourceUrl is not present
-    if (item.sources) {
-        return {
-            type: 'video',
-            sources: item.sources.map(s => ({
-            src: s.src,
-            type: 'video/mp4',
-            size: s.size,
-            })),
-            poster: item.thumbnailUrl,
-        };
     }
 
     return null;

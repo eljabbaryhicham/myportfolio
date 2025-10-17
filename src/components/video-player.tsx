@@ -17,7 +17,7 @@ interface VideoPlayerProps extends PlyrProps {
 const VideoPlayer = ({ source, innerRef, onReady }: VideoPlayerProps) => {
   if (!source) return null;
 
-  const qualities = source.sources.map(s => (s as any).size).filter(Boolean);
+  const qualities = (source.sources || []).map(s => (s as any).size).filter(Boolean);
   
   // This effect will run when the component mounts and the ref is attached.
   useEffect(() => {
@@ -47,10 +47,6 @@ const VideoPlayer = ({ source, innerRef, onReady }: VideoPlayerProps) => {
       options={{
         autoplay: false,
         poster: source.poster,
-        previewThumbnails: {
-          enabled: true,
-          src: 'https://cdn.plyr.io/static/demo/thumbs/100p.vtt'
-        },
         quality: {
             default: qualities.length > 0 ? Math.min(...qualities) : 576,
             options: qualities,
