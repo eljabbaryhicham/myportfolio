@@ -196,14 +196,12 @@ export default function ContactPage() {
                           )}
                         </div>
                       ) : (
-                        <div className='relative w-full'>
-                            <div className="flex flex-col items-end mb-4 -mt-16 mr-4">
+                        <div className='w-full'>
+                            <div className="flex flex-col items-end mb-4">
                                 <p className="font-handwriting text-2xl text-white transform -rotate-12">Send a message, we are always available</p>
-                                <svg className="w-20 h-20 text-white transform -scale-x-100 -rotate-12 -mt-4" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M4 12C4 12 5.6 7.2 12 7.2C18.4 7.2 20 12 20 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                                    <path d="M12 7.2L12 21.6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                                    <path d="M12 21.6L9.6 19.2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                                    <path d="M12 21.6L14.4 19.2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                                <svg className="w-24 h-24 text-white transform -rotate-12 -mt-4 -mr-4" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                  <path d="M10 90 Q 50 10, 90 20" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                                  <path d="M75 10 L 90 20 L 70 30" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                                 </svg>
                             </div>
                             <Form {...form}>
