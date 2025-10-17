@@ -120,6 +120,8 @@
   }
   .plyr__poster {
     object-fit: fill !important;
+    width: 100% !important;
+    height: 100% !important;
   }
   
   .blob-1 {
