@@ -168,9 +168,9 @@ export default function ContactPage() {
                   </Card>
                 </div>
                 <div className="w-full md:w-1/2">
-                  <div className="flex flex-col items-center mb-2">
+                  <div className="flex flex-col items-center mb-8">
                       <p className="font-handwriting text-2xl text-white transform -rotate-6">send a message we are always avalaible</p>
-                      <svg className="w-24 h-24 text-white transform -rotate-12 -mt-2" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <svg className="w-24 h-24 text-white transform -rotate-12" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
                           <path d="M10 10 C 20 80, 80 80, 90 10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                           <path d="M85 15 L 90 10 L 95 15" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                       </svg>
