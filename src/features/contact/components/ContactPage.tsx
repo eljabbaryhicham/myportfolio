@@ -197,9 +197,9 @@ export default function ContactPage() {
                         </div>
                       ) : (
                         <div className='relative w-full'>
-                            <div className="absolute -top-24 right-0 transform -translate-x-1/4 -rotate-12 w-full max-w-[200px]">
-                                <p className="font-handwriting text-2xl text-white">Send a message, we are always available</p>
-                                <svg className="w-20 h-20 text-white transform -scale-x-100" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <div className="flex flex-col items-end mb-4 -mt-16 mr-4">
+                                <p className="font-handwriting text-2xl text-white transform -rotate-12">Send a message, we are always available</p>
+                                <svg className="w-20 h-20 text-white transform -scale-x-100 -rotate-12 -mt-4" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                     <path d="M4 12C4 12 5.6 7.2 12 7.2C18.4 7.2 20 12 20 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                                     <path d="M12 7.2L12 21.6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                                     <path d="M12 21.6L9.6 19.2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
