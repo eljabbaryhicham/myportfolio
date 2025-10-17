@@ -24,9 +24,9 @@ import { doc } from 'firebase/firestore';
 import type { ContactInfo } from '@/lib/data-types';
 import { Separator } from '@/components/ui/separator';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEnvelope, faMobileScreenButton } from '@fortawesome/free-solid-svg-icons';
+import { faEnvelope } from '@fortawesome/free-solid-svg-icons';
 import { Icon } from '@/components/icon';
-import { faLinkedin, faBehance, faInstagram, faFacebook, faTwitter } from '@fortawesome/free-brands-svg-icons';
+import { faLinkedin, faBehance, faInstagram, faFacebook, faTwitter, faWhatsapp } from '@fortawesome/free-brands-svg-icons';
 import { cn } from '@/lib/utils';
 
 
@@ -138,11 +138,11 @@ export default function ContactPage() {
                       {contactInfo.whatsApp && (
                         <>
                           <Separator className="my-4 bg-white/20" />
-                          <Button asChild className="w-full bg-gradient-to-r from-green-500 to-emerald-600 text-white">
-                              <Link href={`https://wa.me/${contactInfo.whatsApp.replace(/\\D/g, '')}`} target="_blank" rel="noopener noreferrer" className="py-3">
-                                  <FontAwesomeIcon icon={faMobileScreenButton} className="mr-3 h-6 w-6" />
+                          <Button asChild className="bg-gradient-to-r from-green-500 to-emerald-600 text-white">
+                              <Link href={`https://wa.me/${contactInfo.whatsApp.replace(/\\D/g, '')}`} target="_blank" rel="noopener noreferrer" className="py-2 px-4">
+                                  <FontAwesomeIcon icon={faWhatsapp} className="mr-3 h-6 w-6" />
                                   <div>
-                                      <p className="text-sm font-light">Make a deal on WhatsApp</p>
+                                      <p className="text-sm font-light">WhatsApp</p>
                                       <p className="font-semibold text-base">{contactInfo.whatsApp}</p>
                                   </div>
                               </Link>
