@@ -20,7 +20,6 @@ import { useDoc, useFirestore, useMemoFirebase, setDocumentNonBlocking } from '@
 import { doc } from 'firebase/firestore';
 import type { ContactInfo } from '@/lib/contact-data';
 import { useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
 const formSchema = z.object({
@@ -39,6 +38,20 @@ const formSchema = z.object({
 
 type ContactFormValues = z.infer<typeof formSchema>;
 
+const defaultFormValues: ContactFormValues = {
+    avatarUrl: '',
+    name: '',
+    title: '',
+    email: '',
+    whatsApp: '',
+    behanceUrl: '',
+    linkedinUrl: '',
+    fiverrUrl: '',
+    instagramUrl: '',
+    facebookUrl: '',
+    twitterUrl: '',
+};
+
 export default function ContactAdmin() {
   const { toast } = useToast();
   const firestore = useFirestore();
@@ -51,12 +64,25 @@ export default function ContactAdmin() {
 
   const form = useForm<ContactFormValues>({
     resolver: zodResolver(formSchema),
-    defaultValues: {},
+    defaultValues: defaultFormValues,
   });
 
   useEffect(() => {
     if (contactInfo) {
-      form.reset(contactInfo);
+        const values: ContactFormValues = {
+            avatarUrl: contactInfo.avatarUrl || '',
+            name: contactInfo.name || '',
+            title: contactInfo.title || '',
+            email: contactInfo.email || '',
+            whatsApp: contactInfo.whatsApp || '',
+            behanceUrl: contactInfo.behanceUrl || '',
+            linkedinUrl: contactInfo.linkedinUrl || '',
+            fiverrUrl: contactInfo.fiverrUrl || '',
+            instagramUrl: contactInfo.instagramUrl || '',
+            facebookUrl: contactInfo.facebookUrl || '',
+            twitterUrl: contactInfo.twitterUrl || '',
+        };
+      form.reset(values);
     }
   }, [contactInfo, form]);
 

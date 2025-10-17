@@ -65,6 +65,17 @@ interface PortfolioItemFormProps {
 export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit}: PortfolioItemFormProps) {
     const form = useForm<PortfolioItemFormValues>({
       resolver: zodResolver(formSchema),
+      defaultValues: {
+        title: '',
+        description: '',
+        type: 'image',
+        thumbnailUrl: '',
+        sourceUrl: '',
+        thumbnailHint: '',
+        featured: false,
+        details: '',
+        order: undefined,
+      }
     });
   
     useEffect(() => {
@@ -270,5 +281,3 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit}: Port
         </Dialog>
     )
 }
-
-    
