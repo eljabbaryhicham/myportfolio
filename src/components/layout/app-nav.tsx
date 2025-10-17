@@ -77,7 +77,7 @@ export function AppNav() {
       transition={{ type: 'spring', stiffness: 80, damping: 20 }}
     >
       <div className={cn(
-        "flex h-full flex-row md:flex-col items-center justify-between rounded-lg border border-border/50 px-4 py-2 md:p-8 glass-effect"
+        "flex h-full flex-row md:flex-col items-center justify-between rounded-lg border border-border/50 px-4 py-2 md:p-[5%] glass-effect"
         )}>
         <Link href="/" className="hidden md:flex items-center gap-2 text-primary w-[90%]">
           <Logo />
