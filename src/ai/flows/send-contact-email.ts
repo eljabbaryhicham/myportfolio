@@ -47,9 +47,10 @@ const sendContactEmailFlow = ai.defineFlow(
     console.log('Received contact form submission:', input);
     
     try {
-      const { data, error } = await resend.emails.send({
+      // Step 1: Send the primary email to the site owner
+      const adminEmailPromise = resend.emails.send({
         from: `Contact Form <${FROM_EMAIL}>`,
-        to: [TO_EMAIL],
+        to: TO_EMAIL,
         subject: `New Message from ${input.name}`,
         reply_to: input.email,
         html: `
@@ -61,16 +62,47 @@ const sendContactEmailFlow = ai.defineFlow(
         `,
       });
 
-      if (error) {
-        console.error('Error sending email:', error);
-        return { success: false, message: 'Failed to send email.' };
+      // Step 2: Send the confirmation email to the user
+      const userConfirmationPromise = resend.emails.send({
+        from: `Support <${FROM_EMAIL}>`,
+        to: input.email,
+        subject: 'Thank you for your message!',
+        html: `
+          <p>Hi ${input.name},</p>
+          <p>Thank you for contacting us. We have received your message and will get back to you shortly.</p>
+          <p>Best regards,<br/>The Team</p>
+        `,
+      });
+
+      // Await both promises
+      const [adminEmailResult, userEmailResult] = await Promise.allSettled([
+        adminEmailPromise,
+        userConfirmationPromise,
+      ]);
+
+      // Check the result of the primary email to the admin
+      if (adminEmailResult.status === 'rejected') {
+        console.error('Error sending admin email:', adminEmailResult.reason);
+        // This is a critical failure
+        return { success: false, message: 'Failed to send message to support.' };
+      }
+      
+      if (userEmailResult.status === 'rejected') {
+        // This is not a critical failure. The admin got the email.
+        // Log it for debugging, but return success to the user interface.
+        console.warn('Failed to send confirmation email to user:', userEmailResult.reason);
+      }
+      
+      console.log('Admin email sent successfully:', adminEmailResult.value);
+      if (userEmailResult.status === 'fulfilled') {
+        console.log('User confirmation email sent successfully:', userEmailResult.value);
       }
 
-      console.log('Email sent successfully:', data);
+      // Return success as long as the primary email was sent.
       return { success: true, message: 'Email sent successfully.' };
 
     } catch (e) {
-      console.error('An unexpected error occurred:', e);
+      console.error('An unexpected error occurred in sendContactEmailFlow:', e);
       return { success: false, message: 'An unexpected error occurred.' };
     }
   }
