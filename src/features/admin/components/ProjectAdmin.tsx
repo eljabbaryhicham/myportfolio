@@ -207,24 +207,24 @@ function ProjectAdmin() {
         <ScrollArea className="h-full">
           <div className="p-6">
             <div className="flex items-center justify-between mb-6">
-              <div>
-                <h2 className="text-xl font-bold">Portfolio Projects</h2>
-                <p className="text-muted-foreground">
-                  Add, edit, and reorder the projects in your portfolio.
-                </p>
-              </div>
-              <div className="flex items-center gap-2 md:gap-4 flex-wrap justify-end">
-                {!isLoading && items?.length === 0 && (
-                  <Button onClick={handleSeedData} variant="secondary" size="sm">
-                    <UploadCloud className="mr-2 h-4 w-4" />
-                    Seed Projects
-                  </Button>
-                )}
-                <Button onClick={handleAddItem} size="sm">
-                  <PlusCircle className="mr-2 h-4 w-4" />
-                  Add New
-                </Button>
-              </div>
+                <div className="text-center w-full">
+                    <h2 className="text-xl font-bold">Portfolio Projects</h2>
+                    <p className="text-muted-foreground">
+                    Add, edit, and reorder the projects in your portfolio.
+                    </p>
+                </div>
+                <div className="flex items-center gap-2 md:gap-4 flex-wrap justify-end absolute top-6 right-6">
+                    {!isLoading && items?.length === 0 && (
+                    <Button onClick={handleSeedData} variant="secondary" size="sm">
+                        <UploadCloud className="mr-2 h-4 w-4" />
+                        Seed Projects
+                    </Button>
+                    )}
+                    <Button onClick={handleAddItem} size="sm">
+                    <PlusCircle className="mr-2 h-4 w-4" />
+                    Add New
+                    </Button>
+                </div>
             </div>
             <Table>
               <TableHeader>
