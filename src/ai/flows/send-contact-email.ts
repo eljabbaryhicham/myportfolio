@@ -60,7 +60,7 @@ const sendContactEmailFlow = ai.defineFlow(
                   <div style="text-align: center; margin-bottom: 24px;">
                     <img src="https://i.imgur.com/N9c8oEJ.png" alt="Logo" style="max-width: 150px; height: auto;">
                   </div>
-                  <h1 style="font-size: 24px; font-weight: bold; color: #ffffff; margin: 0 0 24px; text-align: center;">New Contact Form Message</h1>
+                  <h1 style="font-size: 24px; font-weight: bold; color: #ffffff; margin: 0 0 24px; text-align: center;">Message From BELOFTED</h1>
                   <p style="margin: 0 0 16px; text-align: center;">You have received a new message from your portfolio website.</p>
                   
                   <div style="background-color: #0d1a2e; padding: 20px; border-radius: 8px;">
