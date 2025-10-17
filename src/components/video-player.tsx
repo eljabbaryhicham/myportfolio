@@ -45,6 +45,12 @@ const VideoPlayer = ({ source, innerRef }: VideoPlayerProps) => {
         quality: {
             default: qualities.length > 0 ? Math.min(...qualities) : 576,
             options: qualities,
+        },
+        fullscreen: {
+          enabled: true,
+          fallback: true,
+          iosNative: true,
+          container: 'body',
         }
       }}
     />
