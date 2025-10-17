@@ -85,7 +85,7 @@ export default function ContactPage() {
     { id: 'instagram', icon: Instagram, href: contactInfo.instagramUrl, color: 'bg-pink-500/80 hover:bg-pink-500' },
     { id: 'facebook', icon: Facebook, href: contactInfo.facebookUrl, color: 'bg-blue-600/80 hover:bg-blue-600' },
     { id: 'twitter', icon: Twitter, href: contactInfo.twitterUrl, color: 'bg-sky-500/80 hover:bg-sky-500' },
-  ] : [];
+  ].filter((link, index, self) => link.href && self.findIndex(l => l.id === link.id) === index) : [];
 
 
   return (
@@ -109,7 +109,7 @@ export default function ContactPage() {
                 <div className="w-full md:w-1/2">
                   <Card className="glass-effect p-6 flex flex-col h-full">
                     <CardContent className="flex flex-col items-center text-center p-0">
-                      <Avatar className="w-24 h-24 border-2 border-primary mb-4">
+                      <Avatar className="border-2 border-primary mb-4" style={{ width: '80px', height: '80px' }}>
                         <AvatarImage src={contactInfo.avatarUrl} alt={contactInfo.name} />
                         <AvatarFallback>{contactInfo.name?.substring(0, 2)}</AvatarFallback>
                       </Avatar>
@@ -214,3 +214,5 @@ export default function ContactPage() {
     </div>
   );
 }
+
+    
