@@ -1,3 +1,4 @@
+
 'use client';
 
 import Image from 'next/image';
@@ -31,18 +32,13 @@ import Preloader from '@/components/preloader';
 
 const VideoPlayer = dynamic(() => import('@/components/video-player'), {
   ssr: false,
+  loading: () => <div className="aspect-video w-full flex items-center justify-center bg-black"><Preloader /></div>,
 });
 
 const ClientOnlyVideoPlayer = (
   props: PlyrProps & { innerRef: React.Ref<Plyr> }
 ) => {
-  const [isClient, setIsClient] = useState(false);
-
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
-
-  return isClient ? <VideoPlayer {...props} /> : null;
+  return <VideoPlayer {...props} />;
 };
 ClientOnlyVideoPlayer.displayName = 'ClientOnlyVideoPlayer';
 
@@ -102,6 +98,68 @@ const PortfolioMedia = ({
   return null;
 };
 PortfolioMedia.displayName = 'PortfolioMedia';
+
+const PortfolioGridItem = ({ item, onClick }: { item: PortfolioItem, onClick: () => void }) => {
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  return (
+    <div className="p-[2px] rounded-lg glass-effect">
+      <div
+        className={cn(
+          'group relative cursor-pointer overflow-hidden rounded-md transition-all duration-300 hover:scale-[1.02] aspect-square',
+          'bg-black/20'
+        )}
+        onClick={onClick}
+      >
+        {!isLoaded && (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <Preloader />
+          </div>
+        )}
+        <Image
+          src={item.thumbnailUrl}
+          alt={item.title}
+          fill
+          className={cn(
+            "object-cover transition-opacity duration-500",
+            isLoaded ? "opacity-100 group-hover:scale-105" : "opacity-0"
+          )}
+          data-ai-hint={item.thumbnailHint}
+          sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
+          onLoad={() => setIsLoaded(true)}
+        />
+        <div className={cn(
+          "absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-4",
+          !isLoaded && "opacity-100 bg-none" // Show overlay content while loading
+        )}>
+          {isLoaded ? (
+            <>
+              <h3 className="font-bold text-white text-lg">
+                {item.title}
+              </h3>
+              <p className="text-white/80 text-sm line-clamp-2">
+                {item.description}
+              </p>
+            </>
+          ) : (
+             <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"/>
+          )}
+        </div>
+        {item.type === 'video' && isLoaded && (
+          <div className="absolute top-4 right-4 w-[20%] h-[20%] flex items-center justify-center rounded-full glass-effect transition-colors">
+            <FontAwesomeIcon icon={faFilm} className="h-1/2 w-1/2 text-white/80" />
+          </div>
+        )}
+        {item.type === 'image' && isLoaded && (
+            <div className="absolute top-4 right-4 w-[20%] h-[20%] flex items-center justify-center rounded-full glass-effect transition-colors">
+                <FontAwesomeIcon icon={faPalette} className="h-1/2 w-1/2 text-white/80" />
+            </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
 
 export default function WorkPage() {
   const firestore = useFirestore();
@@ -219,41 +277,11 @@ export default function WorkPage() {
               {!isLoading && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 md:gap-4">
                   {filteredItems.slice(0, visibleItems).map(item => (
-                    <div key={item.id} className="p-[2px] rounded-lg glass-effect">
-                      <div
-                        className={cn(
-                          'group relative cursor-pointer overflow-hidden rounded-md transition-all duration-300 hover:scale-[1.02] aspect-square'
-                        )}
-                        onClick={() => setSelectedItem(item)}
-                      >
-                        <Image
-                          src={item.thumbnailUrl}
-                          alt={item.title}
-                          fill
-                          className="object-cover transition-transform duration-300 group-hover:scale-105"
-                          data-ai-hint={item.thumbnailHint}
-                          sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-4">
-                          <h3 className="font-bold text-white text-lg">
-                            {item.title}
-                          </h3>
-                          <p className="text-white/80 text-sm line-clamp-2">
-                            {item.description}
-                          </p>
-                        </div>
-                        {item.type === 'video' && (
-                          <div className="absolute top-4 right-4 w-[20%] h-[20%] flex items-center justify-center rounded-full glass-effect transition-colors">
-                            <FontAwesomeIcon icon={faFilm} className="h-1/2 w-1/2 text-white/80" />
-                          </div>
-                        )}
-                        {item.type === 'image' && (
-                            <div className="absolute top-4 right-4 w-[20%] h-[20%] flex items-center justify-center rounded-full glass-effect transition-colors">
-                                <FontAwesomeIcon icon={faPalette} className="h-1/2 w-1/2 text-white/80" />
-                            </div>
-                        )}
-                      </div>
-                    </div>
+                    <PortfolioGridItem 
+                      key={item.id}
+                      item={item}
+                      onClick={() => setSelectedItem(item)}
+                    />
                   ))}
                 </div>
               )}

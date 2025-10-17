@@ -50,6 +50,10 @@ const VideoPlayer = ({ source, innerRef }: VideoPlayerProps) => {
           enabled: true,
           fallback: true,
           iosNative: true,
+        },
+        // Show a spinner while the video is buffering
+        spinner: {
+          enabled: true,
         }
       }}
     />
