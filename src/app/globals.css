@@ -136,6 +136,10 @@
   .blob-3 {
     animation: blob-anim-3 20s infinite;
   }
+
+  .md\:p-8 {
+    padding: 10%;
+  }
 }
 
 @keyframes blob-anim-1 {
