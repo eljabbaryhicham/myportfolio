@@ -35,7 +35,7 @@ type ContactFormValues = z.infer<typeof formSchema>;
 
 
 const BehanceIcon = (props: React.SVGProps<SVGSVGElement>) => (
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" {...props}>
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="currentColor" {...props}>
         <path d="M13.25 10.151c.827 0 1.5-.673 1.5-1.5s-.673-1.5-1.5-1.5-1.5.673-1.5 1.5.673 1.5 1.5 1.5zm-1.894 4.318h3.389c-.288 1.458-1.745 2.531-3.389 2.531-1.933 0-3.5-1.567-3.5-3.5s1.567-3.5 3.5-3.5c1.801 0 3.275 1.365 3.469 3.106h2.029c-.21-2.835-2.583-5.106-5.498-5.106-3.029 0-5.5 2.471-5.5 5.5s2.471 5.5 5.5 5.5c2.721 0 4.977-1.996 5.426-4.531h-2.028c-.379 1.488-1.758 2.531-3.398 2.531zM17.5 7h-4v1h4V7z"/>
     </svg>
 )
@@ -105,7 +105,7 @@ export default function ContactPage() {
           <div className="container mx-auto px-0">
             {isLoading && <div className="text-center">Loading contact information...</div>}
             {contactInfo && (
-              <div className="flex flex-col md:flex-row gap-8 items-start justify-center">
+              <div className="flex flex-col md:flex-row gap-8 md:gap-12 items-start justify-center">
                 <div className="w-full md:w-1/2">
                   <Card className="glass-effect p-6 flex flex-col h-full">
                     <CardContent className="flex flex-col items-center text-center p-0">
@@ -116,22 +116,23 @@ export default function ContactPage() {
                       <h3 className="text-xl font-bold">{contactInfo.name}</h3>
                       <p className="text-foreground/70">{contactInfo.title}</p>
 
-                      <div className="w-full space-y-4 mt-6">
+                      <div className="w-full grid grid-cols-2 gap-x-4 gap-y-6 mt-8">
                         {contactLinks.map((link) => (
-                          link.href && <Link href={link.href} key={link.label} className="flex items-center justify-center group gap-2" target="_blank" rel="noopener noreferrer">
-                            <div className={`w-10 h-10 flex-shrink-0 rounded-full flex items-center justify-center ${link.color}`}>
-                              <link.icon className="w-5 h-5" />
-                            </div>
-                            <div className="text-center">
-                              <p className="text-sm text-foreground/70">{link.label}</p>
-                              <p className="font-medium group-hover:text-primary transition-colors">{link.value}</p>
-                            </div>
-                            <ExternalLink className="w-4 h-4 text-foreground/50 group-hover:text-primary transition-colors opacity-0 group-hover:opacity-100" />
-                          </Link>
+                          link.href && (
+                            <Link href={link.href} key={link.label} className="flex flex-col items-center group gap-2" target="_blank" rel="noopener noreferrer">
+                              <div className={`w-12 h-12 flex-shrink-0 rounded-full flex items-center justify-center ${link.color}`}>
+                                <link.icon className="w-6 h-6" />
+                              </div>
+                              <div className="text-center">
+                                <p className="text-sm text-foreground/70">{link.label}</p>
+                                <p className="font-medium group-hover:text-primary transition-colors">{link.value}</p>
+                              </div>
+                            </Link>
+                          )
                         ))}
                       </div>
                       {contactInfo.whatsApp && (
-                        <Button asChild className="w-full h-24 bg-gradient-to-r from-green-500 to-teal-500 text-white text-lg mt-6">
+                        <Button asChild className="w-full h-24 bg-gradient-to-r from-cyan-500 to-blue-500 text-white text-lg mt-8">
                             <Link href={`https://wa.me/${contactInfo.whatsApp.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer">
                                 <Smartphone className="mr-3 h-8 w-8" />
                                 <div>
@@ -214,5 +215,3 @@ export default function ContactPage() {
     </div>
   );
 }
-
-    
