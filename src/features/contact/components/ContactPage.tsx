@@ -66,19 +66,17 @@ export default function ContactPage() {
 
   const handleSubmit = async (values: ContactFormValues) => {
     setIsSubmitting(true);
-    setIsSent(false);
+    
     try {
       const result = await sendContactEmail(values);
       if (result.success) {
         setIsSent(true);
         form.reset();
       } else {
-        // You might want to show an error toast here
         console.error("Failed to send message:", result.message);
       }
     } catch (error) {
       console.error('Failed to send contact email:', error);
-       // You might want to show an error toast here
     } finally {
       setIsSubmitting(false);
     }
@@ -172,15 +170,23 @@ export default function ContactPage() {
                   <Card className="glass-effect p-6 sm:p-8 h-full flex flex-col justify-center">
                     <CardContent className="p-0 flex flex-col items-center">
                       {isSent ? (
-                        <div className="text-center flex flex-col items-center justify-center h-[280px]">
+                        <div className="text-center flex flex-col items-center justify-center h-full min-h-[350px]">
                            <FontAwesomeIcon icon={faCheckCircle} className="w-16 h-16 text-green-400 mb-4" />
                           <h3 className="text-xl font-bold">Message Sent!</h3>
-                          <p className="text-foreground/80 mt-2">
+                          <p className="text-foreground/80 mt-2 max-w-sm">
                             Thank you for reaching out. We will get back to you shortly.
                           </p>
                           <Button onClick={() => setIsSent(false)} className="mt-6">
                             Send Another Message
                           </Button>
+                          {contactInfo?.whatsApp && (
+                            <Button asChild className="bg-gradient-to-r from-green-500 to-emerald-600 mt-4">
+                                <Link href={`https://wa.me/${contactInfo.whatsApp.replace(/\\D/g, '')}`} target="_blank" rel="noopener noreferrer">
+                                    <FontAwesomeIcon icon={faWhatsapp} className="mr-2 h-5 w-5" />
+                                    Chat on WhatsApp
+                                </Link>
+                            </Button>
+                          )}
                         </div>
                       ) : (
                         <Form {...form}>
