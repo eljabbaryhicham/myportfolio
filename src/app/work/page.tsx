@@ -25,7 +25,7 @@ import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection, query, orderBy } from 'firebase/firestore';
 import { PortfolioItem } from '@/features/portfolio/data/portfolio-data';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPlayCircle, faUpDown, faXmark, faImage, faExpand, faPalette, faFilm } from '@fortawesome/free-solid-svg-icons';
+import { faUpDown, faXmark, faExpand, faPalette, faFilm } from '@fortawesome/free-solid-svg-icons';
 import { Separator } from '@/components/ui/separator';
 import Preloader from '@/components/preloader';
 
@@ -245,12 +245,12 @@ export default function WorkPage() {
                         </div>
                         {item.type === 'video' && (
                           <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/40 transition-colors">
-                            <FontAwesomeIcon icon={faPlayCircle} className="h-12 w-12 md:h-16 md:w-16 text-white/80" />
+                            <FontAwesomeIcon icon={faFilm} className="h-12 w-12 md:h-16 md:w-16 text-white/80" />
                           </div>
                         )}
                         {item.type === 'image' && (
                             <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/40 transition-colors">
-                                <FontAwesomeIcon icon={faImage} className="h-12 w-12 md:h-16 md:w-16 text-white/80" />
+                                <FontAwesomeIcon icon={faPalette} className="h-12 w-12 md:h-16 md:w-16 text-white/80" />
                             </div>
                         )}
                       </div>
