@@ -52,7 +52,7 @@ function AdminPage() {
 
   if (isUserLoading || !user) {
     return (
-        <div className="flex h-full w-full items-center justify-center">
+        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-background">
             <Preloader isVisible={true} />
         </div>
     );

@@ -7,17 +7,23 @@ import animationData from '@/lib/preloader-animation.json';
 
 interface PreloaderProps {
   isVisible: boolean;
+  isFullScreen?: boolean;
 }
 
-const Preloader: React.FC<PreloaderProps> = ({ isVisible }) => {
+const Preloader: React.FC<PreloaderProps> = ({ isVisible, isFullScreen = false }) => {
+  const containerClasses = isFullScreen
+    ? "fixed inset-0 z-[200] flex items-center justify-center"
+    : "flex items-center justify-center";
+
   return (
     <AnimatePresence>
       {isVisible && (
         <motion.div
-          className="fixed inset-0 z-[200] flex items-center justify-center bg-background"
-          initial={{ opacity: 1 }}
+          className={containerClasses}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 0.5 }}
+          transition={{ duration: 0.3 }}
         >
           <div className="w-48 h-48">
             <Lottie animationData={animationData} loop={true} />
