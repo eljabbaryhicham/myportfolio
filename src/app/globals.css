@@ -207,5 +207,4 @@
 
 .animate-shake {
   animation: shake 1.5s ease-in-out infinite;
-  animation-delay: 2s;
 }
