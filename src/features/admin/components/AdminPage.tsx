@@ -53,7 +53,7 @@ function AdminPage() {
 
   return (
     <div className="p-[5%] h-full flex flex-col">
-      <div className="container mx-auto px-0 flex flex-col h-full">
+      <div className="container mx-auto px-0 flex flex-col h-full min-h-0">
         <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4 text-center">
           <div className="text-center md:text-left">
             <h1 className="text-2xl md:text-4xl font-bold tracking-tight">Admin Panel</h1>
@@ -69,7 +69,7 @@ function AdminPage() {
           </div>
         </div>
 
-        <Tabs defaultValue="projects" className="flex-1 flex flex-col">
+        <Tabs defaultValue="projects" className="flex-1 flex flex-col min-h-0">
             <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger value="projects">Projects</TabsTrigger>
                 <TabsTrigger value="contact">Contact</TabsTrigger>
@@ -77,7 +77,7 @@ function AdminPage() {
             <TabsContent value="projects" className="flex-1 overflow-auto mt-4">
                 <ProjectAdmin />
             </TabsContent>
-            <TabsContent value="contact" className="flex-1 overflow-auto mt-4">
+            <TabsContent value="contact" className="flex-1 overflow-hidden mt-4">
                 <ContactAdmin />
             </TabsContent>
         </Tabs>
