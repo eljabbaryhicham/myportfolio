@@ -74,10 +74,10 @@ export default function ContactPage() {
   };
 
   const contactLinks = contactInfo ? [
-    { icon: faEnvelope, label: 'Email', value: contactInfo.email, href: `mailto:${contactInfo.email}`, color: 'text-blue-300' },
-    { icon: faBehance, label: 'Behance', value: '@BeLofted', href: contactInfo.behanceUrl, color: 'text-purple-300' },
-    { icon: faLinkedin, label: 'LinkedIn', value: 'Hicham Eljabbary', href: contactInfo.linkedinUrl, color: 'text-sky-300' },
-    { icon: FiverrIcon, label: 'Fiverr', value: '@BeLofted', href: contactInfo.fiverrUrl, color: 'text-green-300' },
+    { icon: faEnvelope, label: 'Email', value: contactInfo.email, href: `mailto:${contactInfo.email}`, color: 'hover:text-blue-300' },
+    { icon: faBehance, label: 'Behance', value: '@BeLofted', href: contactInfo.behanceUrl, color: 'hover:text-purple-300' },
+    { icon: faLinkedin, label: 'LinkedIn', value: 'Hicham Eljabbary', href: contactInfo.linkedinUrl, color: 'hover:text-sky-300' },
+    { icon: FiverrIcon, label: 'Fiverr', value: '@BeLofted', href: contactInfo.fiverrUrl, color: 'hover:text-green-300' },
   ] : [];
 
   const socialLinks = contactInfo ? [
@@ -108,7 +108,7 @@ export default function ContactPage() {
                 <div className="w-full md:w-1/2">
                   <Card className="glass-effect p-6 flex flex-col h-full">
                     <CardContent className="flex flex-col items-center text-center p-0">
-                      <Avatar className="border-2 border-primary mb-4" style={{ width: '80px', height: '80px' }}>
+                      <Avatar className="border-2 border-white mb-4" style={{ width: '80px', height: '80px' }}>
                         <AvatarImage src={contactInfo.avatarUrl} alt={contactInfo.name} />
                         <AvatarFallback>{contactInfo.name?.substring(0, 2)}</AvatarFallback>
                       </Avatar>
@@ -122,7 +122,7 @@ export default function ContactPage() {
                             {contactLinks.map((link) => (
                             link.href && (
                                 <Link href={link.href} key={link.label} className="flex items-center group" target="_blank" rel="noopener noreferrer">
-                                    <div className={cn("w-12 h-12 flex-shrink-0 rounded-full flex items-center justify-center glass-effect", link.color)}>
+                                    <div className={cn("w-12 h-12 flex-shrink-0 rounded-full flex items-center justify-center glass-effect text-white transition-colors duration-300", link.color)}>
                                         <Icon icon={link.icon} className="w-6 h-6" />
                                     </div>
                                     <div className="ml-4 text-left">
@@ -138,12 +138,12 @@ export default function ContactPage() {
                       {contactInfo.whatsApp && (
                         <>
                           <Separator className="my-4 bg-white/20" />
-                          <Button asChild className="w-full h-24 bg-gradient-to-r from-green-500 to-emerald-600 text-white text-lg">
-                              <Link href={`https://wa.me/${contactInfo.whatsApp.replace(/\\D/g, '')}`} target="_blank" rel="noopener noreferrer">
-                                  <FontAwesomeIcon icon={faMobileScreenButton} className="mr-3 h-8 w-8" />
+                          <Button asChild className="w-full bg-gradient-to-r from-green-500 to-emerald-600 text-white">
+                              <Link href={`https://wa.me/${contactInfo.whatsApp.replace(/\\D/g, '')}`} target="_blank" rel="noopener noreferrer" className="py-3">
+                                  <FontAwesomeIcon icon={faMobileScreenButton} className="mr-3 h-6 w-6" />
                                   <div>
-                                      <p className="text-base font-light">Make a deal on WhatsApp</p>
-                                      <p className="font-bold text-xl">{contactInfo.whatsApp}</p>
+                                      <p className="text-sm font-light">Make a deal on WhatsApp</p>
+                                      <p className="font-semibold text-base">{contactInfo.whatsApp}</p>
                                   </div>
                               </Link>
                           </Button>
@@ -233,3 +233,5 @@ export default function ContactPage() {
     </div>
   );
 }
+
+    
