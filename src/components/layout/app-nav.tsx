@@ -9,7 +9,8 @@ import { motion } from "framer-motion";
 import React from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faHouse, faImage, faCircleInfo, faEnvelope, faShieldHalved, faCat } from "@fortawesome/free-solid-svg-icons";
+import { faHouse, faImage, faCircleInfo, faEnvelope, faShieldHalved } from "@fortawesome/free-solid-svg-icons";
+import Logo from "../logo";
 
 const navItems = [
   { href: "/", label: "Home", icon: faHouse, public: true },
@@ -79,7 +80,7 @@ export function AppNav() {
         "flex h-full flex-row md:flex-col items-center justify-between rounded-lg border border-border/50 px-4 py-2 md:p-8 glass-effect"
         )}>
         <Link href="/" className="hidden md:flex items-center gap-2 text-primary">
-          <FontAwesomeIcon icon={faCat} className="h-8 w-8" />
+          <Logo className="h-8 w-auto" />
         </Link>
         <nav className="flex flex-row md:flex-col items-center justify-around md:justify-center w-full md:w-auto md:gap-8">
           {visibleNavItems.map((item) => {
