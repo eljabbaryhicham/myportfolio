@@ -139,7 +139,7 @@ export default function ContactPage() {
                         <>
                           <Separator className="my-4 bg-white/20" />
                           <Button asChild className="bg-gradient-to-r from-green-500 to-emerald-600 text-white">
-                              <Link href={`https://wa.me/${contactInfo.whatsApp.replace(/\\D/g, '')}`} target="_blank" rel="noopener noreferrer" className="py-2 px-4">
+                              <Link href={`https://wa.me/${contactInfo.whatsApp.replace(/\\D/g, '')}`} target="_blank" rel="noopener noreferrer" className="py-4 px-6">
                                   <FontAwesomeIcon icon={faWhatsapp} className="mr-3 h-6 w-6" />
                                   <div>
                                       <p className="text-sm font-light">WhatsApp</p>
@@ -235,4 +235,6 @@ export default function ContactPage() {
 }
 
     
+    
+
     
