@@ -47,7 +47,7 @@ const sendContactEmailFlow = ai.defineFlow(
     console.log('Received contact form submission:', input);
     
     try {
-      const { data, error } = await resend.emails.send({
+      const sendAdminEmail = resend.emails.send({
         from: `Contact Form <${FROM_EMAIL}>`,
         to: [TO_EMAIL],
         subject: `New Message from ${input.name}`,
@@ -61,12 +61,39 @@ const sendContactEmailFlow = ai.defineFlow(
         `,
       });
 
-      if (error) {
-        console.error('Error sending email:', error);
-        return { success: false, message: 'Failed to send email.' };
+      const sendUserConfirmation = resend.emails.send({
+        from: `Support <${FROM_EMAIL}>`,
+        to: [input.email],
+        subject: 'Your Message Has Been Received',
+        html: `
+          <p>Hello ${input.name},</p>
+          <p>Thank you for contacting us. We have successfully received your message and will get back to you as soon as possible.</p>
+          <p>Here is a copy of your message:</p>
+          <blockquote style="border-left: 2px solid #ccc; padding-left: 1rem; margin-left: 0;">
+            <p>${input.message}</p>
+          </blockquote>
+          <p>Best regards,<br/>Support</p>
+        `,
+      });
+
+      const [adminEmailResponse, userEmailResponse] = await Promise.all([
+        sendAdminEmail,
+        sendUserConfirmation
+      ]);
+
+      if (adminEmailResponse.error) {
+        console.error('Error sending admin email:', adminEmailResponse.error);
+        return { success: false, message: 'Failed to send email to admin.' };
       }
 
-      console.log('Email sent successfully:', data);
+      if (userEmailResponse.error) {
+        console.error('Error sending confirmation email to user:', userEmailResponse.error);
+        // Admin email was sent, so it's a partial success. We can still inform the user on the frontend.
+        // Or decide on a different strategy. For now, we'll consider it a failure.
+        return { success: false, message: 'Failed to send confirmation email.' };
+      }
+
+      console.log('Emails sent successfully');
       return { success: true, message: 'Email sent successfully.' };
 
     } catch (e) {
