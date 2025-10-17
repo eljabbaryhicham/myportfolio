@@ -1,3 +1,4 @@
+
 'use server';
 /**
  * @fileOverview A Genkit flow for sending a contact form email.
@@ -11,8 +12,8 @@ import { Resend } from 'resend';
 import { ContactFormInput, ContactFormInputSchema } from '@/features/contact/data/contact-form-types';
 
 
-// IMPORTANT: Replace with your actual email address.
-const TO_EMAIL = 'your-email@example.com';
+// Set the recipient email address.
+const TO_EMAIL = 'eljabbaryhicham@gmail.com';
 const FROM_EMAIL = 'onboarding@resend.dev'; // Resend requires this for free tier
 
 // Initialize Resend. You'll need to set up your API key.
@@ -55,6 +56,7 @@ const sendContactEmailFlow = ai.defineFlow(
         from: `Contact Form <${FROM_EMAIL}>`,
         to: [TO_EMAIL],
         subject: `New Message from ${input.name}`,
+        reply_to: input.email,
         html: `
           <p>You received a new message from your website's contact form.</p>
           <p><strong>Name:</strong> ${input.name}</p>
