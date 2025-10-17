@@ -74,10 +74,10 @@ export default function ContactPage() {
   };
 
   const contactLinks = contactInfo ? [
-    { icon: faEnvelope, label: 'Email', value: contactInfo.email, href: `mailto:${contactInfo.email}`, color: 'bg-blue-500/20 text-blue-300' },
-    { icon: faBehance, label: 'Behance', value: '@BeLofted', href: contactInfo.behanceUrl, color: 'bg-purple-500/20 text-purple-300' },
-    { icon: faLinkedin, label: 'LinkedIn', value: 'Hicham Eljabbary', href: contactInfo.linkedinUrl, color: 'bg-sky-500/20 text-sky-300' },
-    { icon: FiverrIcon, label: 'Fiverr', value: '@BeLofted', href: contactInfo.fiverrUrl, color: 'bg-green-500/20 text-green-300' },
+    { icon: faEnvelope, label: 'Email', value: contactInfo.email, href: `mailto:${contactInfo.email}`, color: 'text-blue-300' },
+    { icon: faBehance, label: 'Behance', value: '@BeLofted', href: contactInfo.behanceUrl, color: 'text-purple-300' },
+    { icon: faLinkedin, label: 'LinkedIn', value: 'Hicham Eljabbary', href: contactInfo.linkedinUrl, color: 'text-sky-300' },
+    { icon: FiverrIcon, label: 'Fiverr', value: '@BeLofted', href: contactInfo.fiverrUrl, color: 'text-green-300' },
   ] : [];
 
   const socialLinks = contactInfo ? [
@@ -122,7 +122,7 @@ export default function ContactPage() {
                             {contactLinks.map((link) => (
                             link.href && (
                                 <Link href={link.href} key={link.label} className="flex items-center group" target="_blank" rel="noopener noreferrer">
-                                    <div className={`w-12 h-12 flex-shrink-0 rounded-full flex items-center justify-center ${link.color}`}>
+                                    <div className={cn("w-12 h-12 flex-shrink-0 rounded-full flex items-center justify-center glass-effect", link.color)}>
                                         <Icon icon={link.icon} className="w-6 h-6" />
                                     </div>
                                     <div className="ml-4 text-left">
@@ -139,7 +139,7 @@ export default function ContactPage() {
                         <>
                           <Separator className="my-4 bg-white/20" />
                           <Button asChild className="w-full h-24 bg-gradient-to-r from-green-500 to-emerald-600 text-white text-lg">
-                              <Link href={`https://wa.me/${contactInfo.whatsApp.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer">
+                              <Link href={`https://wa.me/${contactInfo.whatsApp.replace(/\\D/g, '')}`} target="_blank" rel="noopener noreferrer">
                                   <FontAwesomeIcon icon={faMobileScreenButton} className="mr-3 h-8 w-8" />
                                   <div>
                                       <p className="text-base font-light">Make a deal on WhatsApp</p>
