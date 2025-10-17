@@ -11,9 +11,10 @@ import type PlyrInstance from "plyr";
 interface VideoPlayerProps extends PlyrProps {
   source: PlyrSource;
   innerRef?: React.Ref<PlyrInstance>;
+  onReady?: (player: PlyrInstance) => void;
 }
 
-const VideoPlayer = ({ source, innerRef }: VideoPlayerProps) => {
+const VideoPlayer = ({ source, innerRef, onReady }: VideoPlayerProps) => {
   if (!source) return null;
 
   const qualities = source.sources.map(s => (s as any).size).filter(Boolean);
@@ -56,6 +57,7 @@ const VideoPlayer = ({ source, innerRef }: VideoPlayerProps) => {
           enabled: true,
         }
       }}
+      onReady={onReady}
     />
   );
 };

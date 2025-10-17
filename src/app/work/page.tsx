@@ -36,15 +36,9 @@ const VideoPlayer = dynamic(() => import('@/components/video-player'), {
 });
 
 const ClientOnlyVideoPlayer = (
-  props: PlyrProps & { innerRef: React.Ref<Plyr>; onReady?: () => void }
+  props: PlyrProps & { innerRef: React.Ref<Plyr>; onReady?: (player: Plyr) => void }
 ) => {
-  const handleReady = (player: Plyr) => {
-    if (props.onReady) {
-      props.onReady();
-    }
-  };
-  // @ts-ignore
-  return <VideoPlayer {...props} onReady={handleReady} />;
+  return <VideoPlayer {...props} />;
 };
 ClientOnlyVideoPlayer.displayName = 'ClientOnlyVideoPlayer';
 
