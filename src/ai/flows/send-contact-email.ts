@@ -3,20 +3,13 @@
  * @fileOverview A Genkit flow for sending a contact form email.
  *
  * - sendContactEmail - A function that handles sending the contact email.
- * - ContactFormInput - The input type for the sendContactEmail function.
  */
 
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
 import { Resend } from 'resend';
+import { ContactFormInput, ContactFormInputSchema } from '@/features/contact/data/contact-form-types';
 
-// Define the schema for the contact form input
-export const ContactFormInputSchema = z.object({
-  name: z.string().describe('The name of the person sending the message.'),
-  email: z.string().email().describe('The email address of the sender.'),
-  message: z.string().describe('The content of the message.'),
-});
-export type ContactFormInput = z.infer<typeof ContactFormInputSchema>;
 
 // IMPORTANT: Replace with your actual email address.
 const TO_EMAIL = 'your-email@example.com';

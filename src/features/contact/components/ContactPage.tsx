@@ -30,13 +30,10 @@ import { cn } from '@/lib/utils';
 import Preloader from '@/components/preloader';
 import { sendContactEmail } from '@/ai/flows/send-contact-email';
 import { useState } from 'react';
+import { ContactFormInputSchema, type ContactFormInput } from '@/features/contact/data/contact-form-types';
 
 
-const formSchema = z.object({
-  name: z.string().min(2, { message: 'Name must be at least 2 characters.' }),
-  email: z.string().email({ message: 'Please enter a valid email.' }),
-  message: z.string().min(10, { message: 'Message must be at least 10 characters.' }),
-});
+const formSchema = ContactFormInputSchema;
 
 type ContactFormValues = z.infer<typeof formSchema>;
 
