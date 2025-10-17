@@ -18,7 +18,7 @@ import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { useDoc, useFirestore, useMemoFirebase, setDocumentNonBlocking } from '@/firebase';
 import { doc } from 'firebase/firestore';
-import type { ContactInfo } from '@/lib/contact-data';
+import type { ContactInfo } from '@/lib/data-types';
 import { useEffect } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 

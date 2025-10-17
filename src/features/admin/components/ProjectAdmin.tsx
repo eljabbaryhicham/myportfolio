@@ -25,8 +25,7 @@ import { useToast } from '@/hooks/use-toast';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { addDocumentNonBlocking, deleteDocumentNonBlocking, setDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { collection, doc, writeBatch } from 'firebase/firestore';
-import { defaultPortfolioItems } from '@/features/portfolio/data/portfolio-data';
-import type { PortfolioItem } from '@/lib/portfolio-data';
+import { defaultPortfolioItems, type PortfolioItem } from '@/features/portfolio/data/portfolio-data';
 import { cn } from '@/lib/utils';
 
 function ProjectAdmin() {

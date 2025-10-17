@@ -1,6 +1,20 @@
 
-import { placeholderImages } from './placeholder-images';
-import type { PortfolioItem } from '@/lib/portfolio-data';
+import { placeholderImages } from '@/lib/placeholder-images';
+
+export interface PortfolioItem {
+  id: string;
+  type: 'image' | 'video';
+  title: string;
+  description: string;
+  thumbnailUrl: string;
+  thumbnailHint: string;
+  sourceUrl?: string; // For images
+  sources?: { src: string; size: number }[]; // For videos
+  featured?: boolean;
+  details?: string;
+  order?: number;
+}
+
 
 export const defaultPortfolioItems: PortfolioItem[] = [
   {

@@ -25,7 +25,7 @@ import rehypeRaw from 'rehype-raw';
 import rehypeSanitize, { defaultSchema } from 'rehype-sanitize';
 import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection, query, orderBy } from 'firebase/firestore';
-import { PortfolioItem } from '@/lib/portfolio-data';
+import { PortfolioItem } from '@/features/portfolio/data/portfolio-data';
 
 const VideoPlayer = dynamic(() => import('@/components/video-player'), {
   ssr: false,
@@ -209,7 +209,7 @@ export default function WorkPage() {
                     <div key={item.id} className="p-[2px] rounded-lg glass-effect">
                       <div
                         className={cn(
-                          'group relative cursor-pointer overflow-hidden rounded-lg transition-all duration-300 hover:scale-[1.02] aspect-square'
+                          'group relative cursor-pointer overflow-hidden rounded-md transition-all duration-300 hover:scale-[1.02] aspect-square'
                         )}
                         onClick={() => setSelectedItem(item)}
                       >
@@ -381,5 +381,3 @@ export default function WorkPage() {
     </>
   );
 }
-
-    

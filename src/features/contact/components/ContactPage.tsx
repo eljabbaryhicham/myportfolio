@@ -1,4 +1,3 @@
-
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -22,7 +21,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useDoc, useFirestore, useMemoFirebase } from '@/firebase';
 import { doc } from 'firebase/firestore';
-import type { ContactInfo } from '@/lib/contact-data';
+import type { ContactInfo } from '@/lib/data-types';
 import { Separator } from '@/components/ui/separator';
 
 
@@ -221,5 +220,3 @@ export default function ContactPage() {
     </div>
   );
 }
-
-    

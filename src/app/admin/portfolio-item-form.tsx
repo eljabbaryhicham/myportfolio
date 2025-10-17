@@ -31,7 +31,7 @@ import {
   DialogDescription,
   DialogClose,
 } from '@/components/ui/dialog';
-import type { PortfolioItem } from '@/lib/portfolio-data';
+import type { PortfolioItem } from '@/features/portfolio/data/portfolio-data';
 import { useEffect } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { X } from 'lucide-react';
