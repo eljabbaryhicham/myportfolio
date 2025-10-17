@@ -46,17 +46,6 @@ const VideoPlayer = ({ source, innerRef, onReady }: VideoPlayerProps) => {
       source={source}
       options={{
         autoplay: false,
-        controls: [
-            'play-large', 
-            'play', 
-            'progress', 
-            'current-time', 
-            'mute', 
-            'volume', 
-            'captions', 
-            'settings', 
-            'pip', 'airplay', 'fullscreen'
-        ],
         poster: source.poster,
         previewThumbnails: {
           enabled: true,
