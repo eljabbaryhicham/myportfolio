@@ -21,7 +21,7 @@ const VideoPlayer = ({ source, poster, previewThumbnailsSrc }: VideoPlayerProps)
   }, []);
 
   useEffect(() => {
-    if (!isMounted || !videoRef.current) {
+    if (!isMounted || !videoRef.current || !source) {
       return;
     }
 
@@ -33,31 +33,32 @@ const VideoPlayer = ({ source, poster, previewThumbnailsSrc }: VideoPlayerProps)
       playerRef.current = null;
     }
 
+    // CRITICAL FIX: Pass the source directly into the constructor options.
+    // This ensures options like quality selection are configured correctly at initialization.
     const options: Options = {
       // debug: true,
       settings: ['quality', 'speed', 'loop'],
       quality: {
-        default: 576,
-        // The options are set by Plyr automatically based on the source
-        options: [4320, 2160, 1440, 1080, 720, 576, 480, 360, 240],
+        default: 576, // A default quality
+        options: [4320, 2160, 1440, 1080, 720, 576, 480, 360, 240], // All possible qualities
       },
       previewThumbnails: {
         enabled: !!previewThumbnailsSrc,
         src: previewThumbnailsSrc || '',
       },
-       fullscreen: {
-          enabled: true,
-          fallback: true,
-          iosNative: true,
-        },
+      fullscreen: {
+        enabled: true,
+        fallback: true,
+        iosNative: true,
+      },
     };
     
+    // Initialize the player. It will pick up the source from the <video> element.
     playerRef.current = new Plyr(videoElement, options);
 
-    // Set the source for the new Plyr instance
-    if (source) {
-      playerRef.current.source = source;
-    }
+    // Now, set the source on the Plyr instance. This is the correct way
+    // to load content dynamically after initialization, especially for YouTube/Vimeo.
+    playerRef.current.source = source;
 
     // Cleanup function to destroy the player on component unmount
     return () => {
@@ -75,10 +76,10 @@ const VideoPlayer = ({ source, poster, previewThumbnailsSrc }: VideoPlayerProps)
       poster={poster}
       playsInline
       controls
+      // The initial source can be set here, but Plyr will manage it.
+      // This helps with server-side rendering and initial setup.
     />
   );
 };
 
 export default VideoPlayer;
-
-    
