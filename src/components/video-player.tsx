@@ -50,7 +50,6 @@ const VideoPlayer = ({ source, innerRef }: VideoPlayerProps) => {
           enabled: true,
           fallback: true,
           iosNative: true,
-          container: 'body',
         }
       }}
     />
