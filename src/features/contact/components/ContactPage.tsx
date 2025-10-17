@@ -24,8 +24,9 @@ import { doc } from 'firebase/firestore';
 import type { ContactInfo } from '@/lib/data-types';
 import { Separator } from '@/components/ui/separator';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEnvelope, faLink, faMobileScreenButton } from '@fortawesome/free-solid-svg-icons';
+import { faEnvelope, faMobileScreenButton } from '@fortawesome/free-solid-svg-icons';
 import { Icon } from '@/components/icon';
+import { faLinkedin, faBehance, faInstagram, faFacebook, faTwitter } from '@fortawesome/free-brands-svg-icons';
 
 
 const formSchema = z.object({
@@ -36,12 +37,6 @@ const formSchema = z.object({
 
 type ContactFormValues = z.infer<typeof formSchema>;
 
-
-const BehanceIcon = (props: React.SVGProps<SVGSVGElement>) => (
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="currentColor" {...props}>
-        <path d="M13.25 10.151c.827 0 1.5-.673 1.5-1.5s-.673-1.5-1.5-1.5-1.5.673-1.5 1.5.673 1.5 1.5 1.5zm-1.894 4.318h3.389c-.288 1.458-1.745 2.531-3.389 2.531-1.933 0-3.5-1.567-3.5-3.5s1.567-3.5 3.5-3.5c1.801 0 3.275 1.365 3.469 3.106h2.029c-.21-2.835-2.583-5.106-5.498-5.106-3.029 0-5.5 2.471-5.5 5.5s2.471 5.5 5.5 5.5c2.721 0 4.977-1.996 5.426-4.531h-2.028c-.379 1.488-1.758 2.531-3.398 2.531zM17.5 7h-4v1h4V7z"/>
-    </svg>
-)
 
 const FiverrIcon = (props: React.SVGProps<SVGSVGElement>) => (
     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="currentColor" {...props}>
@@ -79,16 +74,16 @@ export default function ContactPage() {
 
   const contactLinks = contactInfo ? [
     { icon: faEnvelope, label: 'Email', value: contactInfo.email, href: `mailto:${contactInfo.email}`, color: 'bg-blue-500/20 text-blue-300' },
-    { icon: BehanceIcon, label: 'Behance', value: '@BeLofted', href: contactInfo.behanceUrl, color: 'bg-purple-500/20 text-purple-300' },
-    { icon: faLink, label: 'LinkedIn', value: 'Hicham Eljabbary', href: contactInfo.linkedinUrl, color: 'bg-sky-500/20 text-sky-300' },
+    { icon: faBehance, label: 'Behance', value: '@BeLofted', href: contactInfo.behanceUrl, color: 'bg-purple-500/20 text-purple-300' },
+    { icon: faLinkedin, label: 'LinkedIn', value: 'Hicham Eljabbary', href: contactInfo.linkedinUrl, color: 'bg-sky-500/20 text-sky-300' },
     { icon: FiverrIcon, label: 'Fiverr', value: '@BeLofted', href: contactInfo.fiverrUrl, color: 'bg-green-500/20 text-green-300' },
   ] : [];
 
   const socialLinks = contactInfo ? [
-    { id: 'instagram', href: contactInfo.instagramUrl, color: 'bg-pink-500/80 hover:bg-pink-500' },
-    { id: 'facebook', href: contactInfo.facebookUrl, color: 'bg-blue-600/80 hover:bg-blue-600' },
-    { id: 'twitter', href: contactInfo.twitterUrl, color: 'bg-sky-500/80 hover:bg-sky-500' },
-  ].filter((link, index, self) => link.href && self.findIndex(l => l.id === link.id) === index) : [];
+    { id: 'instagram', href: contactInfo.instagramUrl, icon: faInstagram, color: 'bg-pink-500/80 hover:bg-pink-500' },
+    { id: 'facebook', href: contactInfo.facebookUrl, icon: faFacebook, color: 'bg-blue-600/80 hover:bg-blue-600' },
+    { id: 'twitter', href: contactInfo.twitterUrl, icon: faTwitter, color: 'bg-sky-500/80 hover:bg-sky-500' },
+  ].filter(link => link.href) : [];
 
 
   return (
@@ -142,7 +137,7 @@ export default function ContactPage() {
                       {contactInfo.whatsApp && (
                         <>
                           <Separator className="my-4 bg-white/20" />
-                          <Button asChild className="w-full h-24 bg-gradient-to-r from-cyan-500 to-blue-500 text-white text-lg">
+                          <Button asChild className="w-full h-24 bg-gradient-to-r from-green-500 to-emerald-600 text-white text-lg">
                               <Link href={`https://wa.me/${contactInfo.whatsApp.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer">
                                   <FontAwesomeIcon icon={faMobileScreenButton} className="mr-3 h-8 w-8" />
                                   <div>
@@ -201,7 +196,7 @@ export default function ContactPage() {
                               </FormItem>
                             )}
                           />
-                          <Button type="submit" size="lg" className="w-full bg-gradient-to-r from-cyan-500 to-blue-500 text-white">
+                          <Button type="submit" size="lg" className="w-full glass-effect">
                             Send Message
                           </Button>
                         </form>
@@ -215,7 +210,7 @@ export default function ContactPage() {
               <div className="flex items-center justify-center gap-4 mt-8">
                 {socialLinks.map((social) => (
                   social.href && <Link href={social.href} key={social.id} className={`w-12 h-12 rounded-full flex items-center justify-center text-white ${social.color} transition-all duration-300 hover:scale-110`} target="_blank" rel="noopener noreferrer">
-                    <FontAwesomeIcon icon={faLink} className="w-6 h-6" />
+                    <FontAwesomeIcon icon={social.icon} className="w-6 h-6" />
                   </Link>
                 ))}
               </div>
