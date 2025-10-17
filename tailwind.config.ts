@@ -73,9 +73,9 @@ export default {
         ring: 'hsl(var(--ring))',
       },
       borderRadius: {
-        lg: '1rem',
-        md: 'calc(1rem - 2px)',
-        sm: 'calc(1rem - 4px)',
+        lg: `var(--radius)`,
+        md: `calc(var(--radius) - 2px)`,
+        sm: 'calc(var(--radius) - 4px)',
       },
       keyframes: {
         'accordion-down': {

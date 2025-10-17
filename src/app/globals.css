@@ -40,6 +40,8 @@
     --input: 220 20% 90%;
     --ring: 0 80% 53%;
 
+    --radius: 1rem;
+
     --plyr-color-main: hsl(var(--primary));
     --plyr-video-background: transparent;
   }
