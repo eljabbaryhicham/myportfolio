@@ -202,90 +202,100 @@ function ProjectAdmin() {
   }
 
   return (
-    <div className="flex-1 flex flex-col">
-        <div className="flex items-center gap-2 md:gap-4 flex-wrap justify-end mb-4">
-            {!isLoading && items?.length === 0 && (
-                <Button onClick={handleSeedData} variant="secondary">
-                    <UploadCloud className="mr-2 h-4 w-4" />
-                    Seed Default Projects
-                </Button>
-            )}
-            <Button onClick={handleAddItem}>
-              <PlusCircle className="mr-2 h-4 w-4" />
-              Add New
-            </Button>
-          </div>
+    <div className="flex-1 flex flex-col h-full">
       <div className="flex-1 border rounded-lg overflow-hidden glass-effect">
         <ScrollArea className="h-full">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-[40px] text-center"></TableHead>
-                <TableHead className="w-[80px] text-center">Image</TableHead>
-                <TableHead className="text-center">Title</TableHead>
-                <TableHead className="hidden md:table-cell text-center">Type</TableHead>
-                <TableHead className="hidden lg:table-cell text-center">Description</TableHead>
-                <TableHead className="text-center w-[50px]">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {isLoading && (
+          <div className="p-6">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h2 className="text-xl font-bold">Portfolio Projects</h2>
+                <p className="text-muted-foreground">
+                  Add, edit, and reorder the projects in your portfolio.
+                </p>
+              </div>
+              <div className="flex items-center gap-2 md:gap-4 flex-wrap justify-end">
+                {!isLoading && items?.length === 0 && (
+                  <Button onClick={handleSeedData} variant="secondary" size="sm">
+                    <UploadCloud className="mr-2 h-4 w-4" />
+                    Seed Projects
+                  </Button>
+                )}
+                <Button onClick={handleAddItem} size="sm">
+                  <PlusCircle className="mr-2 h-4 w-4" />
+                  Add New
+                </Button>
+              </div>
+            </div>
+            <Table>
+              <TableHeader>
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center">Loading portfolio...</TableCell>
+                  <TableHead className="w-[40px] text-center"></TableHead>
+                  <TableHead className="w-[80px] text-center">Image</TableHead>
+                  <TableHead className="text-center">Title</TableHead>
+                  <TableHead className="hidden md:table-cell text-center">Type</TableHead>
+                  <TableHead className="hidden lg:table-cell text-center">Description</TableHead>
+                  <TableHead className="text-center w-[50px]">Actions</TableHead>
                 </TableRow>
-              )}
-              {!isLoading && sortedItems && sortedItems.map((item) => (
-                <TableRow 
-                  key={item.id} 
-                  draggable
-                  onDragStart={(e) => {
-                    draggingItem.current = item.id;
-                    e.currentTarget.classList.add('dragging');
-                  }}
-                  onDragEnter={(e) => handleDragEnter(e, item.id)}
-                  onDragEnd={handleDragEnd}
-                  onDragOver={(e) => e.preventDefault()}
-                  className={cn("border-b-0 transition-all cursor-grab relative")}
-                >
-                  <TableCell className="text-center">
-                    <GripVertical className="h-5 w-5 text-foreground/50" />
-                  </TableCell>
-                  <TableCell className="flex justify-center">
-                    <Image
-                      src={item.thumbnailUrl}
-                      alt={item.title}
-                      width={50}
-                      height={50}
-                      className="object-cover rounded-md"
-                    />
-                  </TableCell>
-                  <TableCell className="font-medium max-w-[100px] md:max-w-xs truncate text-center">{item.title}</TableCell>
-                  <TableCell className="hidden md:table-cell text-center">{item.type}</TableCell>
-                  <TableCell className="hidden lg:table-cell max-w-xs truncate text-center">{item.description}</TableCell>
-                  <TableCell className="text-center">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon">
-                          <MoreHorizontal />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent className="glass-effect">
-                        <DropdownMenuItem onClick={() => handleEditItem(item)} className="justify-center">
-                          Edit
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onClick={() => handleDeleteItem(item.id)}
-                          className="text-destructive justify-center"
-                        >
-                          Delete
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {isLoading && (
+                  <TableRow>
+                    <TableCell colSpan={6} className="text-center">Loading portfolio...</TableCell>
+                  </TableRow>
+                )}
+                {!isLoading && sortedItems && sortedItems.map((item) => (
+                  <TableRow 
+                    key={item.id} 
+                    draggable
+                    onDragStart={(e) => {
+                      draggingItem.current = item.id;
+                      e.currentTarget.classList.add('dragging');
+                    }}
+                    onDragEnter={(e) => handleDragEnter(e, item.id)}
+                    onDragEnd={handleDragEnd}
+                    onDragOver={(e) => e.preventDefault()}
+                    className={cn("border-b-0 transition-all cursor-grab relative")}
+                  >
+                    <TableCell className="text-center">
+                      <GripVertical className="h-5 w-5 text-foreground/50" />
+                    </TableCell>
+                    <TableCell className="flex justify-center">
+                      <Image
+                        src={item.thumbnailUrl}
+                        alt={item.title}
+                        width={50}
+                        height={50}
+                        className="object-cover rounded-md"
+                      />
+                    </TableCell>
+                    <TableCell className="font-medium max-w-[100px] md:max-w-xs truncate text-center">{item.title}</TableCell>
+                    <TableCell className="hidden md:table-cell text-center">{item.type}</TableCell>
+                    <TableCell className="hidden lg:table-cell max-w-xs truncate text-center">{item.description}</TableCell>
+                    <TableCell className="text-center">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon">
+                            <MoreHorizontal />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent className="glass-effect">
+                          <DropdownMenuItem onClick={() => handleEditItem(item)} className="justify-center">
+                            Edit
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={() => handleDeleteItem(item.id)}
+                            className="text-destructive justify-center"
+                          >
+                            Delete
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
         </ScrollArea>
       </div>
       <PortfolioItemFormSheet 
@@ -299,5 +309,3 @@ function ProjectAdmin() {
 }
 
 export default ProjectAdmin;
-
-    
