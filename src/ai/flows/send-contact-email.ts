@@ -63,7 +63,7 @@ const sendContactEmailFlow = ai.defineFlow(
                   
                   <div style="background-color: #374151; padding: 20px; border-radius: 8px;">
                     <p style="margin: 0 0 8px;"><strong>Name:</strong> ${input.name}</p>
-                    <p style="margin: 0 0 16px;"><strong>Email:</strong> <a href="mailto:${input.email}" style="color: #60a5fa; text-decoration: none;">${input.email}</a></p>
+                    <p style="margin: 0 0 16px;"><strong>Email:</strong> <a href="mailto:${input.email}" style="color: #f87171; text-decoration: none;">${input.email}</a></p>
                     <hr style="border: none; border-top: 1px solid #4b5563; margin: 16px 0;">
                     <p style="margin: 0 0 8px; font-weight: bold; color: #d1d5db;">Message:</p>
                     <p style="margin: 0; white-space: pre-wrap; word-wrap: break-word;">${input.message}</p>
