@@ -36,7 +36,7 @@ const VideoPlayer = dynamic(() => import('@/components/video-player'), {
 });
 
 const ClientOnlyVideoPlayer = (
-  props: PlyrProps & { innerRef: React.Ref<Plyr> }
+  props: PlyrProps & { innerRef: React.Ref<Plyr>, onReady: (player: Plyr) => void }
 ) => {
   return <VideoPlayer {...props} />;
 };
@@ -66,23 +66,6 @@ const PortfolioMedia = ({
     }
   }, [item]);
 
-  // Effect to handle the 'ready' event from the player
-  useEffect(() => {
-    const player = playerRef.current;
-    if (player) {
-      const handleReady = () => {
-        onVideoReady();
-      };
-      player.on('ready', handleReady);
-
-      // Cleanup
-      return () => {
-        player.off('ready', handleReady);
-      };
-    }
-  }, [playerRef, onVideoReady]);
-
-
   if (item.type === 'video' && item.sources && isVideoPlayerMounted) {
     return (
       <ClientOnlyVideoPlayer
@@ -96,6 +79,7 @@ const PortfolioMedia = ({
           })),
           poster: item.thumbnailUrl,
         }}
+        onReady={onVideoReady}
       />
     );
   }
@@ -428,6 +412,7 @@ export default function WorkPage() {
                                       sources: [{ src, type: 'video/mp4' }],
                                       poster: selectedItem.thumbnailUrl,
                                     }}
+                                    onReady={() => {}}
                                   />
                                 </div>
                               );
