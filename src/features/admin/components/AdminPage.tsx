@@ -70,14 +70,14 @@ function AdminPage() {
         </div>
 
         <Tabs defaultValue="projects" className="flex-1 flex flex-col min-h-0">
-            <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="projects">Projects</TabsTrigger>
-                <TabsTrigger value="contact">Contact</TabsTrigger>
+            <TabsList className="w-full">
+                <TabsTrigger value="projects" className="flex-1">Projects</TabsTrigger>
+                <TabsTrigger value="contact" className="flex-1">Contact</TabsTrigger>
             </TabsList>
             <TabsContent value="projects" className="flex-1 overflow-auto mt-4">
                 <ProjectAdmin />
             </TabsContent>
-            <TabsContent value="contact" className="flex-1 overflow-hidden mt-4">
+            <TabsContent value="contact" className="flex-1 overflow-auto mt-4">
                 <ContactAdmin />
             </TabsContent>
         </Tabs>
