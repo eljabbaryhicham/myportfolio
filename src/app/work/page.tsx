@@ -60,7 +60,55 @@ const PortfolioMedia = ({
     setIsPosterLoaded(false);
   }, [item.id]);
 
-  if (item.type === 'video' && item.sources) {
+  const videoSource = useMemo(() => {
+    const youtubeRegex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
+    const vimeoRegex = /(?:https?:\/\/)?(?:www\.)?vimeo\.com\/(?:channels\/(?:\w+\/)?|groups\/(?:[^\/]*)\/videos\/|album\/(?:\d+)\/video\/|)(\d+)/;
+
+    if (item.sourceUrl) {
+      const youtubeMatch = item.sourceUrl.match(youtubeRegex);
+      if (youtubeMatch && youtubeMatch[1]) {
+        return {
+          type: 'video',
+          sources: [{ src: youtubeMatch[1], provider: 'youtube' }],
+          poster: item.thumbnailUrl,
+        };
+      }
+
+      const vimeoMatch = item.sourceUrl.match(vimeoRegex);
+      if (vimeoMatch && vimeoMatch[1]) {
+        return {
+          type: 'video',
+          sources: [{ src: vimeoMatch[1], provider: 'vimeo' }],
+          poster: item.thumbnailUrl,
+        };
+      }
+      
+      // Fallback for direct .mp4 links or others
+      return {
+        type: 'video',
+        sources: [{ src: item.sourceUrl, type: 'video/mp4' }],
+        poster: item.thumbnailUrl,
+      };
+    }
+    
+    // Default to item.sources if sourceUrl is not present
+    if (item.sources) {
+        return {
+            type: 'video',
+            sources: item.sources.map(s => ({
+            src: s.src,
+            type: 'video/mp4',
+            size: s.size,
+            })),
+            poster: item.thumbnailUrl,
+        };
+    }
+
+    return null;
+  }, [item]);
+
+
+  if (item.type === 'video' && videoSource) {
     return (
       <div className="relative aspect-video bg-black flex items-center justify-center">
         {/* Hidden image to preload the poster and trigger onLoad */}
@@ -82,15 +130,7 @@ const PortfolioMedia = ({
         )}>
           <ClientOnlyVideoPlayer
             innerRef={playerRef}
-            source={{
-              type: 'video',
-              sources: item.sources.map(s => ({
-                src: s.src,
-                type: 'video/mp4',
-                size: s.size,
-              })),
-              poster: item.thumbnailUrl,
-            }}
+            source={videoSource}
           />
         </div>
       </div>
@@ -401,15 +441,37 @@ export default function WorkPage() {
                             video: ({node, ...props}) => {
                               const { src } = props;
                               if (!src) return null;
+                              
+                              const youtubeRegex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
+                              const vimeoRegex = /(?:https?:\/\/)?(?:www\.)?vimeo\.com\/(?:channels\/(?:\w+\/)?|groups\/(?:[^\/]*)\/videos\/|album\/(?:\d+)\/video\/|)(\d+)/;
+                              
+                              let videoSource = null;
+                              const youtubeMatch = src.match(youtubeRegex);
+                              if (youtubeMatch && youtubeMatch[1]) {
+                                videoSource = {
+                                  type: 'video',
+                                  sources: [{ src: youtubeMatch[1], provider: 'youtube' }],
+                                };
+                              } else {
+                                const vimeoMatch = src.match(vimeoRegex);
+                                if (vimeoMatch && vimeoMatch[1]) {
+                                  videoSource = {
+                                    type: 'video',
+                                    sources: [{ src: vimeoMatch[1], provider: 'vimeo' }],
+                                  };
+                                } else {
+                                  videoSource = {
+                                    type: 'video',
+                                    sources: [{ src, type: 'video/mp4' }],
+                                  };
+                                }
+                              }
+
                               return (
                                 <div className="w-full rounded-lg overflow-hidden my-4">
                                   <ClientOnlyVideoPlayer
                                     innerRef={detailsPlayerRef}
-                                    source={{
-                                      type: 'video',
-                                      sources: [{ src, type: 'video/mp4' }],
-                                      poster: selectedItem.thumbnailUrl,
-                                    }}
+                                    source={{...videoSource, poster: selectedItem.thumbnailUrl}}
                                   />
                                 </div>
                               );
