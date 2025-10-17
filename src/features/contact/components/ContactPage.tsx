@@ -109,12 +109,10 @@ export default function ContactPage() {
                 <div className="w-full md:w-1/2">
                   <Card className="glass-effect p-6 flex flex-col h-full">
                     <CardContent className="flex flex-col items-center text-center p-0">
-                      <div className="mb-4">
-                          <Avatar className="w-32 h-32 border-2 border-primary">
-                            <AvatarImage src={contactInfo.avatarUrl} alt={contactInfo.name} />
-                            <AvatarFallback>{contactInfo.name?.substring(0, 2)}</AvatarFallback>
-                          </Avatar>
-                      </div>
+                      <Avatar className="w-24 h-24 border-2 border-primary mb-4">
+                        <AvatarImage src={contactInfo.avatarUrl} alt={contactInfo.name} />
+                        <AvatarFallback>{contactInfo.name?.substring(0, 2)}</AvatarFallback>
+                      </Avatar>
                       <h3 className="text-xl font-bold">{contactInfo.name}</h3>
                       <p className="text-foreground/70">{contactInfo.title}</p>
 
