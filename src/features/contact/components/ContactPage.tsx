@@ -108,11 +108,11 @@ export default function ContactPage() {
                 <div className="w-full md:w-1/2">
                   <Card className="glass-effect p-6 flex flex-col h-full">
                     <CardContent className="flex flex-col items-center text-center p-0">
-                      <div className="w-[30%] mb-4">
-                        <Avatar className="w-full h-auto aspect-square border-2 border-primary">
-                          <AvatarImage src={contactInfo.avatarUrl} alt={contactInfo.name} />
-                          <AvatarFallback>{contactInfo.name?.substring(0, 2)}</AvatarFallback>
-                        </Avatar>
+                      <div className="mb-4">
+                          <Avatar className="w-24 h-24 border-2 border-primary">
+                            <AvatarImage src={contactInfo.avatarUrl} alt={contactInfo.name} />
+                            <AvatarFallback>{contactInfo.name?.substring(0, 2)}</AvatarFallback>
+                          </Avatar>
                       </div>
                       <h3 className="text-xl font-bold">{contactInfo.name}</h3>
                       <p className="text-foreground/70">{contactInfo.title}</p>
