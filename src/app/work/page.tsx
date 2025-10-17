@@ -244,13 +244,13 @@ export default function WorkPage() {
                           </p>
                         </div>
                         {item.type === 'video' && (
-                          <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/40 transition-colors">
-                            <FontAwesomeIcon icon={faFilm} className="h-12 w-12 md:h-16 md:w-16 text-white/80" />
+                          <div className="absolute top-2 right-2 h-10 w-10 flex items-center justify-center rounded-full glass-effect transition-colors">
+                            <FontAwesomeIcon icon={faFilm} className="h-5 w-5 text-white/80" />
                           </div>
                         )}
                         {item.type === 'image' && (
-                            <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/40 transition-colors">
-                                <FontAwesomeIcon icon={faPalette} className="h-12 w-12 md:h-16 md:w-16 text-white/80" />
+                            <div className="absolute top-2 right-2 h-10 w-10 flex items-center justify-center rounded-full glass-effect transition-colors">
+                                <FontAwesomeIcon icon={faPalette} className="h-5 w-5 text-white/80" />
                             </div>
                         )}
                       </div>
