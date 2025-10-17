@@ -53,32 +53,33 @@ const PortfolioMedia = ({
   playerRef: React.RefObject<Plyr>;
   onFullscreenClick: (url: string) => void;
 }) => {
-  const [isVideoReady, setIsVideoReady] = useState(false);
-  const [isPlayerMounted, setIsPlayerMounted] = useState(false);
-
+  const [isPosterLoaded, setIsPosterLoaded] = useState(false);
+  
   useEffect(() => {
-    if (item.type === 'video') {
-      setIsVideoReady(false); // Reset on item change
-      setIsPlayerMounted(true);
-    } else {
-      setIsPlayerMounted(false);
-    }
-  }, [item]);
-  
-  const handleVideoReady = (player: Plyr) => {
-    // This function will be called from the VideoPlayer component
-    setIsVideoReady(true);
-  };
-  
+    // Reset poster loaded state when the item changes
+    setIsPosterLoaded(false);
+  }, [item.id]);
+
   if (item.type === 'video' && item.sources) {
     return (
       <div className="relative aspect-video bg-black flex items-center justify-center">
-        {!isVideoReady && (
-          <div className="absolute inset-0 z-10 flex items-center justify-center bg-black transition-opacity duration-500">
+        {/* Hidden image to preload the poster and trigger onLoad */}
+        <Image
+            src={item.thumbnailUrl}
+            alt="poster image"
+            fill
+            className="opacity-0 pointer-events-none"
+            onLoad={() => setIsPosterLoaded(true)}
+        />
+        {!isPosterLoaded && (
+          <div className="absolute inset-0 z-10 flex items-center justify-center bg-black">
             <Preloader />
           </div>
         )}
-        {isPlayerMounted && (
+        <div className={cn(
+          "w-full h-full transition-opacity duration-500",
+          isPosterLoaded ? 'opacity-100' : 'opacity-0'
+        )}>
           <ClientOnlyVideoPlayer
             innerRef={playerRef}
             source={{
@@ -90,9 +91,8 @@ const PortfolioMedia = ({
               })),
               poster: item.thumbnailUrl,
             }}
-            onReady={handleVideoReady}
           />
-        )}
+        </div>
       </div>
     );
   }
