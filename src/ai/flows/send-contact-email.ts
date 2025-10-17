@@ -16,8 +16,8 @@ import { ContactFormInput, ContactFormInputSchema } from '@/features/contact/dat
 const TO_EMAIL = 'eljabbaryhicham@gmail.com';
 const FROM_EMAIL = 'onboarding@resend.dev'; // Resend requires this for free tier
 
-// Initialize Resend. You'll need to set up your API key.
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Initialize Resend with the provided API key.
+const resend = new Resend('re_duZiJJ5B_J3Eo6HxGoJS5eiYPravSefmr');
 
 /**
  * A server-side function to send the contact form data via email.
@@ -45,11 +45,6 @@ const sendContactEmailFlow = ai.defineFlow(
   },
   async (input) => {
     console.log('Received contact form submission:', input);
-    
-    if (!process.env.RESEND_API_KEY) {
-      console.error('Resend API key is not configured.');
-      return { success: false, message: 'Email service is not configured.' };
-    }
     
     try {
       const { data, error } = await resend.emails.send({
