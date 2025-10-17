@@ -353,7 +353,7 @@ export default function WorkPage() {
                     </div>
                 </div>
               </ScrollArea>
-              <DialogClose className="absolute top-4 right-4 z-[101] h-8 w-8 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center opacity-0 group-hover:opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 duration-300 group-hover:delay-300">
+              <DialogClose className="absolute top-4 right-4 z-[101] h-8 w-8 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center opacity-0 group-hover:opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 duration-300">
                   <FontAwesomeIcon icon={faXmark} className="h-4 w-4" />
                   <span className="sr-only">Close</span>
               </DialogClose>
