@@ -1,3 +1,4 @@
+
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -13,7 +14,6 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent } from '@/components/ui/card';
 import Link from 'next/link';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -23,7 +23,7 @@ import { doc } from 'firebase/firestore';
 import type { ContactInfo } from '@/lib/data-types';
 import { Separator } from '@/components/ui/separator';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEnvelope } from '@fortawesome/free-solid-svg-icons';
+import { faEnvelope, faCheckCircle } from '@fortawesome/free-solid-svg-icons';
 import { Icon } from '@/components/icon';
 import { faLinkedin, faBehance, faInstagram, faFacebook, faTwitter, faWhatsapp } from '@fortawesome/free-brands-svg-icons';
 import { cn } from '@/lib/utils';
@@ -45,9 +45,9 @@ const FiverrIcon = (props: React.SVGProps<SVGSVGElement>) => (
 )
 
 export default function ContactPage() {
-  const { toast } = useToast();
   const firestore = useFirestore();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSent, setIsSent] = useState(false);
 
   const contactDocRef = useMemoFirebase(
     () => firestore ? doc(firestore, 'contact', 'details') : null,
@@ -66,28 +66,19 @@ export default function ContactPage() {
 
   const handleSubmit = async (values: ContactFormValues) => {
     setIsSubmitting(true);
+    setIsSent(false);
     try {
       const result = await sendContactEmail(values);
       if (result.success) {
-        toast({
-          title: 'Message Sent!',
-          description: "Thanks for reaching out. We'll get back to you soon.",
-        });
+        setIsSent(true);
         form.reset();
       } else {
-        toast({
-          variant: 'destructive',
-          title: 'Error Sending Message',
-          description: result.message,
-        });
+        // You might want to show an error toast here
+        console.error("Failed to send message:", result.message);
       }
     } catch (error) {
       console.error('Failed to send contact email:', error);
-      toast({
-        variant: 'destructive',
-        title: 'Uh oh! Something went wrong.',
-        description: 'Could not send message. Please try again later.',
-      });
+       // You might want to show an error toast here
     } finally {
       setIsSubmitting(false);
     }
@@ -178,55 +169,68 @@ export default function ContactPage() {
                   </Card>
                 </div>
                 <div className="w-full md:w-1/2">
-                  <Card className="glass-effect p-6 sm:p-8 h-full">
+                  <Card className="glass-effect p-6 sm:p-8 h-full flex flex-col justify-center">
                     <CardContent className="p-0 flex flex-col items-center">
-                      <Form {...form}>
-                        <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8 w-full">
-                          <FormField
-                            control={form.control}
-                            name="name"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormControl>
-                                  <Input placeholder="Name" {...field} className="text-center bg-transparent border-0 border-b border-foreground/30 rounded-none focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-primary transition-colors placeholder:text-foreground/80" />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          <FormField
-                            control={form.control}
-                            name="email"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormControl>
-                                  <Input type="email" placeholder="Email" {...field} className="text-center bg-transparent border-0 border-b border-foreground/30 rounded-none focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-primary transition-colors placeholder:text-foreground/80" />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          <FormField
-                            control={form.control}
-                            name="message"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormControl>
-                                  <Textarea
-                                    placeholder="Message"
-                                    className="text-center bg-transparent border-0 border-b border-foreground/30 rounded-none focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-primary transition-colors min-h-[100px] placeholder:text-foreground/80"
-                                    {...field}
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          <Button type="submit" size="lg" className="w-full glass-effect" disabled={isSubmitting}>
-                            {isSubmitting ? 'Sending...' : 'Send Message'}
+                      {isSent ? (
+                        <div className="text-center flex flex-col items-center justify-center h-[280px]">
+                           <FontAwesomeIcon icon={faCheckCircle} className="w-16 h-16 text-green-400 mb-4" />
+                          <h3 className="text-xl font-bold">Message Sent!</h3>
+                          <p className="text-foreground/80 mt-2">
+                            Thank you for reaching out. We will get back to you shortly.
+                          </p>
+                          <Button onClick={() => setIsSent(false)} className="mt-6">
+                            Send Another Message
                           </Button>
-                        </form>
-                      </Form>
+                        </div>
+                      ) : (
+                        <Form {...form}>
+                          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8 w-full">
+                            <FormField
+                              control={form.control}
+                              name="name"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormControl>
+                                    <Input placeholder="Name" {...field} className="text-center bg-transparent border-0 border-b border-foreground/30 rounded-none focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-primary transition-colors placeholder:text-foreground/80" />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                            <FormField
+                              control={form.control}
+                              name="email"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormControl>
+                                    <Input type="email" placeholder="Email" {...field} className="text-center bg-transparent border-0 border-b border-foreground/30 rounded-none focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-primary transition-colors placeholder:text-foreground/80" />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                            <FormField
+                              control={form.control}
+                              name="message"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormControl>
+                                    <Textarea
+                                      placeholder="Message"
+                                      className="text-center bg-transparent border-0 border-b border-foreground/30 rounded-none focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-primary transition-colors min-h-[100px] placeholder:text-foreground/80"
+                                      {...field}
+                                    />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                            <Button type="submit" size="lg" className="w-full glass-effect" disabled={isSubmitting}>
+                              {isSubmitting ? 'Sending...' : 'Send Message'}
+                            </Button>
+                          </form>
+                        </Form>
+                      )}
                     </CardContent>
                   </Card>
                 </div>
