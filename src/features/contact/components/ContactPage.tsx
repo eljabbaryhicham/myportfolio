@@ -104,7 +104,7 @@ export default function ContactPage() {
           <div className="container mx-auto px-0">
             {isLoading && <div className="text-center">Loading contact information...</div>}
             {contactInfo && (
-              <div className="flex flex-col md:flex-row gap-4 md:gap-8 items-start justify-center">
+              <div className="flex flex-col md:flex-row gap-4 items-start justify-center">
                 <div className="w-full md:w-1/2">
                   <Card className="glass-effect p-6 flex flex-col h-full">
                     <CardContent className="flex flex-col items-center text-center p-0">
@@ -138,7 +138,7 @@ export default function ContactPage() {
                       {contactInfo.whatsApp && (
                         <>
                           <Separator className="my-4 bg-white/20" />
-                          <Button asChild className="bg-gradient-to-r from-green-500 to-emerald-600 text-white">
+                          <Button asChild className="bg-gradient-to-r from-green-500 to-emerald-600 text-white w-[80%]">
                               <Link href={`https://wa.me/${contactInfo.whatsApp.replace(/\\D/g, '')}`} target="_blank" rel="noopener noreferrer" className="py-6 px-8">
                                   <FontAwesomeIcon icon={faWhatsapp} className="mr-3 h-6 w-6" />
                                   <div>
