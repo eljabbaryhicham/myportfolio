@@ -320,36 +320,37 @@ export default function WorkPage() {
         >
           {selectedItem && (
             <div className="relative flex-1 flex flex-col min-h-0 group">
-              <ScrollArea className="flex-1">
-                <div className="flex flex-col h-full">
-                    {isClient && (
-                      <PortfolioMedia
-                          item={selectedItem}
-                          onFullscreenClick={setFullscreenImageUrl}
-                      />
-                    )}
-                    <div className="flex-shrink-0 p-4 md:p-6 pt-4">
-                        <DialogHeader>
-                            <DialogTitle className="text-xl md:text-2xl">
-                            {selectedItem.title}
-                            </DialogTitle>
-                            <DialogDescription className="text-base text-foreground/70 mt-2 whitespace-pre-wrap">
-                            {selectedItem.description}
-                            </DialogDescription>
-                        </DialogHeader>
+              <ScrollArea className="flex-1 min-h-0">
+                <div className="flex flex-col h-full p-4 md:p-6">
+                    <DialogHeader className="flex-shrink-0">
+                        <DialogTitle className="text-xl md:text-2xl">
+                        {selectedItem.title}
+                        </DialogTitle>
+                        <DialogDescription className="text-base text-foreground/70 mt-2 whitespace-pre-wrap">
+                        {selectedItem.description}
+                        </DialogDescription>
+                    </DialogHeader>
 
-                        {selectedItem.details && (
-                            <div className="mt-4">
-                            <Button
-                                variant="default"
-                                onClick={() => setDetailsModalOpen(true)}
-                            >
-                                <FontAwesomeIcon icon={faUpDown} className="mr-2" />
-                                Show Details
-                            </Button>
-                            </div>
-                        )}
+                    <div className="my-4 flex-shrink-0">
+                      {isClient && (
+                        <PortfolioMedia
+                            item={selectedItem}
+                            onFullscreenClick={setFullscreenImageUrl}
+                        />
+                      )}
                     </div>
+                    
+                    {selectedItem.details && (
+                        <div className="mt-auto flex-shrink-0">
+                          <Button
+                              variant="default"
+                              onClick={() => setDetailsModalOpen(true)}
+                          >
+                              <FontAwesomeIcon icon={faUpDown} className="mr-2" />
+                              Show Details
+                          </Button>
+                        </div>
+                    )}
                 </div>
               </ScrollArea>
               <DialogClose className="absolute top-4 right-4 z-[101] h-8 w-8 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center opacity-0 ring-offset-background transition-opacity hover:opacity-70 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 duration-300 group-hover:opacity-70">
@@ -461,6 +462,8 @@ export default function WorkPage() {
     </>
   );
 }
+
+    
 
     
 
