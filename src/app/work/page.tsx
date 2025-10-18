@@ -301,7 +301,7 @@ export default function WorkPage() {
     setIsCloseButtonVisible(true);
     inactivityTimer.current = setTimeout(() => {
         setIsCloseButtonVisible(false);
-    }, 1500);
+    }, 1000);
   };
 
   useEffect(() => {
@@ -586,6 +586,8 @@ export default function WorkPage() {
     </>
   );
 }
+
+    
 
     
 
