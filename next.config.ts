@@ -41,6 +41,12 @@ const nextConfig: NextConfig = {
         port: '',
         pathname: '/**',
       },
+      {
+        protocol: 'https',
+        hostname: 's7.ezgif.com',
+        port: '',
+        pathname: '/**',
+      },
     ],
   },
 };
