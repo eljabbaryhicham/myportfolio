@@ -1,66 +1,77 @@
 /**
- * @fileoverview Firestore Security Rules for the portfolio application.
+ * @file Firestore Security Rules
+ * @version 2
  *
- * Core Philosophy:
- * This ruleset is in prototyping mode, prioritizing a highly secure authorization model while relaxing data validation to allow for rapid iteration.  It enforces strict access control based on clearly defined roles or ownership, but does not perform detailed schema validation.
+ * @description This ruleset enforces a role-based access control model for the portfolio application.
+ * Only authenticated users with the 'admin' role can modify contact information and homepage settings.
+ * Projects can be read by anyone, but creation, updates, and deletion are restricted to admins.
  *
- * Data Structure:
- * - /projects/{projectId}: Stores individual project details. Publicly readable, but write access is restricted.
- * - /contact/{contactId}: Stores contact information. Publicly readable, but write access is restricted.
- * - /homepage/{settingsId}: Stores homepage settings. Publicly readable, but write access is restricted.
+ * @dataStructure
+ * - /projects/{projectId}: Stores individual project data.
+ * - /contact/{contactId}: Stores contact information (single document).
+ * - /homepage/{settingsId}: Stores homepage settings (single document).
  *
- * Key Security Decisions:
- * - Public Read Access:  The projects, contact info, and homepage settings are publicly readable.
- * - Owner-Only Writes: Writes (create, update, delete) are restricted and would require a custom claim to be granted.
- * - No User Listing: Listing all users is disallowed.
- *
- * Denormalization for Authorization:
- *  - Not applicable in this ruleset.
- *
- * Structural Segregation:
- *  - Not applicable in this ruleset.
+ * @keySecurityDecisions
+ * - Admin-only access for sensitive operations (contact info, homepage settings, project writes).
+ * - Public read access for projects.
+ * - No user-specific data or ownership is enforced, only an admin role.
  */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * @description Allows read access to all projects. Write access is denied.
+     * @description Allows anyone to read projects, but only admins can create, update, or delete them.
      * @path /projects/{projectId}
-     * @allow (get, list) - Any user can read project details.
-     * @deny (create, update, delete) - No user can create, update, or delete projects without proper authorization.
-     * @principle Grants public read access but restricts write access using custom claim.
+     * @allow (get, list) - Anyone can read project data.
+     * @allow (create, update, delete) - Only users with the 'admin' role can modify project data.
+     * @deny (create, update, delete) - Non-admin users cannot modify project data.
+     * @principle Enforces role-based access control for project management.
      */
     match /projects/{projectId} {
       allow get, list: if true;
-      allow create, update, delete: if false;
+      allow create, update, delete: if isAdmin();
     }
 
     /**
-     * @description Allows read access to contact information. Write access is denied.
+     * @description Restricts access to contact information to users with the 'admin' role.
      * @path /contact/{contactId}
-     * @allow (get, list) - Any user can read contact information.
-     * @deny (create, update, delete) - No user can create, update, or delete contact information without proper authorization.
-     * @principle Grants public read access but restricts write access using custom claim.
+     * @allow (get, list, create, update, delete) - Only users with the 'admin' role can access or modify contact information.
+     * @deny (get, list, create, update, delete) - Non-admin users cannot access or modify contact information.
+     * @principle Enforces role-based access control for sensitive contact data.
      */
     match /contact/{contactId} {
-      allow get, list: if true;
-      allow create, update, delete: if false;
+      allow get, list, create, update, delete: if isAdmin();
     }
 
     /**
-     * @description Allows read access to homepage settings. Write access is denied.
+     * @description Restricts access to homepage settings to users with the 'admin' role.
      * @path /homepage/{settingsId}
-     * @allow (get, list) - Any user can read homepage settings.
-     * @deny (create, update, delete) - No user can create, update, or delete homepage settings without proper authorization.
-     * @principle Grants public read access but restricts write access using custom claim.
+     * @allow (get, list, create, update, delete) - Only users with the 'admin' role can access or modify homepage settings.
+     * @deny (get, list, create, update, delete) - Non-admin users cannot access or modify homepage settings.
+     * @principle Enforces role-based access control for homepage configuration.
      */
     match /homepage/{settingsId} {
-      allow get: if true;
-      allow list: if true;
-      allow create: if false;
-      allow update: if false;
-      allow delete: if false;
+      allow get, list, create, update, delete: if isAdmin();
+    }
+
+    // ---- Helper functions ----
+
+    /**
+     * @description Checks if the user is signed in.
+     * @return True if the user is signed in, false otherwise.
+     */
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    /**
+     * @description Checks if the user has the 'admin' role.
+     * @return True if the user has the 'admin' role, false otherwise.
+     * @example isAdmin() == true if request.auth.token.admin == true
+     */
+    function isAdmin() {
+      return isSignedIn() && request.auth.token.admin == true;
     }
   }
 }
