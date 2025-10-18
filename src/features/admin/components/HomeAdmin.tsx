@@ -1,4 +1,3 @@
-
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -22,7 +21,7 @@ import {
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { useDoc, useFirestore, useMemoFirebase, setDocumentNonBlocking, useCollection } from '@/firebase';
-import { collection, doc, setDoc } from 'firebase/firestore';
+import { collection, doc } from 'firebase/firestore';
 import type { PortfolioItem } from '@/features/portfolio/data/portfolio-data';
 import { useEffect } from 'react';
 import Preloader from '@/components/preloader';
@@ -66,22 +65,16 @@ export default function HomeAdmin() {
     }
   }, [homeSettings, form]);
 
-  const onSubmit = async (values: HomeAdminFormValues) => {
+  const onSubmit = (values: HomeAdminFormValues) => {
     if (!settingsDocRef) return;
-    try {
-        await setDoc(settingsDocRef, values, { merge: true });
-        toast({
-            title: 'Home Page Updated',
-            description: 'The featured video has been successfully updated.',
-        });
-    } catch (e: any) {
-        console.error("Failed to save homepage settings", e);
-        toast({
-            variant: "destructive",
-            title: "Update Failed",
-            description: "Could not save settings. Please check console for details."
-        })
-    }
+    
+    // This will now use the non-blocking update which emits a contextual error on failure.
+    setDocumentNonBlocking(settingsDocRef, values, { merge: true });
+    
+    toast({
+        title: 'Home Page Updated',
+        description: 'The featured video has been successfully updated.',
+    });
   };
 
   const isLoading = isLoadingSettings || isLoadingProjects;
