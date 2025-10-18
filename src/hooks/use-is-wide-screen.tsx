@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from 'react';
 
-const WIDE_ASPECT_RATIO = 1.7;
+const WIDE_ASPECT_RATIO = 2.5;
 
 export function useIsWideScreen() {
   const [isWideScreen, setIsWideScreen] = useState(false);
