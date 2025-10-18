@@ -334,8 +334,8 @@ export default function WorkPage() {
                   <Separator className="bg-white/10 my-0" />
 
                   <ScrollArea className="flex-1 min-h-0">
-                      <div className="p-4 md:p-6">
-                          <div className="my-4">
+                      <div className="flex flex-col h-full">
+                          <div className="flex-1">
                             {isClient && (
                               <PortfolioMedia
                                   item={selectedItem}
@@ -345,7 +345,7 @@ export default function WorkPage() {
                           </div>
                           
                           {selectedItem.details && (
-                              <div className="mt-6 pt-4 text-center">
+                              <div className="mt-6 p-6 pt-0 text-center">
                                 <Button
                                     variant="default"
                                     onClick={() => setDetailsModalOpen(true)}
