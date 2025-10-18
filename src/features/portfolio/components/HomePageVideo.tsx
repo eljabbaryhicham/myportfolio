@@ -1,7 +1,7 @@
 
 'use client';
 
-import H5Player from 'h5player';
+import { H5Player } from 'h5player';
 import { useEffect, useState } from 'react';
 
 const HomePageVideo = () => {
