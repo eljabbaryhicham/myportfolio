@@ -336,8 +336,7 @@ export default function WorkPage() {
         <DialogContent 
           className={cn(
             "glass-effect p-0 flex flex-col",
-            "w-[95vw] h-auto max-h-[95vh]",
-            "sm:max-w-[calc(16/9*80vh)]" 
+            "w-[95vw] sm:max-w-[calc(16/9*80vh)] max-w-7xl h-auto max-h-[90vh]"
           )}
         >
           {selectedItem && (
@@ -376,7 +375,7 @@ export default function WorkPage() {
                 
                 <Separator className="bg-white/10 my-0" />
                 
-                <div className="flex-1 min-h-0 relative p-4 md:p-6 flex flex-col">
+                <div className="flex-1 min-h-0 relative flex flex-col">
                   <div className="flex-1 flex items-center justify-center">
                     {isClient && (
                       <PortfolioMedia
@@ -388,7 +387,7 @@ export default function WorkPage() {
                   </div>
                     
                   {selectedItem.details && (
-                    <div className="pt-4 md:pt-6 text-center flex-shrink-0">
+                    <div className="p-4 md:p-6 text-center flex-shrink-0">
                       <Button
                         variant="default"
                         onClick={() => setDetailsModalOpen(true)}
@@ -511,5 +510,7 @@ export default function WorkPage() {
     </>
   );
 }
+
+    
 
     
