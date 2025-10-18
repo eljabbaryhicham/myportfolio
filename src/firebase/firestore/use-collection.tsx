@@ -11,6 +11,8 @@ import {
 } from 'firebase/firestore';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
+import { toast } from '@/hooks/use-toast';
+
 
 /** Utility type to add an 'id' field to a given type T. */
 export type WithId<T> = T & { id: string };
@@ -102,6 +104,11 @@ export function useCollection<T = any>(
 
         // trigger global error propagation
         errorEmitter.emit('permission-error', contextualError);
+        toast({
+            variant: 'destructive',
+            title: 'Data Fetch Blocked',
+            description: 'Could not load data. Please check if a browser extension (like an ad blocker) is interfering, or if you have the necessary permissions.',
+        });
       }
     );
 

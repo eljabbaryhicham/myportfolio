@@ -1,4 +1,3 @@
-
 'use client';
 
 import {
@@ -12,6 +11,7 @@ import {
 } from 'firebase/firestore';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
+import { toast } from '@/hooks/use-toast';
 
 /**
  * Initiates a setDoc operation for a document reference.
@@ -19,14 +19,17 @@ import { FirestorePermissionError } from '@/firebase/errors';
  */
 export function setDocumentNonBlocking(docRef: DocumentReference, data: any, options: SetOptions) {
   setDoc(docRef, data, options).catch(error => {
-    errorEmitter.emit(
-      'permission-error',
-      new FirestorePermissionError({
-        path: docRef.path,
-        operation: 'write', // or 'create'/'update' based on options
-        requestResourceData: data,
-      })
-    );
+    const contextualError = new FirestorePermissionError({
+      path: docRef.path,
+      operation: 'write', // or 'create'/'update' based on options
+      requestResourceData: data,
+    });
+    errorEmitter.emit('permission-error', contextualError);
+    toast({
+      variant: 'destructive',
+      title: 'Save Operation Blocked',
+      description: 'Could not save data. Please check if a browser extension (like an ad blocker) is interfering, or if you have the necessary permissions.',
+    });
   });
   // Execution continues immediately
 }
@@ -38,14 +41,17 @@ export function setDocumentNonBlocking(docRef: DocumentReference, data: any, opt
  */
 export function addDocumentNonBlocking(colRef: CollectionReference, data: any) {
   const promise = addDoc(colRef, data).catch(error => {
-    errorEmitter.emit(
-      'permission-error',
-      new FirestorePermissionError({
-        path: colRef.path,
-        operation: 'create',
-        requestResourceData: data,
-      })
-    );
+    const contextualError = new FirestorePermissionError({
+      path: colRef.path,
+      operation: 'create',
+      requestResourceData: data,
+    });
+    errorEmitter.emit('permission-error', contextualError);
+     toast({
+      variant: 'destructive',
+      title: 'Save Operation Blocked',
+      description: 'Could not add data. Please check if a browser extension (like an ad blocker) is interfering, or if you have the necessary permissions.',
+    });
   });
   return promise;
 }
@@ -56,14 +62,17 @@ export function addDocumentNonBlocking(colRef: CollectionReference, data: any) {
  */
 export function updateDocumentNonBlocking(docRef: DocumentReference, data: any) {
   updateDoc(docRef, data).catch(error => {
-    errorEmitter.emit(
-      'permission-error',
-      new FirestorePermissionError({
-        path: docRef.path,
-        operation: 'update',
-        requestResourceData: data,
-      })
-    );
+    const contextualError = new FirestorePermissionError({
+      path: docRef.path,
+      operation: 'update',
+      requestResourceData: data,
+    });
+    errorEmitter.emit('permission-error', contextualError);
+     toast({
+      variant: 'destructive',
+      title: 'Update Operation Blocked',
+      description: 'Could not update data. Please check if a browser extension (like an ad blocker) is interfering, or if you have the necessary permissions.',
+    });
   });
 }
 
@@ -73,12 +82,15 @@ export function updateDocumentNonBlocking(docRef: DocumentReference, data: any) 
  */
 export function deleteDocumentNonBlocking(docRef: DocumentReference) {
   deleteDoc(docRef).catch(error => {
-    errorEmitter.emit(
-      'permission-error',
-      new FirestorePermissionError({
-        path: docRef.path,
-        operation: 'delete',
-      })
-    );
+    const contextualError = new FirestorePermissionError({
+      path: docRef.path,
+      operation: 'delete',
+    });
+    errorEmitter.emit('permission-error', contextualError);
+     toast({
+      variant: 'destructive',
+      title: 'Delete Operation Blocked',
+      description: 'Could not delete item. Please check if a browser extension (like an ad blocker) is interfering, or if you have the necessary permissions.',
+    });
   });
 }
