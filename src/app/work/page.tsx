@@ -344,18 +344,18 @@ export default function WorkPage() {
             <>
               <div className="flex flex-col flex-1 min-h-0">
                 <DialogHeader className="p-4 md:p-6 flex-shrink-0">
-                  <div className="flex items-center justify-between">
+                  <div className="relative flex items-center justify-center max-w-lg mx-auto w-full">
                     <Button
-                        variant="outline"
-                        size="icon"
-                        onClick={handlePreviousProject}
-                        disabled={filteredItems.length <= 1}
-                        className="h-8 w-8"
-                      >
-                        <FontAwesomeIcon icon={faArrowLeft} className="h-4 w-4" />
-                        <span className="sr-only">Previous Project</span>
-                      </Button>
-                    <div className="flex-1 text-center mx-4">
+                      variant="outline"
+                      size="icon"
+                      onClick={handlePreviousProject}
+                      disabled={filteredItems.length <= 1}
+                      className="h-8 w-8 absolute -left-12"
+                    >
+                      <FontAwesomeIcon icon={faArrowLeft} className="h-4 w-4" />
+                      <span className="sr-only">Previous Project</span>
+                    </Button>
+                    <div className="text-center">
                       <DialogTitle className="text-xl md:text-2xl">
                         {selectedItem.title}
                       </DialogTitle>
@@ -365,7 +365,7 @@ export default function WorkPage() {
                       size="icon"
                       onClick={handleNextProject}
                       disabled={filteredItems.length <= 1}
-                      className="h-8 w-8"
+                      className="h-8 w-8 absolute -right-12"
                     >
                       <FontAwesomeIcon icon={faArrowRight} className="h-4 w-4" />
                       <span className="sr-only">Next Project</span>
@@ -514,6 +514,8 @@ export default function WorkPage() {
     </>
   );
 }
+
+    
 
     
 
