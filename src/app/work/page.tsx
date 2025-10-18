@@ -11,7 +11,7 @@ import {
   DialogDescription,
   DialogClose,
 } from '@/components/ui/dialog';
-import { useState, memo, useEffect, useMemo } from 'react';
+import { useState, memo, useEffect, useMemo, useRef } from 'react';
 import { cn } from '@/lib/utils';
 import dynamic from 'next/dynamic';
 import { Button } from '@/components/ui/button';
@@ -27,6 +27,7 @@ import { faUpDown, faXmark, faExpand, faPalette, faFilm, faArrowLeft, faArrowRig
 import { Separator } from '@/components/ui/separator';
 import Preloader from '@/components/preloader';
 import { useIsExtraWide } from '@/hooks/use-is-extra-wide';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const VideoPlayer = dynamic(() => import('@/components/video-player'), {
   ssr: false,
@@ -237,6 +238,10 @@ export default function WorkPage() {
   const [isClient, setIsClient] = useState(false);
   const [isDescriptionLong, setIsDescriptionLong] = useState(false);
   const isExtraWide = useIsExtraWide();
+  const [isCloseButtonVisible, setIsCloseButtonVisible] = useState(true);
+  const inactivityTimer = useRef<NodeJS.Timeout | null>(null);
+  const isMobile = useIsMobile();
+
 
   useEffect(() => {
     setIsClient(true);
@@ -288,6 +293,39 @@ export default function WorkPage() {
     const prevIndex = (currentIndex - 1 + filteredItems.length) % filteredItems.length;
     setSelectedItem(filteredItems[prevIndex]);
   };
+
+  const handleMouseMove = () => {
+    if (inactivityTimer.current) {
+        clearTimeout(inactivityTimer.current);
+    }
+    setIsCloseButtonVisible(true);
+    inactivityTimer.current = setTimeout(() => {
+        setIsCloseButtonVisible(false);
+    }, 3000);
+  };
+
+  useEffect(() => {
+    if (selectedItem || fullscreenImageUrl) {
+        handleMouseMove(); // Initial call
+        window.addEventListener('mousemove', handleMouseMove);
+        window.addEventListener('scroll', handleMouseMove);
+    } else {
+        if (inactivityTimer.current) {
+            clearTimeout(inactivityTimer.current);
+        }
+        window.removeEventListener('mousemove', handleMouseMove);
+        window.removeEventListener('scroll', handleMouseMove);
+    }
+
+    return () => {
+        if (inactivityTimer.current) {
+            clearTimeout(inactivityTimer.current);
+        }
+        window.removeEventListener('mousemove', handleMouseMove);
+        window.removeEventListener('scroll', handleMouseMove);
+    };
+  }, [selectedItem, fullscreenImageUrl]);
+
   
   return (
     <>
@@ -351,10 +389,12 @@ export default function WorkPage() {
       <Dialog open={!!selectedItem} onOpenChange={handleOpenChange}>
         <DialogContent 
           className={cn(
-            "glass-effect p-0 flex flex-col",
+            "glass-effect p-0 flex flex-col group",
             "w-[95vw] max-w-7xl",
             isExtraWide || isDescriptionLong ? "h-[90vh]" : "max-h-[90vh]"
           )}
+          onMouseEnter={() => setIsCloseButtonVisible(true)}
+          onMouseLeave={() => setIsCloseButtonVisible(false)}
         >
           {selectedItem && (
             <>
@@ -422,7 +462,10 @@ export default function WorkPage() {
                 </ScrollArea>
 
               </div>
-              <DialogClose className="absolute right-4 top-4 z-10 h-8 w-8 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center ring-offset-background transition-opacity focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 opacity-70 hover:opacity-100">
+              <DialogClose className={cn(
+                  "absolute right-4 top-4 z-10 h-8 w-8 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center ring-offset-background transition-opacity focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 hover:opacity-100",
+                  isMobile ? "opacity-70" : (isCloseButtonVisible ? "opacity-70" : "opacity-0")
+              )}>
                 <FontAwesomeIcon icon={faXmark} className="h-4 w-4" />
                 <span className="sr-only">Close</span>
               </DialogClose>
@@ -433,7 +476,10 @@ export default function WorkPage() {
       
       {/* Nested Dialog for Details */}
       <Dialog open={detailsModalOpen} onOpenChange={handleDetailsOpenChange}>
-        <DialogContent className="w-[95vw] md:w-[90vw] md:max-w-[80vw] h-[90vh] glass-effect p-0 flex flex-col group">
+        <DialogContent className="w-[95vw] md:w-[90vw] md:max-w-[80vw] h-[90vh] glass-effect p-0 flex flex-col group"
+          onMouseEnter={() => setIsCloseButtonVisible(true)}
+          onMouseLeave={() => setIsCloseButtonVisible(false)}
+        >
             {selectedItem && (
                 <>
                 <DialogHeader className="p-4 md:p-6 pb-0">
@@ -498,7 +544,10 @@ export default function WorkPage() {
                         >{selectedItem.details || ''}</ReactMarkdown>
                     </div>
                 </ScrollArea>
-                 <DialogClose className="absolute top-4 right-4 z-[101] h-8 w-8 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center opacity-70 hover:!opacity-100 ring-offset-background transition-opacity focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2">
+                 <DialogClose className={cn(
+                    "absolute top-4 right-4 z-[101] h-8 w-8 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center hover:!opacity-100 ring-offset-background transition-opacity focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+                    isMobile ? "opacity-70" : (isCloseButtonVisible ? "opacity-70" : "opacity-0")
+                  )}>
                     <FontAwesomeIcon icon={faXmark} className="h-4 w-4" />
                     <span className="sr-only">Close</span>
                 </DialogClose>
@@ -509,7 +558,10 @@ export default function WorkPage() {
 
       {/* Fullscreen Image Dialog */}
       <Dialog open={!!fullscreenImageUrl} onOpenChange={(open) => !open && setFullscreenImageUrl(null)}>
-        <DialogContent className="w-[95vw] h-[90vh] glass-effect p-0 flex flex-col items-center justify-center bg-black/80 border-0 group">
+        <DialogContent className="w-[95vw] h-[90vh] glass-effect p-0 flex flex-col items-center justify-center bg-black/80 border-0 group"
+          onMouseEnter={() => setIsCloseButtonVisible(true)}
+          onMouseLeave={() => setIsCloseButtonVisible(false)}
+        >
           <DialogTitle className="sr-only">Fullscreen Image</DialogTitle>
           {fullscreenImageUrl && (
             <div className="relative w-full h-full">
@@ -522,7 +574,10 @@ export default function WorkPage() {
               />
             </div>
           )}
-          <DialogClose className="absolute top-4 right-4 z-[101] h-8 w-8 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center opacity-0 group-hover:opacity-70 hover:!opacity-100 ring-offset-background transition-opacity focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2">
+          <DialogClose className={cn(
+              "absolute top-4 right-4 z-[101] h-8 w-8 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center hover:!opacity-100 ring-offset-background transition-opacity focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+              isMobile ? "opacity-70" : (isCloseButtonVisible ? "opacity-70" : "opacity-0")
+          )}>
               <FontAwesomeIcon icon={faXmark} className="h-4 w-4" />
               <span className="sr-only">Close</span>
           </DialogClose>
