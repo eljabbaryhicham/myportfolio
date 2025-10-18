@@ -5,12 +5,12 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowRight } from '@fortawesome/free-solid-svg-icons';
-import VideoPlayer from "@/components/video-player";
+import H5Player from "@/components/H5Player";
 import type { PortfolioItem } from "../data/portfolio-data";
 import { cn } from "@/lib/utils";
 import Preloader from "@/components/preloader";
+import { defaultPortfolioItems } from "../data/portfolio-data";
 import { useMemo } from "react";
-import { type SourceInfo } from "plyr";
 
 interface HomePageContentProps {
     featuredProject: PortfolioItem | null;
@@ -19,23 +19,15 @@ interface HomePageContentProps {
 
 export default function HomePageContent({ featuredProject, isLoading }: HomePageContentProps) {
   
-  const videoSource: SourceInfo | null = useMemo(() => {
-    if (!featuredProject) return null;
+  const videoSrc = useMemo(() => {
+    const project = featuredProject || defaultPortfolioItems.find(item => item.featured && item.type === 'video');
+    if (!project) return null;
     
-    let sources: { src: string; type: string; size?: number }[] = [];
-    if (featuredProject.sources) {
-      sources = featuredProject.sources.map(s => ({
-        src: s.src,
-        type: 'video/mp4',
-        size: s.size,
-      }));
-    } else if (featuredProject.sourceUrl) {
-      sources.push({ src: featuredProject.sourceUrl, type: 'video/mp4' });
+    if (project.sources && project.sources.length > 0) {
+      // Find the highest quality source, assuming they are sorted or pick one
+      return project.sources.sort((a, b) => b.size - a.size)[0].src;
     }
-
-    if (sources.length === 0) return null;
-
-    return { type: 'video', sources };
+    return project.sourceUrl;
   }, [featuredProject]);
 
 
@@ -45,16 +37,25 @@ export default function HomePageContent({ featuredProject, isLoading }: HomePage
         "w-full max-w-4xl aspect-video", 
         "relative rounded-lg overflow-hidden glass-effect border border-border/50"
       )}>
-        {isLoading || !videoSource ? (
+        {isLoading || !videoSrc ? (
           <Preloader /> 
         ) : (
-          <VideoPlayer 
-            source={videoSource}
-            poster={featuredProject?.thumbnailUrl}
-            autoplay 
-            loop 
-            muted 
-            controls={false} 
+          <H5Player 
+            source={videoSrc} 
+            options={{
+                isLive: false,
+                fluid: true,
+                muted: true,
+                autoplay: true,
+                loop: true,
+                poster: featuredProject?.thumbnailUrl,
+                control: {
+                  playAndPause: false,
+                  progress: false,
+                  volume: false,
+                  fullscreen: false,
+                }
+            }}
           />
         )}
       </div>
