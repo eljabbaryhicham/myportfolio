@@ -4,7 +4,7 @@ import React, { useCallback, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { useStorageList, useStorageDelete } from '@/firebase/storage/use-storage';
 import { useStorage, useUser } from '@/firebase';
-import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
+import { ref, uploadBytesResumable, getDownloadURL, type UploadTask } from 'firebase/storage';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/hooks/use-toast';
@@ -78,6 +78,37 @@ const MediaFileCard = ({
   );
 };
 
+// Standalone function to handle the upload of a single file.
+// It returns a promise that resolves with the download URL.
+async function uploadFile(storage: any, file: File, onProgress: (progress: number) => void): Promise<string> {
+    return new Promise((resolve, reject) => {
+        const fileExtension = file.name.split('.').pop() || '';
+        const uniqueFileName = `${uuidv4()}.${fileExtension}`;
+        const fileRef = ref(storage, `uploads/${uniqueFileName}`);
+        const uploadTask: UploadTask = uploadBytesResumable(fileRef, file);
+
+        uploadTask.on('state_changed',
+            (snapshot) => {
+                const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                onProgress(progress);
+            },
+            (error) => {
+                console.error('Upload failed:', error);
+                reject(error);
+            },
+            async () => {
+                try {
+                    const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+                    resolve(downloadURL);
+                } catch (error) {
+                    console.error('Failed to get download URL:', error);
+                    reject(error);
+                }
+            }
+        );
+    });
+}
+
 
 export default function MediaAdmin() {
   const storage = useStorage();
@@ -102,54 +133,25 @@ export default function MediaAdmin() {
     setIsUploading(true);
 
     for (const file of acceptedFiles) {
-        setUploadingFileName(file.name);
-        setUploadProgress(0);
-
-        await new Promise<void>((resolve, reject) => {
-          const fileExtension = file.name.split('.').pop() || '';
-          const uniqueFileName = `${uuidv4()}.${fileExtension}`;
-          const fileRef = ref(storage, `uploads/${uniqueFileName}`);
-          const uploadTask = uploadBytesResumable(fileRef, file);
-
-          uploadTask.on('state_changed',
-            (snapshot) => {
-              const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+        try {
+            setUploadingFileName(file.name);
+            setUploadProgress(0);
+            await uploadFile(storage, file, (progress) => {
               setUploadProgress(progress);
-            },
-            (error) => {
-              console.error('Upload failed for', file.name, error);
-              toast({
+            });
+            toast({
+                title: 'Upload successful',
+                description: `${file.name} has been uploaded.`,
+            });
+        } catch (error: any) {
+            toast({
                 variant: 'destructive',
-                title: 'Upload Failed',
-                description: `Could not upload ${file.name}: ${error.message}`
-              });
-              reject(error);
-            },
-            () => {
-              getDownloadURL(uploadTask.snapshot.ref).then(() => {
-                toast({
-                  title: 'Upload successful',
-                  description: `${file.name} has been uploaded.`
-                });
-                resolve();
-              }).catch((error) => {
-                console.error('Failed to get download URL', error);
-                toast({
-                    variant: 'destructive',
-                    title: 'Upload Error',
-                    description: `An error occurred after uploading ${file.name}.`
-                });
-                reject(error);
-              });
-            }
-          );
-        }).catch(error => {
-          // If a file fails, stop the whole upload process.
-          console.error(`Stopping upload process due to failure of ${file.name}.`);
-          // The error is already toasted inside the promise rejection.
-          // We break the loop by re-throwing the error to be caught by an outer layer if needed, or just return.
-          return;
-        });
+                title: `Upload Failed for ${file.name}`,
+                description: error.message || 'An unknown error occurred.',
+            });
+            // Stop processing further files if one fails
+            break;
+        }
     }
 
     setIsUploading(false);
