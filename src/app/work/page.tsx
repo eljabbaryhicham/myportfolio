@@ -23,7 +23,7 @@ import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection, query, orderBy } from 'firebase/firestore';
 import { PortfolioItem } from '@/features/portfolio/data/portfolio-data';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faUpDown, faXmark, faExpand, faPalette, faFilm } from '@fortawesome/free-solid-svg-icons';
+import { faUpDown, faXmark, faExpand, faPalette, faFilm, faArrowLeft, faArrowRight } from '@fortawesome/free-solid-svg-icons';
 import { Separator } from '@/components/ui/separator';
 import Preloader from '@/components/preloader';
 
@@ -249,6 +249,20 @@ export default function WorkPage() {
   const handleDetailsOpenChange = (open: boolean) => {
     setDetailsModalOpen(open);
   };
+
+  const handleNextProject = () => {
+    if (!selectedItem || !filteredItems) return;
+    const currentIndex = filteredItems.findIndex(item => item.id === selectedItem.id);
+    const nextIndex = (currentIndex + 1) % filteredItems.length;
+    setSelectedItem(filteredItems[nextIndex]);
+  };
+
+  const handlePreviousProject = () => {
+    if (!selectedItem || !filteredItems) return;
+    const currentIndex = filteredItems.findIndex(item => item.id === selectedItem.id);
+    const prevIndex = (currentIndex - 1 + filteredItems.length) % filteredItems.length;
+    setSelectedItem(filteredItems[prevIndex]);
+  };
   
   const isDescriptionLong = selectedItem?.description && selectedItem.description.length > 250;
 
@@ -322,9 +336,33 @@ export default function WorkPage() {
             <>
               <div className="flex flex-col flex-1 min-h-0">
                 <DialogHeader className="p-4 md:p-6 flex-shrink-0">
-                  <DialogTitle className="text-xl md:text-2xl">
-                    {selectedItem.title}
-                  </DialogTitle>
+                  <div className="flex items-center justify-between">
+                    <DialogTitle className="text-xl md:text-2xl flex-1">
+                      {selectedItem.title}
+                    </DialogTitle>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={handlePreviousProject}
+                        disabled={filteredItems.length <= 1}
+                        className="h-8 w-8"
+                      >
+                        <FontAwesomeIcon icon={faArrowLeft} className="h-4 w-4" />
+                        <span className="sr-only">Previous Project</span>
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={handleNextProject}
+                        disabled={filteredItems.length <= 1}
+                        className="h-8 w-8"
+                      >
+                        <FontAwesomeIcon icon={faArrowRight} className="h-4 w-4" />
+                        <span className="sr-only">Next Project</span>
+                      </Button>
+                    </div>
+                  </div>
                   <DialogDescription className="text-base text-foreground/70 mt-2 whitespace-pre-wrap">
                     {selectedItem.description}
                   </DialogDescription>
