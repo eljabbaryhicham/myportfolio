@@ -102,10 +102,9 @@ export default function MediaAdmin() {
     setIsUploading(true);
 
     for (const file of acceptedFiles) {
-      setUploadingFileName(file.name);
-      setUploadProgress(0);
+        setUploadingFileName(file.name);
+        setUploadProgress(0);
 
-      try {
         await new Promise<void>((resolve, reject) => {
           const fileExtension = file.name.split('.').pop() || '';
           const uniqueFileName = `${uuidv4()}.${fileExtension}`;
@@ -144,12 +143,13 @@ export default function MediaAdmin() {
               });
             }
           );
+        }).catch(error => {
+          // If a file fails, stop the whole upload process.
+          console.error(`Stopping upload process due to failure of ${file.name}.`);
+          // The error is already toasted inside the promise rejection.
+          // We break the loop by re-throwing the error to be caught by an outer layer if needed, or just return.
+          return;
         });
-      } catch (error) {
-        // Error is already toasted inside the promise rejection
-        console.error(`Stopping upload process due to failure of ${file.name}.`);
-        break; // Stop uploading remaining files if one fails
-      }
     }
 
     setIsUploading(false);
@@ -168,7 +168,8 @@ export default function MediaAdmin() {
   });
   
   const handleDelete = async (name: string) => {
-    const fileRef = ref(filesRef, name);
+    if (!storage) return;
+    const fileRef = ref(storage, `uploads/${name}`);
     try {
         await deleteFile(fileRef);
         toast({ title: "File deleted", description: `${name} has been removed.`});
