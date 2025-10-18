@@ -1,10 +1,9 @@
-
 'use client';
 
 import React, { useCallback, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { useStorageList, useStorageDelete } from '@/firebase/storage/use-storage';
-import { useStorage, useAuth, useUser } from '@/firebase';
+import { useStorage, useUser } from '@/firebase';
 import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
@@ -89,8 +88,9 @@ export default function MediaAdmin() {
   const { files, isLoading: isLoadingFiles, refetch: refetchFiles } = useStorageList(filesRef);
   const { deleteFile } = useStorageDelete();
 
-  const [uploadProgress, setUploadProgress] = useState<Record<string, number>>({});
+  const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
+  const [uploadingFileName, setUploadingFileName] = useState('');
 
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
     if (!storage || !user) {
@@ -100,51 +100,64 @@ export default function MediaAdmin() {
     if (acceptedFiles.length === 0) return;
 
     setIsUploading(true);
-    setUploadProgress({});
 
-    const uploadPromises = acceptedFiles.map(file => {
-      return new Promise<void>((resolve, reject) => {
-        const fileExtension = file.name.split('.').pop();
-        const uniqueFileName = `${uuidv4()}.${fileExtension}`;
-        const fileRef = ref(filesRef, uniqueFileName);
+    for (const file of acceptedFiles) {
+      setUploadingFileName(file.name);
+      setUploadProgress(0);
 
-        const uploadTask = uploadBytesResumable(fileRef, file);
-        
-        uploadTask.on(
-          'state_changed',
-          (snapshot) => {
-            const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-            setUploadProgress(prev => ({ ...prev, [file.name]: progress }));
-          },
-          (error) => {
-            console.error('Upload failed for', file.name, error);
-            toast({
-              variant: 'destructive',
-              title: 'Upload Failed',
-              description: `Could not upload ${file.name}: ${error.message}`
-            });
-            reject(error);
-          },
-          async () => {
-            await getDownloadURL(uploadTask.snapshot.ref);
-            resolve();
-          }
-        );
-      });
-    });
+      try {
+        await new Promise<void>((resolve, reject) => {
+          const fileExtension = file.name.split('.').pop() || '';
+          const uniqueFileName = `${uuidv4()}.${fileExtension}`;
+          const fileRef = ref(storage, `uploads/${uniqueFileName}`);
+          const uploadTask = uploadBytesResumable(fileRef, file);
 
-    try {
-        await Promise.all(uploadPromises);
-        toast({ title: 'Upload complete', description: `${acceptedFiles.length} file(s) uploaded successfully.` });
-    } catch (error) {
-        // Errors are already toasted inside the promise rejection
-        console.error("One or more uploads failed.", error);
-    } finally {
-        setIsUploading(false);
-        setUploadProgress({});
-        refetchFiles();
+          uploadTask.on('state_changed',
+            (snapshot) => {
+              const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+              setUploadProgress(progress);
+            },
+            (error) => {
+              console.error('Upload failed for', file.name, error);
+              toast({
+                variant: 'destructive',
+                title: 'Upload Failed',
+                description: `Could not upload ${file.name}: ${error.message}`
+              });
+              reject(error);
+            },
+            () => {
+              getDownloadURL(uploadTask.snapshot.ref).then(() => {
+                toast({
+                  title: 'Upload successful',
+                  description: `${file.name} has been uploaded.`
+                });
+                resolve();
+              }).catch((error) => {
+                console.error('Failed to get download URL', error);
+                toast({
+                    variant: 'destructive',
+                    title: 'Upload Error',
+                    description: `An error occurred after uploading ${file.name}.`
+                });
+                reject(error);
+              });
+            }
+          );
+        });
+      } catch (error) {
+        // Error is already toasted inside the promise rejection
+        console.error(`Stopping upload process due to failure of ${file.name}.`);
+        break; // Stop uploading remaining files if one fails
+      }
     }
-  }, [storage, user, filesRef, toast, refetchFiles]);
+
+    setIsUploading(false);
+    setUploadingFileName('');
+    setUploadProgress(0);
+    refetchFiles();
+
+  }, [storage, user, toast, refetchFiles]);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
@@ -170,10 +183,6 @@ export default function MediaAdmin() {
     toast({ title: "Copied!", description: "File URL copied to clipboard."});
   }
 
-  const totalProgress = Object.values(uploadProgress).length > 0 
-    ? Object.values(uploadProgress).reduce((a, b) => a + b, 0) / Object.values(uploadProgress).length
-    : 0;
-
   return (
     <div className="flex-1 flex flex-col h-full gap-6">
       <div className="flex-1 border rounded-lg overflow-hidden glass-effect flex flex-col">
@@ -189,13 +198,16 @@ export default function MediaAdmin() {
                 {...getRootProps()}
                 className={cn(
                 'border-2 border-dashed rounded-lg p-12 text-center cursor-pointer transition-colors',
-                isDragActive ? 'border-primary bg-primary/10' : 'border-border hover:border-primary/50'
+                isDragActive ? 'border-primary bg-primary/10' : 'border-border hover:border-primary/50',
+                isUploading && 'cursor-not-allowed opacity-50'
                 )}
             >
-                <input {...getInputProps()} />
+                <input {...getInputProps()} disabled={isUploading} />
                 <div className="flex flex-col items-center gap-2 text-muted-foreground">
                     <FontAwesomeIcon icon={faCloudUploadAlt} className="h-10 w-10" />
-                    {isDragActive ? (
+                    {isUploading ? (
+                      <p>Uploading files, please wait...</p>
+                    ) : isDragActive ? (
                         <p>Drop the files here ...</p>
                     ) : (
                         <p>Drag & drop files here, or click to select</p>
@@ -205,15 +217,17 @@ export default function MediaAdmin() {
             </div>
             {isUploading && (
                 <div className="mt-4">
-                    <Progress value={totalProgress} className="w-full" />
-                    <p className="text-sm text-center mt-2 text-muted-foreground">Uploading... {Math.round(totalProgress)}%</p>
+                    <Progress value={uploadProgress} className="w-full" />
+                    <p className="text-sm text-center mt-2 text-muted-foreground">
+                      Uploading: {uploadingFileName} ({Math.round(uploadProgress)}%)
+                    </p>
                 </div>
             )}
         </div>
         
         <ScrollArea className="flex-1">
           <div className="p-6 pt-0">
-            {isLoadingFiles && !isUploading ? (
+            {isLoadingFiles ? (
                  <div className="flex justify-center items-center h-full min-h-[200px]">
                     <Preloader />
                 </div>
