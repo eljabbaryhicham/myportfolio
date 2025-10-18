@@ -1,62 +1,55 @@
 /**
- * @fileoverview Firestore Security Rules for Prototyping.
+ * @fileoverview Firestore Security Rules for the portfolio application.
  *
  * Core Philosophy:
- * This ruleset prioritizes security while enabling rapid prototyping. It implements strict
- * authorization controls, focusing on who can access what data, but relaxes schema validation
- * to allow for flexible data shapes during development.  All write operations require
- * authentication. Data structures are flat and avoid complex nested reads for authorization.
+ * This ruleset provides public read access to project and contact information,
+ * but restricts write access to authorized users only. This is suitable for a
+ * portfolio where the project data is public but only the owner can modify it.
  *
  * Data Structure:
- * - /projects/{projectId}: Stores project information.
- * - /contact/{contactId}: Stores contact page information.
+ * - /projects/{projectId}: Stores individual project details.
+ * - /contact/{contactId}: Stores contact information. Only a single document 'details' is expected here.
  *
  * Key Security Decisions:
- * - All write operations require authentication (`isSignedIn()`).
- * - No public write operations are allowed.
- * - List operations on /projects are public, but writes are restricted.
+ * - Public read access is granted for both projects and contact information.
+ * - Write access to projects is restricted, and requires proper authorization (TODO: Define authorization mechanism).
+ * - Write access to contact information is restricted, and requires proper authorization (TODO: Define authorization mechanism).
  *
+ * Denormalization for Authorization:
+ * Currently, no denormalization is used as authorization is not yet fully defined.
+ * In the future, consider adding an `ownerId` field to the `projects` collection to simplify write rules and improve performance.
+ *
+ * Structural Segregation:
+ * The application does not require structural segregation, as there is no need to differentiate between public and private versions of the same data.
  */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * @description Grants public read access to projects, but restricts write access to authenticated users.
+     * @description Grants public read access to projects and restricts write access to authorized users.
      * @path /projects/{projectId}
-     * @allow (get, list): Any user can read the project.
-     * @allow (create): Only authenticated users can create projects, enforcing ownership.
-     * @allow (update, delete): Only authenticated users can update or delete projects.
-     * @deny  (create, update, delete): If the user is not authenticated.
-     * @principle Allows public read access but enforces authentication for all write operations.
+     * @allow get, list: Anyone can read project details.
+     * @allow create, update, delete: Only authorized users can modify project details.
+     * @deny create, update, delete: Unauthorized users cannot modify project details.
+     * @principle Public read, restricted write based on authorization.
      */
     match /projects/{projectId} {
       allow get, list: if true;
-      allow create: if isSignedIn();
-      allow update, delete: if isSignedIn();
+      allow create, update, delete: if false; // TODO: Add authorization check for project modification
     }
 
     /**
-     * @description Grants read and write access to contact information only to authenticated users.
+     * @description Grants public read access to contact information and restricts write access to authorized users.
      * @path /contact/{contactId}
-     * @allow (get, list): Any authenticated user can read contact information.
-     * @allow (create, update, delete): Only authenticated users can create, update, or delete contact information.
-     * @deny (create, update, delete): If the user is not authenticated.
-     * @principle Restricts access to contact information to authenticated users only.
+     * @allow get, list: Anyone can read contact information.
+     * @allow create, update, delete: Only authorized users can modify contact information.
+     * @deny create, update, delete: Unauthorized users cannot modify contact information.
+     * @principle Public read, restricted write based on authorization.
      */
     match /contact/{contactId} {
-      allow get, list: if isSignedIn();
-      allow create, update, delete: if isSignedIn();
-    }
-
-    // --- Helper functions ---
-
-    /**
-     * @description Checks if the user is signed in.
-     * @return True if the user is authenticated, false otherwise.
-     */
-    function isSignedIn() {
-      return request.auth != null;
+      allow get, list: if true;
+      allow create, update, delete: if false; // TODO: Add authorization check for contact information modification
     }
   }
 }
