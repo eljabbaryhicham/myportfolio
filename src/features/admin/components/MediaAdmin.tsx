@@ -3,9 +3,9 @@
 
 import React, { useCallback, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
-import { useStorageList, useStorageUpload, useStorageDelete } from '@/firebase/storage/use-storage';
-import { useStorage, useAuth } from '@/firebase';
-import { ref } from 'firebase/storage';
+import { useStorageList, useStorageDelete } from '@/firebase/storage/use-storage';
+import { useStorage, useAuth, useUser } from '@/firebase';
+import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/hooks/use-toast';
@@ -16,6 +16,7 @@ import { faCloudUploadAlt, faCopy, faTrash, faFilm, faFileImage } from '@fortawe
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { cn } from '@/lib/utils';
 import Preloader from '@/components/preloader';
+import { v4 as uuidv4 } from 'uuid';
 
 const MediaFileCard = ({
   file,
@@ -81,52 +82,69 @@ const MediaFileCard = ({
 
 export default function MediaAdmin() {
   const storage = useStorage();
-  const auth = useAuth();
+  const { user } = useUser();
   const { toast } = useToast();
   const filesRef = ref(storage, 'uploads');
   
   const { files, isLoading: isLoadingFiles, refetch: refetchFiles } = useStorageList(filesRef);
-  const { upload } = useStorageUpload();
   const { deleteFile } = useStorageDelete();
 
-  const [uploadProgress, setUploadProgress] = useState<number | null>(null);
+  const [uploadProgress, setUploadProgress] = useState<Record<string, number>>({});
   const [isUploading, setIsUploading] = useState(false);
 
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
-    if (!storage || !auth || acceptedFiles.length === 0) {
-      toast({ variant: 'destructive', title: 'Error', description: 'Storage not available or no files selected' });
+    if (!storage || !user) {
+      toast({ variant: 'destructive', title: 'Upload Error', description: 'You must be logged in to upload files.' });
       return;
     }
-    
+    if (acceptedFiles.length === 0) return;
+
     setIsUploading(true);
-    setUploadProgress(0);
+    setUploadProgress({});
 
-    for (const file of acceptedFiles) {
-        try {
-            await upload(auth, file, filesRef, {
-                onProgress: (progress) => {
-                    setUploadProgress(progress);
-                },
+    const uploadPromises = acceptedFiles.map(file => {
+      return new Promise<void>((resolve, reject) => {
+        const fileExtension = file.name.split('.').pop();
+        const uniqueFileName = `${uuidv4()}.${fileExtension}`;
+        const fileRef = ref(filesRef, uniqueFileName);
+
+        const uploadTask = uploadBytesResumable(fileRef, file);
+        
+        uploadTask.on(
+          'state_changed',
+          (snapshot) => {
+            const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+            setUploadProgress(prev => ({ ...prev, [file.name]: progress }));
+          },
+          (error) => {
+            console.error('Upload failed for', file.name, error);
+            toast({
+              variant: 'destructive',
+              title: 'Upload Failed',
+              description: `Could not upload ${file.name}: ${error.message}`
             });
-        } catch (error: any) {
-            console.error('Upload failed:', error);
-            toast({ 
-                variant: 'destructive', 
-                title: 'Upload Failed', 
-                description: `Could not upload ${file.name}: ${error.message}` 
-            });
-            setIsUploading(false);
-            setUploadProgress(null);
-            return; // Stop on first error
-        }
+            reject(error);
+          },
+          async () => {
+            await getDownloadURL(uploadTask.snapshot.ref);
+            resolve();
+          }
+        );
+      });
+    });
+
+    try {
+        await Promise.all(uploadPromises);
+        toast({ title: 'Upload complete', description: `${acceptedFiles.length} file(s) uploaded successfully.` });
+    } catch (error) {
+        // Errors are already toasted inside the promise rejection
+        console.error("One or more uploads failed.", error);
+    } finally {
+        setIsUploading(false);
+        setUploadProgress({});
+        refetchFiles();
     }
-
-    toast({ title: 'Upload complete', description: `${acceptedFiles.length} file(s) uploaded.` });
-    setIsUploading(false);
-    setUploadProgress(null);
-    refetchFiles();
-
-  }, [upload, auth, filesRef, storage, toast, refetchFiles]);
+  }, [storage, user, filesRef, toast, refetchFiles]);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
@@ -151,6 +169,10 @@ export default function MediaAdmin() {
     navigator.clipboard.writeText(url);
     toast({ title: "Copied!", description: "File URL copied to clipboard."});
   }
+
+  const totalProgress = Object.values(uploadProgress).length > 0 
+    ? Object.values(uploadProgress).reduce((a, b) => a + b, 0) / Object.values(uploadProgress).length
+    : 0;
 
   return (
     <div className="flex-1 flex flex-col h-full gap-6">
@@ -181,10 +203,10 @@ export default function MediaAdmin() {
                     <p className="text-xs">(Images and Videos)</p>
                 </div>
             </div>
-            {isUploading && uploadProgress !== null && (
+            {isUploading && (
                 <div className="mt-4">
-                    <Progress value={uploadProgress} className="w-full" />
-                    <p className="text-sm text-center mt-2 text-muted-foreground">Uploading... {Math.round(uploadProgress)}%</p>
+                    <Progress value={totalProgress} className="w-full" />
+                    <p className="text-sm text-center mt-2 text-muted-foreground">Uploading... {Math.round(totalProgress)}%</p>
                 </div>
             )}
         </div>
