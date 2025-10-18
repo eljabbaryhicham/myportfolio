@@ -9,15 +9,11 @@ import { getStorage } from 'firebase/storage';
 
 // IMPORTANT: DO NOT MODIFY THIS FUNCTION
 export function initializeFirebase() {
-  if (!getApps().length) {
-    // When deploying to Vercel or other non-Firebase hosting,
-    // we must explicitly provide the configuration.
-    const firebaseApp = initializeApp(firebaseConfig);
-    return getSdks(firebaseApp);
-  }
-
-  // If already initialized, return the SDKs with the already initialized App
-  return getSdks(getApp());
+    // This check prevents re-initializing the app on every render.
+    if (!getApps().length) {
+        return getSdks(initializeApp(firebaseConfig));
+    }
+    return getSdks(getApp());
 }
 
 export function getSdks(firebaseApp: FirebaseApp) {

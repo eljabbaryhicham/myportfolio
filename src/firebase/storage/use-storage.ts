@@ -67,8 +67,6 @@ export function useStorageList(pathRef: StorageReference | null) {
 
 interface UploadCallbacks {
     onProgress?: (progress: number) => void;
-    onError?: (error: Error) => void;
-    onComplete?: (url: string) => void;
 }
 
 // Hook for uploading a file
@@ -79,9 +77,7 @@ export function useStorageUpload() {
     return new Promise<string>((resolve, reject) => {
       if (!storage) {
         const err = new Error("Firebase Storage is not available");
-        callbacks?.onError?.(err);
-        reject(err);
-        return;
+        return reject(err);
       }
       
       const fileExtension = file.name.split('.').pop();
@@ -97,17 +93,15 @@ export function useStorageUpload() {
           callbacks?.onProgress?.(progress);
         },
         (error) => {
-          callbacks?.onError?.(error);
-          reject(error); // CRITICAL: Reject the promise on error
+          // Firebase automatically rejects on error, but we explicitly reject here
+          // to ensure our promise fails correctly.
+          reject(error);
         },
         async () => {
           try {
             const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-            callbacks?.onComplete?.(downloadURL);
             resolve(downloadURL);
           } catch(e) {
-            const err = e as Error;
-            callbacks?.onError?.(err);
             reject(e);
           }
         }

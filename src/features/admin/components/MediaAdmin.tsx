@@ -1,7 +1,7 @@
 
 'use client';
 
-import React, { useCallback, useState, useRef } from 'react';
+import React, { useCallback, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { useStorageList, useStorageUpload, useStorageDelete } from '@/firebase/storage/use-storage';
 import { useStorage } from '@/firebase';
@@ -108,6 +108,7 @@ export default function MediaAdmin() {
                 },
             });
         } catch (error: any) {
+            console.error(error);
             toast({ variant: 'destructive', title: 'Upload Failed', description: `Could not upload ${file.name}: ${error.message}` });
             break; // Stop on first error
         }
@@ -134,8 +135,8 @@ export default function MediaAdmin() {
         await deleteFile(fileRef);
         toast({ title: "File deleted", description: `${name} has been removed.`});
         refetchFiles();
-    } catch (e) {
-        toast({ variant: 'destructive', title: "Delete failed", description: `Could not delete ${name}.`});
+    } catch (e: any) {
+        toast({ variant: 'destructive', title: "Delete failed", description: `Could not delete ${name}: ${e.message}`});
     }
   };
 
