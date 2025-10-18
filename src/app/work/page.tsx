@@ -355,7 +355,7 @@ export default function WorkPage() {
                     </DialogDescription>
                   </div>
                  
-                   <div className="mt-4 flex justify-between px-8 md:block md:mt-0">
+                   <div className="mt-4 md:mt-0 md:px-8 flex justify-between">
                      <Button
                         variant="outline"
                         size="icon"
@@ -381,29 +381,31 @@ export default function WorkPage() {
                 
                 <Separator className="bg-white/10 my-0" />
                 
-                <div className="flex-1 min-h-0 relative flex flex-col justify-center">
-                  <div className="w-full">
-                    {isClient && (
-                      <PortfolioMedia
-                        key={selectedItem.id}
-                        item={selectedItem}
-                        onFullscreenClick={setFullscreenImageUrl}
-                      />
+                <ScrollArea className="flex-1 min-h-0">
+                  <div className="relative flex flex-col justify-center h-full">
+                    <div className="w-full my-auto">
+                      {isClient && (
+                        <PortfolioMedia
+                          key={selectedItem.id}
+                          item={selectedItem}
+                          onFullscreenClick={setFullscreenImageUrl}
+                        />
+                      )}
+                    </div>
+                      
+                    {selectedItem.details && (
+                      <div className="p-4 md:p-6 text-center flex-shrink-0">
+                        <Button
+                          variant="default"
+                          onClick={() => setDetailsModalOpen(true)}
+                        >
+                          <FontAwesomeIcon icon={faUpDown} className="mr-2" />
+                          Show Details
+                        </Button>
+                      </div>
                     )}
                   </div>
-                    
-                  {selectedItem.details && (
-                    <div className="p-4 md:p-6 text-center flex-shrink-0">
-                      <Button
-                        variant="default"
-                        onClick={() => setDetailsModalOpen(true)}
-                      >
-                        <FontAwesomeIcon icon={faUpDown} className="mr-2" />
-                        Show Details
-                      </Button>
-                    </div>
-                  )}
-                </div>
+                </ScrollArea>
 
               </div>
               <DialogClose className="absolute right-4 top-4 z-10 h-8 w-8 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center ring-offset-background transition-opacity focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 opacity-70 hover:opacity-100">
@@ -515,5 +517,7 @@ export default function WorkPage() {
     </>
   );
 }
+
+    
 
     
