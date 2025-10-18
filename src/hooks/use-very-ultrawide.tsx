@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from 'react';
 
-const VERY_ULTRAWIDE_ASPECT_RATIO = 1.5;
+const VERY_ULTRAWide_ASPECT_RATIO = 1.8;
 
 export function useVeryUltrawide() {
   const [isVeryUltrawide, setIsVeryUltrawide] = useState(false);
@@ -15,7 +15,7 @@ export function useVeryUltrawide() {
 
     const checkAspectRatio = () => {
       const aspectRatio = window.innerWidth / window.innerHeight;
-      setIsVeryUltrawide(aspectRatio > VERY_ULTRAWIDE_ASPECT_RATIO);
+      setIsVeryUltrawide(aspectRatio > VERY_ULTRAWide_ASPECT_RATIO);
     };
 
     checkAspectRatio();
@@ -28,5 +28,3 @@ export function useVeryUltrawide() {
 
   return isVeryUltrawide;
 }
-
-
