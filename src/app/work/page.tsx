@@ -52,7 +52,7 @@ const PortfolioMedia = ({
     const youtubeRegex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
     const vimeoRegex = /(?:https?:\/\/)?(?:www\.)?vimeo\.com\/(?:channels\/(?:\w+\/)?|groups\/(?:[^\/]*)\/videos\/|album\/(?:\d+)\/video\/|)(\d+)/;
 
-    let sources = [];
+    let sources: {src: string, type?: string, provider?: 'youtube' | 'vimeo', size?: number}[] = [];
     if (item.sourceUrl) {
       const youtubeMatch = item.sourceUrl.match(youtubeRegex);
       if (youtubeMatch?.[1]) {
@@ -398,7 +398,7 @@ export default function WorkPage() {
                               const youtubeRegex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
                               const vimeoRegex = /(?:https?:\/\/)?(?:www\.)?vimeo\.com\/(?:channels\/(?:\w+\/)?|groups\/(?:[^\/]*)\/videos\/|album\/(?:\d+)\/video\/|)(\d+)/;
                               
-                              let videoSource = null;
+                              let videoSource: { type: 'video'; sources: { src: string; provider: 'youtube' | 'vimeo' }[] } | { type: 'video'; sources: { src: string; type: string }[] } | null = null;
                               const youtubeMatch = src.match(youtubeRegex);
                               if (youtubeMatch && youtubeMatch[1]) {
                                 videoSource = {

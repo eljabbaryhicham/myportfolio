@@ -33,8 +33,6 @@ const VideoPlayer = ({ source, poster, previewThumbnailsSrc }: VideoPlayerProps)
       playerRef.current = null;
     }
 
-    // CRITICAL FIX: Pass the source directly into the constructor options.
-    // This ensures options like quality selection are configured correctly at initialization.
     const options: Options = {
       // debug: true,
       settings: ['quality', 'speed', 'loop'],
