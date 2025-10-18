@@ -335,7 +335,7 @@ export default function WorkPage() {
       <Dialog open={!!selectedItem} onOpenChange={handleOpenChange}>
         <DialogContent 
             className={cn(
-                "w-[95vw] max-w-[1200px] max-h-[95vh] glass-effect p-0 flex flex-col group"
+                "w-[90vw] max-w-[80vh] aspect-video glass-effect p-0 flex flex-col group"
             )}
         >
           {selectedItem && (
@@ -374,9 +374,8 @@ export default function WorkPage() {
                 
                 <Separator className="bg-white/10 my-0" />
                 
-                <ScrollArea className="flex-1 min-h-0">
-                  <div className="flex flex-col h-full justify-between p-4 md:p-6">
-                    <div className="flex-1">
+                <div className="flex-1 min-h-0 relative p-4 md:p-6 flex flex-col">
+                    <div className="flex-1 flex items-center justify-center">
                       {isClient && (
                         <PortfolioMedia
                           key={selectedItem.id}
@@ -387,7 +386,7 @@ export default function WorkPage() {
                     </div>
                     
                     {selectedItem.details && (
-                      <div className="pt-4 md:pt-6 text-center">
+                      <div className="pt-4 md:pt-6 text-center flex-shrink-0">
                         <Button
                           variant="default"
                           onClick={() => setDetailsModalOpen(true)}
@@ -397,8 +396,8 @@ export default function WorkPage() {
                         </Button>
                       </div>
                     )}
-                  </div>
-                </ScrollArea>
+                </div>
+
               </div>
 
               <DialogClose className="absolute top-2 right-2 md:top-4 md:right-4 z-50 h-8 w-8 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center ring-offset-background transition-opacity focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2">
@@ -510,3 +509,4 @@ export default function WorkPage() {
     </>
   );
 }
+
