@@ -22,7 +22,7 @@ import {
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { useDoc, useFirestore, useMemoFirebase, setDocumentNonBlocking, useCollection } from '@/firebase';
-import { collection, doc } from 'firebase/firestore';
+import { collection, doc, setDoc } from 'firebase/firestore';
 import type { PortfolioItem } from '@/features/portfolio/data/portfolio-data';
 import { useEffect } from 'react';
 import Preloader from '@/components/preloader';
@@ -66,13 +66,22 @@ export default function HomeAdmin() {
     }
   }, [homeSettings, form]);
 
-  const onSubmit = (values: HomeAdminFormValues) => {
+  const onSubmit = async (values: HomeAdminFormValues) => {
     if (!settingsDocRef) return;
-    setDocumentNonBlocking(settingsDocRef, values, { merge: true });
-    toast({
-      title: 'Home Page Updated',
-      description: 'The featured video has been successfully updated.',
-    });
+    try {
+        await setDoc(settingsDocRef, values, { merge: true });
+        toast({
+            title: 'Home Page Updated',
+            description: 'The featured video has been successfully updated.',
+        });
+    } catch (e: any) {
+        console.error("Failed to save homepage settings", e);
+        toast({
+            variant: "destructive",
+            title: "Update Failed",
+            description: "Could not save settings. Please check console for details."
+        })
+    }
   };
 
   const isLoading = isLoadingSettings || isLoadingProjects;
