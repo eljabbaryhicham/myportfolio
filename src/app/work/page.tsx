@@ -42,10 +42,10 @@ const PortfolioMedia = ({
   item: PortfolioItem;
   onFullscreenClick: (url: string) => void;
 }) => {
-  const [isPosterLoaded, setIsPosterLoaded] = useState(false);
+  const [isContentLoaded, setIsContentLoaded] = useState(false);
   
   useEffect(() => {
-    setIsPosterLoaded(false);
+    setIsContentLoaded(false);
   }, [item.id]);
 
   const videoSource = useMemo(() => {
@@ -96,16 +96,16 @@ const PortfolioMedia = ({
             alt="poster image"
             fill
             className="opacity-0 pointer-events-none"
-            onLoad={() => setIsPosterLoaded(true)}
+            onLoad={() => setIsContentLoaded(true)}
         />
-        {!isPosterLoaded && (
+        {!isContentLoaded && (
           <div className="absolute inset-0 z-10 flex items-center justify-center bg-black">
             <Preloader />
           </div>
         )}
         <div className={cn(
           "w-full h-full transition-opacity duration-500",
-          isPosterLoaded ? 'opacity-100' : 'opacity-0'
+          isContentLoaded ? 'opacity-100' : 'opacity-0'
         )}>
           <VideoPlayer
             source={videoSource}
@@ -120,11 +120,20 @@ const PortfolioMedia = ({
   if (item.type === 'image' && item.sourceUrl) {
     return (
       <div className="relative aspect-video bg-black flex justify-center items-center group">
+         {!isContentLoaded && (
+          <div className="absolute inset-0 z-10 flex items-center justify-center">
+            <Preloader />
+          </div>
+        )}
         <MemoizedImage
           src={item.sourceUrl}
           alt={item.title}
           fill
-          className="object-contain"
+          className={cn(
+            "object-contain transition-opacity duration-500",
+            isContentLoaded ? 'opacity-100' : 'opacity-0'
+          )}
+          onLoad={() => setIsContentLoaded(true)}
         />
         <Button
           variant="ghost"
@@ -328,8 +337,8 @@ export default function WorkPage() {
       <Dialog open={!!selectedItem} onOpenChange={handleOpenChange}>
         <DialogContent 
             className={cn(
-                "w-[95vw] md:w-[90vw] md:max-w-[80vw] glass-effect p-0 flex flex-col overflow-hidden",
-                "h-auto max-h-[90vh]"
+                "w-[95vw] md:w-[90vw] md:max-w-[80vw] glass-effect p-0 flex flex-col group",
+                isVeryUltrawide ? 'h-[90vh]' : 'h-auto max-h-[90vh]'
             )}
         >
           {selectedItem && (
@@ -397,7 +406,7 @@ export default function WorkPage() {
                 </ScrollArea>
               </div>
 
-              <DialogClose className="absolute top-4 right-4 z-50 h-8 w-8 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2">
+              <DialogClose className="absolute top-4 right-4 z-50 h-8 w-8 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center opacity-0 group-hover:opacity-70 hover:!opacity-100 ring-offset-background transition-opacity focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2">
                 <FontAwesomeIcon icon={faXmark} className="h-4 w-4" />
                 <span className="sr-only">Close</span>
               </DialogClose>
@@ -408,7 +417,7 @@ export default function WorkPage() {
       
       {/* Nested Dialog for Details */}
       <Dialog open={detailsModalOpen} onOpenChange={handleDetailsOpenChange}>
-        <DialogContent className="w-[95vw] md:w-[90vw] md:max-w-[80vw] h-[90vh] glass-effect p-0 flex flex-col">
+        <DialogContent className="w-[95vw] md:w-[90vw] md:max-w-[80vw] h-[90vh] glass-effect p-0 flex flex-col group">
             {selectedItem && (
                 <>
                 <DialogHeader className="p-4 md:p-6 pb-0">
@@ -473,7 +482,7 @@ export default function WorkPage() {
                         >{selectedItem.details || ''}</ReactMarkdown>
                     </div>
                 </ScrollArea>
-                 <DialogClose className="absolute top-4 right-4 z-[101] h-8 w-8 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2">
+                 <DialogClose className="absolute top-4 right-4 z-[101] h-8 w-8 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center opacity-0 group-hover:opacity-70 hover:!opacity-100 ring-offset-background transition-opacity focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2">
                     <FontAwesomeIcon icon={faXmark} className="h-4 w-4" />
                     <span className="sr-only">Close</span>
                 </DialogClose>
@@ -484,7 +493,7 @@ export default function WorkPage() {
 
       {/* Fullscreen Image Dialog */}
       <Dialog open={!!fullscreenImageUrl} onOpenChange={(open) => !open && setFullscreenImageUrl(null)}>
-        <DialogContent className="w-[95vw] h-[90vh] glass-effect p-0 flex flex-col items-center justify-center bg-black/80 border-0">
+        <DialogContent className="w-[95vw] h-[90vh] glass-effect p-0 flex flex-col items-center justify-center bg-black/80 border-0 group">
           <DialogTitle className="sr-only">Fullscreen Image</DialogTitle>
           {fullscreenImageUrl && (
             <div className="relative w-full h-full">
@@ -497,7 +506,7 @@ export default function WorkPage() {
               />
             </div>
           )}
-          <DialogClose className="absolute top-4 right-4 z-[101] h-8 w-8 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2">
+          <DialogClose className="absolute top-4 right-4 z-[101] h-8 w-8 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center opacity-0 group-hover:opacity-70 hover:!opacity-100 ring-offset-background transition-opacity focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2">
               <FontAwesomeIcon icon={faXmark} className="h-4 w-4" />
               <span className="sr-only">Close</span>
           </DialogClose>
