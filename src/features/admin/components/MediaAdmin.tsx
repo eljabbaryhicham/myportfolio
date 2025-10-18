@@ -90,7 +90,6 @@ export default function MediaAdmin() {
 
   const [uploadProgress, setUploadProgress] = useState<number | null>(null);
   const [isUploading, setIsUploading] = useState(false);
-  const progressRef = useRef<number[]>([]);
 
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
     if (!storage || acceptedFiles.length === 0) {
@@ -100,28 +99,25 @@ export default function MediaAdmin() {
     
     setIsUploading(true);
     setUploadProgress(0);
-    progressRef.current = new Array(acceptedFiles.length).fill(0);
 
-    const uploadPromises = acceptedFiles.map((file, index) => {
-      return upload(file, filesRef, {
-        onProgress: (progress) => {
-          progressRef.current[index] = progress;
-          const totalProgress = progressRef.current.reduce((acc, curr) => acc + curr, 0) / acceptedFiles.length;
-          setUploadProgress(totalProgress);
-        },
-      });
-    });
-
-    try {
-      await Promise.all(uploadPromises);
-      toast({ title: 'Upload complete', description: `${acceptedFiles.length} file(s) uploaded.` });
-    } catch (error: any) {
-      toast({ variant: 'destructive', title: 'Upload Failed', description: error.message });
-    } finally {
-      setIsUploading(false);
-      setUploadProgress(null);
-      refetchFiles();
+    for (const file of acceptedFiles) {
+        try {
+            await upload(file, filesRef, {
+                onProgress: (progress) => {
+                    setUploadProgress(progress);
+                },
+            });
+        } catch (error: any) {
+            toast({ variant: 'destructive', title: 'Upload Failed', description: `Could not upload ${file.name}: ${error.message}` });
+            break; // Stop on first error
+        }
     }
+
+    toast({ title: 'Upload complete', description: `${acceptedFiles.length} file(s) uploaded.` });
+    setIsUploading(false);
+    setUploadProgress(null);
+    refetchFiles();
+
   }, [upload, filesRef, storage, toast, refetchFiles]);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
