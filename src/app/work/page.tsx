@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import Image from 'next/image';
@@ -497,7 +498,7 @@ export default function WorkPage() {
                         >{selectedItem.details || ''}</ReactMarkdown>
                     </div>
                 </ScrollArea>
-                 <DialogClose className="absolute top-4 right-4 z-[101] h-8 w-8 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center opacity-0 group-hover:opacity-70 hover:!opacity-100 ring-offset-background transition-opacity focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2">
+                 <DialogClose className="absolute top-4 right-4 z-[101] h-8 w-8 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center opacity-70 hover:!opacity-100 ring-offset-background transition-opacity focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2">
                     <FontAwesomeIcon icon={faXmark} className="h-4 w-4" />
                     <span className="sr-only">Close</span>
                 </DialogClose>
