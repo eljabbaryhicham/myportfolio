@@ -16,6 +16,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faRightFromBracket } from '@fortawesome/free-solid-svg-icons';
 import { Separator } from '@/components/ui/separator';
 import Preloader from '@/components/preloader';
+import HomeAdmin from './HomeAdmin';
 
 
 function AdminPage() {
@@ -81,10 +82,14 @@ function AdminPage() {
 
         <Tabs defaultValue="projects" className="flex-1 flex flex-col min-h-0">
             <TabsList className="w-full">
+                <TabsTrigger value="home" className="flex-1">Home</TabsTrigger>
                 <TabsTrigger value="projects" className="flex-1">Projects</TabsTrigger>
                 <TabsTrigger value="media" className="flex-1">Media</TabsTrigger>
                 <TabsTrigger value="contact" className="flex-1">Contact</TabsTrigger>
             </TabsList>
+            <TabsContent value="home" className="flex-1 overflow-auto mt-4">
+                <HomeAdmin />
+            </TabsContent>
             <TabsContent value="projects" className="flex-1 overflow-auto mt-4">
                 <ProjectAdmin />
             </TabsContent>

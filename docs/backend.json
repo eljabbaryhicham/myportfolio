@@ -97,6 +97,20 @@
         "title",
         "email"
       ]
+    },
+    "HomePageSettings": {
+      "title": "Home Page Settings",
+      "description": "Stores settings for the homepage, like the featured project.",
+      "type": "object",
+      "properties": {
+        "featuredProjectId": {
+          "type": "string",
+          "description": "The ID of the project featured on the homepage."
+        }
+      },
+      "required": [
+        "featuredProjectId"
+      ]
     }
   },
   "auth": {
@@ -135,6 +149,22 @@
             {
               "name": "contactId",
               "description": "The unique identifier for the contact document."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/homepage/{settingsId}",
+        "definition": {
+          "entityName": "HomePageSettings",
+          "schema": {
+            "$ref": "#/backend/entities/HomePageSettings"
+          },
+          "description": "Stores homepage settings.",
+          "params": [
+            {
+              "name": "settingsId",
+              "description": "The unique identifier for the homepage settings document."
             }
           ]
         }
