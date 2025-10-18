@@ -65,7 +65,7 @@ export function useStorageList(pathRef: StorageReference | null) {
 export function useStorageDelete() {
     const [isLoading, setIsLoading] = useState(false);
 
-    const deleteFile = useCallback(async (fileRef: StorageReference) => {
+    const deleteFile = async (fileRef: StorageReference) => {
         setIsLoading(true);
         try {
             await deleteObject(fileRef);
@@ -75,7 +75,7 @@ export function useStorageDelete() {
             console.error("Delete Error:", e);
             throw e; // re-throw to be caught by caller
         }
-    }, []);
+    };
 
     return { deleteFile, isLoading };
 }
