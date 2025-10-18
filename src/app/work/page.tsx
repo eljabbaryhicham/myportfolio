@@ -338,7 +338,7 @@ export default function WorkPage() {
         <DialogContent 
             className={cn(
                 "w-[95vw] md:w-[90vw] md:max-w-[80vw] glass-effect p-0 flex flex-col group",
-                isWideScreen ? 'h-[90vh]' : 'max-h-[90vh]'
+                isWideScreen ? 'h-[80vh]' : 'max-h-[90vh]'
             )}
         >
           {selectedItem && (

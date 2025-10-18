@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from 'react';
 
-const WIDE_SCREEN_BREAKPOINT = 1920;
+const WIDE_ASPECT_RATIO = 1.7;
 
 export function useIsWideScreen() {
   const [isWideScreen, setIsWideScreen] = useState(false);
@@ -14,7 +14,8 @@ export function useIsWideScreen() {
     }
 
     const checkIsWide = () => {
-      setIsWideScreen(window.innerWidth > WIDE_SCREEN_BREAKPOINT);
+      const aspectRatio = window.innerWidth / window.innerHeight;
+      setIsWideScreen(aspectRatio > WIDE_ASPECT_RATIO);
     };
 
     checkIsWide();
