@@ -347,30 +347,33 @@ export default function WorkPage() {
                     <DialogTitle className="text-xl md:text-2xl">
                       {selectedItem.title}
                     </DialogTitle>
+                     <DialogDescription className="text-sm md:text-base text-center text-foreground/70 mt-2 md:mt-4 whitespace-pre-wrap max-w-2xl mx-auto">
+                        {selectedItem.description}
+                    </DialogDescription>
                   </div>
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={handlePreviousProject}
-                    disabled={filteredItems.length <= 1}
-                    className="absolute left-4 md:left-16 top-1/2 -translate-y-1/2 h-8 w-8 md:h-10 md:w-10"
-                  >
-                    <FontAwesomeIcon icon={faArrowLeft} className="h-4 w-4 md:h-5 md:w-5" />
-                    <span className="sr-only">Previous Project</span>
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={handleNextProject}
-                    disabled={filteredItems.length <= 1}
-                    className="absolute right-4 md:right-16 top-1/2 -translate-y-1/2 h-8 w-8 md:h-10 md:w-10"
-                  >
-                    <FontAwesomeIcon icon={faArrowRight} className="h-4 w-4 md:h-5 md:w-5" />
-                    <span className="sr-only">Next Project</span>
-                  </Button>
-                  <DialogDescription className="text-sm md:text-base text-center text-foreground/70 mt-2 md:mt-4 whitespace-pre-wrap max-w-2xl mx-auto">
-                    {selectedItem.description}
-                  </DialogDescription>
+                 
+                  <div className="mt-4 md:mt-0 flex justify-center gap-4 md:block">
+                     <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={handlePreviousProject}
+                        disabled={filteredItems.length <= 1}
+                        className="md:absolute md:left-16 md:top-1/2 md:-translate-y-1/2 h-8 w-8 md:h-10 md:w-10"
+                    >
+                        <FontAwesomeIcon icon={faArrowLeft} className="h-4 w-4 md:h-5 md:w-5" />
+                        <span className="sr-only">Previous Project</span>
+                    </Button>
+                    <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={handleNextProject}
+                        disabled={filteredItems.length <= 1}
+                        className="md:absolute md:right-16 md:top-1/2 md:-translate-y-1/2 h-8 w-8 md:h-10 md:w-10"
+                    >
+                        <FontAwesomeIcon icon={faArrowRight} className="h-4 w-4 md:h-5 md:w-5" />
+                        <span className="sr-only">Next Project</span>
+                    </Button>
+                  </div>
                 </DialogHeader>
                 
                 <Separator className="bg-white/10 my-0" />
