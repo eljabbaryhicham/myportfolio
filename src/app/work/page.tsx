@@ -25,6 +25,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUpDown, faXmark, faExpand, faPalette, faFilm, faArrowLeft, faArrowRight } from '@fortawesome/free-solid-svg-icons';
 import { Separator } from '@/components/ui/separator';
 import Preloader from '@/components/preloader';
+import { useIsExtraWide } from '@/hooks/use-is-extra-wide';
 
 const VideoPlayer = dynamic(() => import('@/components/video-player'), {
   ssr: false,
@@ -233,6 +234,7 @@ export default function WorkPage() {
   const [filter, setFilter] = useState<'all' | 'image' | 'video'>('all');
   const [fullscreenImageUrl, setFullscreenImageUrl] = useState<string | null>(null);
   const [isClient, setIsClient] = useState(false);
+  const isExtraWide = useIsExtraWide();
 
   useEffect(() => {
     setIsClient(true);
@@ -336,7 +338,8 @@ export default function WorkPage() {
         <DialogContent 
           className={cn(
             "glass-effect p-0 flex flex-col",
-            "w-[95vw] max-w-7xl max-h-[90vh]"
+            "w-[95vw] max-w-7xl",
+            isExtraWide ? "h-[90vh]" : "max-h-[90vh]"
           )}
         >
           {selectedItem && (
@@ -352,7 +355,7 @@ export default function WorkPage() {
                     </DialogDescription>
                   </div>
                  
-                   <div className="mt-4 md:mt-0 flex justify-between px-8 md:block">
+                   <div className="mt-4 flex justify-between px-8 md:block md:mt-0">
                      <Button
                         variant="outline"
                         size="icon"
@@ -512,3 +515,5 @@ export default function WorkPage() {
     </>
   );
 }
+
+    
