@@ -336,7 +336,7 @@ export default function WorkPage() {
         <DialogContent 
           className={cn(
             "glass-effect p-0 flex flex-col",
-            "w-auto max-w-[95vw] max-h-[90vh]"
+            "w-[95vw] max-w-7xl max-h-[90vh]"
           )}
         >
           {selectedItem && (
@@ -376,7 +376,7 @@ export default function WorkPage() {
                 <Separator className="bg-white/10 my-0" />
                 
                 <div className="flex-1 min-h-0 relative flex flex-col">
-                  <div className="flex-1 flex items-center justify-center sm:w-[calc(16/9*70vh)] max-w-full mx-auto">
+                  <div className="flex-1 flex items-center justify-center">
                     {isClient && (
                       <PortfolioMedia
                         key={selectedItem.id}
