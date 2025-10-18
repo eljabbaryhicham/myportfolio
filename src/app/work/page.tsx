@@ -352,7 +352,7 @@ export default function WorkPage() {
                     size="icon"
                     onClick={handlePreviousProject}
                     disabled={filteredItems.length <= 1}
-                    className="absolute left-4 top-1/2 -translate-y-1/2 h-12 w-12 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                    className="absolute left-8 top-1/2 -translate-y-1/2 h-12 w-12 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
                   >
                     <FontAwesomeIcon icon={faArrowLeft} className="h-6 w-6" />
                     <span className="sr-only">Previous Project</span>
@@ -362,7 +362,7 @@ export default function WorkPage() {
                     size="icon"
                     onClick={handleNextProject}
                     disabled={filteredItems.length <= 1}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 h-12 w-12 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                    className="absolute right-8 top-1/2 -translate-y-1/2 h-12 w-12 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
                   >
                     <FontAwesomeIcon icon={faArrowRight} className="h-6 w-6" />
                     <span className="sr-only">Next Project</span>
@@ -510,13 +510,3 @@ export default function WorkPage() {
     </>
   );
 }
-
-    
-
-    
-
-    
-
-    
-
-    
