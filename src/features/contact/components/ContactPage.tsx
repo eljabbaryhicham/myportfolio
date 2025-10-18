@@ -187,7 +187,7 @@ export default function ContactPage() {
                             Send Another Message
                           </Button>
                           {contactInfo?.whatsApp && (
-                            <Button asChild className="bg-gradient-to-r from-green-500 to-emerald-600 mt-4 animate-shake">
+                            <Button asChild className="bg-gradient-to-r from-green-500 to-emerald-600 mt-4">
                                 <Link href={`https://wa.me/${contactInfo.whatsApp.replace(/\\D/g, '')}`} target="_blank" rel="noopener noreferrer">
                                     <FontAwesomeIcon icon={faWhatsapp} className="mr-2 h-5 w-5" />
                                     Chat on WhatsApp
@@ -288,5 +288,6 @@ export default function ContactPage() {
     
 
     
+
 
 
