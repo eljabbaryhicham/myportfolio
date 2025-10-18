@@ -4,6 +4,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import Plyr, { Options, SourceInfo } from 'plyr';
 import 'plyr-react/plyr.css';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface VideoPlayerProps {
   source: SourceInfo;
@@ -15,6 +16,7 @@ const VideoPlayer = ({ source, poster, previewThumbnailsSrc }: VideoPlayerProps)
   const videoRef = useRef<HTMLVideoElement>(null);
   const playerRef = useRef<Plyr | null>(null);
   const [isMounted, setIsMounted] = useState(false);
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     setIsMounted(true);
@@ -27,18 +29,18 @@ const VideoPlayer = ({ source, poster, previewThumbnailsSrc }: VideoPlayerProps)
 
     const videoElement = videoRef.current;
     
-    // Ensure any existing player instance is destroyed before creating a new one.
     if (playerRef.current) {
       playerRef.current.destroy();
       playerRef.current = null;
     }
 
     const options: Options = {
-      // debug: true,
       settings: ['quality', 'speed', 'loop'],
       quality: {
-        default: 576, // A default quality
-        options: [4320, 2160, 1440, 1080, 720, 576, 480, 360, 240], // All possible qualities
+        // Set a lower default quality for mobile and a higher one for desktop
+        default: isMobile ? 576 : 1080, 
+        // All available options
+        options: [4320, 2160, 1440, 1080, 720, 576, 480, 360, 240], 
       },
       previewThumbnails: {
         enabled: !!previewThumbnailsSrc,
@@ -51,21 +53,17 @@ const VideoPlayer = ({ source, poster, previewThumbnailsSrc }: VideoPlayerProps)
       },
     };
     
-    // Initialize the player. It will pick up the source from the <video> element.
     playerRef.current = new Plyr(videoElement, options);
 
-    // Now, set the source on the Plyr instance. This is the correct way
-    // to load content dynamically after initialization, especially for YouTube/Vimeo.
     playerRef.current.source = source;
 
-    // Cleanup function to destroy the player on component unmount
     return () => {
       if (playerRef.current) {
         playerRef.current.destroy();
         playerRef.current = null;
       }
     };
-  }, [isMounted, source, previewThumbnailsSrc]); // Re-run effect if source or thumbnails change
+  }, [isMounted, source, previewThumbnailsSrc, isMobile]); // Re-run effect if isMobile changes
 
   return (
     <video
@@ -74,8 +72,6 @@ const VideoPlayer = ({ source, poster, previewThumbnailsSrc }: VideoPlayerProps)
       poster={poster}
       playsInline
       controls
-      // The initial source can be set here, but Plyr will manage it.
-      // This helps with server-side rendering and initial setup.
     />
   );
 };
