@@ -335,7 +335,8 @@ export default function WorkPage() {
       <Dialog open={!!selectedItem} onOpenChange={handleOpenChange}>
         <DialogContent 
             className={cn(
-                "w-[95vw] max-w-[1200px] max-h-[90vh] glass-effect p-0 flex flex-col"
+                "glass-effect p-0 flex flex-col max-h-[90vh]",
+                "w-[min(95vw,calc(16/9*80vh))]"
             )}
         >
           {selectedItem && (
@@ -509,12 +510,3 @@ export default function WorkPage() {
     </>
   );
 }
-
-
-
-
-    
-
-    
-
-    
