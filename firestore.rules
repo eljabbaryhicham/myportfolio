@@ -1,55 +1,30 @@
-/**
- * @fileoverview Firestore Security Rules for the portfolio application.
- *
- * Core Philosophy:
- * This ruleset provides public read access to project and contact information,
- * but restricts write access to authorized users only. This is suitable for a
- * portfolio where the project data is public but only the owner can modify it.
- *
- * Data Structure:
- * - /projects/{projectId}: Stores individual project details.
- * - /contact/{contactId}: Stores contact information. Only a single document 'details' is expected here.
- *
- * Key Security Decisions:
- * - Public read access is granted for both projects and contact information.
- * - Write access to projects is restricted, and requires proper authorization (TODO: Define authorization mechanism).
- * - Write access to contact information is restricted, and requires proper authorization (TODO: Define authorization mechanism).
- *
- * Denormalization for Authorization:
- * Currently, no denormalization is used as authorization is not yet fully defined.
- * In the future, consider adding an `ownerId` field to the `projects` collection to simplify write rules and improve performance.
- *
- * Structural Segregation:
- * The application does not require structural segregation, as there is no need to differentiate between public and private versions of the same data.
- */
 rules_version = '2';
+
 service cloud.firestore {
   match /databases/{database}/documents {
-
-    /**
-     * @description Grants public read access to projects and restricts write access to authorized users.
-     * @path /projects/{projectId}
-     * @allow get, list: Anyone can read project details.
-     * @allow create, update, delete: Only authorized users can modify project details.
-     * @deny create, update, delete: Unauthorized users cannot modify project details.
-     * @principle Public read, restricted write based on authorization.
-     */
-    match /projects/{projectId} {
-      allow get, list: if true;
-      allow create, update, delete: if false; // TODO: Add authorization check for project modification
+    // Default deny all access
+    match /{document=**} {
+      allow read, write: if false;
     }
 
-    /**
-     * @description Grants public read access to contact information and restricts write access to authorized users.
-     * @path /contact/{contactId}
-     * @allow get, list: Anyone can read contact information.
-     * @allow create, update, delete: Only authorized users can modify contact information.
-     * @deny create, update, delete: Unauthorized users cannot modify contact information.
-     * @principle Public read, restricted write based on authorization.
-     */
-    match /contact/{contactId} {
-      allow get, list: if true;
-      allow create, update, delete: if false; // TODO: Add authorization check for contact information modification
+    // Allow public read access to see the portfolio projects
+    match /projects/{projectId} {
+      allow read: if true;
+    }
+
+    // Allow public read access for the contact page
+    match /contact/details {
+        allow read: if true;
+    }
+
+    // Allow ONLY authenticated users to write to the projects and contact collections.
+    // This secures your admin panel functionality.
+    match /projects/{projectId} {
+      allow write: if request.auth != null;
+    }
+
+    match /contact/details {
+      allow write: if request.auth != null;
     }
   }
 }

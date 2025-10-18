@@ -13,6 +13,8 @@ import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { toast } from '@/hooks/use-toast';
 
+const GENERIC_ERROR_MESSAGE = 'Please check if a browser extension (like an ad blocker) is interfering, or if you have the necessary permissions.';
+
 /**
  * Initiates a setDoc operation for a document reference.
  * Does NOT await the write operation internally.
@@ -28,7 +30,7 @@ export function setDocumentNonBlocking(docRef: DocumentReference, data: any, opt
     toast({
       variant: 'destructive',
       title: 'Save Operation Blocked',
-      description: 'Could not save data. Please check if a browser extension (like an ad blocker) is interfering, or if you have the necessary permissions.',
+      description: GENERIC_ERROR_MESSAGE,
     });
   });
   // Execution continues immediately
@@ -50,7 +52,7 @@ export function addDocumentNonBlocking(colRef: CollectionReference, data: any) {
      toast({
       variant: 'destructive',
       title: 'Save Operation Blocked',
-      description: 'Could not add data. Please check if a browser extension (like an ad blocker) is interfering, or if you have the necessary permissions.',
+      description: GENERIC_ERROR_MESSAGE,
     });
   });
   return promise;
@@ -71,7 +73,7 @@ export function updateDocumentNonBlocking(docRef: DocumentReference, data: any) 
      toast({
       variant: 'destructive',
       title: 'Update Operation Blocked',
-      description: 'Could not update data. Please check if a browser extension (like an ad blocker) is interfering, or if you have the necessary permissions.',
+      description: GENERIC_ERROR_MESSAGE,
     });
   });
 }
@@ -90,7 +92,7 @@ export function deleteDocumentNonBlocking(docRef: DocumentReference) {
      toast({
       variant: 'destructive',
       title: 'Delete Operation Blocked',
-      description: 'Could not delete item. Please check if a browser extension (like an ad blocker) is interfering, or if you have the necessary permissions.',
+      description: GENERIC_ERROR_MESSAGE,
     });
   });
 }
