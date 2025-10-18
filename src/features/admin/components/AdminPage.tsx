@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useEffect } from 'react';
@@ -10,6 +11,7 @@ import { useUser } from '@/firebase';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import ProjectAdmin from './ProjectAdmin';
 import ContactAdmin from './ContactAdmin';
+import MediaAdmin from './MediaAdmin';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faRightFromBracket } from '@fortawesome/free-solid-svg-icons';
 import { Separator } from '@/components/ui/separator';
@@ -80,10 +82,14 @@ function AdminPage() {
         <Tabs defaultValue="projects" className="flex-1 flex flex-col min-h-0">
             <TabsList className="w-full">
                 <TabsTrigger value="projects" className="flex-1">Projects</TabsTrigger>
+                <TabsTrigger value="media" className="flex-1">Media</TabsTrigger>
                 <TabsTrigger value="contact" className="flex-1">Contact</TabsTrigger>
             </TabsList>
             <TabsContent value="projects" className="flex-1 overflow-auto mt-4">
                 <ProjectAdmin />
+            </TabsContent>
+            <TabsContent value="media" className="flex-1 overflow-auto mt-4">
+                <MediaAdmin />
             </TabsContent>
             <TabsContent value="contact" className="flex-1 overflow-auto mt-4">
                 <ContactAdmin />
