@@ -119,13 +119,12 @@ const PortfolioMedia = ({
 
   if (item.type === 'image' && item.sourceUrl) {
     return (
-      <div className="relative w-full h-auto flex-shrink-0 bg-black flex justify-center items-center group">
+      <div className="relative aspect-video bg-black flex justify-center items-center group">
         <MemoizedImage
           src={item.sourceUrl}
           alt={item.title}
-          width={1280}
-          height={720}
-          className="object-contain w-auto h-auto max-w-full max-h-full"
+          fill
+          className="object-contain"
         />
         <Button
           variant="ghost"
@@ -462,5 +461,7 @@ export default function WorkPage() {
     </>
   );
 }
+
+    
 
     
