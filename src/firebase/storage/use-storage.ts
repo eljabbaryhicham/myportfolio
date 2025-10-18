@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
@@ -97,7 +98,7 @@ export function useStorageUpload() {
         },
         (error) => {
           callbacks?.onError?.(error);
-          reject(error);
+          reject(error); // CRITICAL: Reject the promise on error
         },
         async () => {
           try {
