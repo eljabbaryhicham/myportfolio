@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useCallback, useState } from 'react';
@@ -91,29 +92,36 @@ export default function MediaAdmin() {
   const [isUploading, setIsUploading] = useState(false);
 
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
-    if (!storage) {
-        toast({ variant: 'destructive', title: 'Error', description: 'Storage not available' });
-        return;
+    if (!storage || acceptedFiles.length === 0) {
+      toast({ variant: 'destructive', title: 'Error', description: 'Storage not available or no files selected' });
+      return;
     }
     
     setIsUploading(true);
     setUploadProgress(0);
 
-    for (const file of acceptedFiles) {
-        try {
-            await upload(file, filesRef, {
-                onProgress: (progress) => setUploadProgress(progress),
-            });
-        } catch (error: any) {
-            toast({ variant: 'destructive', title: 'Upload Failed', description: error.message });
-        }
-    }
-    
-    setIsUploading(false);
-    setUploadProgress(null);
-    refetchFiles();
-    toast({ title: 'Upload complete', description: `${acceptedFiles.length} file(s) uploaded.` });
+    const progressArray = new Array(acceptedFiles.length).fill(0);
 
+    const uploadPromises = acceptedFiles.map((file, index) => {
+      return upload(file, filesRef, {
+        onProgress: (progress) => {
+          progressArray[index] = progress;
+          const totalProgress = progressArray.reduce((acc, curr) => acc + curr, 0) / acceptedFiles.length;
+          setUploadProgress(totalProgress);
+        },
+      });
+    });
+
+    try {
+      await Promise.all(uploadPromises);
+      toast({ title: 'Upload complete', description: `${acceptedFiles.length} file(s) uploaded.` });
+    } catch (error: any) {
+      toast({ variant: 'destructive', title: 'Upload Failed', description: error.message });
+    } finally {
+      setIsUploading(false);
+      setUploadProgress(null);
+      refetchFiles();
+    }
   }, [upload, filesRef, storage, toast, refetchFiles]);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
