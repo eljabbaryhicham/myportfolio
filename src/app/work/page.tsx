@@ -238,7 +238,7 @@ export default function WorkPage() {
   const [isClient, setIsClient] = useState(false);
   const [isDescriptionLong, setIsDescriptionLong] = useState(false);
   const isExtraWide = useIsExtraWide();
-  const [isCloseButtonVisible, setIsCloseButtonVisible] = useState(true);
+  const [isCloseButtonVisible, setIsCloseButtonVisible] = useState(false);
   const inactivityTimer = useRef<NodeJS.Timeout | null>(null);
   const isMobile = useIsMobile();
 
@@ -294,37 +294,26 @@ export default function WorkPage() {
     setSelectedItem(filteredItems[prevIndex]);
   };
 
-  const handleMouseMove = () => {
+  const handleDialogMouseMove = () => {
     if (inactivityTimer.current) {
-        clearTimeout(inactivityTimer.current);
+      clearTimeout(inactivityTimer.current);
     }
     setIsCloseButtonVisible(true);
     inactivityTimer.current = setTimeout(() => {
-        setIsCloseButtonVisible(false);
+      setIsCloseButtonVisible(false);
     }, 1000);
   };
 
-  useEffect(() => {
-    if (selectedItem || fullscreenImageUrl) {
-        handleMouseMove(); // Initial call
-        window.addEventListener('mousemove', handleMouseMove);
-        window.addEventListener('scroll', handleMouseMove);
-    } else {
-        if (inactivityTimer.current) {
-            clearTimeout(inactivityTimer.current);
-        }
-        window.removeEventListener('mousemove', handleMouseMove);
-        window.removeEventListener('scroll', handleMouseMove);
-    }
+  const handleDialogMouseEnter = () => {
+    setIsCloseButtonVisible(true);
+  };
 
-    return () => {
-        if (inactivityTimer.current) {
-            clearTimeout(inactivityTimer.current);
-        }
-        window.removeEventListener('mousemove', handleMouseMove);
-        window.removeEventListener('scroll', handleMouseMove);
-    };
-  }, [selectedItem, fullscreenImageUrl]);
+  const handleDialogMouseLeave = () => {
+    if (inactivityTimer.current) {
+      clearTimeout(inactivityTimer.current);
+    }
+    setIsCloseButtonVisible(false);
+  };
 
   
   return (
@@ -393,8 +382,9 @@ export default function WorkPage() {
             "w-[95vw] max-w-7xl",
             isExtraWide || isDescriptionLong ? "h-[90vh]" : "max-h-[90vh]"
           )}
-          onMouseEnter={() => setIsCloseButtonVisible(true)}
-          onMouseLeave={() => setIsCloseButtonVisible(false)}
+          onMouseMove={handleDialogMouseMove}
+          onMouseEnter={handleDialogMouseEnter}
+          onMouseLeave={handleDialogMouseLeave}
         >
           {selectedItem && (
             <>
@@ -477,8 +467,9 @@ export default function WorkPage() {
       {/* Nested Dialog for Details */}
       <Dialog open={detailsModalOpen} onOpenChange={handleDetailsOpenChange}>
         <DialogContent className="w-[95vw] md:w-[90vw] md:max-w-[80vw] h-[90vh] glass-effect p-0 flex flex-col group"
-          onMouseEnter={() => setIsCloseButtonVisible(true)}
-          onMouseLeave={() => setIsCloseButtonVisible(false)}
+          onMouseMove={handleDialogMouseMove}
+          onMouseEnter={handleDialogMouseEnter}
+          onMouseLeave={handleDialogMouseLeave}
         >
             {selectedItem && (
                 <>
@@ -559,8 +550,9 @@ export default function WorkPage() {
       {/* Fullscreen Image Dialog */}
       <Dialog open={!!fullscreenImageUrl} onOpenChange={(open) => !open && setFullscreenImageUrl(null)}>
         <DialogContent className="w-[95vw] h-[90vh] glass-effect p-0 flex flex-col items-center justify-center bg-black/80 border-0 group"
-          onMouseEnter={() => setIsCloseButtonVisible(true)}
-          onMouseLeave={() => setIsCloseButtonVisible(false)}
+          onMouseMove={handleDialogMouseMove}
+          onMouseEnter={handleDialogMouseEnter}
+          onMouseLeave={handleDialogMouseLeave}
         >
           <DialogTitle className="sr-only">Fullscreen Image</DialogTitle>
           {fullscreenImageUrl && (
