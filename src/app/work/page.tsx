@@ -337,8 +337,7 @@ export default function WorkPage() {
       <Dialog open={!!selectedItem} onOpenChange={handleOpenChange}>
         <DialogContent 
             className={cn(
-                "w-[95vw] md:w-[90vw] md:max-w-[80vw] glass-effect p-0 flex flex-col group",
-                isVeryUltrawide ? 'h-[90vh]' : 'h-auto max-h-[90vh]'
+                "w-[95vw] md:w-[90vw] md:max-w-[80vw] glass-effect p-0 flex flex-col group max-h-[90vh]"
             )}
         >
           {selectedItem && (
@@ -346,11 +345,7 @@ export default function WorkPage() {
               <div className="flex flex-col flex-1 min-h-0">
                 <DialogHeader className="p-4 md:p-6 flex-shrink-0">
                   <div className="flex items-center justify-between">
-                    <DialogTitle className="text-xl md:text-2xl flex-1">
-                      {selectedItem.title}
-                    </DialogTitle>
-                    <div className="flex items-center gap-2">
-                      <Button
+                    <Button
                         variant="outline"
                         size="icon"
                         onClick={handlePreviousProject}
@@ -360,19 +355,23 @@ export default function WorkPage() {
                         <FontAwesomeIcon icon={faArrowLeft} className="h-4 w-4" />
                         <span className="sr-only">Previous Project</span>
                       </Button>
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        onClick={handleNextProject}
-                        disabled={filteredItems.length <= 1}
-                        className="h-8 w-8"
-                      >
-                        <FontAwesomeIcon icon={faArrowRight} className="h-4 w-4" />
-                        <span className="sr-only">Next Project</span>
-                      </Button>
+                    <div className="flex-1 text-center mx-4">
+                      <DialogTitle className="text-xl md:text-2xl">
+                        {selectedItem.title}
+                      </DialogTitle>
                     </div>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={handleNextProject}
+                      disabled={filteredItems.length <= 1}
+                      className="h-8 w-8"
+                    >
+                      <FontAwesomeIcon icon={faArrowRight} className="h-4 w-4" />
+                      <span className="sr-only">Next Project</span>
+                    </Button>
                   </div>
-                  <DialogDescription className="text-base text-foreground/70 mt-2 whitespace-pre-wrap">
+                  <DialogDescription className="text-base text-center text-foreground/70 mt-4 whitespace-pre-wrap">
                     {selectedItem.description}
                   </DialogDescription>
                 </DialogHeader>
@@ -515,6 +514,8 @@ export default function WorkPage() {
     </>
   );
 }
+
+    
 
     
 
