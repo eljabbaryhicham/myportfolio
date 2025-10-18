@@ -3,8 +3,8 @@
 
 import React, { useCallback, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
-import { useStorageList, useStorageUpload, useStorageDelete } from '@/firebase/storage/use-storage';
-import { useStorage } from '@/firebase';
+import { useStorageList, useStorageUpload } from '@/firebase/storage/use-storage';
+import { useStorage, useAuth } from '@/firebase';
 import { ref } from 'firebase/storage';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
@@ -81,18 +81,19 @@ const MediaFileCard = ({
 
 export default function MediaAdmin() {
   const storage = useStorage();
+  const auth = useAuth();
   const { toast } = useToast();
   const filesRef = ref(storage, 'uploads');
   
   const { files, isLoading: isLoadingFiles, refetch: refetchFiles } = useStorageList(filesRef);
   const { upload } = useStorageUpload();
-  const { deleteFile, isLoading: isDeleting } = useStorageDelete();
+  const { deleteFile } = useStorageDelete();
 
   const [uploadProgress, setUploadProgress] = useState<number | null>(null);
   const [isUploading, setIsUploading] = useState(false);
 
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
-    if (!storage || acceptedFiles.length === 0) {
+    if (!storage || !auth || acceptedFiles.length === 0) {
       toast({ variant: 'destructive', title: 'Error', description: 'Storage not available or no files selected' });
       return;
     }
@@ -102,7 +103,7 @@ export default function MediaAdmin() {
 
     for (const file of acceptedFiles) {
         try {
-            await upload(file, filesRef, {
+            await upload(auth, file, filesRef, {
                 onProgress: (progress) => {
                     setUploadProgress(progress);
                 },
@@ -125,7 +126,7 @@ export default function MediaAdmin() {
     setUploadProgress(null);
     refetchFiles();
 
-  }, [upload, filesRef, storage, toast, refetchFiles]);
+  }, [upload, auth, filesRef, storage, toast, refetchFiles]);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,

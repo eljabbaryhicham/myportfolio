@@ -14,6 +14,7 @@ import {
 } from 'firebase/storage';
 import { useStorage as useFirebaseStorage } from '@/firebase/provider';
 import { v4 as uuidv4 } from 'uuid';
+import { Auth } from 'firebase/auth';
 
 // Hook to list files in a storage path
 export function useStorageList(pathRef: StorageReference | null) {
@@ -73,10 +74,14 @@ interface UploadCallbacks {
 export function useStorageUpload() {
   const storage = useFirebaseStorage();
 
-  const upload = useCallback((file: File, pathRef: StorageReference, callbacks?: UploadCallbacks) => {
+  const upload = useCallback((auth: Auth, file: File, pathRef: StorageReference, callbacks?: UploadCallbacks) => {
     return new Promise<string>((resolve, reject) => {
       if (!storage) {
         return reject(new Error("Firebase Storage is not available"));
+      }
+
+      if (!auth.currentUser) {
+        return reject(new Error("User is not authenticated. Cannot upload file."));
       }
       
       const fileExtension = file.name.split('.').pop();
