@@ -335,7 +335,7 @@ export default function WorkPage() {
       <Dialog open={!!selectedItem} onOpenChange={handleOpenChange}>
         <DialogContent 
             className={cn(
-                "w-[90vw] max-w-[80vh] max-h-[90vh] glass-effect p-0 flex flex-col"
+                "aspect-video w-[95vw] max-w-[140vh] glass-effect p-0 flex flex-col"
             )}
         >
           {selectedItem && (
@@ -512,5 +512,7 @@ export default function WorkPage() {
 
 
 
+
+    
 
     
