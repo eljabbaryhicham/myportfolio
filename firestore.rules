@@ -1,66 +1,74 @@
 /**
- * @file Firestore Security Rules
- * @description This ruleset defines access control for the portfolio app's Firestore database.
+ * @fileoverview Firestore Security Rules for the portfolio application.
  *
  * Core Philosophy:
- * The security model prioritizes data protection while allowing flexible data access patterns for rapid prototyping.
- * - Public read access for certain collections (e.g., projects) to showcase portfolio content.
- * - Owner-only write access to prevent unauthorized modifications.
+ * This ruleset prioritizes security by default, restricting access to only authenticated users where appropriate and
+ * defaulting to read-only access for public data. It enforces strict ownership for user-specific data.
  *
  * Data Structure:
- * - /projects/{projectId}: Stores project information. Publicly readable, owner-only writable.
- * - /contact/{contactId}: Stores contact information. Publicly readable, owner-only writable.
- * - /homepage/{settingsId}: Stores homepage settings. Publicly readable, owner-only writable.
+ * - /projects/{projectId}: Stores individual project details. Publicly readable, but only authorized users can modify.
+ * - /contact/{contactId}: Stores contact information. Publicly readable, but only authorized users can modify.
+ * - /homepage/{settingsId}: Stores settings for the homepage. Publicly readable, but only authorized users can modify.
  *
  * Key Security Decisions:
- * - Public read access is granted to the 'projects', 'contact', and 'homepage' collections for showcasing the portfolio.
- * - Write access is restricted to owners, but the ruleset currently lacks a mechanism to identify the owner for these collections. This needs to be addressed by adding an 'ownerId' or similar field to the documents.
- * - List operations are generally allowed, assuming data is intended for public display.
+ * - Public Read Access: The rules allow public read access (`get`, `list`) to the `projects`, `contact`, and `homepage` collections,
+ *   making the portfolio content visible to everyone.
+ * - Owner-Only Writes:  Write access (`create`, `update`, `delete`) to `projects`, `contact`, and `homepage` is restricted. The rules currently lack a mechanism to authorize these writes.  Adding an admin role or user-based authentication is required.
  *
  * Denormalization for Authorization:
- * - The ruleset relies on the presence of an 'ownerId' field in the documents to enforce ownership for write operations. If this field is missing, the ruleset will not be able to properly restrict write access.
+ *  - No denormalization is used in the current rules.  If write access were to be restricted to specific users,
+ *    then fields like `ownerId` or `authorId` would need to be added to the entities, or roles would need to be defined.
  *
  * Structural Segregation:
- * - The app uses top-level collections for 'projects', 'contact', and 'homepage', which are intended for public display. This is a good practice for separating public and private data.
+ *  - No structural segregation is used.
  */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * @description Grants public read access to projects and restricts write access to the owner.
+     * @description Allows public read access to project data and restricts write access.
      * @path /projects/{projectId}
-     * @allow (get, list) Anyone can read the list of projects or get a project.
-     * @deny (create, update, delete) Only the owner can modify or delete a project. The owner is not yet defined for this prototyping phase.
-     * @principle Enforces document ownership for writes and allows public reads.
+     * @allow (get, list): Any user can read project data.
+     * @deny (create, update, delete): No one can currently modify project data.  Requires authentication and authorization logic.
+     * @principle Allows public reads, restricts writes until proper authorization is implemented.
      */
     match /projects/{projectId} {
-      allow get, list: if true;
-      allow create, update, delete: if false; // TODO: Add owner validation once the schema is updated with an ownership field.
+      allow get: if true;
+      allow list: if true;
+      allow create: if false; // TODO: Add owner validation once the schema is updated with an ownership field.
+      allow update: if false; // TODO: Add owner validation once the schema is updated with an ownership field.
+      allow delete: if false; // TODO: Add owner validation once the schema is updated with an ownership field.
     }
 
     /**
-     * @description Grants public read access to contact information and restricts write access to the owner.
+     * @description Allows public read access to contact information and restricts write access.
      * @path /contact/{contactId}
-     * @allow (get, list) Anyone can read the contact information.
-     * @deny (create, update, delete) Only the owner can modify the contact information. The owner is not yet defined for this prototyping phase.
-     * @principle Enforces document ownership for writes and allows public reads.
+     * @allow (get, list): Any user can read contact information.
+     * @deny (create, update, delete): No one can currently modify contact information.  Requires authentication and authorization logic.
+     * @principle Allows public reads, restricts writes until proper authorization is implemented.
      */
     match /contact/{contactId} {
-      allow get, list: if true;
-      allow create, update, delete: if false; // TODO: Add owner validation once the schema is updated with an ownership field.
+      allow get: if true;
+      allow list: if true;
+      allow create: if false; // TODO: Add owner validation once the schema is updated with an ownership field.
+      allow update: if false; // TODO: Add owner validation once the schema is updated with an ownership field.
+      allow delete: if false; // TODO: Add owner validation once the schema is updated with an ownership field.
     }
 
     /**
-     * @description Grants public read access to homepage settings and restricts write access to the owner.
+     * @description Allows public read access to homepage settings and restricts write access.
      * @path /homepage/{settingsId}
-     * @allow (get, list) Anyone can read the homepage settings.
-     * @deny (create, update, delete) Only the owner can modify the homepage settings. The owner is not yet defined for this prototyping phase.
-     * @principle Enforces document ownership for writes and allows public reads.
+     * @allow (get, list): Any user can read homepage settings.
+     * @deny (create, update, delete): No one can currently modify homepage settings.  Requires authentication and authorization logic.
+     * @principle Allows public reads, restricts writes until proper authorization is implemented.
      */
     match /homepage/{settingsId} {
-      allow get, list: if true;
-      allow create, update, delete: if false; // TODO: Add owner validation once the schema is updated with an ownership field.
+      allow get: if true;
+      allow list: if true;
+      allow create: if false; // TODO: Add owner validation once the schema is updated with an ownership field.
+      allow update: if false; // TODO: Add owner validation once the schema is updated with an ownership field.
+      allow delete: if false; // TODO: Add owner validation once the schema is updated with an ownership field.
     }
   }
 }
