@@ -135,13 +135,13 @@
   }
   
   .blob-1 {
-    animation: blob-anim-1 25s infinite;
+    animation: blob-anim-1 15s infinite;
   }
   .blob-2 {
-    animation: blob-anim-2 30s infinite;
+    animation: blob-anim-2 18s infinite;
   }
   .blob-3 {
-    animation: blob-anim-3 20s infinite;
+    animation: blob-anim-3 12s infinite;
   }
 }
 

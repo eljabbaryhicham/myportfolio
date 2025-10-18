@@ -315,8 +315,8 @@ export default function WorkPage() {
       <Dialog open={!!selectedItem} onOpenChange={handleOpenChange}>
         <DialogContent 
             className={cn(
-                "w-[95vw] md:w-[90vw] md:max-w-[80vw] glass-effect p-0 flex flex-col overflow-hidden",
-                isVeryUltrawide || isDescriptionLong ? "h-[90vh]" : "h-auto"
+                "w-[95vw] md:w-[90vw] md:max-w-[80vw] glass-effect p-0 flex flex-col overflow-hidden h-auto max-h-[90vh]",
+                isVeryUltrawide && "h-[90vh] max-h-[90vh]"
             )}
         >
           {selectedItem && (
