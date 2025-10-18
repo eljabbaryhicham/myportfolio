@@ -400,16 +400,13 @@ export default function WorkPage() {
                 </div>
 
               </div>
+              <DialogClose className="absolute right-4 top-4 z-10 h-8 w-8 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center ring-offset-background transition-opacity focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 opacity-70 hover:opacity-100">
+                <FontAwesomeIcon icon={faXmark} className="h-4 w-4" />
+                <span className="sr-only">Close</span>
+              </DialogClose>
             </>
           )}
         </DialogContent>
-        
-        {!!selectedItem && (
-          <DialogClose className="fixed top-4 right-4 z-[51] h-8 w-8 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center ring-offset-background transition-opacity focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2">
-            <FontAwesomeIcon icon={faXmark} className="h-4 w-4" />
-            <span className="sr-only">Close</span>
-          </DialogClose>
-        )}
       </Dialog>
       
       {/* Nested Dialog for Details */}
