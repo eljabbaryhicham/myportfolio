@@ -25,6 +25,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUpDown, faXmark, faExpand, faPalette, faFilm, faArrowLeft, faArrowRight } from '@fortawesome/free-solid-svg-icons';
 import { Separator } from '@/components/ui/separator';
 import Preloader from '@/components/preloader';
+import { useIsWideScreen } from '@/hooks/use-is-wide-screen';
 
 const VideoPlayer = dynamic(() => import('@/components/video-player'), {
   ssr: false,
@@ -233,6 +234,7 @@ export default function WorkPage() {
   const [filter, setFilter] = useState<'all' | 'image' | 'video'>('all');
   const [fullscreenImageUrl, setFullscreenImageUrl] = useState<string | null>(null);
   const [isClient, setIsClient] = useState(false);
+  const isWideScreen = useIsWideScreen();
 
   useEffect(() => {
     setIsClient(true);
@@ -335,7 +337,8 @@ export default function WorkPage() {
       <Dialog open={!!selectedItem} onOpenChange={handleOpenChange}>
         <DialogContent 
             className={cn(
-                "w-[95vw] md:w-[90vw] md:max-w-[80vw] glass-effect p-0 flex flex-col group max-h-[90vh]"
+                "w-[95vw] md:w-[90vw] md:max-w-[80vw] glass-effect p-0 flex flex-col group",
+                isWideScreen ? 'h-[90vh]' : 'max-h-[90vh]'
             )}
         >
           {selectedItem && (
