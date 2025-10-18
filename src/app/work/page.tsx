@@ -334,9 +334,11 @@ export default function WorkPage() {
 
       <Dialog open={!!selectedItem} onOpenChange={handleOpenChange}>
         <DialogContent 
-            className={cn(
-                "glass-effect p-0 flex flex-col w-[95vw] max-w-7xl max-h-[90vh]"
-            )}
+          className={cn(
+            "glass-effect p-0 flex flex-col",
+            "w-[95vw] h-auto max-h-[95vh]",
+            "sm:max-w-[calc(16/9*80vh)]" 
+          )}
         >
           {selectedItem && (
             <>
@@ -375,27 +377,27 @@ export default function WorkPage() {
                 <Separator className="bg-white/10 my-0" />
                 
                 <div className="flex-1 min-h-0 relative p-4 md:p-6 flex flex-col">
-                    <div className="flex-1 flex items-center justify-center">
-                      {isClient && (
-                        <PortfolioMedia
-                          key={selectedItem.id}
-                          item={selectedItem}
-                          onFullscreenClick={setFullscreenImageUrl}
-                        />
-                      )}
-                    </div>
-                    
-                    {selectedItem.details && (
-                      <div className="pt-4 md:pt-6 text-center flex-shrink-0">
-                        <Button
-                          variant="default"
-                          onClick={() => setDetailsModalOpen(true)}
-                        >
-                          <FontAwesomeIcon icon={faUpDown} className="mr-2" />
-                          Show Details
-                        </Button>
-                      </div>
+                  <div className="flex-1 flex items-center justify-center">
+                    {isClient && (
+                      <PortfolioMedia
+                        key={selectedItem.id}
+                        item={selectedItem}
+                        onFullscreenClick={setFullscreenImageUrl}
+                      />
                     )}
+                  </div>
+                    
+                  {selectedItem.details && (
+                    <div className="pt-4 md:pt-6 text-center flex-shrink-0">
+                      <Button
+                        variant="default"
+                        onClick={() => setDetailsModalOpen(true)}
+                      >
+                        <FontAwesomeIcon icon={faUpDown} className="mr-2" />
+                        Show Details
+                      </Button>
+                    </div>
+                  )}
                 </div>
 
               </div>
@@ -509,3 +511,5 @@ export default function WorkPage() {
     </>
   );
 }
+
+    
