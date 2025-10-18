@@ -4,7 +4,7 @@ import React, { useCallback, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { useStorageList, useStorageDelete } from '@/firebase/storage/use-storage';
 import { useStorage, useUser } from '@/firebase';
-import { ref, uploadBytesResumable, getDownloadURL, type UploadTask } from 'firebase/storage';
+import { ref } from 'firebase/storage';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/hooks/use-toast';
@@ -15,7 +15,7 @@ import { faCloudUploadAlt, faCopy, faTrash, faFilm, faFileImage } from '@fortawe
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { cn } from '@/lib/utils';
 import Preloader from '@/components/preloader';
-import { v4 as uuidv4 } from 'uuid';
+import { uploadFile } from '../services/upload-service';
 
 const MediaFileCard = ({
   file,
@@ -82,8 +82,8 @@ export default function MediaAdmin() {
   const storage = useStorage();
   const { user } = useUser();
   const { toast } = useToast();
-  const filesRef = ref(storage, 'uploads');
   
+  const filesRef = useMemo(() => (storage ? ref(storage, 'uploads') : null), [storage]);
   const { files, isLoading: isLoadingFiles, refetch: refetchFiles } = useStorageList(filesRef);
   const { deleteFile } = useStorageDelete();
 
@@ -101,45 +101,27 @@ export default function MediaAdmin() {
     setIsUploading(true);
 
     for (const file of acceptedFiles) {
+      try {
         setUploadingFileName(file.name);
         setUploadProgress(0);
-
-        const fileExtension = file.name.split('.').pop() || '';
-        const uniqueFileName = `${uuidv4()}.${fileExtension}`;
-        const fileRef = ref(storage, `uploads/${uniqueFileName}`);
-        const uploadTask = uploadBytesResumable(fileRef, file);
-
-        await new Promise<void>((resolve, reject) => {
-            uploadTask.on('state_changed',
-                (snapshot) => {
-                    const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                    setUploadProgress(progress);
-                },
-                (error) => {
-                    console.error('Upload failed:', error);
-                    toast({
-                        variant: 'destructive',
-                        title: `Upload Failed for ${file.name}`,
-                        description: error.message || 'An unknown error occurred.',
-                    });
-                    reject(error);
-                },
-                async () => {
-                    try {
-                        const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-                        console.log('File available at:', downloadURL);
-                        toast({
-                            title: 'Upload successful',
-                            description: `${file.name} has been uploaded.`,
-                        });
-                        resolve();
-                    } catch (error) {
-                         console.error('Failed to get download URL:', error);
-                         reject(error);
-                    }
-                }
-            );
+        
+        await uploadFile(storage, file, (progress) => {
+          setUploadProgress(progress);
         });
+
+        toast({
+          title: 'Upload successful',
+          description: `${file.name} has been uploaded.`,
+        });
+
+      } catch (error: any) {
+        console.error('Upload failed:', error);
+        toast({
+            variant: 'destructive',
+            title: `Upload Failed for ${file.name}`,
+            description: error.message || 'An unknown error occurred.',
+        });
+      }
     }
 
     setIsUploading(false);
