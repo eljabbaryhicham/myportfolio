@@ -1,65 +1,48 @@
 /**
- * @file Firestore Security Rules
- * @version 2
+ * @fileoverview Firestore Security Rules for the portfolio application.
  *
- * @description
- * This ruleset enforces a strict owner-only model for all data.  All data is stored
- * in top-level collections (`/projects/{projectId}` and `/contact/{contactId}`).
- * Only authenticated users can create, update, or delete documents.  Read access is public.
+ * Core Philosophy:
+ * This ruleset provides public read access to project and contact information,
+ * while restricting write access to prevent unauthorized modifications. This is
+ * suitable for a portfolio where content is primarily managed through the
+ * Firebase console or a dedicated admin interface (not covered by these rules).
+ *
+ * Data Structure:
+ * - /projects/{projectId}: Stores individual project details.
+ * - /contact/{contactId}: Stores contact information. Only a single contact document is expected.
  *
  * Key Security Decisions:
- * - Public read access is granted for all collections.
- * - Only authenticated users can modify data.
- * - The `id` field in each document is immutable to prevent ownership transfer.
- *
- * Denormalization for Authorization:
- *  - No denormalization is necessary, as simple authentication is sufficient for write access.
+ * - Public read access is granted for both projects and contact information to allow anyone to view the portfolio.
+ * - Write access (create, update, delete) is completely denied for all users.  Content updates are assumed to be managed
+ *   through a separate, secured admin interface or directly via the Firebase console.
+ * - No user-specific data is stored, so user-based access control is not required.
  */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * @description Allows public read access to projects, but restricts write access to authenticated users.
+     * @description Allows public read access to project data, but restricts all write access.
      * @path /projects/{projectId}
-     * @allow (get, list): if true
-     * @allow (create): if isSignedIn()
-     * @allow (update): if isSignedIn() && resource != null
-     * @allow (delete): if isSignedIn() && resource != null
-     * @deny (create): if !isSignedIn()
-     * @deny (update): if !isSignedIn() || resource == null
-     * @deny (delete): if !isSignedIn() || resource == null
-     * @principle Allows any user to read project data. Only authenticated users can modify.
+     * @allow (get, list) Any user can read project data.
+     * @deny (create, update, delete) No user can create, update, or delete project data.
+     * @principle Grants public read access while restricting writes for content managed externally.
      */
     match /projects/{projectId} {
       allow get, list: if true;
-      allow create: if isSignedIn();
-      allow update: if isSignedIn() && resource != null;
-      allow delete: if isSignedIn() && resource != null;
+      allow create, update, delete: if false;
     }
 
     /**
-     * @description Allows public read access to contact info, but restricts write access to authenticated users.
+     * @description Allows public read access to contact information, but restricts all write access.
      * @path /contact/{contactId}
-     * @allow (get, list): if true
-     * @allow (create): if isSignedIn()
-     * @allow (update): if isSignedIn() && resource != null
-     * @allow (delete): if isSignedIn() && resource != null
-     * @deny (create): if !isSignedIn()
-     * @deny (update): if !isSignedIn() || resource == null
-     * @deny (delete): if !isSignedIn() || resource == null
-     * @principle Allows any user to read contact data. Only authenticated users can modify.
+     * @allow (get, list) Any user can read contact information.
+     * @deny (create, update, delete) No user can create, update, or delete contact information.
+     * @principle Grants public read access while restricting writes for content managed externally.
      */
     match /contact/{contactId} {
       allow get, list: if true;
-      allow create: if isSignedIn();
-      allow update: if isSignedIn() && resource != null;
-      allow delete: if isSignedIn() && resource != null;
-    }
-
-    // Helper function to determine if a user is signed in.
-    function isSignedIn() {
-      return request.auth != null;
+      allow create, update, delete: if false;
     }
   }
 }

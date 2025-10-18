@@ -1,11 +1,11 @@
+
 rules_version = '2';
 
 service firebase.storage {
   match /b/{bucket}/o {
     // Allow public read and write access to the "uploads" folder
     match /uploads/{allPaths=**} {
-      allow read;
-      allow write;
+      allow read, write;
     }
   }
 }
