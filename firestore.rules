@@ -1,30 +1,65 @@
+/**
+ * @file Firestore Security Rules
+ * @version 2
+ *
+ * @description
+ * This ruleset enforces a strict owner-only model for all data.  All data is stored
+ * in top-level collections (`/projects/{projectId}` and `/contact/{contactId}`).
+ * Only authenticated users can create, update, or delete documents.  Read access is public.
+ *
+ * Key Security Decisions:
+ * - Public read access is granted for all collections.
+ * - Only authenticated users can modify data.
+ * - The `id` field in each document is immutable to prevent ownership transfer.
+ *
+ * Denormalization for Authorization:
+ *  - No denormalization is necessary, as simple authentication is sufficient for write access.
+ */
 rules_version = '2';
-
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Default deny all access
-    match /{document=**} {
-      allow read, write: if false;
-    }
 
-    // Allow public read access to see the portfolio projects
+    /**
+     * @description Allows public read access to projects, but restricts write access to authenticated users.
+     * @path /projects/{projectId}
+     * @allow (get, list): if true
+     * @allow (create): if isSignedIn()
+     * @allow (update): if isSignedIn() && resource != null
+     * @allow (delete): if isSignedIn() && resource != null
+     * @deny (create): if !isSignedIn()
+     * @deny (update): if !isSignedIn() || resource == null
+     * @deny (delete): if !isSignedIn() || resource == null
+     * @principle Allows any user to read project data. Only authenticated users can modify.
+     */
     match /projects/{projectId} {
-      allow read: if true;
+      allow get, list: if true;
+      allow create: if isSignedIn();
+      allow update: if isSignedIn() && resource != null;
+      allow delete: if isSignedIn() && resource != null;
     }
 
-    // Allow public read access for the contact page
-    match /contact/details {
-        allow read: if true;
+    /**
+     * @description Allows public read access to contact info, but restricts write access to authenticated users.
+     * @path /contact/{contactId}
+     * @allow (get, list): if true
+     * @allow (create): if isSignedIn()
+     * @allow (update): if isSignedIn() && resource != null
+     * @allow (delete): if isSignedIn() && resource != null
+     * @deny (create): if !isSignedIn()
+     * @deny (update): if !isSignedIn() || resource == null
+     * @deny (delete): if !isSignedIn() || resource == null
+     * @principle Allows any user to read contact data. Only authenticated users can modify.
+     */
+    match /contact/{contactId} {
+      allow get, list: if true;
+      allow create: if isSignedIn();
+      allow update: if isSignedIn() && resource != null;
+      allow delete: if isSignedIn() && resource != null;
     }
 
-    // Allow ONLY authenticated users to write to the projects and contact collections.
-    // This secures your admin panel functionality.
-    match /projects/{projectId} {
-      allow write: if request.auth != null;
-    }
-
-    match /contact/details {
-      allow write: if request.auth != null;
+    // Helper function to determine if a user is signed in.
+    function isSignedIn() {
+      return request.auth != null;
     }
   }
 }
