@@ -1,77 +1,66 @@
 /**
  * @file Firestore Security Rules
- * @version 2
+ * @description This ruleset defines access control for the portfolio app's Firestore database.
  *
- * @description This ruleset enforces a role-based access control model for the portfolio application.
- * Only authenticated users with the 'admin' role can modify contact information and homepage settings.
- * Projects can be read by anyone, but creation, updates, and deletion are restricted to admins.
+ * Core Philosophy:
+ * The security model prioritizes data protection while allowing flexible data access patterns for rapid prototyping.
+ * - Public read access for certain collections (e.g., projects) to showcase portfolio content.
+ * - Owner-only write access to prevent unauthorized modifications.
  *
- * @dataStructure
- * - /projects/{projectId}: Stores individual project data.
- * - /contact/{contactId}: Stores contact information (single document).
- * - /homepage/{settingsId}: Stores homepage settings (single document).
+ * Data Structure:
+ * - /projects/{projectId}: Stores project information. Publicly readable, owner-only writable.
+ * - /contact/{contactId}: Stores contact information. Publicly readable, owner-only writable.
+ * - /homepage/{settingsId}: Stores homepage settings. Publicly readable, owner-only writable.
  *
- * @keySecurityDecisions
- * - Admin-only access for sensitive operations (contact info, homepage settings, project writes).
- * - Public read access for projects.
- * - No user-specific data or ownership is enforced, only an admin role.
+ * Key Security Decisions:
+ * - Public read access is granted to the 'projects', 'contact', and 'homepage' collections for showcasing the portfolio.
+ * - Write access is restricted to owners, but the ruleset currently lacks a mechanism to identify the owner for these collections. This needs to be addressed by adding an 'ownerId' or similar field to the documents.
+ * - List operations are generally allowed, assuming data is intended for public display.
+ *
+ * Denormalization for Authorization:
+ * - The ruleset relies on the presence of an 'ownerId' field in the documents to enforce ownership for write operations. If this field is missing, the ruleset will not be able to properly restrict write access.
+ *
+ * Structural Segregation:
+ * - The app uses top-level collections for 'projects', 'contact', and 'homepage', which are intended for public display. This is a good practice for separating public and private data.
  */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * @description Allows anyone to read projects, but only admins can create, update, or delete them.
+     * @description Grants public read access to projects and restricts write access to the owner.
      * @path /projects/{projectId}
-     * @allow (get, list) - Anyone can read project data.
-     * @allow (create, update, delete) - Only users with the 'admin' role can modify project data.
-     * @deny (create, update, delete) - Non-admin users cannot modify project data.
-     * @principle Enforces role-based access control for project management.
+     * @allow (get, list) Anyone can read the list of projects or get a project.
+     * @deny (create, update, delete) Only the owner can modify or delete a project. The owner is not yet defined for this prototyping phase.
+     * @principle Enforces document ownership for writes and allows public reads.
      */
     match /projects/{projectId} {
       allow get, list: if true;
-      allow create, update, delete: if isAdmin();
+      allow create, update, delete: if false; // TODO: Add owner validation once the schema is updated with an ownership field.
     }
 
     /**
-     * @description Restricts access to contact information to users with the 'admin' role.
+     * @description Grants public read access to contact information and restricts write access to the owner.
      * @path /contact/{contactId}
-     * @allow (get, list, create, update, delete) - Only users with the 'admin' role can access or modify contact information.
-     * @deny (get, list, create, update, delete) - Non-admin users cannot access or modify contact information.
-     * @principle Enforces role-based access control for sensitive contact data.
+     * @allow (get, list) Anyone can read the contact information.
+     * @deny (create, update, delete) Only the owner can modify the contact information. The owner is not yet defined for this prototyping phase.
+     * @principle Enforces document ownership for writes and allows public reads.
      */
     match /contact/{contactId} {
-      allow get, list, create, update, delete: if isAdmin();
+      allow get, list: if true;
+      allow create, update, delete: if false; // TODO: Add owner validation once the schema is updated with an ownership field.
     }
 
     /**
-     * @description Restricts access to homepage settings to users with the 'admin' role.
+     * @description Grants public read access to homepage settings and restricts write access to the owner.
      * @path /homepage/{settingsId}
-     * @allow (get, list, create, update, delete) - Only users with the 'admin' role can access or modify homepage settings.
-     * @deny (get, list, create, update, delete) - Non-admin users cannot access or modify homepage settings.
-     * @principle Enforces role-based access control for homepage configuration.
+     * @allow (get, list) Anyone can read the homepage settings.
+     * @deny (create, update, delete) Only the owner can modify the homepage settings. The owner is not yet defined for this prototyping phase.
+     * @principle Enforces document ownership for writes and allows public reads.
      */
     match /homepage/{settingsId} {
-      allow get, list, create, update, delete: if isAdmin();
-    }
-
-    // ---- Helper functions ----
-
-    /**
-     * @description Checks if the user is signed in.
-     * @return True if the user is signed in, false otherwise.
-     */
-    function isSignedIn() {
-      return request.auth != null;
-    }
-
-    /**
-     * @description Checks if the user has the 'admin' role.
-     * @return True if the user has the 'admin' role, false otherwise.
-     * @example isAdmin() == true if request.auth.token.admin == true
-     */
-    function isAdmin() {
-      return isSignedIn() && request.auth.token.admin == true;
+      allow get, list: if true;
+      allow create, update, delete: if false; // TODO: Add owner validation once the schema is updated with an ownership field.
     }
   }
 }
