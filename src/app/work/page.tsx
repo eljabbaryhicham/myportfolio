@@ -329,7 +329,7 @@ export default function WorkPage() {
         <DialogContent 
             className={cn(
                 "w-[95vw] md:w-[90vw] md:max-w-[80vw] glass-effect p-0 flex flex-col overflow-hidden",
-                isVeryUltrawide ? "max-w-[60vw] h-[90vh]" : "h-auto max-h-[90vh]"
+                "h-auto max-h-[90vh]"
             )}
         >
           {selectedItem && (
@@ -375,6 +375,7 @@ export default function WorkPage() {
                     <div className="flex-1">
                       {isClient && (
                         <PortfolioMedia
+                          key={selectedItem.id}
                           item={selectedItem}
                           onFullscreenClick={setFullscreenImageUrl}
                         />
@@ -505,5 +506,7 @@ export default function WorkPage() {
     </>
   );
 }
+
+    
 
     
