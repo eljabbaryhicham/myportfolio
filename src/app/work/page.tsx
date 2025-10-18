@@ -89,7 +89,7 @@ const PortfolioMedia = ({
 
   if (item.type === 'video' && videoSource) {
     return (
-      <div className="relative aspect-video bg-black flex items-center justify-center">
+      <div className="relative aspect-video bg-black flex items-center justify-center w-full">
         <Image
             src={item.thumbnailUrl}
             alt="poster image"
@@ -118,7 +118,7 @@ const PortfolioMedia = ({
 
   if (item.type === 'image' && item.sourceUrl) {
     return (
-      <div className="relative aspect-video bg-black flex justify-center items-center group">
+      <div className="relative aspect-video bg-black flex justify-center items-center group w-full">
          {!isContentLoaded && (
           <div className="absolute inset-0 z-10 flex items-center justify-center">
             <Preloader />
@@ -335,7 +335,7 @@ export default function WorkPage() {
       <Dialog open={!!selectedItem} onOpenChange={handleOpenChange}>
         <DialogContent 
             className={cn(
-                "w-[90vw] max-w-[80vh] aspect-video glass-effect p-0 flex flex-col group"
+                "w-[95vw] max-w-4xl max-h-[90vh] glass-effect p-0 flex flex-col"
             )}
         >
           {selectedItem && (
@@ -509,4 +509,5 @@ export default function WorkPage() {
     </>
   );
 }
+
 
