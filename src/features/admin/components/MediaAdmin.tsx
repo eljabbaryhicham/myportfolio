@@ -78,38 +78,6 @@ const MediaFileCard = ({
   );
 };
 
-// Standalone function to handle the upload of a single file.
-// It returns a promise that resolves with the download URL.
-async function uploadFile(storage: any, file: File, onProgress: (progress: number) => void): Promise<string> {
-    return new Promise((resolve, reject) => {
-        const fileExtension = file.name.split('.').pop() || '';
-        const uniqueFileName = `${uuidv4()}.${fileExtension}`;
-        const fileRef = ref(storage, `uploads/${uniqueFileName}`);
-        const uploadTask: UploadTask = uploadBytesResumable(fileRef, file);
-
-        uploadTask.on('state_changed',
-            (snapshot) => {
-                const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                onProgress(progress);
-            },
-            (error) => {
-                console.error('Upload failed:', error);
-                reject(error);
-            },
-            async () => {
-                try {
-                    const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-                    resolve(downloadURL);
-                } catch (error) {
-                    console.error('Failed to get download URL:', error);
-                    reject(error);
-                }
-            }
-        );
-    });
-}
-
-
 export default function MediaAdmin() {
   const storage = useStorage();
   const { user } = useUser();
@@ -133,25 +101,45 @@ export default function MediaAdmin() {
     setIsUploading(true);
 
     for (const file of acceptedFiles) {
-        try {
-            setUploadingFileName(file.name);
-            setUploadProgress(0);
-            await uploadFile(storage, file, (progress) => {
-              setUploadProgress(progress);
-            });
-            toast({
-                title: 'Upload successful',
-                description: `${file.name} has been uploaded.`,
-            });
-        } catch (error: any) {
-            toast({
-                variant: 'destructive',
-                title: `Upload Failed for ${file.name}`,
-                description: error.message || 'An unknown error occurred.',
-            });
-            // Stop processing further files if one fails
-            break;
-        }
+        setUploadingFileName(file.name);
+        setUploadProgress(0);
+
+        const fileExtension = file.name.split('.').pop() || '';
+        const uniqueFileName = `${uuidv4()}.${fileExtension}`;
+        const fileRef = ref(storage, `uploads/${uniqueFileName}`);
+        const uploadTask = uploadBytesResumable(fileRef, file);
+
+        await new Promise<void>((resolve, reject) => {
+            uploadTask.on('state_changed',
+                (snapshot) => {
+                    const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                    setUploadProgress(progress);
+                },
+                (error) => {
+                    console.error('Upload failed:', error);
+                    toast({
+                        variant: 'destructive',
+                        title: `Upload Failed for ${file.name}`,
+                        description: error.message || 'An unknown error occurred.',
+                    });
+                    reject(error);
+                },
+                async () => {
+                    try {
+                        const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+                        console.log('File available at:', downloadURL);
+                        toast({
+                            title: 'Upload successful',
+                            description: `${file.name} has been uploaded.`,
+                        });
+                        resolve();
+                    } catch (error) {
+                         console.error('Failed to get download URL:', error);
+                         reject(error);
+                    }
+                }
+            );
+        });
     }
 
     setIsUploading(false);

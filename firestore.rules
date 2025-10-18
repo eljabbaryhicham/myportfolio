@@ -1,25 +1,38 @@
 /**
- * @file Firestore Security Rules
- * @core_philosophy This ruleset prioritizes security by enforcing strict access control.
- * All write operations are restricted to authenticated users. Read operations are generally public.
- * @data_structure The database consists of three top-level collections: 'projects', 'contact', and 'homepage'.
- * @key_security_decisions All write operations require authentication. Data validation is minimal.
+ * @fileoverview Firestore Security Rules for the portfolio application.
+ *
+ * Core Philosophy:
+ * This ruleset prioritizes secure data access based on distinct collections for projects, contact information, and homepage settings.
+ * Public read access is granted for specific collections, while write access is restricted to authenticated users.
+ *
+ * Data Structure:
+ * - `/projects/{projectId}`: Stores project information.
+ * - `/contact/{contactId}`: Stores contact information.
+ * - `/homepage/{settingsId}`: Stores homepage settings.
+ *
+ * Key Security Decisions:
+ * - Public read access for all documents in `/projects`, `/contact`, and `/homepage`.
+ * - Authenticated user-only write access for all documents.
+ *
+ * Denormalization for Authorization:
+ * Not applicable in this scenario as authorization is based on authentication status.
+ *
+ * Structural Segregation:
+ * Not applicable in this scenario.
  */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * @description Controls access to the 'projects' collection.
+     * @description Manages access to project documents.
      * @path /projects/{projectId}
-     * @allow (read): Any user can read project data.
-     * @allow (create): Only authenticated users can create projects. The `id` field is validated for consistency.
-     * @allow (update): Only authenticated users can update existing projects.
-     * @allow (delete): Only authenticated users can delete existing projects.
-     * @deny (create): An unauthenticated user attempts to create a project.
-     * @deny (update): An unauthenticated user attempts to update a project.
-     * @deny (delete): An unauthenticated user attempts to delete a project.
-     * @principle Authenticated users can create, update, and delete any project.
+     * @allow (get, list): Any user can read project details.
+     * @allow (create, update, delete): Only authenticated users can modify projects.
+     * @deny create: if false;
+     * @deny update: if false;
+     * @deny delete: if false;
+     * @principle Public read, authenticated write.
      */
     match /projects/{projectId} {
       allow get, list: if true;
@@ -29,16 +42,14 @@ service cloud.firestore {
     }
 
     /**
-     * @description Controls access to the 'contact' collection.
+     * @description Manages access to contact information documents.
      * @path /contact/{contactId}
-     * @allow (read): Any user can read contact information.
-     * @allow (create): Only authenticated users can create contact information. The `id` field is validated for consistency.
-     * @allow (update): Only authenticated users can update existing contact information.
-     * @allow (delete): Only authenticated users can delete existing contact information.
-     * @deny (create): An unauthenticated user attempts to create contact information.
-     * @deny (update): An unauthenticated user attempts to update contact information.
-     * @deny (delete): An unauthenticated user attempts to delete contact information.
-     * @principle Authenticated users can create, update, and delete any contact info.
+     * @allow (get, list): Any user can read contact information.
+     * @allow (create, update, delete): Only authenticated users can modify contact information.
+     * @deny create: if false;
+     * @deny update: if false;
+     * @deny delete: if false;
+     * @principle Public read, authenticated write.
      */
     match /contact/{contactId} {
       allow get, list: if true;
@@ -48,16 +59,14 @@ service cloud.firestore {
     }
 
     /**
-     * @description Controls access to the 'homepage' collection.
+     * @description Manages access to homepage settings documents.
      * @path /homepage/{settingsId}
-     * @allow (read): Any user can read homepage settings.
-     * @allow (create): Only authenticated users can create homepage settings. The `id` field is validated for consistency.
-     * @allow (update): Only authenticated users can update existing homepage settings.
-     * @allow (delete): Only authenticated users can delete existing homepage settings.
-     * @deny (create): An unauthenticated user attempts to create homepage settings.
-     * @deny (update): An unauthenticated user attempts to update homepage settings.
-     * @deny (delete): An unauthenticated user attempts to delete homepage settings.
-     * @principle Authenticated users can create, update, and delete homepage settings.
+     * @allow (get, list): Any user can read homepage settings.
+     * @allow (create, update, delete): Only authenticated users can modify homepage settings.
+     * @deny create: if false;
+     * @deny update: if false;
+     * @deny delete: if false;
+     * @principle Public read, authenticated write.
      */
     match /homepage/{settingsId} {
       allow get, list: if true;
@@ -66,7 +75,10 @@ service cloud.firestore {
       allow delete: if isSignedIn() && resource != null;
     }
 
-    // Helper function to check if the user is signed in.
+    /**
+     * @description Checks if the user is signed in.
+     * @return {boolean} True if the user is signed in, false otherwise.
+     */
     function isSignedIn() {
       return request.auth != null;
     }
