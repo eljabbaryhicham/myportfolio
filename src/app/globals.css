@@ -116,6 +116,10 @@
   .plyr__video-wrapper .plyr__poster {
     background-size: cover !important;
   }
+  
+  .plyr, .plyr__video-wrapper, .plyr__video-embed {
+    @apply w-full h-full absolute inset-0;
+  }
 
   .plyr--loading .plyr__spinner {
     display: block;
