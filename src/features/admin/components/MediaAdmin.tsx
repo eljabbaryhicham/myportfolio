@@ -3,7 +3,8 @@
 
 import React, { useCallback, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
-import { useStorage, useStorageList, useStorageUpload, useStorageDelete } from '@/firebase/storage/use-storage';
+import { useStorageList, useStorageUpload, useStorageDelete } from '@/firebase/storage/use-storage';
+import { useStorage } from '@/firebase';
 import { ref } from 'firebase/storage';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
