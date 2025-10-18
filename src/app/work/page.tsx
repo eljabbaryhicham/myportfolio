@@ -10,12 +10,11 @@ import {
   DialogDescription,
   DialogClose,
 } from '@/components/ui/dialog';
-import { useState, memo, useEffect, useRef, useMemo } from 'react';
+import { useState, memo, useEffect, useMemo } from 'react';
 import { cn } from '@/lib/utils';
 import dynamic from 'next/dynamic';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { useVeryUltrawide } from '@/hooks/use-very-ultrawide';
 import ReactMarkdown from 'react-markdown';
 import rehypeRaw from 'rehype-raw';
 import rehypeSanitize, { defaultSchema } from 'rehype-sanitize';
@@ -57,16 +56,16 @@ const PortfolioMedia = ({
       const youtubeMatch = item.sourceUrl.match(youtubeRegex);
       if (youtubeMatch?.[1]) {
         return {
-          type: 'video',
-          sources: [{ src: youtubeMatch[1], provider: 'youtube' }],
+          type: 'video' as const,
+          sources: [{ src: youtubeMatch[1], provider: 'youtube' as const }],
         };
       }
 
       const vimeoMatch = item.sourceUrl.match(vimeoRegex);
       if (vimeoMatch?.[1]) {
         return {
-          type: 'video',
-          sources: [{ src: vimeoMatch[1], provider: 'vimeo' }],
+          type: 'video' as const,
+          sources: [{ src: vimeoMatch[1], provider: 'vimeo' as const }],
         };
       }
       sources.push({ src: item.sourceUrl, type: 'video/mp4' });
@@ -135,15 +134,17 @@ const PortfolioMedia = ({
           )}
           onLoad={() => setIsContentLoaded(true)}
         />
-        <Button
-          variant="ghost"
-          size="icon"
-          className="absolute inset-0 m-auto z-10 h-16 w-16 text-white bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity"
-          onClick={() => onFullscreenClick(item.sourceUrl!)}
-        >
-          <FontAwesomeIcon icon={faExpand} className="h-8 w-8" />
-          <span className="sr-only">Fullscreen</span>
-        </Button>
+        {isContentLoaded && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="absolute inset-0 m-auto z-10 h-16 w-16 text-white bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity"
+              onClick={() => onFullscreenClick(item.sourceUrl!)}
+            >
+              <FontAwesomeIcon icon={faExpand} className="h-8 w-8" />
+              <span className="sr-only">Fullscreen</span>
+            </Button>
+        )}
       </div>
     );
   }
@@ -229,7 +230,6 @@ export default function WorkPage() {
   const [selectedItem, setSelectedItem] = useState<PortfolioItem | null>(null);
   const [visibleItems, setVisibleItems] = useState(12);
   const [detailsModalOpen, setDetailsModalOpen] = useState(false);
-  const isVeryUltrawide = useVeryUltrawide();
   const [filter, setFilter] = useState<'all' | 'image' | 'video'>('all');
   const [fullscreenImageUrl, setFullscreenImageUrl] = useState<string | null>(null);
   const [isClient, setIsClient] = useState(false);
@@ -273,8 +273,6 @@ export default function WorkPage() {
     setSelectedItem(filteredItems[prevIndex]);
   };
   
-  const isDescriptionLong = selectedItem?.description && selectedItem.description.length > 250;
-
   return (
     <>
       <div className="h-full w-full flex flex-col">
@@ -344,15 +342,15 @@ export default function WorkPage() {
             <>
               <div className="flex flex-col flex-1 min-h-0">
                 <DialogHeader className="p-4 md:p-6 flex-shrink-0">
-                  <div className="relative flex items-center justify-center max-w-lg mx-auto w-full">
+                  <div className="relative flex items-center justify-between max-w-lg mx-auto w-full">
                     <Button
                       variant="outline"
                       size="icon"
                       onClick={handlePreviousProject}
                       disabled={filteredItems.length <= 1}
-                      className="h-8 w-8 absolute -left-12"
+                      className="h-10 w-10 absolute -left-14"
                     >
-                      <FontAwesomeIcon icon={faArrowLeft} className="h-4 w-4" />
+                      <FontAwesomeIcon icon={faArrowLeft} className="h-5 w-5" />
                       <span className="sr-only">Previous Project</span>
                     </Button>
                     <div className="text-center">
@@ -365,9 +363,9 @@ export default function WorkPage() {
                       size="icon"
                       onClick={handleNextProject}
                       disabled={filteredItems.length <= 1}
-                      className="h-8 w-8 absolute -right-12"
+                      className="h-10 w-10 absolute -right-14"
                     >
-                      <FontAwesomeIcon icon={faArrowRight} className="h-4 w-4" />
+                      <FontAwesomeIcon icon={faArrowRight} className="h-5 w-5" />
                       <span className="sr-only">Next Project</span>
                     </Button>
                   </div>
