@@ -25,7 +25,6 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUpDown, faXmark, faExpand, faPalette, faFilm, faArrowLeft, faArrowRight } from '@fortawesome/free-solid-svg-icons';
 import { Separator } from '@/components/ui/separator';
 import Preloader from '@/components/preloader';
-import { useIsWideScreen } from '@/hooks/use-is-wide-screen';
 
 const VideoPlayer = dynamic(() => import('@/components/video-player'), {
   ssr: false,
@@ -139,10 +138,10 @@ const PortfolioMedia = ({
             <Button
               variant="ghost"
               size="icon"
-              className="absolute inset-0 m-auto z-10 h-16 w-16 text-white bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity"
+              className="absolute inset-0 m-auto z-10 h-12 w-12 md:h-16 md:w-16 text-white bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity"
               onClick={() => onFullscreenClick(item.sourceUrl!)}
             >
-              <FontAwesomeIcon icon={faExpand} className="h-8 w-8" />
+              <FontAwesomeIcon icon={faExpand} className="h-6 w-6 md:h-8 md:w-8" />
               <span className="sr-only">Fullscreen</span>
             </Button>
         )}
@@ -234,7 +233,6 @@ export default function WorkPage() {
   const [filter, setFilter] = useState<'all' | 'image' | 'video'>('all');
   const [fullscreenImageUrl, setFullscreenImageUrl] = useState<string | null>(null);
   const [isClient, setIsClient] = useState(false);
-  const isWideScreen = useIsWideScreen();
 
   useEffect(() => {
     setIsClient(true);
@@ -337,8 +335,7 @@ export default function WorkPage() {
       <Dialog open={!!selectedItem} onOpenChange={handleOpenChange}>
         <DialogContent 
             className={cn(
-                "w-[95vw] md:w-[90vw] md:max-w-[80vw] glass-effect p-0 flex flex-col group",
-                isWideScreen ? 'h-[80vh]' : 'max-h-[90vh]'
+                "w-[95vw] max-w-[1200px] max-h-[95vh] glass-effect p-0 flex flex-col group"
             )}
         >
           {selectedItem && (
@@ -355,9 +352,9 @@ export default function WorkPage() {
                     size="icon"
                     onClick={handlePreviousProject}
                     disabled={filteredItems.length <= 1}
-                    className="absolute left-16 top-1/2 -translate-y-1/2 h-12 w-12 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                    className="absolute left-2 md:left-4 lg:left-6 top-1/2 -translate-y-1/2 h-8 w-8 md:h-12 md:w-12"
                   >
-                    <FontAwesomeIcon icon={faArrowLeft} className="h-6 w-6" />
+                    <FontAwesomeIcon icon={faArrowLeft} className="h-4 w-4 md:h-6 md:w-6" />
                     <span className="sr-only">Previous Project</span>
                   </Button>
                   <Button
@@ -365,12 +362,12 @@ export default function WorkPage() {
                     size="icon"
                     onClick={handleNextProject}
                     disabled={filteredItems.length <= 1}
-                    className="absolute right-16 top-1/2 -translate-y-1/2 h-12 w-12 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                    className="absolute right-2 md:right-4 lg:right-6 top-1/2 -translate-y-1/2 h-8 w-8 md:h-12 md:w-12"
                   >
-                    <FontAwesomeIcon icon={faArrowRight} className="h-6 w-6" />
+                    <FontAwesomeIcon icon={faArrowRight} className="h-4 w-4 md:h-6 md:w-6" />
                     <span className="sr-only">Next Project</span>
                   </Button>
-                  <DialogDescription className="text-base text-center text-foreground/70 mt-4 whitespace-pre-wrap">
+                  <DialogDescription className="text-sm md:text-base text-center text-foreground/70 mt-2 md:mt-4 whitespace-pre-wrap max-w-2xl mx-auto">
                     {selectedItem.description}
                   </DialogDescription>
                 </DialogHeader>
@@ -378,7 +375,7 @@ export default function WorkPage() {
                 <Separator className="bg-white/10 my-0" />
                 
                 <ScrollArea className="flex-1 min-h-0">
-                  <div className="flex flex-col h-full justify-between">
+                  <div className="flex flex-col h-full justify-between p-4 md:p-6">
                     <div className="flex-1">
                       {isClient && (
                         <PortfolioMedia
@@ -390,7 +387,7 @@ export default function WorkPage() {
                     </div>
                     
                     {selectedItem.details && (
-                      <div className="p-6 text-center">
+                      <div className="pt-4 md:pt-6 text-center">
                         <Button
                           variant="default"
                           onClick={() => setDetailsModalOpen(true)}
@@ -404,7 +401,7 @@ export default function WorkPage() {
                 </ScrollArea>
               </div>
 
-              <DialogClose className="absolute top-4 right-4 z-50 h-8 w-8 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center opacity-0 group-hover:opacity-70 hover:!opacity-100 ring-offset-background transition-opacity focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2">
+              <DialogClose className="absolute top-2 right-2 md:top-4 md:right-4 z-50 h-8 w-8 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center ring-offset-background transition-opacity focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2">
                 <FontAwesomeIcon icon={faXmark} className="h-4 w-4" />
                 <span className="sr-only">Close</span>
               </DialogClose>
