@@ -1,11 +1,11 @@
-
 rules_version = '2';
 
 service firebase.storage {
   match /b/{bucket}/o {
-    // Allow admin users to read, write, and delete files in the 'uploads' folder
+    // Allow public read and write access to the "uploads" folder
     match /uploads/{allPaths=**} {
-      allow read, write, delete: if request.auth != null;
+      allow read;
+      allow write;
     }
   }
 }
