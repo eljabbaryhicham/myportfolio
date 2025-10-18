@@ -352,7 +352,7 @@ export default function WorkPage() {
                     </DialogDescription>
                   </div>
                  
-                  <div className="mt-4 md:mt-0 flex justify-between md:block px-8 md:px-0">
+                   <div className="mt-4 md:mt-0 flex justify-between px-8 md:block">
                      <Button
                         variant="outline"
                         size="icon"
