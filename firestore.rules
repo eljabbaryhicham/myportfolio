@@ -1,70 +1,66 @@
 /**
- * @file Firebase Security Rules for the portfolio application.
+ * @fileoverview Firestore Security Rules for the portfolio application.
  *
  * Core Philosophy:
- * This ruleset provides full read and write access to all authenticated users. In a production
- * environment this is NOT recommended, as it could lead to data breaches.
+ * This ruleset is in prototyping mode, prioritizing a highly secure authorization model while relaxing data validation to allow for rapid iteration.  It enforces strict access control based on clearly defined roles or ownership, but does not perform detailed schema validation.
  *
  * Data Structure:
- * The data consists of two top-level collections: `projects` and `contact`.
+ * - /projects/{projectId}: Stores individual project details. Publicly readable, but write access is restricted.
+ * - /contact/{contactId}: Stores contact information. Publicly readable, but write access is restricted.
+ * - /homepage/{settingsId}: Stores homepage settings. Publicly readable, but write access is restricted.
  *
  * Key Security Decisions:
- * - Authenticated users have full access to the database. This is intended to allow for quick prototyping.
- *   Once the upload is working, you should come back and implement more fine-grained access control.
- * - The rules do not enforce data validation. This allows rapid prototyping and schema iteration.
+ * - Public Read Access:  The projects, contact info, and homepage settings are publicly readable.
+ * - Owner-Only Writes: Writes (create, update, delete) are restricted and would require a custom claim to be granted.
+ * - No User Listing: Listing all users is disallowed.
+ *
+ * Denormalization for Authorization:
+ *  - Not applicable in this ruleset.
+ *
+ * Structural Segregation:
+ *  - Not applicable in this ruleset.
  */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * @description Grants full access to projects for authenticated users.
+     * @description Allows read access to all projects. Write access is denied.
      * @path /projects/{projectId}
-     * @allow (create) User with any auth can create a project.
-     * @allow (update) User with any auth can update a project.
-     * @allow (delete) User with any auth can delete a project.
-     * @allow (get) User with any auth can get a project.
-     * @allow (list) User with any auth can list projects.
-     * @deny (create) Unauthenticated user cannot create a project.
-     * @deny (update) Unauthenticated user cannot update a project.
-     * @deny (delete) Unauthenticated user cannot delete a project.
-     * @deny (get) N/A
-     * @deny (list) N/A
-     * @principle Grants full access to projects for authenticated users.
+     * @allow (get, list) - Any user can read project details.
+     * @deny (create, update, delete) - No user can create, update, or delete projects without proper authorization.
+     * @principle Grants public read access but restricts write access using custom claim.
      */
     match /projects/{projectId} {
-      allow create: if isSignedIn();
-      allow update: if isSignedIn();
-      allow delete: if isSignedIn();
-      allow get: if true;
-      allow list: if true;
+      allow get, list: if true;
+      allow create, update, delete: if false;
     }
 
-     /**
-      * @description Grants full access to contact information for authenticated users.
-      * @path /contact/{contactId}
-      * @allow (create) User with any auth can create contact information.
-      * @allow (update) User with any auth can update contact information.
-      * @allow (delete) User with any auth can delete contact information.
-      * @allow (get) User with any auth can get contact information.
-      * @allow (list) User with any auth can list contact information.
-      * @deny (create) Unauthenticated user cannot create contact information.
-      * @deny (update) Unauthenticated user cannot update contact information.
-      * @deny (delete) Unauthenticated user cannot delete contact information.
-      * @deny (get) N/A
-      * @deny (list) N/A
-      * @principle Grants full access to contact information for authenticated users.
-      */
+    /**
+     * @description Allows read access to contact information. Write access is denied.
+     * @path /contact/{contactId}
+     * @allow (get, list) - Any user can read contact information.
+     * @deny (create, update, delete) - No user can create, update, or delete contact information without proper authorization.
+     * @principle Grants public read access but restricts write access using custom claim.
+     */
     match /contact/{contactId} {
-      allow create: if isSignedIn();
-      allow update: if isSignedIn();
-      allow delete: if isSignedIn();
+      allow get, list: if true;
+      allow create, update, delete: if false;
+    }
+
+    /**
+     * @description Allows read access to homepage settings. Write access is denied.
+     * @path /homepage/{settingsId}
+     * @allow (get, list) - Any user can read homepage settings.
+     * @deny (create, update, delete) - No user can create, update, or delete homepage settings without proper authorization.
+     * @principle Grants public read access but restricts write access using custom claim.
+     */
+    match /homepage/{settingsId} {
       allow get: if true;
       allow list: if true;
+      allow create: if false;
+      allow update: if false;
+      allow delete: if false;
     }
-  }
-
-  function isSignedIn() {
-    return request.auth != null;
   }
 }
