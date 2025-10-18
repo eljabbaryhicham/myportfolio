@@ -76,8 +76,7 @@ export function useStorageUpload() {
   const upload = useCallback((file: File, pathRef: StorageReference, callbacks?: UploadCallbacks) => {
     return new Promise<string>((resolve, reject) => {
       if (!storage) {
-        const err = new Error("Firebase Storage is not available");
-        return reject(err);
+        return reject(new Error("Firebase Storage is not available"));
       }
       
       const fileExtension = file.name.split('.').pop();
@@ -93,8 +92,8 @@ export function useStorageUpload() {
           callbacks?.onProgress?.(progress);
         },
         (error) => {
-          // Firebase automatically rejects on error, but we explicitly reject here
-          // to ensure our promise fails correctly.
+          // This is the crucial part. The error object from Firebase Storage
+          // needs to be passed to reject() to fail the promise.
           reject(error);
         },
         async () => {

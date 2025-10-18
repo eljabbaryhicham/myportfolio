@@ -108,9 +108,15 @@ export default function MediaAdmin() {
                 },
             });
         } catch (error: any) {
-            console.error(error);
-            toast({ variant: 'destructive', title: 'Upload Failed', description: `Could not upload ${file.name}: ${error.message}` });
-            break; // Stop on first error
+            console.error('Upload failed:', error);
+            toast({ 
+                variant: 'destructive', 
+                title: 'Upload Failed', 
+                description: `Could not upload ${file.name}: ${error.message}` 
+            });
+            setIsUploading(false);
+            setUploadProgress(null);
+            return; // Stop on first error
         }
     }
 
