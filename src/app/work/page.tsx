@@ -336,7 +336,7 @@ export default function WorkPage() {
         <DialogContent 
           className={cn(
             "glass-effect p-0 flex flex-col",
-            "w-[95vw] h-auto max-h-[90vh] sm:max-w-[calc(16/9*80vh)]"
+            "w-[95vw] max-w-7xl max-h-[90vh]"
           )}
         >
           {selectedItem && (
@@ -438,7 +438,7 @@ export default function WorkPage() {
                               const { src } = props;
                               if (!isClient || !src) return null;
                               
-                              const youtubeRegex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
+                              const youtubeRegex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-_ -]{11})/;
                               const vimeoRegex = /(?:https?:\/\/)?(?:www\.)?vimeo\.com\/(?:channels\/(?:\w+\/)?|groups\/(?:[^\/]*)\/videos\/|album\/(?:\d+)\/video\/|)(\d+)/;
                               
                               let videoSource: { type: 'video'; sources: { src: string; provider: 'youtube' | 'vimeo' }[] } | { type: 'video'; sources: { src: string; type: string }[] } | null = null;
@@ -510,6 +510,8 @@ export default function WorkPage() {
     </>
   );
 }
+
+    
 
     
 
