@@ -90,6 +90,7 @@ export default function MediaAdmin() {
 
   const [uploadProgress, setUploadProgress] = useState<number | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const progressRef = useRef<number[]>([]);
 
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
     if (!storage || acceptedFiles.length === 0) {
@@ -99,14 +100,13 @@ export default function MediaAdmin() {
     
     setIsUploading(true);
     setUploadProgress(0);
-
-    const progressArray = new Array(acceptedFiles.length).fill(0);
+    progressRef.current = new Array(acceptedFiles.length).fill(0);
 
     const uploadPromises = acceptedFiles.map((file, index) => {
       return upload(file, filesRef, {
         onProgress: (progress) => {
-          progressArray[index] = progress;
-          const totalProgress = progressArray.reduce((acc, curr) => acc + curr, 0) / acceptedFiles.length;
+          progressRef.current[index] = progress;
+          const totalProgress = progressRef.current.reduce((acc, curr) => acc + curr, 0) / acceptedFiles.length;
           setUploadProgress(totalProgress);
         },
       });
@@ -210,5 +210,3 @@ export default function MediaAdmin() {
     </div>
   );
 }
-
-    
