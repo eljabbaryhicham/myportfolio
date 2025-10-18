@@ -1,3 +1,4 @@
+
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -17,7 +18,6 @@ import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { useDoc, useFirestore, useMemoFirebase, setDocumentNonBlocking } from '@/firebase';
 import { doc } from 'firebase/firestore';
-import type { ContactInfo } from '@/lib/data-types';
 import { useEffect } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import Preloader from '@/components/preloader';
@@ -36,9 +36,9 @@ const formSchema = z.object({
   twitterUrl: z.string().url().optional().or(z.literal('')),
 });
 
-type ContactFormValues = z.infer<typeof formSchema>;
+type ContactInfo = z.infer<typeof formSchema>;
 
-const defaultFormValues: ContactFormValues = {
+const defaultFormValues: ContactInfo = {
     avatarUrl: '',
     name: '',
     title: '',
@@ -62,14 +62,14 @@ export default function ContactAdmin() {
   );
   const { data: contactInfo, isLoading } = useDoc<ContactInfo>(contactDocRef);
 
-  const form = useForm<ContactFormValues>({
+  const form = useForm<ContactInfo>({
     resolver: zodResolver(formSchema),
     defaultValues: defaultFormValues,
   });
 
   useEffect(() => {
     if (contactInfo) {
-        const values: ContactFormValues = {
+        const values: ContactInfo = {
             avatarUrl: contactInfo.avatarUrl || '',
             name: contactInfo.name || '',
             title: contactInfo.title || '',
@@ -86,7 +86,7 @@ export default function ContactAdmin() {
     }
   }, [contactInfo, form]);
 
-  const onSubmit = (values: ContactFormValues) => {
+  const onSubmit = (values: ContactInfo) => {
     if (!contactDocRef) return;
     setDocumentNonBlocking(contactDocRef, values, { merge: true });
     toast({

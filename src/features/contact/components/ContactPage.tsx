@@ -20,10 +20,9 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useDoc, useFirestore, useMemoFirebase } from '@/firebase';
 import { doc } from 'firebase/firestore';
-import type { ContactInfo } from '@/lib/data-types';
 import { Separator } from '@/components/ui/separator';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEnvelope, faCheckCircle, faWhatsapp as faWhatsappSolid } from '@fortawesome/free-solid-svg-icons';
+import { faEnvelope, faCheckCircle } from '@fortawesome/free-solid-svg-icons';
 import { Icon } from '@/components/icon';
 import { faLinkedin, faBehance, faInstagram, faFacebook, faTwitter, faWhatsapp } from '@fortawesome/free-brands-svg-icons';
 import { cn } from '@/lib/utils';
@@ -33,6 +32,21 @@ import { useState } from 'react';
 import { ContactFormInputSchema, type ContactFormInput } from '@/features/contact/data/contact-form-types';
 import { motion } from 'framer-motion';
 
+const contactInfoSchema = z.object({
+  avatarUrl: z.string().optional(),
+  name: z.string().optional(),
+  title: z.string().optional(),
+  email: z.string().email().optional(),
+  whatsApp: z.string().optional(),
+  behanceUrl: z.string().url().optional(),
+  linkedinUrl: z.string().url().optional(),
+  fiverrUrl: z.string().url().optional(),
+  instagramUrl: z.string().url().optional(),
+  facebookUrl: z.string().url().optional(),
+  twitterUrl: z.string().url().optional(),
+});
+
+type ContactInfo = z.infer<typeof contactInfoSchema>;
 
 const formSchema = ContactFormInputSchema;
 
@@ -135,7 +149,7 @@ export default function ContactPage() {
                       <div className="w-full flex flex-col items-center">
                         <div className="space-y-4">
                             {contactLinks.map((link) => (
-                            link.href && (
+                            link.href && link.value && (
                                 <Link href={link.href} key={link.label} className="flex items-center group text-white" target="_blank" rel="noopener noreferrer">
                                     <div className={cn("w-12 h-12 flex-shrink-0 rounded-full flex items-center justify-center glass-effect transition-colors duration-300 text-white", link.color)}>
                                         <Icon icon={link.icon} className="w-6 h-6" />
@@ -284,10 +298,3 @@ export default function ContactPage() {
     </div>
   );
 }
-
-    
-
-    
-
-
-

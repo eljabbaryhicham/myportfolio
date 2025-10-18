@@ -5,10 +5,12 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowRight } from '@fortawesome/free-solid-svg-icons';
-import H5Player from "./H5Player";
+import VideoPlayer from "@/components/video-player";
 import type { PortfolioItem } from "../data/portfolio-data";
 import { cn } from "@/lib/utils";
 import Preloader from "@/components/preloader";
+import { useMemo } from "react";
+import { type SourceInfo } from "plyr";
 
 interface HomePageContentProps {
     featuredProject: PortfolioItem | null;
@@ -17,10 +19,25 @@ interface HomePageContentProps {
 
 export default function HomePageContent({ featuredProject, isLoading }: HomePageContentProps) {
   
-  // Simplified logic to correctly select the video source from the featured project
-  const videoSrc = featuredProject?.sources?.find(s => s.size === 1080)?.src
-    || featuredProject?.sources?.[0]?.src
-    || featuredProject?.sourceUrl;
+  const videoSource: SourceInfo | null = useMemo(() => {
+    if (!featuredProject) return null;
+    
+    let sources: { src: string; type: string; size?: number }[] = [];
+    if (featuredProject.sources) {
+      sources = featuredProject.sources.map(s => ({
+        src: s.src,
+        type: 'video/mp4',
+        size: s.size,
+      }));
+    } else if (featuredProject.sourceUrl) {
+      sources.push({ src: featuredProject.sourceUrl, type: 'video/mp4' });
+    }
+
+    if (sources.length === 0) return null;
+
+    return { type: 'video', sources };
+  }, [featuredProject]);
+
 
   return (
     <div className="h-full w-full flex flex-col items-center justify-center gap-8 p-4">
@@ -28,7 +45,18 @@ export default function HomePageContent({ featuredProject, isLoading }: HomePage
         "w-full max-w-4xl aspect-video", 
         "relative rounded-lg overflow-hidden glass-effect border border-border/50"
       )}>
-        {isLoading || !videoSrc ? <Preloader /> : <H5Player source={videoSrc} />}
+        {isLoading || !videoSource ? (
+          <Preloader /> 
+        ) : (
+          <VideoPlayer 
+            source={videoSource}
+            poster={featuredProject?.thumbnailUrl}
+            autoplay 
+            loop 
+            muted 
+            controls={false} 
+          />
+        )}
       </div>
       <Button asChild size="lg" className="group">
         <Link href="/work">
