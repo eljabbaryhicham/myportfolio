@@ -353,9 +353,9 @@ export default function WorkPage() {
                     size="icon"
                     onClick={handlePreviousProject}
                     disabled={filteredItems.length <= 1}
-                    className="absolute left-2 md:left-4 lg:left-6 top-1/2 -translate-y-1/2 h-8 w-8 md:h-12 md:w-12"
+                    className="absolute left-4 md:left-16 top-1/2 -translate-y-1/2 h-8 w-8 md:h-10 md:w-10"
                   >
-                    <FontAwesomeIcon icon={faArrowLeft} className="h-4 w-4 md:h-6 md:w-6" />
+                    <FontAwesomeIcon icon={faArrowLeft} className="h-4 w-4 md:h-5 md:w-5" />
                     <span className="sr-only">Previous Project</span>
                   </Button>
                   <Button
@@ -363,9 +363,9 @@ export default function WorkPage() {
                     size="icon"
                     onClick={handleNextProject}
                     disabled={filteredItems.length <= 1}
-                    className="absolute right-2 md:right-4 lg:right-6 top-1/2 -translate-y-1/2 h-8 w-8 md:h-12 md:w-12"
+                    className="absolute right-4 md:right-16 top-1/2 -translate-y-1/2 h-8 w-8 md:h-10 md:w-10"
                   >
-                    <FontAwesomeIcon icon={faArrowRight} className="h-4 w-4 md:h-6 md:w-6" />
+                    <FontAwesomeIcon icon={faArrowRight} className="h-4 w-4 md:h-5 md:w-5" />
                     <span className="sr-only">Next Project</span>
                   </Button>
                   <DialogDescription className="text-sm md:text-base text-center text-foreground/70 mt-2 md:mt-4 whitespace-pre-wrap max-w-2xl mx-auto">
@@ -438,7 +438,7 @@ export default function WorkPage() {
                               const { src } = props;
                               if (!isClient || !src) return null;
                               
-                              const youtubeRegex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-_ -]{11})/;
+                              const youtubeRegex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
                               const vimeoRegex = /(?:https?:\/\/)?(?:www\.)?vimeo\.com\/(?:channels\/(?:\w+\/)?|groups\/(?:[^\/]*)\/videos\/|album\/(?:\d+)\/video\/|)(\d+)/;
                               
                               let videoSource: { type: 'video'; sources: { src: string; provider: 'youtube' | 'vimeo' }[] } | { type: 'video'; sources: { src: string; type: string }[] } | null = null;
