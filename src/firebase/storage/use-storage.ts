@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
@@ -65,20 +64,22 @@ export function useStorageList(pathRef: StorageReference | null) {
   return { files, isLoading, error, refetch: fetchFiles };
 }
 
+interface UploadCallbacks {
+    onProgress?: (progress: number) => void;
+    onError?: (error: Error) => void;
+    onComplete?: (url: string) => void;
+}
+
 // Hook for uploading a file
 export function useStorageUpload() {
-  const [progress, setProgress] = useState(0);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  
   const storage = useFirebaseStorage();
 
-  const upload = useCallback((file: File, pathRef: StorageReference) => {
+  const upload = useCallback((file: File, pathRef: StorageReference, callbacks?: UploadCallbacks) => {
     return new Promise<string>((resolve, reject) => {
       if (!storage) {
-        const err = "Firebase Storage is not available";
-        setError(err);
-        reject(new Error(err));
+        const err = new Error("Firebase Storage is not available");
+        callbacks?.onError?.(err);
+        reject(err);
         return;
       }
       
@@ -86,34 +87,26 @@ export function useStorageUpload() {
       const uniqueFileName = `${uuidv4()}.${fileExtension}`;
       const fileRef = ref(pathRef, uniqueFileName);
 
-      setIsLoading(true);
-      setError(null);
-      setProgress(0);
-
       const uploadTask: UploadTask = uploadBytesResumable(fileRef, file);
 
       uploadTask.on(
         'state_changed',
         (snapshot) => {
           const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-          setProgress(progress);
+          callbacks?.onProgress?.(progress);
         },
         (error) => {
-          setIsLoading(false);
-          setError(error.message);
-          console.error("Upload Error:", error);
+          callbacks?.onError?.(error);
           reject(error);
         },
         async () => {
           try {
             const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-            setProgress(100);
-            setIsLoading(false);
+            callbacks?.onComplete?.(downloadURL);
             resolve(downloadURL);
           } catch(e) {
             const err = e as Error;
-            setIsLoading(false);
-            setError(err.message);
+            callbacks?.onError?.(err);
             reject(e);
           }
         }
@@ -121,7 +114,7 @@ export function useStorageUpload() {
     });
   }, [storage]);
   
-  return { upload, progress, isLoading, error };
+  return { upload };
 }
 
 

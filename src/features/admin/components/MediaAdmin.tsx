@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useCallback, useState } from 'react';
@@ -84,15 +83,38 @@ export default function MediaAdmin() {
   const { toast } = useToast();
   const filesRef = ref(storage, 'uploads');
   
-  const { files, isLoading: isLoadingFiles } = useStorageList(filesRef);
-  const { upload, progress, isLoading: isUploading, error } = useStorageUpload();
+  const { files, isLoading: isLoadingFiles, refetch: refetchFiles } = useStorageList(filesRef);
+  const { upload } = useStorageUpload();
   const { deleteFile, isLoading: isDeleting } = useStorageDelete();
 
+  const [uploadProgress, setUploadProgress] = useState<number | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
-    for (const file of acceptedFiles) {
-      await upload(file, filesRef);
+    if (!storage) {
+        toast({ variant: 'destructive', title: 'Error', description: 'Storage not available' });
+        return;
     }
-  }, [upload, filesRef]);
+    
+    setIsUploading(true);
+    setUploadProgress(0);
+
+    for (const file of acceptedFiles) {
+        try {
+            await upload(file, filesRef, {
+                onProgress: (progress) => setUploadProgress(progress),
+            });
+        } catch (error: any) {
+            toast({ variant: 'destructive', title: 'Upload Failed', description: error.message });
+        }
+    }
+    
+    setIsUploading(false);
+    setUploadProgress(null);
+    refetchFiles();
+    toast({ title: 'Upload complete', description: `${acceptedFiles.length} file(s) uploaded.` });
+
+  }, [upload, filesRef, storage, toast, refetchFiles]);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
@@ -107,6 +129,7 @@ export default function MediaAdmin() {
     try {
         await deleteFile(fileRef);
         toast({ title: "File deleted", description: `${name} has been removed.`});
+        refetchFiles();
     } catch (e) {
         toast({ variant: 'destructive', title: "Delete failed", description: `Could not delete ${name}.`});
     }
@@ -146,13 +169,12 @@ export default function MediaAdmin() {
                     <p className="text-xs">(Images and Videos)</p>
                 </div>
             </div>
-            {isUploading && (
+            {isUploading && uploadProgress !== null && (
                 <div className="mt-4">
-                    <Progress value={progress} className="w-full" />
-                    <p className="text-sm text-center mt-2 text-muted-foreground">Uploading... {Math.round(progress)}%</p>
+                    <Progress value={uploadProgress} className="w-full" />
+                    <p className="text-sm text-center mt-2 text-muted-foreground">Uploading... {Math.round(uploadProgress)}%</p>
                 </div>
             )}
-            {error && <p className="text-sm text-center mt-2 text-destructive">{error}</p>}
         </div>
         
         <ScrollArea className="flex-1">
