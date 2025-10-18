@@ -3,7 +3,7 @@
 
 import React, { useCallback, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
-import { useStorageList, useStorageUpload } from '@/firebase/storage/use-storage';
+import { useStorageList, useStorageUpload, useStorageDelete } from '@/firebase/storage/use-storage';
 import { useStorage, useAuth } from '@/firebase';
 import { ref } from 'firebase/storage';
 import { Button } from '@/components/ui/button';
@@ -191,7 +191,7 @@ export default function MediaAdmin() {
         
         <ScrollArea className="flex-1">
           <div className="p-6 pt-0">
-            {isLoadingFiles ? (
+            {isLoadingFiles && !isUploading ? (
                  <div className="flex justify-center items-center h-full min-h-[200px]">
                     <Preloader />
                 </div>
