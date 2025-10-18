@@ -234,6 +234,7 @@ export default function WorkPage() {
   const [filter, setFilter] = useState<'all' | 'image' | 'video'>('all');
   const [fullscreenImageUrl, setFullscreenImageUrl] = useState<string | null>(null);
   const [isClient, setIsClient] = useState(false);
+  const [isDescriptionLong, setIsDescriptionLong] = useState(false);
   const isExtraWide = useIsExtraWide();
 
   useEffect(() => {
@@ -256,6 +257,18 @@ export default function WorkPage() {
       setSelectedItem(null);
     }
   };
+
+  useEffect(() => {
+    if (selectedItem) {
+      const LONG_DESCRIPTION_THRESHOLD = 150;
+      setIsDescriptionLong(
+        (selectedItem.description?.length || 0) > LONG_DESCRIPTION_THRESHOLD
+      );
+    } else {
+      setIsDescriptionLong(false);
+    }
+  }, [selectedItem]);
+
 
   const handleDetailsOpenChange = (open: boolean) => {
     setDetailsModalOpen(open);
@@ -339,7 +352,7 @@ export default function WorkPage() {
           className={cn(
             "glass-effect p-0 flex flex-col",
             "w-[95vw] max-w-7xl",
-            isExtraWide ? "h-[90vh]" : "max-h-[90vh]"
+            isExtraWide || isDescriptionLong ? "h-[90vh]" : "max-h-[90vh]"
           )}
         >
           {selectedItem && (
@@ -355,7 +368,7 @@ export default function WorkPage() {
                     </DialogDescription>
                   </div>
                  
-                   <div className="mt-4 md:mt-0 md:px-8 flex justify-between">
+                   <div className="mt-4 flex justify-between px-8 md:px-0 md:block">
                      <Button
                         variant="outline"
                         size="icon"
