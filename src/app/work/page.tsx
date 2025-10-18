@@ -315,52 +315,52 @@ export default function WorkPage() {
         <DialogContent 
             className={cn(
                 "w-[95vw] md:w-[90vw] md:max-w-[80vw] glass-effect p-0 flex flex-col overflow-hidden",
-                isVeryUltrawide ? "max-w-[60vw]" : "",
-                "h-auto max-h-[90vh]"
+                isVeryUltrawide ? "max-w-[60vw] h-[90vh]" : "h-auto max-h-[90vh]"
             )}
         >
           {selectedItem && (
             <>
               <div className="flex flex-col flex-1 min-h-0">
-                  <DialogHeader className="p-4 md:p-6 flex-shrink-0">
-                      <DialogTitle className="text-xl md:text-2xl">
-                      {selectedItem.title}
-                      </DialogTitle>
-                      <DialogDescription className="text-base text-foreground/70 mt-2 whitespace-pre-wrap">
-                      {selectedItem.description}
-                      </DialogDescription>
-                  </DialogHeader>
-
-                  <Separator className="bg-white/10 my-0" />
-
-                  <ScrollArea className="flex-1 min-h-0">
-                      <div className="flex flex-col h-full">
-                          <div className="flex-1">
-                            {isClient && (
-                              <PortfolioMedia
-                                  item={selectedItem}
-                                  onFullscreenClick={setFullscreenImageUrl}
-                              />
-                            )}
-                          </div>
-                          
-                          {selectedItem.details && (
-                              <div className="mt-6 p-6 pt-0 text-center">
-                                <Button
-                                    variant="default"
-                                    onClick={() => setDetailsModalOpen(true)}
-                                >
-                                    <FontAwesomeIcon icon={faUpDown} className="mr-2" />
-                                    Show Details
-                                </Button>
-                              </div>
-                          )}
+                <DialogHeader className="p-4 md:p-6 flex-shrink-0">
+                  <DialogTitle className="text-xl md:text-2xl">
+                    {selectedItem.title}
+                  </DialogTitle>
+                  <DialogDescription className="text-base text-foreground/70 mt-2 whitespace-pre-wrap">
+                    {selectedItem.description}
+                  </DialogDescription>
+                </DialogHeader>
+                
+                <Separator className="bg-white/10 my-0" />
+                
+                <ScrollArea className="flex-1 min-h-0">
+                  <div className="flex flex-col h-full justify-between">
+                    <div className="flex-1">
+                      {isClient && (
+                        <PortfolioMedia
+                          item={selectedItem}
+                          onFullscreenClick={setFullscreenImageUrl}
+                        />
+                      )}
+                    </div>
+                    
+                    {selectedItem.details && (
+                      <div className="p-6 text-center">
+                        <Button
+                          variant="default"
+                          onClick={() => setDetailsModalOpen(true)}
+                        >
+                          <FontAwesomeIcon icon={faUpDown} className="mr-2" />
+                          Show Details
+                        </Button>
                       </div>
-                  </ScrollArea>
+                    )}
+                  </div>
+                </ScrollArea>
               </div>
+
               <DialogClose className="absolute top-4 right-4 z-50 h-8 w-8 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2">
-                  <FontAwesomeIcon icon={faXmark} className="h-4 w-4" />
-                  <span className="sr-only">Close</span>
+                <FontAwesomeIcon icon={faXmark} className="h-4 w-4" />
+                <span className="sr-only">Close</span>
               </DialogClose>
             </>
           )}
