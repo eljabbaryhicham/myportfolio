@@ -1,62 +1,70 @@
 /**
- * @fileoverview Firestore Security Rules for the portfolio application.
+ * @file Firebase Security Rules for the portfolio application.
  *
  * Core Philosophy:
- * This ruleset provides very strict control over data access.
- * The rules are designed to secure data based on the principle of least privilege,
- * limiting read and write access to only those users and roles that need it.
- * In this Prototyping stage, data validation is relaxed.
+ * This ruleset provides full read and write access to all authenticated users. In a production
+ * environment this is NOT recommended, as it could lead to data breaches.
  *
  * Data Structure:
- * - /projects/{projectId}: Stores project information.
- * - /contact/{contactId}: Stores contact information.
+ * The data consists of two top-level collections: `projects` and `contact`.
  *
  * Key Security Decisions:
- * - Contact Information is only editable by authenticated users.
- * - Project Information is only editable by authenticated users.
- *
- * Authorization Denormalization:
- * None. Assuming that all write operations require a user to be signed in.
+ * - Authenticated users have full access to the database. This is intended to allow for quick prototyping.
+ *   Once the upload is working, you should come back and implement more fine-grained access control.
+ * - The rules do not enforce data validation. This allows rapid prototyping and schema iteration.
  */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * @description Allows authenticated users to manage projects.
+     * @description Grants full access to projects for authenticated users.
      * @path /projects/{projectId}
-     * @allow (create) - Authenticated user can create a project.
-     * @deny (create) - Unauthenticated user cannot create a project.
-     * @allow (get, list) - Any user can read project information.
-     * @allow (update, delete) - Authenticated user can update or delete a project.
-     * @deny (update, delete) - Unauthenticated user cannot update or delete a project.
-     * @principle Enforces authentication for writes.
+     * @allow (create) User with any auth can create a project.
+     * @allow (update) User with any auth can update a project.
+     * @allow (delete) User with any auth can delete a project.
+     * @allow (get) User with any auth can get a project.
+     * @allow (list) User with any auth can list projects.
+     * @deny (create) Unauthenticated user cannot create a project.
+     * @deny (update) Unauthenticated user cannot update a project.
+     * @deny (delete) Unauthenticated user cannot delete a project.
+     * @deny (get) N/A
+     * @deny (list) N/A
+     * @principle Grants full access to projects for authenticated users.
      */
     match /projects/{projectId} {
-      allow get, list: if true;
       allow create: if isSignedIn();
-      allow update: if isSignedIn() && resource != null;
-      allow delete: if isSignedIn() && resource != null;
+      allow update: if isSignedIn();
+      allow delete: if isSignedIn();
+      allow get: if true;
+      allow list: if true;
     }
 
-    /**
-     * @description Allows authenticated users to manage contact details.
-     * @path /contact/{contactId}
-     * @allow (create, update, delete) - Authenticated user can create, update, or delete contact information.
-     * @deny (create, update, delete) - Unauthenticated user cannot create, update, or delete contact information.
-     * @allow (get, list) - Any user can read contact information.
-     * @principle Enforces authentication for writes.
-     */
+     /**
+      * @description Grants full access to contact information for authenticated users.
+      * @path /contact/{contactId}
+      * @allow (create) User with any auth can create contact information.
+      * @allow (update) User with any auth can update contact information.
+      * @allow (delete) User with any auth can delete contact information.
+      * @allow (get) User with any auth can get contact information.
+      * @allow (list) User with any auth can list contact information.
+      * @deny (create) Unauthenticated user cannot create contact information.
+      * @deny (update) Unauthenticated user cannot update contact information.
+      * @deny (delete) Unauthenticated user cannot delete contact information.
+      * @deny (get) N/A
+      * @deny (list) N/A
+      * @principle Grants full access to contact information for authenticated users.
+      */
     match /contact/{contactId} {
-      allow get, list: if true;
       allow create: if isSignedIn();
-      allow update: if isSignedIn() && resource != null;
-      allow delete: if isSignedIn() && resource != null;
+      allow update: if isSignedIn();
+      allow delete: if isSignedIn();
+      allow get: if true;
+      allow list: if true;
     }
+  }
 
-    // Helper function to determine if a user is signed in
-    function isSignedIn() {
-      return request.auth != null;
-    }
+  function isSignedIn() {
+    return request.auth != null;
   }
 }
