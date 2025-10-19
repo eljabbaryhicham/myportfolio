@@ -2,85 +2,69 @@
  * @fileoverview Firestore Security Rules for the portfolio application.
  *
  * Core Philosophy:
- * This ruleset prioritizes secure data access based on distinct collections for projects, contact information, and homepage settings.
- * Public read access is granted for specific collections, while write access is restricted to authenticated users.
+ * This ruleset provides public read access to all data and restricts write access.
  *
  * Data Structure:
- * - `/projects/{projectId}`: Stores project information.
- * - `/contact/{contactId}`: Stores contact information.
- * - `/homepage/{settingsId}`: Stores homepage settings.
+ * - /projects/{projectId}: Stores project information.
+ * - /contact/{contactId}: Stores contact information.
+ * - /homepage/{settingsId}: Stores homepage settings.
+ * - /media/{mediaId}: Stores metadata about media assets.
  *
  * Key Security Decisions:
- * - Public read access for all documents in `/projects`, `/contact`, and `/homepage`.
- * - Authenticated user-only write access for all documents.
+ * - Public read access is granted to all collections to allow for easy data retrieval.
+ * - All write access is denied.
  *
- * Denormalization for Authorization:
- * Not applicable in this scenario as authorization is based on authentication status.
- *
- * Structural Segregation:
- * Not applicable in this scenario.
  */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * @description Manages access to project documents.
+     * @description Grants public read access to projects, but denies all write operations.
      * @path /projects/{projectId}
-     * @allow (get, list): Any user can read project details.
-     * @allow (create, update, delete): Only authenticated users can modify projects.
-     * @deny create: if false;
-     * @deny update: if false;
-     * @deny delete: if false;
-     * @principle Public read, authenticated write.
+     * @allow (get, list): Any user can read project data.
+     * @deny (create, update, delete): No user can create, update, or delete project data.
+     * @principle Public read, restricted write.
      */
     match /projects/{projectId} {
       allow get, list: if true;
-      allow create: if isSignedIn();
-      allow update: if isSignedIn() && resource != null;
-      allow delete: if isSignedIn() && resource != null;
+      allow create, update, delete: if false;
     }
 
     /**
-     * @description Manages access to contact information documents.
+     * @description Grants public read access to contact information, but denies all write operations.
      * @path /contact/{contactId}
-     * @allow (get, list): Any user can read contact information.
-     * @allow (create, update, delete): Only authenticated users can modify contact information.
-     * @deny create: if false;
-     * @deny update: if false;
-     * @deny delete: if false;
-     * @principle Public read, authenticated write.
+     * @allow (get, list): Any user can read contact data.
+     * @deny (create, update, delete): No user can create, update, or delete contact data.
+     * @principle Public read, restricted write.
      */
     match /contact/{contactId} {
       allow get, list: if true;
-      allow create: if isSignedIn();
-      allow update: if isSignedIn() && resource != null;
-      allow delete: if isSignedIn() && resource != null;
+      allow create, update, delete: if false;
     }
 
     /**
-     * @description Manages access to homepage settings documents.
+     * @description Grants public read access to homepage settings, but denies all write operations.
      * @path /homepage/{settingsId}
      * @allow (get, list): Any user can read homepage settings.
-     * @allow (create, update, delete): Only authenticated users can modify homepage settings.
-     * @deny create: if false;
-     * @deny update: if false;
-     * @deny delete: if false;
-     * @principle Public read, authenticated write.
+     * @deny (create, update, delete): No user can create, update, or delete homepage settings.
+     * @principle Public read, restricted write.
      */
     match /homepage/{settingsId} {
       allow get, list: if true;
-      allow create: if isSignedIn();
-      allow update: if isSignedIn() && resource != null;
-      allow delete: if isSignedIn() && resource != null;
+      allow create, update, delete: if false;
     }
-
+    
     /**
-     * @description Checks if the user is signed in.
-     * @return {boolean} True if the user is signed in, false otherwise.
+     * @description Grants public read access to media assets, but denies all write operations.
+     * @path /media/{mediaId}
+     * @allow (get, list): Any user can read media asset data.
+     * @deny (create, update, delete): No user can create, update, or delete media asset data.
+     * @principle Public read, restricted write.
      */
-    function isSignedIn() {
-      return request.auth != null;
+    match /media/{mediaId} {
+      allow get, list: if true;
+      allow create, update, delete: if false;
     }
   }
 }
