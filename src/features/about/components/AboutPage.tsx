@@ -31,6 +31,10 @@ interface AboutPageContent {
     imageUrl: string;
 }
 
+interface ContactInfo {
+    logoUrl?: string;
+}
+
 const MemoizedImage = memo(Image);
 
 export default function AboutPage() {
@@ -48,6 +52,12 @@ export default function AboutPage() {
     [firestore]
   );
   const { data: aboutContent, isLoading: isLoadingContent } = useDoc<AboutPageContent>(aboutContentRef);
+  
+  const contactDocRef = useMemoFirebase(
+    () => (firestore ? doc(firestore, 'contact', 'details') : null),
+    [firestore]
+  );
+  const { data: contactInfo, isLoading: isLoadingContact } = useDoc<ContactInfo>(contactDocRef);
 
   // Duplicate clients for seamless marquee effect
   const duplicatedClients = useMemo(() => {
@@ -55,7 +65,8 @@ export default function AboutPage() {
     return [...clients, ...clients, ...clients, ...clients];
   }, [clients]);
 
-  const isLoading = isLoadingClients || isLoadingContent;
+  const isLoading = isLoadingClients || isLoadingContent || isLoadingContact;
+  const logoUrl = contactInfo?.logoUrl || "https://i.imgur.com/N9c8oEJ.png";
 
   return (
     <div className="h-full w-full flex flex-col">
@@ -85,7 +96,7 @@ export default function AboutPage() {
                 >
                   <div className="text-center md:text-left">
                     <div className="w-48 mx-auto md:mx-0 mb-4">
-                        <Logo />
+                        <Logo src={logoUrl} />
                     </div>
                     <h2 className="text-2xl md:text-3xl font-bold tracking-tight mb-4">{aboutContent.title}</h2>
                     <p className="text-foreground/70 leading-relaxed">{aboutContent.content}</p>
@@ -160,5 +171,3 @@ export default function AboutPage() {
     </div>
   );
 }
-
-    

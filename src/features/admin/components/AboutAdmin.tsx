@@ -1,4 +1,3 @@
-
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -111,77 +110,80 @@ export default function AboutAdmin() {
 
   return (
     <>
-      <div className="flex-1 flex flex-col h-full gap-8">
-        <div>
-            <div className="mb-6">
+      <div className="flex-1 flex flex-col h-full gap-8 min-h-0">
+        {/* About Page Content Section */}
+        <div className="flex flex-col min-h-0">
+          <div className="mb-6 flex-shrink-0">
             <h2 className="text-xl font-bold">About Page Content</h2>
             <p className="text-muted-foreground">Update the content displayed on your public "About Us" page.</p>
-            </div>
-            <div className="border rounded-lg overflow-hidden glass-effect">
-                <div className="p-6">
+          </div>
+          <div className="border rounded-lg overflow-hidden glass-effect flex-1 flex flex-col">
+            <ScrollArea className="flex-1">
+              <div className="p-6">
                 <Form {...form}>
-                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+                  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
                     <fieldset disabled={!canEditAbout} className="group">
-                        <FormField
+                      <FormField
                         control={form.control}
                         name="title"
                         render={({ field }) => (
-                            <FormItem>
+                          <FormItem>
                             <FormLabel>Heading</FormLabel>
                             <FormControl>
-                                <Input placeholder="About Section Heading" {...field} />
+                              <Input placeholder="About Section Heading" {...field} />
                             </FormControl>
                             <FormMessage />
-                            </FormItem>
+                          </FormItem>
                         )}
-                        />
-                        <FormField
+                      />
+                      <FormField
                         control={form.control}
                         name="content"
                         render={({ field }) => (
-                            <FormItem>
+                          <FormItem>
                             <FormLabel>Paragraph</FormLabel>
                             <FormControl>
-                                <Textarea placeholder="Write your paragraph here..." className="min-h-[150px]" {...field} />
+                              <Textarea placeholder="Write your paragraph here..." className="min-h-[150px]" {...field} />
                             </FormControl>
                             <FormMessage />
-                            </FormItem>
+                          </FormItem>
                         )}
-                        />
-                        <FormField
+                      />
+                      <FormField
                         control={form.control}
                         name="imageUrl"
                         render={({ field }) => (
-                            <FormItem>
+                          <FormItem>
                             <FormLabel>Image URL</FormLabel>
                             <div className="flex items-center gap-2">
-                                <FormControl>
+                              <FormControl>
                                 <Input placeholder="https://example.com/your-image.png" {...field} />
-                                </FormControl>
-                                <Button type="button" variant="outline" size="icon" onClick={handleChooseImage}>
-                                    <FontAwesomeIcon icon={faImages} />
-                                </Button>
+                              </FormControl>
+                              <Button type="button" variant="outline" size="icon" onClick={handleChooseImage}>
+                                <FontAwesomeIcon icon={faImages} />
+                              </Button>
                             </div>
                             <FormMessage />
-                            </FormItem>
+                          </FormItem>
                         )}
-                        />
-                        <div className="flex justify-end pt-4">
+                      />
+                      <div className="flex justify-end pt-4">
                         <Button type="submit" disabled={!canEditAbout}>Save Changes</Button>
-                        </div>
+                      </div>
                     </fieldset>
-                    </form>
+                  </form>
                 </Form>
-                </div>
-            </div>
-        </div>
-        
-        <Separator className='bg-white/10' />
-
-        <div className="min-h-0">
-            <ClientAdmin />
+              </div>
+            </ScrollArea>
+          </div>
         </div>
 
+        <Separator className='bg-white/10 flex-shrink-0' />
+
+        {/* Client Management Section */}
+        <div className="flex flex-col min-h-0">
+          <ClientAdmin />
+        </div>
       </div>
       <MediaAdmin
         isDialog={true}
@@ -204,5 +206,3 @@ export default function AboutAdmin() {
     </>
   );
 }
-
-    

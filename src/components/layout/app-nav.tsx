@@ -4,13 +4,14 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { useUser } from "@/firebase";
+import { useUser, useDoc, useFirestore, useMemoFirebase } from "@/firebase";
 import { motion } from "framer-motion";
 import React from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faHouse, faImage, faCircleInfo, faEnvelope, faShieldHalved } from "@fortawesome/free-solid-svg-icons";
 import Logo from "../logo";
+import { doc } from "firebase/firestore";
 
 const navItems = [
   { href: "/", label: "Home", icon: faHouse, public: true },
@@ -23,7 +24,16 @@ const navItems = [
 export function AppNav() {
   const pathname = usePathname();
   const { user } = useUser();
+  const firestore = useFirestore();
   const isMobile = useIsMobile();
+
+  const contactDocRef = useMemoFirebase(
+    () => (firestore ? doc(firestore, 'contact', 'details') : null),
+    [firestore]
+  );
+  const { data: contactInfo } = useDoc(contactDocRef);
+
+  const logoUrl = contactInfo?.logoUrl || "https://i.imgur.com/N9c8oEJ.png";
 
   const visibleNavItems = navItems.filter(item => item.public || (!item.public && user));
 
@@ -80,7 +90,7 @@ export function AppNav() {
         "flex h-full flex-row md:flex-col items-center justify-between rounded-lg border border-border/50 px-4 py-2 md:p-4 glass-effect"
         )}>
         <Link href="/" className="hidden md:flex items-center justify-center text-primary w-8 mt-4">
-          <Logo />
+          <Logo src={logoUrl} />
         </Link>
         <nav className="flex flex-row md:flex-col items-center justify-around md:justify-center w-full md:w-auto md:gap-8">
           {visibleNavItems.map((item) => {

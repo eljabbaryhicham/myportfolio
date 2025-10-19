@@ -1,9 +1,9 @@
 import Image from 'next/image';
 import * as React from 'react';
 
-const Logo = (props: { className?: string }) => (
+const Logo = (props: { src?: string; className?: string }) => (
     <Image
-      src="https://i.imgur.com/N9c8oEJ.png"
+      src={props.src || "https://i.imgur.com/N9c8oEJ.png"}
       alt="belofted logo"
       width={384}
       height={104}

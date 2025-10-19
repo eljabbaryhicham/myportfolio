@@ -1,4 +1,3 @@
-
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -34,6 +33,7 @@ const formSchema = z.object({
   instagramUrl: z.string().url().optional().or(z.literal('')),
   facebookUrl: z.string().url().optional().or(z.literal('')),
   twitterUrl: z.string().url().optional().or(z.literal('')),
+  logoUrl: z.string().url({ message: 'Please enter a valid URL for the logo.' }).optional().or(z.literal('')),
 });
 
 type ContactInfo = z.infer<typeof formSchema>;
@@ -50,6 +50,7 @@ const defaultFormValues: ContactInfo = {
     instagramUrl: '',
     facebookUrl: '',
     twitterUrl: '',
+    logoUrl: '',
 };
 
 export default function ContactAdmin() {
@@ -84,10 +85,14 @@ export default function ContactAdmin() {
             instagramUrl: contactInfo.instagramUrl || '',
             facebookUrl: contactInfo.facebookUrl || '',
             twitterUrl: contactInfo.twitterUrl || '',
+            logoUrl: contactInfo.logoUrl || 'https://i.imgur.com/N9c8oEJ.png',
         };
       form.reset(values);
+    } else if (!isLoading) {
+        // Set default logo if no data is loaded
+        form.reset({ ...defaultFormValues, logoUrl: 'https://i.imgur.com/N9c8oEJ.png' });
     }
-  }, [contactInfo, form]);
+  }, [contactInfo, form, isLoading]);
   
   useEffect(() => {
     if (!canEditContact) {
@@ -117,9 +122,9 @@ export default function ContactAdmin() {
   return (
     <div className="flex-1 flex flex-col h-full">
       <div className="mb-6">
-          <h2 className="text-xl font-bold">Contact Page Settings</h2>
+          <h2 className="text-xl font-bold">Contact Page &amp; Site Settings</h2>
           <p className="text-muted-foreground">
-              Update the information displayed on your public contact page.
+              Update the information displayed on your public contact page and other site-wide settings.
           </p>
       </div>
       <div className="flex-1 border rounded-lg overflow-hidden glass-effect">
@@ -128,6 +133,20 @@ export default function ContactAdmin() {
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
                     <fieldset disabled={!canEditContact} className="group">
+                    <FormField
+                        control={form.control}
+                        name="logoUrl"
+                        render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Site Logo URL</FormLabel>
+                            <FormControl>
+                            <Input placeholder="https://example.com/your-logo.png" {...field} />
+                            </FormControl>
+                            <FormDescription>The main logo for the entire website.</FormDescription>
+                            <FormMessage />
+                        </FormItem>
+                        )}
+                    />
                     <FormField
                         control={form.control}
                         name="name"
@@ -284,5 +303,3 @@ export default function ContactAdmin() {
     </div>
   );
 }
-
-    

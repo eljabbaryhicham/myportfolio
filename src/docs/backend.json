@@ -90,6 +90,11 @@
         "twitterUrl": {
           "type": "string",
           "format": "uri"
+        },
+        "logoUrl": {
+          "type": "string",
+          "format": "uri",
+          "description": "URL for the main site logo."
         }
       },
       "required": [

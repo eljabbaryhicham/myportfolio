@@ -13,14 +13,27 @@ import { useMemo } from "react";
 import VideoPlayer from "@/components/video-player";
 import type { SourceInfo } from "plyr";
 import Logo from "@/components/logo";
+import { useDoc, useFirestore, useMemoFirebase } from "@/firebase";
+import { doc } from "firebase/firestore";
 
 interface HomePageContentProps {
     featuredProject: PortfolioItem | null;
     isLoading: boolean;
 }
 
+interface ContactInfo {
+    logoUrl?: string;
+}
+
 export default function HomePageContent({ featuredProject, isLoading }: HomePageContentProps) {
-  
+  const firestore = useFirestore();
+
+  const contactDocRef = useMemoFirebase(
+    () => (firestore ? doc(firestore, 'contact', 'details') : null),
+    [firestore]
+  );
+  const { data: contactInfo, isLoading: isLoadingContact } = useDoc<ContactInfo>(contactDocRef);
+
   const videoSource = useMemo(() => {
     const project = featuredProject || defaultPortfolioItems.find(item => item.featured && item.type === 'video');
     if (!project) return null;
@@ -41,12 +54,13 @@ export default function HomePageContent({ featuredProject, isLoading }: HomePage
     }
     return sourceInfo;
   }, [featuredProject]);
-
+  
+  const logoUrl = contactInfo?.logoUrl || "https://i.imgur.com/N9c8oEJ.png";
 
   return (
     <div className="h-full w-full flex flex-col items-center justify-center gap-8 p-4">
        <div className="w-full max-w-sm">
-        <Logo />
+        <Logo src={logoUrl} />
       </div>
       <Button asChild size="lg" className="group">
         <Link href="/work">
