@@ -1,3 +1,4 @@
+
 'use client';
 
 // IMPORTANT: To use this component, you need a Cloudinary account.
@@ -17,7 +18,7 @@ import { useToast } from '@/hooks/use-toast';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import Image from 'next/image';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCloudUploadAlt, faCopy, faTrash, faFilm, faFileImage, faImages, faXmark, faPlus, faCheck, faEye } from '@fortawesome/free-solid-svg-icons';
+import { faCloudUploadAlt, faCopy, faTrash, faFilm, faFileImage, faImages, faXmark, faPlus, faCheck, faEye, faFolderOpen } from '@fortawesome/free-solid-svg-icons';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose, DialogDescription } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
@@ -140,6 +141,7 @@ interface StandaloneMediaAdminProps {
   isDialog?: false;
   onMediaSelect: (url: string, type: 'image' | 'video', filename: string) => void;
   onUploadComplete: (docId: string, resourceType: 'image' | 'video') => void;
+  onLibraryOpenRequest: () => void;
   isOpen?: never;
   onOpenChange?: never;
   isSelectionMode?: never;
@@ -160,6 +162,7 @@ interface DialogMediaAdminProps {
   setActiveTab: (tab: 'images' | 'videos') => void;
   newlyUploadedId: string | null;
   onUploadComplete?: never;
+  onLibraryOpenRequest?: never;
 }
 
 type MediaAdminProps = StandaloneMediaAdminProps | DialogMediaAdminProps;
@@ -234,21 +237,21 @@ export default function MediaAdmin(props: MediaAdminProps) {
           const response = JSON.parse(xhr.responseText);
           
           if(firestore) {
-            try {
-              const docRef = await addDocumentNonBlocking(collection(firestore, 'media'), {
+              const docRefPromise = addDocumentNonBlocking(collection(firestore, 'media'), {
                   public_id: response.public_id,
                   url: response.secure_url,
                   resource_type: response.resource_type,
                   created_at: response.created_at,
                   filename: file.name,
-              }) as DocumentReference | undefined;
+              });
+
+              // Await the promise to get the document reference
+              const docRef = await docRefPromise as DocumentReference | undefined;
 
               if (docRef && !props.isDialog) {
                   props.onUploadComplete(docRef.id, response.resource_type);
               }
-            } catch (e) {
-                console.error("Error saving to Firestore: ", e);
-            }
+
           }
 
           toast({
@@ -458,8 +461,16 @@ export default function MediaAdmin(props: MediaAdminProps) {
     <>
       <div className="flex-1 flex flex-col h-full gap-6">
         <div className="border rounded-lg p-6 glass-effect">
-          <h2 className="text-xl font-bold text-center">Media Library (Cloudinary)</h2>
-          <p className="text-muted-foreground mt-1 text-center text-sm">Upload and manage your images and videos.</p>
+          <div className='flex justify-between items-start'>
+            <div className='text-center flex-1'>
+                <h2 className="text-xl font-bold">Media Library (Cloudinary)</h2>
+                <p className="text-muted-foreground mt-1 text-sm">Upload and manage your images and videos.</p>
+            </div>
+            <Button onClick={props.onLibraryOpenRequest} variant="outline" size="sm">
+                <FontAwesomeIcon icon={faFolderOpen} className="mr-2" />
+                Browse Full Library
+            </Button>
+          </div>
           
           <div {...getRootProps()} className={cn('mt-4 border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors', isDragActive ? 'border-primary bg-primary/10' : 'border-border hover:border-primary/50', isUploading && 'cursor-not-allowed opacity-50')}>
               <input {...getInputProps()} disabled={isUploading} />

@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -178,7 +179,7 @@ function AdminPage() {
                   />
               </TabsContent>
               <TabsContent value="media" className="flex-1 overflow-auto mt-4">
-                  {isUserLoading ? <Preloader /> : <MediaAdmin onUploadComplete={handleUploadComplete} onMediaSelect={handleOpenPortfolioFormWithMedia} />}
+                  {isUserLoading ? <Preloader /> : <MediaAdmin onUploadComplete={handleUploadComplete} onLibraryOpenRequest={() => setIsLibraryOpen(true)} onMediaSelect={handleOpenPortfolioFormWithMedia} />}
               </TabsContent>
               <TabsContent value="contact" className="flex-1 overflow-auto mt-4">
                   <ContactAdmin />
