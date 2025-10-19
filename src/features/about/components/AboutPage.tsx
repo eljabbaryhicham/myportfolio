@@ -16,6 +16,7 @@ import { collection, query, orderBy, doc } from 'firebase/firestore';
 import Preloader from '@/components/preloader';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
+import Logo from '@/components/logo';
 
 interface Client {
   id: string;
@@ -83,6 +84,9 @@ export default function AboutPage() {
                   transition={{ duration: 0.5 }}
                 >
                   <div className="text-center md:text-left">
+                    <div className="w-48 mx-auto md:mx-0 mb-4">
+                        <Logo />
+                    </div>
                     <h2 className="text-2xl md:text-3xl font-bold tracking-tight mb-4">{aboutContent.title}</h2>
                     <p className="text-foreground/70 leading-relaxed">{aboutContent.content}</p>
                   </div>
@@ -156,3 +160,5 @@ export default function AboutPage() {
     </div>
   );
 }
+
+    

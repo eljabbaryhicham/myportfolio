@@ -24,6 +24,8 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import MediaAdmin from './MediaAdmin';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faImages } from '@fortawesome/free-solid-svg-icons';
+import ClientAdmin from './ClientAdmin';
+import { Separator } from '@/components/ui/separator';
 
 const formSchema = z.object({
   title: z.string().min(2, { message: 'Title must be at least 2 characters.' }),
@@ -109,70 +111,77 @@ export default function AboutAdmin() {
 
   return (
     <>
-      <div className="flex-1 flex flex-col h-full">
-        <div className="mb-6">
-          <h2 className="text-xl font-bold">About Page Content</h2>
-          <p className="text-muted-foreground">Update the content displayed on your public "About Us" page.</p>
-        </div>
-        <div className="flex-1 border rounded-lg overflow-hidden glass-effect">
-          <ScrollArea className="h-full">
-            <div className="p-6">
-              <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-                  <fieldset disabled={!canEditAbout} className="group">
-                    <FormField
-                      control={form.control}
-                      name="title"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Heading</FormLabel>
-                          <FormControl>
-                            <Input placeholder="About Section Heading" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="content"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Paragraph</FormLabel>
-                          <FormControl>
-                            <Textarea placeholder="Write your paragraph here..." className="min-h-[150px]" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="imageUrl"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Image URL</FormLabel>
-                          <div className="flex items-center gap-2">
-                            <FormControl>
-                              <Input placeholder="https://example.com/your-image.png" {...field} />
-                            </FormControl>
-                            <Button type="button" variant="outline" size="icon" onClick={handleChooseImage}>
-                                <FontAwesomeIcon icon={faImages} />
-                            </Button>
-                          </div>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <div className="flex justify-end pt-4">
-                      <Button type="submit" disabled={!canEditAbout}>Save Changes</Button>
-                    </div>
-                  </fieldset>
-                </form>
-              </Form>
+      <div className="flex-1 flex flex-col h-full gap-8">
+        <div>
+            <div className="mb-6">
+            <h2 className="text-xl font-bold">About Page Content</h2>
+            <p className="text-muted-foreground">Update the content displayed on your public "About Us" page.</p>
             </div>
-          </ScrollArea>
+            <div className="border rounded-lg overflow-hidden glass-effect">
+                <div className="p-6">
+                <Form {...form}>
+                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+                    <fieldset disabled={!canEditAbout} className="group">
+                        <FormField
+                        control={form.control}
+                        name="title"
+                        render={({ field }) => (
+                            <FormItem>
+                            <FormLabel>Heading</FormLabel>
+                            <FormControl>
+                                <Input placeholder="About Section Heading" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                            </FormItem>
+                        )}
+                        />
+                        <FormField
+                        control={form.control}
+                        name="content"
+                        render={({ field }) => (
+                            <FormItem>
+                            <FormLabel>Paragraph</FormLabel>
+                            <FormControl>
+                                <Textarea placeholder="Write your paragraph here..." className="min-h-[150px]" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                            </FormItem>
+                        )}
+                        />
+                        <FormField
+                        control={form.control}
+                        name="imageUrl"
+                        render={({ field }) => (
+                            <FormItem>
+                            <FormLabel>Image URL</FormLabel>
+                            <div className="flex items-center gap-2">
+                                <FormControl>
+                                <Input placeholder="https://example.com/your-image.png" {...field} />
+                                </FormControl>
+                                <Button type="button" variant="outline" size="icon" onClick={handleChooseImage}>
+                                    <FontAwesomeIcon icon={faImages} />
+                                </Button>
+                            </div>
+                            <FormMessage />
+                            </FormItem>
+                        )}
+                        />
+                        <div className="flex justify-end pt-4">
+                        <Button type="submit" disabled={!canEditAbout}>Save Changes</Button>
+                        </div>
+                    </fieldset>
+                    </form>
+                </Form>
+                </div>
+            </div>
         </div>
+        
+        <Separator className='bg-white/10' />
+
+        <div className="min-h-0">
+            <ClientAdmin />
+        </div>
+
       </div>
       <MediaAdmin
         isDialog={true}
@@ -195,3 +204,5 @@ export default function AboutAdmin() {
     </>
   );
 }
+
+    
