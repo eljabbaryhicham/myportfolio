@@ -53,7 +53,8 @@ export default function AboutPage() {
   // Duplicate clients for seamless marquee effect
   const duplicatedClients = useMemo(() => {
     if (!clients || clients.length === 0) return [];
-    return [...clients, ...clients, ...clients, ...clients];
+    // Duplicate the array enough times to ensure it's wider than the screen
+    return [...clients, ...clients];
   }, [clients]);
 
   const isLoading = isLoadingClients || isLoadingContent;
@@ -108,9 +109,9 @@ export default function AboutPage() {
                   <h2 className="text-2xl font-bold tracking-tight">Our Clients</h2>
                   <Separator className="bg-white/10 max-w-xs mx-auto mt-2" />
                 </div>
-                <div className='w-full overflow-hidden'>
+                <div className='w-full overflow-hidden relative'>
                   <div className="flex w-max group">
-                      <div className="flex w-1/2 animate-marquee group-hover:[animation-play-state:paused]">
+                      <div className="flex animate-marquee group-hover:[animation-play-state:paused]">
                           {(duplicatedClients && duplicatedClients.length > 0) ? duplicatedClients.map((client, index) => (
                           <div key={`${client.id}-${index}-1`} className="mx-8 flex flex-col items-center justify-center gap-2 cursor-pointer group/item">
                               <div className="relative w-[150px] h-[40px]">
@@ -129,7 +130,7 @@ export default function AboutPage() {
                               </div>
                           )}
                       </div>
-                       <div className="flex w-1/2 animate-marquee group-hover:[animation-play-state:paused]">
+                       <div className="flex animate-marquee group-hover:[animation-play-state:paused]" aria-hidden="true">
                           {(duplicatedClients && duplicatedClients.length > 0) ? duplicatedClients.map((client, index) => (
                           <div key={`${client.id}-${index}-2`} className="mx-8 flex flex-col items-center justify-center gap-2 cursor-pointer group/item">
                               <div className="relative w-[150px] h-[40px]">
