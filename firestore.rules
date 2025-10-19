@@ -1,155 +1,101 @@
 /**
- * @fileoverview Firestore Security Rules for the portfolio application.
- *
- * Core Philosophy:
- * This ruleset prioritizes a secure authorization model based on user roles (superadmin, admin) and, for user documents, ownership.
- * It aims for strong access control, especially for superadmins, while relaxing data validation to allow for rapid iteration.
- *
- * Data Structure:
- * - /projects/{projectId}: Stores individual project details. Publicly readable, write access is restricted to superadmins.
- * - /contact/{contactId}: Stores contact information. Publicly readable, write access is restricted to superadmins.
- * - /homepage/{settingsId}: Stores homepage settings. Publicly readable, write access is restricted to superadmins.
- * - /media/{mediaId}: Stores media asset metadata.  Write access is restricted to users with specific permissions.
- * - /users/{userId}: Stores user data. Only superadmins can create users, admins can update their own profile.
- *
- * Key Security Decisions:
- * - Superadmin Override: Superadmins bypass all other permission checks.
- * - Public Read Access: Projects, contact info, and homepage settings are publicly readable.
- * - User Document Ownership:  Users can only read and update their own user document.
- * - No User Listing: Listing all users is disallowed for non-superadmins. Superadmins have this ability.
- *
- * Denormalization for Authorization:
- *  - Not applicable in this ruleset. Superadmin status is checked via `get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.role == 'superadmin'`
- *
- * Structural Segregation:
- *  - Not applicable in this ruleset.
+ * @description This ruleset enforces a role-based access control model for the portfolio application.
+ *  It allows public read access to project, contact and homepage data.
+ *  Admin users, identified by their 'admin' or 'superadmin' role in the `/users/{userId}` collection,
+ *  can create, update, and delete media assets. User creation is self-creation;
+ *  a user can create their own profile. Other user data is not directly accessible.
+ * @dataStructure
+ *  - /projects/{projectId}: Stores project information. Publicly readable.
+ *  - /contact/{contactId}: Stores contact information. Publicly readable.
+ *  - /homepage/{settingsId}: Stores homepage settings. Publicly readable.
+ *  - /media/{mediaId}: Stores media asset metadata. Writable by admins only.
+ *  - /users/{userId}: Stores user profiles. Only the user themselves can create their profile.
+ * @keySecurityDecisions
+ *  - Public read access to projects, contact info, and homepage settings.
+ *  - Only authenticated admins can manage media assets.
+ *  - Users can only create their own user document.
+ *  - User listing is disallowed.
  */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * @description Checks if the user is signed in.
-     * @return {bool} True if the user is signed in, false otherwise.
+     * @description Allows public read access to project documents. Only admins can create, update, or delete.
+     * @path /projects/{projectId}
+     * @allow (get, list)
+     * @deny (create, update, delete)
+     * @principle Public read, admin-only write.
      */
+    match /projects/{projectId} {
+      allow get, list: if true;
+      allow create, update, delete: if false;
+    }
+
+    /**
+     * @description Allows public read access to contact information. Only admins can create, update, or delete.
+     * @path /contact/{contactId}
+     * @allow (get, list)
+     * @deny (create, update, delete)
+     * @principle Public read, admin-only write.
+     */
+    match /contact/{contactId} {
+      allow get, list: if true;
+      allow create, update, delete: if false;
+    }
+
+    /**
+     * @description Allows public read access to homepage settings. Only admins can create, update, or delete.
+     * @path /homepage/{settingsId}
+     * @allow (get, list)
+     * @deny (create, update, delete)
+     * @principle Public read, admin-only write.
+     */
+    match /homepage/{settingsId} {
+      allow get, list: if true;
+      allow create, update, delete: if false;
+    }
+
+    /**
+     * @description Allows authenticated admins to manage media assets.
+     * @path /media/{mediaId}
+     * @allow (create) User with 'admin' or 'superadmin' role can create a media asset.
+     * @allow (update, delete) User with 'admin' or 'superadmin' role can update or delete an existing media asset.
+     * @deny (create, update, delete) Unauthorized user attempts to create, update, or delete a media asset.
+     * @deny (get, list) Public read is disallowed.
+     * @principle Role-based access control.
+     */
+    match /media/{mediaId} {
+      allow get, list: if false;
+      allow create: if isSignedIn() && isAdmin();
+      allow update: if isSignedIn() && isAdmin() && resource != null;
+      allow delete: if isSignedIn() && isAdmin() && resource != null;
+    }
+
+    /**
+     * @description Allows a user to create their own profile.  No other access is permitted.
+     * @path /users/{userId}
+     * @allow (create) User can create their own profile if their auth UID matches the document ID.
+     * @deny (get, list, update, delete) Unauthorized user attempts to read, list, update, or delete user data.
+     * @principle User-ownership for profile creation.
+     */
+    match /users/{userId} {
+      allow get, list: if false;
+      allow create: if isSignedIn() && isOwner(userId);
+      allow update: if false;
+      allow delete: if false;
+    }
+
     function isSignedIn() {
       return request.auth != null;
     }
 
-    /**
-     * @description Checks if the user's ID matches the requested user ID.
-     * @param {string} userId The user ID to compare against.
-     * @return {bool} True if the user is the owner, false otherwise.
-     */
     function isOwner(userId) {
-      return isSignedIn() && request.auth.uid == userId;
+      return request.auth.uid == userId;
     }
 
-    /**
-     * @description Checks if a superadmin role exists for the requesting user.
-     * @return {bool} True if the user has the 'superadmin' role, false otherwise.
-     */
-    function isSuperAdmin() {
-      return isSignedIn() && get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.role == 'superadmin';
-    }
-
-    /**
-     * @description Checks if a admin role exists for the requesting user.
-     * @return {bool} True if the user has the 'admin' role, false otherwise.
-     */
     function isAdmin() {
-      return isSignedIn() && get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.role == 'admin';
-    }
-
-    /**
-     * @description Allows read access to all projects. Write access is allowed to superadmins only.
-     * @path /projects/{projectId}
-     * @allow (get, list) - Any user can read project details.
-     * @allow (create, update, delete) - Only superadmins can create, update, or delete projects.
-     * @deny (create, update, delete) - Non-superadmins are denied write access.
-     * @principle Grants public read access and restricts write access to superadmins.
-     */
-    match /projects/{projectId} {
-      allow get: if true;
-      allow list: if true;
-      allow create: if isSuperAdmin();
-      allow update: if isSuperAdmin();
-      allow delete: if isSuperAdmin();
-    }
-
-    /**
-     * @description Allows read access to contact information. Write access is allowed to superadmins only.
-     * @path /contact/{contactId}
-     * @allow (get, list) - Any user can read contact information.
-     * @allow (create, update, delete) - Only superadmins can create, update, or delete contact information.
-     * @deny (create, update, delete) - Non-superadmins are denied write access.
-     * @principle Grants public read access and restricts write access to superadmins.
-     */
-    match /contact/{contactId} {
-      allow get: if true;
-      allow list: if true;
-      allow create: if isSuperAdmin();
-      allow update: if isSuperAdmin();
-      allow delete: if isSuperAdmin();
-    }
-
-    /**
-     * @description Allows read access to homepage settings. Write access is allowed to superadmins only.
-     * @path /homepage/{settingsId}
-     * @allow (get, list) - Any user can read homepage settings.
-     * @allow (create, update, delete) - Only superadmins can create, update, or delete homepage settings.
-     * @deny (create, update, delete) - Non-superadmins are denied write access.
-     * @principle Grants public read access and restricts write access to superadmins.
-     */
-    match /homepage/{settingsId} {
-      allow get: if true;
-      allow list: if true;
-      allow create: if isSuperAdmin();
-      allow update: if isSuperAdmin();
-      allow delete: if isSuperAdmin();
-    }
-
-    /**
-     * @description Allows read and write access to media assets based on user permissions.
-     * @path /media/{mediaId}
-     * @allow get, list: if true;
-     * @allow create: if isSignedIn() && get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.permissions.canUploadMedia == true;
-     * @allow update: if isSignedIn() && get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.permissions.canUploadMedia == true;
-     * @allow delete: if isSignedIn() && get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.permissions.canDeleteMedia == true;
-     * @principle Restricts media management based on user permissions.
-     */
-    match /media/{mediaId} {
-        allow get: if true;
-        allow list: if true;
-        allow create: if isSignedIn() && get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.permissions.canUploadMedia == true;
-        allow update: if isSignedIn() && get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.permissions.canUploadMedia == true;
-        allow delete: if isSignedIn() && get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.permissions.canDeleteMedia == true;
-    }
-
-    /**
-     * @description Allows users to read and update their own user document. Superadmins have full access.
-     * @path /users/{userId}
-     * @allow get: if isOwner(userId) || isSuperAdmin();
-     * @allow list: if isSuperAdmin(); // Superadmins can list all users, other users can not.
-     * @allow create: if isSuperAdmin();
-     * @allow update: if isOwner(userId) || isSuperAdmin();
-     * @allow delete: if isSuperAdmin();
-     * @principle Enforces user ownership and restricts access to superadmins.
-     */
-    match /users/{userId} {
-        allow get: if isOwner(userId) || isSuperAdmin();
-        allow list: if isSuperAdmin(); // Superadmins can list all users, other users can not.
-        allow create: if isSuperAdmin();
-        allow update: if isOwner(userId) || isSuperAdmin();
-        allow delete: if isSuperAdmin();
-    }
-
-     match /admins/{adminId} {
-      allow get: if false;
-      allow list: if false;
-      allow create: if false;
-      allow update: if false;
-      allow delete: if false;
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ["admin", "superadmin"];
     }
   }
 }
