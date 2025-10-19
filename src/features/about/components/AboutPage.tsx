@@ -6,8 +6,7 @@ import {
   CarouselContent,
   CarouselItem,
 } from '@/components/ui/carousel';
-import { memo, useRef } from 'react';
-import Autoplay from 'embla-carousel-autoplay';
+import { memo, useMemo } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -27,9 +26,6 @@ interface Client {
 const MemoizedImage = memo(Image);
 
 export default function AboutPage() {
-  const plugin = useRef(
-    Autoplay({ delay: 2000, stopOnInteraction: false, stopOnMouseEnter: true })
-  );
   const isMobile = useIsMobile();
   const firestore = useFirestore();
 
@@ -38,6 +34,12 @@ export default function AboutPage() {
     [firestore]
   );
   const { data: clients, isLoading } = useCollection<Client>(clientsQuery);
+
+  // Duplicate clients for seamless marquee effect
+  const duplicatedClients = useMemo(() => {
+    if (!clients || clients.length === 0) return [];
+    return [...clients, ...clients];
+  }, [clients]);
 
   return (
     <div className="h-full w-full flex flex-col">
@@ -63,28 +65,35 @@ export default function AboutPage() {
                 <Separator className="bg-white/10 max-w-xs mx-auto mb-8" />
               </div>
               <Carousel
-                plugins={[plugin.current]}
                 opts={{
                   align: 'start',
                   loop: true,
                 }}
                 orientation={isMobile ? 'vertical' : 'horizontal'}
-                className="w-full"
+                className="w-full group"
               >
-                <CarouselContent className={isMobile ? '-mt-4 h-48' : '-ml-4'}>
-                  {(clients && clients.length > 0) ? clients.map((client) => (
-                    <CarouselItem key={client.id} className={isMobile ? 'pt-4 basis-1/2' : 'basis-1/3'}>
-                      <div className="p-1 h-full flex flex-col items-center justify-center gap-4 group cursor-pointer">
+                <CarouselContent className={cn(
+                    "-ml-0",
+                    isMobile 
+                      ? "marquee-vertical group-hover:[animation-play-state:paused]" 
+                      : "marquee group-hover:[animation-play-state:paused]"
+                )}>
+                  {(duplicatedClients && duplicatedClients.length > 0) ? duplicatedClients.map((client, index) => (
+                    <CarouselItem key={`${client.id}-${index}`} className={cn(
+                        "basis-auto",
+                        isMobile ? 'pt-4' : 'pl-16'
+                    )}>
+                      <div className="p-1 h-full flex flex-col items-center justify-center gap-2 group/item cursor-pointer">
                          <div className="relative w-[150px] h-[40px]">
                            <MemoizedImage 
                              src={client.logoUrl} 
                              alt={`${client.name} logo`}
                              fill
-                             className="object-contain w-full h-10 invert brightness-0 transition-all duration-300 group-hover:filter-none"
+                             className="object-contain w-full h-10 invert brightness-0 transition-all duration-300 group-hover/item:filter-none"
                              style={{ filter: 'grayscale(1) brightness(1.5)' }}
                            />
                          </div>
-                         <p className="text-sm text-white whitespace-nowrap transition-colors duration-300 group-hover:text-primary">{client.name}</p>
+                         <p className="text-sm text-white whitespace-nowrap transition-colors duration-300 group-hover/item:text-primary">{client.name}</p>
                       </div>
                     </CarouselItem>
                   )) : (
