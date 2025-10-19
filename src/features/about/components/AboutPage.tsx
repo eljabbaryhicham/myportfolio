@@ -71,7 +71,7 @@ export default function AboutPage() {
                 <CarouselContent className={isMobile ? '-mt-4 h-48' : '-ml-4'}>
                   {(clients && clients.length > 0) ? clients.map((client) => (
                     <CarouselItem key={client.id} className={isMobile ? 'pt-4 basis-1/2' : 'basis-1/3'}>
-                      <div className="p-1 h-full flex flex-col items-center justify-center gap-4">
+                      <div className="p-1 h-full flex flex-col items-center justify-center gap-4 group cursor-pointer">
                          <MemoizedImage 
                            src={client.logoUrl} 
                            alt={`${client.name} logo`}
@@ -80,7 +80,7 @@ export default function AboutPage() {
                            className="object-contain w-full h-10 invert brightness-0"
                            style={{ filter: 'grayscale(1) brightness(1.5)' }}
                          />
-                         <p className="text-sm text-muted-foreground whitespace-nowrap">{client.name}</p>
+                         <p className="text-sm text-foreground whitespace-nowrap transition-colors group-hover:text-destructive">{client.name}</p>
                       </div>
                     </CarouselItem>
                   )) : (
