@@ -15,6 +15,7 @@ import Image from 'next/image';
 import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection, query, orderBy } from 'firebase/firestore';
 import Preloader from '@/components/preloader';
+import { cn } from '@/lib/utils';
 
 interface Client {
   id: string;
@@ -27,7 +28,7 @@ const MemoizedImage = memo(Image);
 
 export default function AboutPage() {
   const plugin = useRef(
-    Autoplay({ delay: 2000, stopOnInteraction: true })
+    Autoplay({ delay: 2000, stopOnInteraction: false, stopOnMouseEnter: true })
   );
   const isMobile = useIsMobile();
   const firestore = useFirestore();
@@ -66,7 +67,7 @@ export default function AboutPage() {
                 orientation={isMobile ? 'vertical' : 'horizontal'}
                 className="w-full"
                 onMouseEnter={plugin.current.stop}
-                onMouseLeave={plugin.current.reset}
+                onMouseLeave={plugin.current.play}
               >
                 <CarouselContent className={isMobile ? '-mt-4 h-48' : '-ml-4'}>
                   {(clients && clients.length > 0) ? clients.map((client) => (
@@ -80,7 +81,7 @@ export default function AboutPage() {
                            className="object-contain w-full h-10 invert brightness-0"
                            style={{ filter: 'grayscale(1) brightness(1.5)' }}
                          />
-                         <p className="text-sm text-foreground whitespace-nowrap transition-colors group-hover:text-destructive">{client.name}</p>
+                         <p className="text-sm text-foreground whitespace-nowrap transition-colors text-white group-hover:text-destructive">{client.name}</p>
                       </div>
                     </CarouselItem>
                   )) : (
