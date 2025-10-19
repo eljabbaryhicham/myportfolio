@@ -100,31 +100,6 @@ const MediaFileCard = ({
   );
 };
 
-const UploadDropzone = ({ onDrop, isUploading, isDragActive, acceptedFileTypes, title }: { onDrop: (files: File[]) => void, isUploading: boolean, isDragActive: boolean, acceptedFileTypes: string, title: string }) => (
-    <div
-        {...useDropzone({ onDrop, accept: acceptedFileTypes.split(',').reduce((acc, type) => ({...acc, [type.trim()]: []}), {}) }).getRootProps()}
-        className={cn(
-        'border-2 border-dashed rounded-lg p-12 text-center cursor-pointer transition-colors',
-        isDragActive ? 'border-primary bg-primary/10' : 'border-border hover:border-primary/50',
-        isUploading && 'cursor-not-allowed opacity-50'
-        )}
-    >
-        <input {...useDropzone({ onDrop }).getInputProps()} disabled={isUploading} />
-        <div className="flex flex-col items-center gap-2 text-muted-foreground">
-            <FontAwesomeIcon icon={faCloudUploadAlt} className="h-10 w-10" />
-            {isUploading ? (
-                <p>Uploading files, please wait...</p>
-            ) : isDragActive ? (
-                <p>Drop the files here ...</p>
-            ) : (
-                <p>Drag & drop {title} here, or click to select</p>
-            )}
-            <p className="text-xs">({title})</p>
-        </div>
-    </div>
-);
-
-
 export default function MediaAdmin() {
   const { toast } = useToast();
   const firestore = useFirestore();
@@ -232,15 +207,12 @@ export default function MediaAdmin() {
 
   }, [toast, firestore]);
 
-
-  const imageDropzone = useDropzone({
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
-    accept: { 'image/*': ['.jpeg', '.jpg', '.png', '.gif', '.webp', '.svg'] }
-  });
-  
-  const videoDropzone = useDropzone({
-    onDrop,
-    accept: { 'video/*': ['.mp4', '.mov', '.webm'] }
+    accept: { 
+      'image/*': ['.jpeg', '.jpg', '.png', '.gif', '.webp', '.svg'],
+      'video/*': ['.mp4', '.mov', '.webm'],
+    }
   });
   
   const handleDelete = async (publicId: string, docId: string, resourceType: string) => {
@@ -289,58 +261,39 @@ export default function MediaAdmin() {
   return (
     <div className="flex-1 flex flex-col h-full gap-6">
       <div className="flex-1 border rounded-lg overflow-hidden glass-effect flex flex-col">
-        <Tabs defaultValue="images" className="flex-1 flex flex-col">
-            <div className="p-6 border-b">
-                <h2 className="text-xl font-bold">Media Library (Cloudinary)</h2>
-                <TabsList className="mt-4 w-full">
-                    <TabsTrigger value="images" className="flex-1">Image Library</TabsTrigger>
-                    <TabsTrigger value="videos" className="flex-1">Video Library</TabsTrigger>
-                </TabsList>
-            </div>
-          <TabsContent value="images" className="flex-1 flex flex-col overflow-hidden m-0">
-            <div className="p-6">
-                <div {...imageDropzone.getRootProps()} className={cn('border-2 border-dashed rounded-lg p-12 text-center cursor-pointer transition-colors', imageDropzone.isDragActive ? 'border-primary bg-primary/10' : 'border-border hover:border-primary/50', isUploading && 'cursor-not-allowed opacity-50')}>
-                    <input {...imageDropzone.getInputProps()} disabled={isUploading} />
-                    <div className="flex flex-col items-center gap-2 text-muted-foreground">
-                        <FontAwesomeIcon icon={faCloudUploadAlt} className="h-10 w-10" />
-                        {isUploading ? (<p>Uploading file...</p>) : imageDropzone.isDragActive ? (<p>Drop the image here...</p>) : (<p>Drag & drop an image here, or click to select</p>)}
-                    </div>
-                </div>
-            </div>
-            {isUploading && (
-                <div className="px-6 mb-4">
-                    <Progress value={uploadProgress} className="w-full" />
-                    <p className="text-sm text-center mt-2 text-muted-foreground">
-                      Uploading: {uploadingFileName} ({Math.round(uploadProgress)}%)
-                    </p>
-                </div>
-            )}
+        <div className="p-6 border-b">
+          <h2 className="text-xl font-bold">Media Library (Cloudinary)</h2>
+          <p className="text-muted-foreground mt-1">Upload and manage your images and videos.</p>
+          
+          <div {...getRootProps()} className={cn('mt-4 border-2 border-dashed rounded-lg p-12 text-center cursor-pointer transition-colors', isDragActive ? 'border-primary bg-primary/10' : 'border-border hover:border-primary/50', isUploading && 'cursor-not-allowed opacity-50')}>
+              <input {...getInputProps()} disabled={isUploading} />
+              <div className="flex flex-col items-center gap-2 text-muted-foreground">
+                  <FontAwesomeIcon icon={faCloudUploadAlt} className="h-10 w-10" />
+                  {isUploading ? (<p>Uploading...</p>) : isDragActive ? (<p>Drop files here...</p>) : (<p>Drag & drop files here, or click to select</p>)}
+              </div>
+          </div>
+          {isUploading && (
+              <div className="mt-4">
+                  <Progress value={uploadProgress} className="w-full" />
+                  <p className="text-sm text-center mt-2 text-muted-foreground">
+                    Uploading: {uploadingFileName} ({Math.round(uploadProgress)}%)
+                  </p>
+              </div>
+          )}
+        </div>
+        <Tabs defaultValue="images" className="flex-1 flex flex-col min-h-0">
+            <TabsList className="px-6 w-full justify-start rounded-none border-b">
+                <TabsTrigger value="images">Image Library</TabsTrigger>
+                <TabsTrigger value="videos">Video Library</TabsTrigger>
+            </TabsList>
             <ScrollArea className="flex-1">
-              <div className="p-6 pt-0">{renderLibrary(imageAssets, 'image')}</div>
+              <TabsContent value="images" className="p-6 m-0">
+                {renderLibrary(imageAssets, 'image')}
+              </TabsContent>
+              <TabsContent value="videos" className="p-6 m-0">
+                {renderLibrary(videoAssets, 'video')}
+              </TabsContent>
             </ScrollArea>
-          </TabsContent>
-          <TabsContent value="videos" className="flex-1 flex flex-col overflow-hidden m-0">
-            <div className="p-6">
-                <div {...videoDropzone.getRootProps()} className={cn('border-2 border-dashed rounded-lg p-12 text-center cursor-pointer transition-colors', videoDropzone.isDragActive ? 'border-primary bg-primary/10' : 'border-border hover:border-primary/50', isUploading && 'cursor-not-allowed opacity-50')}>
-                    <input {...videoDropzone.getInputProps()} disabled={isUploading} />
-                     <div className="flex flex-col items-center gap-2 text-muted-foreground">
-                        <FontAwesomeIcon icon={faCloudUploadAlt} className="h-10 w-10" />
-                        {isUploading ? (<p>Uploading file...</p>) : videoDropzone.isDragActive ? (<p>Drop the video here...</p>) : (<p>Drag & drop a video here, or click to select</p>)}
-                    </div>
-                </div>
-            </div>
-            {isUploading && (
-                <div className="px-6 mb-4">
-                    <Progress value={uploadProgress} className="w-full" />
-                    <p className="text-sm text-center mt-2 text-muted-foreground">
-                      Uploading: {uploadingFileName} ({Math.round(uploadProgress)}%)
-                    </p>
-                </div>
-            )}
-            <ScrollArea className="flex-1">
-              <div className="p-6 pt-0">{renderLibrary(videoAssets, 'video')}</div>
-            </ScrollArea>
-          </TabsContent>
         </Tabs>
       </div>
     </div>
