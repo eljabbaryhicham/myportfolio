@@ -39,6 +39,7 @@ function AdminPage() {
   const [activeTab, setActiveTab] = useState('projects');
   const [fromMediaLibrary, setFromMediaLibrary] = useState(false);
   const [newlyUploadedId, setNewlyUploadedId] = useState<string | null>(null);
+  const [dialogActiveTab, setDialogActiveTab] = useState<'images' | 'videos'>('images');
   
   useEffect(() => {
     if (!isUserLoading && !user) {
@@ -134,6 +135,7 @@ function AdminPage() {
       setActiveTab('media');
     }
     
+    setDialogActiveTab(resourceType === 'video' ? 'videos' : 'images');
     setIsLibraryOpen(true); // Open the library
     
     // Reset the animation highlight after a delay
@@ -212,10 +214,8 @@ function AdminPage() {
             setIsLibraryOpen(false);
             setLibrarySelectionConfig(null);
         }}
-        activeTab={activeTab === 'media' ? 'images' : 'images'}
-        setActiveTab={(tab) => {
-            // This state change is local to the dialog
-        }}
+        activeTab={dialogActiveTab}
+        setActiveTab={setDialogActiveTab}
         newlyUploadedId={newlyUploadedId}
       />
     </>
