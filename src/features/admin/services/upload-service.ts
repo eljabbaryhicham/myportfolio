@@ -24,7 +24,12 @@ export const uploadFile = (
     const uniqueFileName = `${uuidv4()}.${fileExtension}`;
     const storageRef = ref(storage, `uploads/${uniqueFileName}`);
 
-    const uploadTask = uploadBytesResumable(storageRef, file);
+    // Pass file metadata (especially contentType) to the upload task
+    const metadata = {
+      contentType: file.type,
+    };
+
+    const uploadTask = uploadBytesResumable(storageRef, file, metadata);
 
     uploadTask.on(
       'state_changed',
