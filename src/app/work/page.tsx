@@ -515,12 +515,13 @@ export default function WorkPage() {
             onMouseMove={handleDialogMouseMove}
             onMouseEnter={handleDialogMouseEnter}
             onMouseLeave={handleDialogMouseLeave}
+            asChild
+          >
+          <motion.div
             onDragEnd={handleDragEnd}
             drag={isMobile ? "x" : false}
             dragConstraints={{ left: 0, right: 0 }}
-            asChild
           >
-          <motion.div>
             <AnimatePresence mode="wait" initial={false} custom={direction}>
               {selectedItem && (
                   <motion.div
