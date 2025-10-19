@@ -132,7 +132,7 @@ export default function AdminManagement() {
   );
 
   return (
-    <div className="flex-1 flex flex-col h-full">
+    <div className="flex-1 flex flex-col h-full min-h-0">
       <div className="mb-6">
         <h2 className="text-xl font-bold">Admin Management</h2>
         <p className="text-muted-foreground">View and manage administrator accounts and permissions.</p>
@@ -145,34 +145,38 @@ export default function AdminManagement() {
       )}
       
       {!isLoading && (
-        <>
+        <div className="flex-1 flex flex-col min-h-0">
             {/* Mobile View */}
-            <div className="md:hidden space-y-4">
-                {displayedUsers.map((user, index) => (
-                    <div key={user.id} className="p-4 rounded-lg glass-effect border">
-                        <div className='flex justify-between items-start'>
-                            <div>
-                                <p className="font-bold">{user.username}</p>
-                                <p className="text-sm text-muted-foreground">{user.email}</p>
+            <div className="md:hidden flex-1 border rounded-lg overflow-hidden glass-effect">
+              <ScrollArea className='h-full'>
+                <div className='p-4 space-y-4'>
+                    {displayedUsers.map((user) => (
+                        <div key={user.id} className="p-4 rounded-lg bg-black/10 border border-white/10">
+                            <div className='flex justify-between items-start'>
+                                <div>
+                                    <p className="font-bold">{user.username}</p>
+                                    <p className="text-sm text-muted-foreground">{user.email}</p>
+                                </div>
+                                <Badge variant={user.email === 'eljabbaryhicham@example.com' ? 'destructive' : 'secondary'} className="ml-2 whitespace-nowrap">
+                                    {user.email === 'eljabbaryhicham@example.com' ? 'Super Admin' : 'Admin'}
+                                </Badge>
                             </div>
-                            <Badge variant={user.email === 'eljabbaryhicham@example.com' ? 'destructive' : 'secondary'} className="ml-2 whitespace-nowrap">
-                                {user.email === 'eljabbaryhicham@example.com' ? 'Super Admin' : 'Admin'}
-                            </Badge>
-                        </div>
-                        <Separator className="my-4 bg-white/10" />
-                        <div className='flex justify-between items-center'>
-                            <div className='space-y-1'>
-                                <p className="font-medium text-sm">Permissions</p>
-                                {renderPermissionCheckboxes(user)}
+                            <Separator className="my-4 bg-white/10" />
+                            <div className='flex justify-between items-center'>
+                                <div className='space-y-1'>
+                                    <p className="font-medium text-sm">Permissions</p>
+                                    {renderPermissionCheckboxes(user)}
+                                </div>
+                                {user.email !== 'eljabbaryhicham@example.com' && (
+                                    <Button variant="ghost" size="icon" onClick={() => handleDeleteUser(user.id, user.username)} disabled={!isSuperAdmin}>
+                                        <FontAwesomeIcon icon={faTrash} className="h-4 w-4 text-destructive" />
+                                    </Button>
+                                )}
                             </div>
-                            {user.email !== 'eljabbaryhicham@example.com' && (
-                                <Button variant="ghost" size="icon" onClick={() => handleDeleteUser(user.id, user.username)} disabled={!isSuperAdmin}>
-                                    <FontAwesomeIcon icon={faTrash} className="h-4 w-4 text-destructive" />
-                                </Button>
-                            )}
                         </div>
-                    </div>
-                ))}
+                    ))}
+                </div>
+              </ScrollArea>
             </div>
 
             {/* Desktop View */}
@@ -220,7 +224,7 @@ export default function AdminManagement() {
                     No admin users found.
                 </div>
             )}
-        </>
+        </div>
       )}
     </div>
   );
