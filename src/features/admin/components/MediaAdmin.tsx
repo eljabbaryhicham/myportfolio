@@ -211,15 +211,6 @@ export default function MediaAdmin(props: MediaAdminProps) {
       return;
     }
 
-    if (!canUpload) {
-      toast({
-        variant: 'destructive',
-        title: 'Permission Denied',
-        description: 'You do not have permission to upload files.',
-      });
-      return;
-    }
-
     setIsUploading(true);
 
     for (const file of acceptedFiles) {
@@ -294,7 +285,7 @@ export default function MediaAdmin(props: MediaAdminProps) {
     setUploadingFileName('');
     setUploadProgress(0);
 
-  }, [toast, firestore, props, canUpload]);
+  }, [toast, firestore, props]);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
