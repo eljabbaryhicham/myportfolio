@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -200,8 +199,8 @@ function AdminPage() {
                   <TabsTrigger value="projects">Projects</TabsTrigger>
                   <TabsTrigger value="about">About & Clients</TabsTrigger>
                   <TabsTrigger value="contact">Contact</TabsTrigger>
-                  <TabsTrigger value="media" className="bg-[#172554] text-white data-[state=active]:bg-destructive">Media</TabsTrigger>
-                  {isSuperAdmin && <TabsTrigger value="admins" className="bg-[#172554] text-white data-[state=active]:bg-destructive">Admins</TabsTrigger>}
+                  <TabsTrigger value="media" className="bg-[#172554] text-white data-[state=active]:bg-destructive data-[state=active]:text-destructive-foreground">Media</TabsTrigger>
+                  {isSuperAdmin && <TabsTrigger value="admins" className="bg-[#172554] text-white data-[state=active]:bg-destructive data-[state=active]:text-destructive-foreground">Admins</TabsTrigger>}
               </TabsList>
             </div>
               <Separator className="bg-white/10 mt-4" />
@@ -259,5 +258,3 @@ function AdminPage() {
 }
 
 export default AdminPage;
-
-    
