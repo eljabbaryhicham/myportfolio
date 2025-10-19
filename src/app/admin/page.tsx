@@ -158,7 +158,7 @@ function AdminPage() {
             <div className="text-center md:text-left">
               <h1 className="text-2xl md:text-4xl font-bold tracking-tight">Admin Panel</h1>
               <p className="mt-2 text-md md:text-lg text-foreground/70 break-all">
-                Welcome, {user.email}!
+                Welcome, {user.email?.split('@')[0]}!
               </p>
             </div>
             <div className="flex items-center gap-2 md:gap-4 flex-wrap justify-center">
