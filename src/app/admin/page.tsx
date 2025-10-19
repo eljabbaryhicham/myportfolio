@@ -51,11 +51,7 @@ function AdminPage() {
       router.push('/login');
       return;
     }
-    // If a user is logged in but is not the super admin, sign them out.
-    if (user && !isSuperAdmin) {
-        handleLogout(true); // Pass a flag to show a specific message
-    }
-  }, [isUserLoading, user, isSuperAdmin, router]);
+  }, [isUserLoading, user, router]);
 
 
   const handleLogout = async (isUnauthorized = false) => {
@@ -160,9 +156,7 @@ function AdminPage() {
     setTimeout(() => setNewlyUploadedId(null), 2000);
   };
 
-  // If the user is being authenticated or is not the super admin, show a preloader.
-  // The useEffect handles the actual redirection or logout.
-  if (isUserLoading || !user || !isSuperAdmin) {
+  if (isUserLoading || !user) {
     return (
         <div className="fixed inset-0 z-[200] flex items-center justify-center bg-background">
             <Preloader />
