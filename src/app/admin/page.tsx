@@ -194,16 +194,18 @@ function AdminPage() {
           <Separator className="bg-white/10 mb-8" />
 
           <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col min-h-0">
-            <ScrollArea orientation="horizontal" className="w-full pb-2">
-              <TabsList className="inline-flex h-auto w-max">
-                  <TabsTrigger value="home">Home</TabsTrigger>
-                  <TabsTrigger value="projects">Projects</TabsTrigger>
-                  <TabsTrigger value="about">About & Clients</TabsTrigger>
-                  <TabsTrigger value="contact">Contact</TabsTrigger>
-                  <TabsTrigger value="media" className={cn("bg-[#172554] text-white data-[state=active]:bg-destructive")}>Media</TabsTrigger>
-                  {isSuperAdmin && <TabsTrigger value="admins" className={cn("bg-[#172554] text-white data-[state=active]:bg-destructive")}>Admins</TabsTrigger>}
-              </TabsList>
-            </ScrollArea>
+            <div className="w-full overflow-hidden">
+                <ScrollArea orientation="horizontal" className="pb-2">
+                    <TabsList>
+                        <TabsTrigger value="home">Home</TabsTrigger>
+                        <TabsTrigger value="projects">Projects</TabsTrigger>
+                        <TabsTrigger value="about">About & Clients</TabsTrigger>
+                        <TabsTrigger value="contact">Contact</TabsTrigger>
+                        <TabsTrigger value="media" className={cn("bg-[#172554] text-white data-[state=active]:bg-destructive")}>Media</TabsTrigger>
+                        {isSuperAdmin && <TabsTrigger value="admins" className={cn("bg-[#172554] text-white data-[state=active]:bg-destructive")}>Admins</TabsTrigger>}
+                    </TabsList>
+                </ScrollArea>
+            </div>
               <Separator className="bg-white/10 mt-4" />
               <TabsContent value="home" className="flex-1 overflow-auto mt-4">
                   <HomeAdmin />
