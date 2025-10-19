@@ -58,7 +58,7 @@ const MediaFileCard = ({
   const fileName = file.filename || file.public_id.split('/').pop() || 'Untitled';
   
   return (
-    <div className={cn("flex flex-col gap-2", isNewlyUploaded && 'animate-glow')}>
+    <div className={cn("flex flex-col gap-2", isNewlyUploaded && 'animate-shake')}>
       <div className="relative group aspect-square border rounded-lg overflow-hidden glass-effect p-1">
         <div className="relative w-full h-full rounded-md overflow-hidden">
           {file.resource_type === 'image' ? (
@@ -184,7 +184,7 @@ export default function MediaAdmin() {
                     setNewlyUploadedId(docRef.id);
                     setActiveTab(response.resource_type === 'video' ? 'videos' : 'images');
                     setIsLibraryOpen(true);
-                    setTimeout(() => setNewlyUploadedId(null), 3000); // Remove glow after 3s
+                    setTimeout(() => setNewlyUploadedId(null), 3000); // Remove animation trigger after 3s
                 }
             });
           }
