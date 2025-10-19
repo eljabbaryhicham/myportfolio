@@ -41,7 +41,7 @@ export default function AdminManagement() {
   const { data: users, isLoading } = useCollection<AdminUser>(usersQuery);
 
   const displayedUsers = useMemo(() => {
-    return users?.filter(user => user.email === 'eljabbaryhicham@example.com') || [];
+    return users || [];
   }, [users]);
 
   const handleDeleteUser = (userId: string) => {
@@ -105,7 +105,7 @@ export default function AdminManagement() {
                {!isLoading && displayedUsers.length === 0 && (
                 <TableRow>
                   <TableCell colSpan={5} className="text-center text-muted-foreground py-12">
-                    No other admin users found.
+                    No admin users found.
                   </TableCell>
                 </TableRow>
               )}
