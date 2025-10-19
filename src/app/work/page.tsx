@@ -52,6 +52,7 @@ const PortfolioMedia = ({
   const [isContentLoaded, setIsContentLoaded] = useState(false);
   
   useEffect(() => {
+    // When the item `id` changes, reset the content loaded state to show the preloader
     setIsContentLoaded(false);
   }, [item.id]);
 
@@ -509,16 +510,18 @@ export default function WorkPage() {
             onMouseMove={handleDialogMouseMove}
             onMouseEnter={handleDialogMouseEnter}
             onMouseLeave={handleDialogMouseLeave}
-            onDragEnd={handleDragEnd}
-            drag={isMobile ? "x" : false}
-            dragConstraints={{ left: 0, right: 0 }}
             asChild
           >
-            <motion.div>
+            <motion.div
+                onDragEnd={handleDragEnd}
+                drag={isMobile ? "x" : false}
+                dragConstraints={{ left: 0, right: 0 }}
+                className="flex-1 flex flex-col"
+            >
             <AnimatePresence mode="wait" initial={false} custom={direction}>
               {selectedItem && (
                   <motion.div
-                    className='h-full w-full'
+                    className='h-full w-full flex flex-col'
                     key={selectedItem.id}
                     custom={direction}
                     variants={variants}
@@ -592,18 +595,17 @@ export default function WorkPage() {
                           )}
                         </div>
                       </ScrollArea>
-
                     </div>
-                    <DialogClose className={cn(
-                        "absolute right-4 top-4 z-10 h-8 w-8 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center ring-offset-background transition-opacity focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 hover:opacity-100",
-                        isMobile ? "opacity-70" : (isCloseButtonVisible ? "opacity-70" : "opacity-0")
-                    )}>
-                      <FontAwesomeIcon icon={faXmark} className="h-4 w-4" />
-                      <span className="sr-only">Close</span>
-                    </DialogClose>
                   </motion.div>
               )}
             </AnimatePresence>
+            <DialogClose className={cn(
+                "absolute right-4 top-4 z-10 h-8 w-8 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center ring-offset-background transition-opacity focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 hover:opacity-100",
+                isMobile ? "opacity-70" : (isCloseButtonVisible ? "opacity-70" : "opacity-0")
+            )}>
+              <FontAwesomeIcon icon={faXmark} className="h-4 w-4" />
+              <span className="sr-only">Close</span>
+            </DialogClose>
             </motion.div>
           </DialogContent>
       </Dialog>
@@ -752,3 +754,5 @@ export default function WorkPage() {
     </>
   );
 }
+
+    
