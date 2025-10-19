@@ -195,13 +195,13 @@ function AdminPage() {
 
           <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col min-h-0">
             <div className="w-full flex justify-center">
-              <TabsList className="flex-wrap h-auto">
+              <TabsList className="flex-wrap h-auto justify-center">
                   <TabsTrigger value="home">Home</TabsTrigger>
                   <TabsTrigger value="projects">Projects</TabsTrigger>
                   <TabsTrigger value="about">About & Clients</TabsTrigger>
                   <TabsTrigger value="contact">Contact</TabsTrigger>
-                  <TabsTrigger value="media" className={cn("bg-[#172554] text-white data-[state=active]:bg-destructive")}>Media</TabsTrigger>
-                  {isSuperAdmin && <TabsTrigger value="admins" className={cn("bg-[#172554] text-white data-[state=active]:bg-destructive")}>Admins</TabsTrigger>}
+                  <TabsTrigger value="media" className="bg-[#172554] text-white data-[state=active]:bg-destructive">Media</TabsTrigger>
+                  {isSuperAdmin && <TabsTrigger value="admins" className="bg-[#172554] text-white data-[state=active]:bg-destructive">Admins</TabsTrigger>}
               </TabsList>
             </div>
               <Separator className="bg-white/10 mt-4" />
