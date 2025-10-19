@@ -117,17 +117,19 @@ function AdminPage() {
   
   const handlePortfolioSheetOpenChange = (isOpen: boolean) => {
     setIsPortfolioSheetOpen(isOpen);
-    if (!isOpen && fromMediaLibrary) {
-        // If form is closed without saving, go back to media library dialog
-        setIsLibraryOpen(true);
-        setFromMediaLibrary(false);
+    if (!isOpen) {
+        // If form is closed, reset the 'fromMediaLibrary' flag
+        if (fromMediaLibrary) {
+            setFromMediaLibrary(false);
+        }
     }
   };
 
-  const handleUploadComplete = (docId: string, resourceType: 'image' | 'video') => {
+  const handleUploadComplete = async (docId: string, resourceType: 'image' | 'video') => {
+    if (!docId) return;
     setNewlyUploadedId(docId);
     setActiveTab(resourceType === 'video' ? 'videos' : 'images');
-    setIsLibraryOpen(true);
+    setIsLibraryOpen(true); // Open the library
     // Reset the animation highlight after a delay
     setTimeout(() => setNewlyUploadedId(null), 2000);
   };
