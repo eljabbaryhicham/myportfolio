@@ -30,7 +30,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { PortfolioItemFormSheet } from '@/features/admin/components/PortfolioItemForm';
 import MediaAdmin from '@/features/admin/components/MediaAdmin';
 import { useToast } from '@/hooks/use-toast';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, PanInfo } from 'framer-motion';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 
 
@@ -300,11 +300,11 @@ export default function WorkPage() {
     const params = new URLSearchParams(searchParams.toString());
     if (id) {
       params.set('id', id);
-      router.push(`${pathname}?${params.toString()}`, { scroll: false });
     } else {
       params.delete('id');
-      router.push(`${pathname}?${params.toString()}`, { scroll: false });
     }
+    // Using { scroll: false } prevents the page from scrolling to the top
+    router.push(`${pathname}?${params.toString()}`, { scroll: false });
   };
 
   const handleItemClick = (item: PortfolioItem) => {
@@ -409,7 +409,7 @@ export default function WorkPage() {
     setIsLibraryOpen(true);
   };
 
-  const handleDragEnd = (event: MouseEvent | TouchEvent | PointerEvent, info: { offset: { x: number; y: number }, velocity: { x: number; y: number } }) => {
+  const handleDragEnd = (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
     if (!isMobile) return;
     const swipeThreshold = 50;
     const swipeVelocityThreshold = 300;
@@ -495,10 +495,10 @@ export default function WorkPage() {
                     onMouseMove={handleDialogMouseMove}
                     onMouseEnter={handleDialogMouseEnter}
                     onMouseLeave={handleDialogMouseLeave}
+                    key={selectedItem.id}
                     asChild
                   >
                     <motion.div
-                        key={selectedItem.id}
                         initial={{ opacity: 0, x: isMobile ? 300 : 0, scale: 0.95 }}
                         animate={{ opacity: 1, x: 0, scale: 1 }}
                         exit={{ opacity: 0, x: isMobile ? -300 : 0, scale: 0.95 }}
@@ -728,5 +728,7 @@ export default function WorkPage() {
     </>
   );
 }
+
+    
 
     
