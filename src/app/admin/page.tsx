@@ -196,7 +196,7 @@ function AdminPage() {
           <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col min-h-0">
             <div className="w-full overflow-hidden">
                 <ScrollArea orientation="horizontal" className="pb-2">
-                    <TabsList>
+                    <TabsList className="flex w-max">
                         <TabsTrigger value="home">Home</TabsTrigger>
                         <TabsTrigger value="projects">Projects</TabsTrigger>
                         <TabsTrigger value="about">About & Clients</TabsTrigger>
