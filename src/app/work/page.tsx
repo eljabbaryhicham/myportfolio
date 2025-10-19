@@ -276,7 +276,7 @@ export default function WorkPage() {
   const [isLibraryOpen, setIsLibraryOpen] = useState(false);
   const [librarySelectionConfig, setLibrarySelectionConfig] = useState<{ onSelect: (url: string, type: 'image' | 'video', filename: string) => void } | null>(null);
   const [dialogActiveTab, setDialogActiveTab] = useState<'images' | 'videos'>('images');
-  const [direction, setDirection] = useState<'next' | 'prev'>('next');
+  const [direction, setDirection] = useState<'next' | 'prev' | null>(null);
 
   const filteredItems = useMemo(() => {
     if (!portfolioItems) return [];
@@ -310,6 +310,7 @@ export default function WorkPage() {
   };
 
   const handleItemClick = (item: PortfolioItem) => {
+    setDirection(null); // Reset direction for first open
     updateUrl(slugify(item.title));
   };
   
@@ -425,7 +426,24 @@ export default function WorkPage() {
     }
   };
 
-  
+  const variants = {
+    enter: (direction: 'next' | 'prev' | null) => ({
+      x: direction === 'next' ? '100%' : direction === 'prev' ? '-100%' : '0%',
+      opacity: 0,
+      scale: 0.95,
+    }),
+    center: {
+      x: '0%',
+      opacity: 1,
+      scale: 1,
+    },
+    exit: (direction: 'next' | 'prev' | null) => ({
+      x: direction === 'next' ? '-100%' : direction === 'prev' ? '100%' : '0%',
+      opacity: 0,
+      scale: 0.95,
+    }),
+  };
+
   return (
     <>
       <div className="h-full w-full flex flex-col">
@@ -488,7 +506,7 @@ export default function WorkPage() {
       </div>
 
       <Dialog open={!!selectedItem} onOpenChange={handleOpenChange}>
-          <AnimatePresence mode="wait">
+          <AnimatePresence mode="wait" initial={false} custom={direction}>
             {selectedItem && (
                   <DialogContent
                     className={cn(
@@ -506,10 +524,15 @@ export default function WorkPage() {
                     onDragEnd={handleDragEnd}
                   >
                     <motion.div
-                        initial={{ opacity: 0, x: isMobile ? (direction === 'next' ? 300 : -300) : 0, scale: 0.95 }}
-                        animate={{ opacity: 1, x: 0, scale: 1 }}
-                        exit={{ opacity: 0, x: isMobile ? (direction === 'next' ? -300 : 300) : 0, scale: 0.95 }}
-                        transition={{ duration: 0.3, ease: "easeInOut" }}
+                        custom={direction}
+                        variants={variants}
+                        initial="enter"
+                        animate="center"
+                        exit="exit"
+                        transition={{
+                          x: { type: "spring", stiffness: 300, damping: 30 },
+                          opacity: { duration: 0.2 }
+                        }}
                     >
                     <div className="flex flex-col flex-1 min-h-0">
                       <DialogHeader className="p-4 md:p-6 flex-shrink-0 relative">
@@ -732,8 +755,3 @@ export default function WorkPage() {
     </>
   );
 }
-
-    
-
-    
-
