@@ -178,8 +178,10 @@ export default function MediaAdmin(props: MediaAdminProps) {
 
   // Determine active tab state management
   const [internalActiveTab, setInternalActiveTab] = useState<'images' | 'videos'>('images');
+  
   const activeTab = props.isDialog ? props.activeTab : internalActiveTab;
-  const setActiveTab = props.isDialog ? props.setActiveTab : setInternalActiveTab;
+  const setActiveTab = (props.isDialog ? props.setActiveTab : setInternalActiveTab) as (tab: 'images' | 'videos') => void;
+  
   const newlyUploadedId = props.isDialog ? props.newlyUploadedId : null;
 
   // Fetch media assets from Firestore
