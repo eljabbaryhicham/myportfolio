@@ -34,6 +34,7 @@ interface MediaAsset {
     public_id: string;
     resource_type: 'image' | 'video' | 'raw';
     created_at: string;
+    filename: string;
 }
 
 
@@ -51,7 +52,7 @@ const MediaFileCard = ({
     onDelete(file.public_id, file.id, file.resource_type);
   };
 
-  const fileName = file.public_id.split('/').pop() || 'Untitled';
+  const fileName = file.filename || file.public_id.split('/').pop() || 'Untitled';
   
   return (
     <div className="flex flex-col gap-2">
@@ -169,6 +170,7 @@ export default function MediaAdmin() {
                 url: response.secure_url,
                 resource_type: response.resource_type,
                 created_at: response.created_at,
+                filename: file.name, // Save the original filename
             });
           }
 
@@ -299,3 +301,5 @@ export default function MediaAdmin() {
     </div>
   );
 }
+
+    
