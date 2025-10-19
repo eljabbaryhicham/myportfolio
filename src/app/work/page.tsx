@@ -516,6 +516,11 @@ export default function WorkPage() {
             onMouseEnter={handleDialogMouseEnter}
             onMouseLeave={handleDialogMouseLeave}
           >
+            {isDialogMediaLoading && (
+              <div className="absolute inset-0 z-20 flex items-center justify-center">
+                <Preloader />
+              </div>
+            )}
             <motion.div
                 onDragEnd={handleDragEnd}
                 drag={isMobile ? "x" : false}
@@ -587,12 +592,6 @@ export default function WorkPage() {
                               />
                             )}
                           </div>
-
-                           {isDialogMediaLoading && (
-                            <div className="absolute inset-0 flex items-center justify-center">
-                              <Preloader />
-                            </div>
-                          )}
                             
                           {selectedItem.details && (
                             <div className="p-4 md:p-6 text-center flex-shrink-0">
@@ -771,3 +770,4 @@ export default function WorkPage() {
     
 
     
+
