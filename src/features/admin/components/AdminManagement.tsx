@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useCollection, useFirestore, useMemoFirebase, updateDocumentNonBlocking } from '@/firebase';
+import { useCollection, useFirestore, useMemoFirebase, updateDocumentNonBlocking, useUser } from '@/firebase';
 import { collection, query, orderBy, doc, deleteDoc } from 'firebase/firestore';
 import {
   Table,
@@ -38,6 +38,7 @@ interface AdminUser {
 
 export default function AdminManagement() {
   const firestore = useFirestore();
+  const { user: currentUser } = useUser();
   const { toast } = useToast();
 
   const usersQuery = useMemoFirebase(
@@ -45,13 +46,14 @@ export default function AdminManagement() {
     [firestore]
   );
   const { data: users, isLoading } = useCollection<AdminUser>(usersQuery);
+  const isSuperAdmin = currentUser?.email === 'eljabbaryhicham@example.com';
 
   const displayedUsers = useMemo(() => {
     return users || [];
   }, [users]);
 
   const handleDeleteUser = (userId: string, username: string) => {
-    if (!firestore) return;
+    if (!firestore || !isSuperAdmin) return;
     
     deleteDocumentNonBlocking(doc(firestore, 'users', userId));
 
@@ -63,7 +65,7 @@ export default function AdminManagement() {
   }
 
   const handlePermissionChange = (userId: string, permission: 'canUploadMedia' | 'canDeleteMedia', value: boolean) => {
-    if (!firestore) return;
+    if (!firestore || !isSuperAdmin) return;
     const userDocRef = doc(firestore, 'users', userId);
     updateDocumentNonBlocking(userDocRef, {
       [`permissions.${permission}`]: value,
@@ -115,6 +117,7 @@ export default function AdminManagement() {
                             id={`upload-${user.id}`}
                             checked={user.permissions?.canUploadMedia ?? true}
                             onCheckedChange={(checked) => handlePermissionChange(user.id, 'canUploadMedia', !!checked)}
+                            disabled={!isSuperAdmin}
                           />
                           <Label htmlFor={`upload-${user.id}`} className='text-sm font-medium leading-none'>Upload Media</Label>
                         </div>
@@ -123,6 +126,7 @@ export default function AdminManagement() {
                             id={`delete-${user.id}`}
                             checked={user.permissions?.canDeleteMedia ?? true}
                             onCheckedChange={(checked) => handlePermissionChange(user.id, 'canDeleteMedia', !!checked)}
+                            disabled={!isSuperAdmin}
                           />
                            <Label htmlFor={`delete-${user.id}`} className='text-sm font-medium leading-none'>Delete Media</Label>
                         </div>
@@ -131,7 +135,7 @@ export default function AdminManagement() {
                   </TableCell>
                   <TableCell className="text-right">
                     {user.email !== 'eljabbaryhicham@example.com' && (
-                       <Button variant="ghost" size="icon" onClick={() => handleDeleteUser(user.id, user.username)}>
+                       <Button variant="ghost" size="icon" onClick={() => handleDeleteUser(user.id, user.username)} disabled={!isSuperAdmin}>
                             <FontAwesomeIcon icon={faTrash} className="h-4 w-4 text-destructive" />
                        </Button>
                     )}

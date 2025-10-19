@@ -177,8 +177,10 @@ export default function MediaAdmin(props: MediaAdminProps) {
   
   const newlyUploadedId = props.isDialog ? props.newlyUploadedId : null;
 
-  const canUpload = user?.permissions?.canUploadMedia ?? true;
-  const canDelete = user?.permissions?.canDeleteMedia ?? true;
+  const isSuperAdmin = user?.email === 'eljabbaryhicham@example.com';
+  const canUpload = isSuperAdmin || (user?.permissions?.canUploadMedia ?? true);
+  const canDelete = isSuperAdmin || (user?.permissions?.canDeleteMedia ?? true);
+
 
   // Fetch media assets from Firestore
   const mediaCollectionRef = useMemoFirebase(() => firestore ? query(collection(firestore, 'media'), orderBy('created_at', 'desc')) : null, [firestore]);
@@ -207,6 +209,15 @@ export default function MediaAdmin(props: MediaAdminProps) {
         title: 'Configuration Error',
         description: 'Cloudinary variables not set. Add NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME and NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET to your Vercel project settings.',
         duration: 10000,
+      });
+      return;
+    }
+    
+    if (!canUpload) {
+      toast({
+        variant: 'destructive',
+        title: 'Permission Denied',
+        description: 'You do not have permission to upload files.',
       });
       return;
     }
@@ -285,7 +296,7 @@ export default function MediaAdmin(props: MediaAdminProps) {
     setUploadingFileName('');
     setUploadProgress(0);
 
-  }, [toast, firestore, props]);
+  }, [toast, firestore, props, canUpload]);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
