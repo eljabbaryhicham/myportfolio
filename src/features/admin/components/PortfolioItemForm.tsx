@@ -62,9 +62,10 @@ interface PortfolioItemFormProps {
   isOpen: boolean; 
   setIsOpen: (isOpen: boolean) => void;
   onChooseFromLibrary: (onSelect: (url: string, type: 'image' | 'video') => void) => void;
+  canEdit: boolean;
 }
 
-export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onChooseFromLibrary}: PortfolioItemFormProps) {
+export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onChooseFromLibrary, canEdit}: PortfolioItemFormProps) {
     const form = useForm<PortfolioItemFormValues>({
       resolver: zodResolver(formSchema),
       defaultValues: {
@@ -103,8 +104,18 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onCho
         form.reset(defaultValues);
       }
     }, [isOpen, item, form]);
+    
+    useEffect(() => {
+        if (!canEdit) {
+            Object.keys(form.getValues()).forEach(key => {
+                form.control.getFieldState(key as keyof PortfolioItemFormValues).isDirty = false;
+            });
+        }
+    }, [canEdit, form, isOpen]);
+
 
     const handleSubmit = (values: PortfolioItemFormValues) => {
+        if (!canEdit) return;
         onSubmit({
           id: item?.id || '', // id will be handled by parent
           ...values,
@@ -135,12 +146,14 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onCho
                     <DialogTitle>{item ? 'Edit' : 'Add'} Portfolio Item</DialogTitle>
                     <DialogDescription>
                         {item ? 'Update the details of your portfolio item.' : 'Add a new item to your portfolio.'}
+                        {!canEdit && <span className="text-destructive font-bold block mt-2"> (Read-only)</span>}
                     </DialogDescription>
                 </DialogHeader>
                 <ScrollArea className="flex-1 -mr-2">
                   <div className="p-6">
                     <Form {...form}>
                       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8">
+                        <fieldset disabled={!canEdit} className="group space-y-8">
                           <FormField
                           control={form.control}
                           name="title"
@@ -288,6 +301,7 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onCho
                               <Button type="button" variant="outline" onClick={() => setIsOpen(false)}>Cancel</Button>
                               <Button type="submit">Save</Button>
                           </div>
+                        </fieldset>
                       </form>
                       </Form>
                   </div>

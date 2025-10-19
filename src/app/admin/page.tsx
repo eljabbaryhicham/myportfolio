@@ -43,9 +43,9 @@ function AdminPage() {
 
   const isSuperAdmin = user?.email === 'eljabbaryhicham@example.com';
   
-  const canEditHome = isSuperAdmin || user?.permissions?.canEditHome;
-  const canEditProjects = isSuperAdmin || user?.permissions?.canEditProjects;
-  const canEditContact = isSuperAdmin || user?.permissions?.canEditContact;
+  const canEditHome = isSuperAdmin || (user?.permissions?.canEditHome ?? true);
+  const canEditProjects = isSuperAdmin || (user?.permissions?.canEditProjects ?? true);
+  const canEditContact = isSuperAdmin || (user?.permissions?.canEditContact ?? true);
   
   useEffect(() => {
     if (isUserLoading) {
@@ -228,6 +228,7 @@ function AdminPage() {
         item={selectedPortfolioItem}
         onSubmit={(values) => handlePortfolioFormSubmit(values, 0)} // Note: minOrder logic is now in ProjectAdmin, may need to pass it up
         onChooseFromLibrary={handleOpenLibraryForSelection}
+        canEdit={canEditProjects}
       />
       <MediaAdmin 
         isDialog={true}
@@ -248,5 +249,3 @@ function AdminPage() {
 }
 
 export default AdminPage;
-
-    

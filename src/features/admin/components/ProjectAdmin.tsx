@@ -94,13 +94,11 @@ function ProjectAdmin({ setSelectedItem, setIsSheetOpen, handleFormSubmit }: Pro
   }
 
   const handleAddItem = () => {
-    if (!canEditProjects) return;
     setSelectedItem(null);
     setIsSheetOpen(true);
   };
 
   const handleEditItem = (item: PortfolioItem) => {
-    if (!canEditProjects) return;
     setSelectedItem(item);
     setIsSheetOpen(true);
   };
@@ -205,7 +203,7 @@ function ProjectAdmin({ setSelectedItem, setIsSheetOpen, handleFormSubmit }: Pro
                     Seed Projects
                 </Button>
                 )}
-                <Button onClick={handleAddItem} size="sm" disabled={!canEditProjects}>
+                <Button onClick={handleAddItem} size="sm">
                 <FontAwesomeIcon icon={faPlusCircle} className="mr-2 h-4 w-4" />
                 Add New
                 </Button>
@@ -266,13 +264,13 @@ function ProjectAdmin({ setSelectedItem, setIsSheetOpen, handleFormSubmit }: Pro
                     <TableCell className="text-center">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon" disabled={!canEditProjects}>
+                          <Button variant="ghost" size="icon">
                             <FontAwesomeIcon icon={faEllipsisH} />
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent className="glass-effect">
-                          <DropdownMenuItem onClick={() => handleEditItem(item)} className="justify-center" disabled={!canEditProjects}>
-                            Edit
+                          <DropdownMenuItem onClick={() => handleEditItem(item)} className="justify-center">
+                            {canEditProjects ? 'Edit' : 'View'}
                           </DropdownMenuItem>
                           <DropdownMenuItem
                             onClick={() => handleDeleteItem(item.id)}
@@ -295,5 +293,3 @@ function ProjectAdmin({ setSelectedItem, setIsSheetOpen, handleFormSubmit }: Pro
 }
 
 export default ProjectAdmin;
-
-    
