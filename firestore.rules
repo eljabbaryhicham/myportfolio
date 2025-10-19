@@ -2,69 +2,92 @@
  * @fileoverview Firestore Security Rules for the portfolio application.
  *
  * Core Philosophy:
- * This ruleset provides public read access to all data and restricts write access.
+ * This ruleset provides public read access to most data while restricting write access to authorized users only.
+ * The security model focuses on preventing unauthorized data modification and deletion.
  *
  * Data Structure:
- * - /projects/{projectId}: Stores project information.
- * - /contact/{contactId}: Stores contact information.
- * - /homepage/{settingsId}: Stores homepage settings.
- * - /media/{mediaId}: Stores metadata about media assets.
+ * The database contains collections for projects, contact information, homepage settings, and media assets.
+ * Each collection is a top-level collection with unique document IDs.
  *
  * Key Security Decisions:
- * - Public read access is granted to all collections to allow for easy data retrieval.
- * - All write access is denied.
+ * - Public read access is granted to projects, contact info, homepage settings, and media assets to allow open access.
+ * - Write access to all collections is restricted to authenticated users.
+ * - No ownership checks are present, so anyone signed in can modify any record. This is a major security concern.
  *
+ * WARNING: The current ruleset grants broad write access to any authenticated user. This should be refined in later
+ * iterations to include role-based access control or ownership validation.
  */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * @description Grants public read access to projects, but denies all write operations.
+     * @description Allows public read access and restricts write access to authenticated users for projects.
      * @path /projects/{projectId}
-     * @allow (get, list): Any user can read project data.
-     * @deny (create, update, delete): No user can create, update, or delete project data.
-     * @principle Public read, restricted write.
+     * @allow (get, list): Public read access to project data.
+     * @allow (create, update, delete): Authenticated users can create, update, and delete project data.
+     * @deny (create, update, delete): Unauthenticated users cannot modify project data.
+     * @principle Grants public read access and restricts write access to authenticated users.
      */
     match /projects/{projectId} {
-      allow get, list: if true;
-      allow create, update, delete: if false;
+      allow get: if true;
+      allow list: if true;
+      allow create: if isSignedIn();
+      allow update: if isSignedIn() && resource != null;
+      allow delete: if isSignedIn() && resource != null;
     }
 
     /**
-     * @description Grants public read access to contact information, but denies all write operations.
+     * @description Allows public read access and restricts write access to authenticated users for contact information.
      * @path /contact/{contactId}
-     * @allow (get, list): Any user can read contact data.
-     * @deny (create, update, delete): No user can create, update, or delete contact data.
-     * @principle Public read, restricted write.
+     * @allow (get, list): Public read access to contact information.
+     * @allow (create, update, delete): Authenticated users can create, update, and delete contact information.
+     * @deny (create, update, delete): Unauthenticated users cannot modify contact information.
+     * @principle Grants public read access and restricts write access to authenticated users.
      */
     match /contact/{contactId} {
-      allow get, list: if true;
-      allow create, update, delete: if false;
+      allow get: if true;
+      allow list: if true;
+      allow create: if isSignedIn();
+      allow update: if isSignedIn() && resource != null;
+      allow delete: if isSignedIn() && resource != null;
     }
 
     /**
-     * @description Grants public read access to homepage settings, but denies all write operations.
+     * @description Allows public read access and restricts write access to authenticated users for homepage settings.
      * @path /homepage/{settingsId}
-     * @allow (get, list): Any user can read homepage settings.
-     * @deny (create, update, delete): No user can create, update, or delete homepage settings.
-     * @principle Public read, restricted write.
+     * @allow (get, list): Public read access to homepage settings.
+     * @allow (create, update, delete): Authenticated users can create, update, and delete homepage settings.
+     * @deny (create, update, delete): Unauthenticated users cannot modify homepage settings.
+     * @principle Grants public read access and restricts write access to authenticated users.
      */
     match /homepage/{settingsId} {
-      allow get, list: if true;
-      allow create, update, delete: if false;
+      allow get: if true;
+      allow list: if true;
+      allow create: if isSignedIn();
+      allow update: if isSignedIn() && resource != null;
+      allow delete: if isSignedIn() && resource != null;
     }
-    
+
     /**
-     * @description Grants public read access to media assets, but denies all write operations.
+     * @description Allows public read access and restricts write access to authenticated users for media assets.
      * @path /media/{mediaId}
-     * @allow (get, list): Any user can read media asset data.
-     * @deny (create, update, delete): No user can create, update, or delete media asset data.
-     * @principle Public read, restricted write.
+     * @allow (get, list): Public read access to media assets.
+     * @allow (create, update, delete): Authenticated users can create, update, and delete media assets.
+     * @deny (create, update, delete): Unauthenticated users cannot modify media assets.
+     * @principle Grants public read access and restricts write access to authenticated users.
      */
     match /media/{mediaId} {
-      allow get, list: if true;
-      allow create, update, delete: if false;
+      allow get: if true;
+      allow list: if true;
+      allow create: if isSignedIn();
+      allow update: if isSignedIn() && resource != null;
+      allow delete: if isSignedIn() && resource != null;
     }
+  }
+
+  // Helper function to determine if a user is signed in
+  function isSignedIn() {
+    return request.auth != null;
   }
 }
