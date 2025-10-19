@@ -384,6 +384,7 @@ export default function MediaAdmin(props: MediaAdminProps) {
     <>
       <DialogHeader className="p-4 border-b text-center">
           <DialogTitle>{props.isDialog && props.isSelectionMode ? "Choose Media" : "Media Library"}</DialogTitle>
+           <DialogDescription>Upload and manage your images and videos.</DialogDescription>
       </DialogHeader>
       <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'images' | 'videos')} className="flex-1 flex flex-col min-h-0">
           <div className='px-4 pt-4'>
@@ -456,7 +457,7 @@ export default function MediaAdmin(props: MediaAdminProps) {
       <div className="flex-1 flex flex-col h-full gap-6">
         <div className="flex items-start justify-between">
             <div className="text-left">
-                <h2 className="text-xl font-bold">Media Library (Cloudinary)</h2>
+                <h2 className="text-xl font-bold">Media Library</h2>
                 <p className="text-muted-foreground mt-1 text-sm">Upload and manage your images and videos.</p>
             </div>
             <Button onClick={props.onLibraryOpenRequest} variant="outline" size="sm">
