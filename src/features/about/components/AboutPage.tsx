@@ -10,6 +10,10 @@ import { collection, query, orderBy, doc } from 'firebase/firestore';
 import Preloader from '@/components/preloader';
 import { motion } from 'framer-motion';
 import Logo from '@/components/logo';
+import { Button } from '@/components/ui/button';
+import Link from 'next/link';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faEnvelope, faArrowRight } from '@fortawesome/free-solid-svg-icons';
 
 interface Client {
   id: string;
@@ -98,7 +102,21 @@ export default function AboutPage() {
                         <Logo src={logoUrl} />
                     </div>
                     <h2 className="text-2xl md:text-3xl font-bold tracking-tight mb-4">{aboutContent.title}</h2>
-                    <p className="text-foreground/70 leading-relaxed">{aboutContent.content}</p>
+                    <p className="text-foreground/70 leading-relaxed mb-6">{aboutContent.content}</p>
+                    <div className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
+                        <Button asChild>
+                            <Link href="/contact">
+                                <FontAwesomeIcon icon={faEnvelope} className="mr-2" />
+                                Contact Us
+                            </Link>
+                        </Button>
+                        <Button asChild variant="secondary">
+                             <Link href="/work">
+                                Explore Our Works
+                                <FontAwesomeIcon icon={faArrowRight} className="ml-2" />
+                            </Link>
+                        </Button>
+                    </div>
                   </div>
                   <div className="relative aspect-square w-full h-full rounded-lg overflow-hidden glass-effect p-2">
                     <MemoizedImage
