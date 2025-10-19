@@ -24,7 +24,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose } from '@
 import { cn } from '@/lib/utils';
 import Preloader from '@/components/preloader';
 import { useCollection, useFirestore, useMemoFirebase, addDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase';
-import { collection, doc, query, orderBy } from 'firebase/firestore';
+import { collection, doc, query, orderBy, DocumentReference } from 'firebase/firestore';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 
@@ -43,10 +43,12 @@ const MediaFileCard = ({
   file,
   onDelete,
   onCopy,
+  isNewlyUploaded
 }: {
   file: MediaAsset;
   onDelete: (publicId: string, id: string, resourceType: string) => void;
   onCopy: (url: string) => void;
+  isNewlyUploaded: boolean;
 }) => {
   
   const handleDelete = () => {
@@ -56,7 +58,7 @@ const MediaFileCard = ({
   const fileName = file.filename || file.public_id.split('/').pop() || 'Untitled';
   
   return (
-    <div className="flex flex-col gap-2">
+    <div className={cn("flex flex-col gap-2", isNewlyUploaded && 'animate-glow')}>
       <div className="relative group aspect-square border rounded-lg overflow-hidden glass-effect p-1">
         <div className="relative w-full h-full rounded-md overflow-hidden">
           {file.resource_type === 'image' ? (
@@ -110,6 +112,8 @@ export default function MediaAdmin() {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadingFileName, setUploadingFileName] = useState('');
   const [isLibraryOpen, setIsLibraryOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<'images' | 'videos'>('images');
+  const [newlyUploadedId, setNewlyUploadedId] = useState<string | null>(null);
 
   // Fetch media assets from Firestore
   const mediaCollectionRef = useMemoFirebase(() => firestore ? query(collection(firestore, 'media'), orderBy('created_at', 'desc')) : null, [firestore]);
@@ -167,12 +171,21 @@ export default function MediaAdmin() {
           
           if(firestore) {
             // Save metadata to Firestore
-            addDocumentNonBlocking(collection(firestore, 'media'), {
+            const docRefPromise = addDocumentNonBlocking(collection(firestore, 'media'), {
                 public_id: response.public_id,
                 url: response.secure_url,
                 resource_type: response.resource_type,
                 created_at: response.created_at,
                 filename: file.name, // Save the original filename
+            }) as Promise<DocumentReference>;
+
+            docRefPromise.then((docRef) => {
+                if (docRef) {
+                    setNewlyUploadedId(docRef.id);
+                    setActiveTab(response.resource_type === 'video' ? 'videos' : 'images');
+                    setIsLibraryOpen(true);
+                    setTimeout(() => setNewlyUploadedId(null), 3000); // Remove glow after 3s
+                }
             });
           }
 
@@ -256,7 +269,13 @@ export default function MediaAdmin() {
     return (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
             {assets.map(file => (
-                <MediaFileCard key={file.id} file={file} onDelete={handleDelete} onCopy={handleCopy} />
+                <MediaFileCard 
+                  key={file.id} 
+                  file={file} 
+                  onDelete={handleDelete} 
+                  onCopy={handleCopy}
+                  isNewlyUploaded={file.id === newlyUploadedId}
+                />
             ))}
         </div>
     );
@@ -293,7 +312,7 @@ export default function MediaAdmin() {
       
       <Dialog open={isLibraryOpen} onOpenChange={setIsLibraryOpen}>
         <DialogContent className="w-[95vw] h-[90vh] glass-effect p-0 flex flex-col">
-            <Tabs defaultValue="images" className="flex-1 flex flex-col min-h-0">
+            <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'images' | 'videos')} className="flex-1 flex flex-col min-h-0">
                 <DialogHeader className="p-4 border-b text-center">
                     <DialogTitle>Media Library</DialogTitle>
                     <TabsList className="mt-8">
