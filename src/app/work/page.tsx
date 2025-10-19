@@ -45,11 +45,12 @@ const MemoizedImage = memo(Image);
 const PortfolioMedia = ({
   item,
   onFullscreenClick,
+  onMediaLoaded,
 }: {
   item: PortfolioItem;
   onFullscreenClick: (url: string) => void;
+  onMediaLoaded: () => void;
 }) => {
-  const [isContentLoaded, setIsContentLoaded] = useState(false);
 
   const videoSource = useMemo(() => {
     const youtubeRegex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
@@ -94,20 +95,12 @@ const PortfolioMedia = ({
   if (item.type === 'video' && videoSource) {
     return (
       <div className="relative aspect-video bg-black flex items-center justify-center w-full">
-        {!isContentLoaded && (
-          <div className="absolute inset-0 z-10 flex items-center justify-center bg-black">
-            <Preloader />
-          </div>
-        )}
-        <div className={cn(
-          "w-full h-full transition-opacity duration-500",
-          isContentLoaded ? 'opacity-100' : 'opacity-0'
-        )}>
+        <div className="w-full h-full">
           <VideoPlayer
             source={videoSource}
             poster={item.thumbnailUrl}
             previewThumbnailsSrc={item.previewThumbnailsSrc}
-            onReady={() => setIsContentLoaded(true)}
+            onReady={onMediaLoaded}
           />
         </div>
       </div>
@@ -117,37 +110,32 @@ const PortfolioMedia = ({
   if (item.type === 'image' && item.sourceUrl) {
     return (
       <div className="relative aspect-video bg-black flex justify-center items-center group w-full">
-         {!isContentLoaded && (
-          <div className="absolute inset-0 z-10 flex items-center justify-center">
-            <Preloader />
-          </div>
-        )}
         <MemoizedImage
           src={item.sourceUrl}
           alt={item.title}
           fill
-          className={cn(
-            "object-contain transition-opacity duration-500",
-            isContentLoaded ? 'opacity-100' : 'opacity-0'
-          )}
-          onLoad={() => setIsContentLoaded(true)}
+          className="object-contain"
+          onLoad={onMediaLoaded}
         />
-        {isContentLoaded && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="absolute inset-0 m-auto z-10 h-12 w-12 md:h-16 md:w-16 text-white bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity"
-              onClick={() => onFullscreenClick(item.sourceUrl!)}
-            >
-              <FontAwesomeIcon icon={faExpand} className="h-6 w-6 md:h-8 md:w-8" />
-              <span className="sr-only">Fullscreen</span>
-            </Button>
-        )}
+        <Button
+            variant="ghost"
+            size="icon"
+            className="absolute inset-0 m-auto z-10 h-12 w-12 md:h-16 md:w-16 text-white bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity"
+            onClick={() => onFullscreenClick(item.sourceUrl!)}
+          >
+            <FontAwesomeIcon icon={faExpand} className="h-6 w-6 md:h-8 md:w-8" />
+            <span className="sr-only">Fullscreen</span>
+        </Button>
       </div>
     );
   }
 
-  return <div className="relative aspect-video bg-black flex justify-center items-center group w-full"><Preloader /></div>;
+  // Fallback for when media is not ready or type is wrong, this should ideally not be hit
+  useEffect(() => {
+    onMediaLoaded();
+  }, [item, onMediaLoaded]);
+
+  return <div className="relative aspect-video bg-black flex justify-center items-center group w-full"></div>;
 };
 PortfolioMedia.displayName = 'PortfolioMedia';
 
@@ -267,6 +255,7 @@ export default function WorkPage() {
   const [librarySelectionConfig, setLibrarySelectionConfig] = useState<{ onSelect: (url: string, type: 'image' | 'video', filename: string) => void } | null>(null);
   const [dialogActiveTab, setDialogActiveTab] = useState<'images' | 'videos'>('images');
   const [direction, setDirection] = useState<'next' | 'prev' | null>(null);
+  const [isDialogMediaLoading, setIsDialogMediaLoading] = useState(true);
 
   const filteredItems = useMemo(() => {
     if (!portfolioItems) return [];
@@ -300,6 +289,7 @@ export default function WorkPage() {
   };
 
   const handleItemClick = (item: PortfolioItem) => {
+    setIsDialogMediaLoading(true);
     setDirection(null); // Reset direction for first open
     setSelectedItem(item);
     updateUrl(slugify(item.title));
@@ -323,6 +313,7 @@ export default function WorkPage() {
 
   useEffect(() => {
     if (selectedItem) {
+      setIsDialogMediaLoading(true);
       const LONG_DESCRIPTION_THRESHOLD = 150;
       setIsDescriptionLong(
         (selectedItem.description?.length || 0) > LONG_DESCRIPTION_THRESHOLD
@@ -573,15 +564,22 @@ export default function WorkPage() {
                       
                       <ScrollArea className="flex-1 min-h-0">
                         <div className="relative flex flex-col justify-center h-full">
-                          <div className="w-full my-auto">
+                          <div className={cn("w-full my-auto transition-opacity duration-300", isDialogMediaLoading && "opacity-0")}>
                             {isClient && (
                               <PortfolioMedia
                                 key={selectedItem.id}
                                 item={selectedItem}
                                 onFullscreenClick={setFullscreenImageUrl}
+                                onMediaLoaded={() => setIsDialogMediaLoading(false)}
                               />
                             )}
                           </div>
+
+                           {isDialogMediaLoading && (
+                            <div className="absolute inset-0 flex items-center justify-center">
+                              <Preloader />
+                            </div>
+                          )}
                             
                           {selectedItem.details && (
                             <div className="p-4 md:p-6 text-center flex-shrink-0">
@@ -755,3 +753,5 @@ export default function WorkPage() {
     </>
   );
 }
+
+    
