@@ -12,6 +12,7 @@ import { defaultPortfolioItems } from "../data/portfolio-data";
 import { useMemo } from "react";
 import VideoPlayer from "@/components/video-player";
 import type { SourceInfo } from "plyr";
+import Logo from "@/components/logo";
 
 interface HomePageContentProps {
     featuredProject: PortfolioItem | null;
@@ -44,22 +45,8 @@ export default function HomePageContent({ featuredProject, isLoading }: HomePage
 
   return (
     <div className="h-full w-full flex flex-col items-center justify-center gap-8 p-4">
-      <div className={cn(
-        "w-full max-w-4xl aspect-video", 
-        "relative rounded-lg overflow-hidden glass-effect border border-border/50"
-      )}>
-        {isLoading || !videoSource ? (
-          <Preloader /> 
-        ) : (
-          <VideoPlayer
-            source={videoSource}
-            poster={featuredProject?.thumbnailUrl}
-            autoplay
-            loop
-            muted
-            controls={false}
-          />
-        )}
+       <div className="w-full max-w-sm">
+        <Logo />
       </div>
       <Button asChild size="lg" className="group">
         <Link href="/work">
