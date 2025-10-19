@@ -29,9 +29,6 @@ interface AboutPageContent {
     title: string;
     content: string;
     imageUrl: string;
-}
-
-interface ContactInfo {
     logoUrl?: string;
 }
 
@@ -53,20 +50,14 @@ export default function AboutPage() {
   );
   const { data: aboutContent, isLoading: isLoadingContent } = useDoc<AboutPageContent>(aboutContentRef);
   
-  const contactDocRef = useMemoFirebase(
-    () => (firestore ? doc(firestore, 'contact', 'details') : null),
-    [firestore]
-  );
-  const { data: contactInfo, isLoading: isLoadingContact } = useDoc<ContactInfo>(contactDocRef);
-
   // Duplicate clients for seamless marquee effect
   const duplicatedClients = useMemo(() => {
     if (!clients || clients.length === 0) return [];
     return [...clients, ...clients, ...clients, ...clients];
   }, [clients]);
 
-  const isLoading = isLoadingClients || isLoadingContent || isLoadingContact;
-  const logoUrl = contactInfo?.logoUrl || "https://i.imgur.com/N9c8oEJ.png";
+  const isLoading = isLoadingClients || isLoadingContent;
+  const logoUrl = aboutContent?.logoUrl || "https://i.imgur.com/N9c8oEJ.png";
 
   return (
     <div className="h-full w-full flex flex-col">

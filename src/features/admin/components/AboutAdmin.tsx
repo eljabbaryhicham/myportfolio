@@ -39,6 +39,7 @@ const formSchema = z.object({
   title: z.string().min(2, { message: 'Title must be at least 2 characters.' }),
   content: z.string().min(10, { message: 'Content must be at least 10 characters.' }),
   imageUrl: z.string().url({ message: 'Please enter a valid URL.' }),
+  logoUrl: z.string().url({ message: 'Please enter a valid URL.' }).optional().or(z.literal('')),
 });
 
 type AboutFormValues = z.infer<typeof formSchema>;
@@ -55,7 +56,7 @@ export default function AboutAdmin() {
 
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isLibraryOpen, setIsLibraryOpen] = useState(false);
-  const [librarySelectionConfig, setLibrarySelectionConfig] = useState<{ onSelect: (url: string, type: 'image' | 'video', filename: string) => void } | null>(null);
+  const [librarySelectionConfig, setLibrarySelectionConfig] = useState<{ onSelect: (url: string, type: 'image' | 'video', filename: string) => void; field: 'imageUrl' | 'logoUrl' } | null>(null);
 
   const aboutContentRef = useMemoFirebase(
     () => (firestore ? doc(firestore, 'about', 'content') : null),
@@ -69,6 +70,7 @@ export default function AboutAdmin() {
       title: '',
       content: '',
       imageUrl: '',
+      logoUrl: '',
     },
   });
 
@@ -96,17 +98,18 @@ export default function AboutAdmin() {
     setIsFormOpen(false); // Close dialog on submit
   };
 
-  const handleChooseImage = () => {
+  const handleChooseImage = (field: 'imageUrl' | 'logoUrl') => {
     if (!canEditAbout) return;
     setLibrarySelectionConfig({
       onSelect: (url, type) => {
         if (type === 'image') {
-          form.setValue('imageUrl', url, { shouldValidate: true });
+          form.setValue(field, url, { shouldValidate: true });
         } else {
           toast({ variant: 'destructive', title: 'Invalid File Type', description: 'Please select an image.' });
         }
         setIsLibraryOpen(false);
       },
+      field: field,
     });
     setIsLibraryOpen(true);
   };
@@ -151,6 +154,24 @@ export default function AboutAdmin() {
                           <fieldset disabled={!canEditAbout} className="group">
                             <FormField
                               control={form.control}
+                              name="logoUrl"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Logo URL</FormLabel>
+                                  <div className="flex items-center gap-2">
+                                    <FormControl>
+                                      <Input placeholder="https://example.com/your-logo.png" {...field} />
+                                    </FormControl>
+                                    <Button type="button" variant="outline" size="icon" onClick={() => handleChooseImage('logoUrl')}>
+                                      <FontAwesomeIcon icon={faImages} />
+                                    </Button>
+                                  </div>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                            <FormField
+                              control={form.control}
                               name="title"
                               render={({ field }) => (
                                 <FormItem>
@@ -185,7 +206,7 @@ export default function AboutAdmin() {
                                     <FormControl>
                                       <Input placeholder="https://example.com/your-image.png" {...field} />
                                     </FormControl>
-                                    <Button type="button" variant="outline" size="icon" onClick={handleChooseImage}>
+                                    <Button type="button" variant="outline" size="icon" onClick={() => handleChooseImage('imageUrl')}>
                                       <FontAwesomeIcon icon={faImages} />
                                     </Button>
                                   </div>

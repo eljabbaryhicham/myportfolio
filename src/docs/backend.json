@@ -135,6 +135,11 @@
           "type": "string",
           "format": "uri",
           "description": "URL of the image for the about section."
+        },
+        "logoUrl": {
+            "type": "string",
+            "format": "uri",
+            "description": "URL of the logo for the about section."
         }
       },
       "required": [
