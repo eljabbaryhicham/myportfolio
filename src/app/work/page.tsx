@@ -275,6 +275,7 @@ export default function WorkPage() {
   const [isLibraryOpen, setIsLibraryOpen] = useState(false);
   const [librarySelectionConfig, setLibrarySelectionConfig] = useState<{ onSelect: (url: string, type: 'image' | 'video', filename: string) => void } | null>(null);
   const [dialogActiveTab, setDialogActiveTab] = useState<'images' | 'videos'>('images');
+  const [direction, setDirection] = useState<'next' | 'prev'>('next');
 
   const filteredItems = useMemo(() => {
     if (!portfolioItems) return [];
@@ -344,6 +345,7 @@ export default function WorkPage() {
 
   const handleNextProject = () => {
     if (!selectedItem || !filteredItems) return;
+    setDirection('next');
     const currentIndex = filteredItems.findIndex(item => item.id === selectedItem.id);
     const nextIndex = (currentIndex + 1) % filteredItems.length;
     updateUrl(filteredItems[nextIndex].id);
@@ -351,6 +353,7 @@ export default function WorkPage() {
 
   const handlePreviousProject = () => {
     if (!selectedItem || !filteredItems) return;
+    setDirection('prev');
     const currentIndex = filteredItems.findIndex(item => item.id === selectedItem.id);
     const prevIndex = (currentIndex - 1 + filteredItems.length) % filteredItems.length;
     updateUrl(filteredItems[prevIndex].id);
@@ -484,7 +487,7 @@ export default function WorkPage() {
       </div>
 
       <Dialog open={!!selectedItem} onOpenChange={handleOpenChange}>
-          <AnimatePresence>
+          <AnimatePresence mode="wait">
             {selectedItem && (
                   <DialogContent
                     className={cn(
@@ -499,9 +502,9 @@ export default function WorkPage() {
                     asChild
                   >
                     <motion.div
-                        initial={{ opacity: 0, x: isMobile ? 300 : 0, scale: 0.95 }}
+                        initial={{ opacity: 0, x: isMobile ? (direction === 'next' ? 300 : -300) : 0, scale: 0.95 }}
                         animate={{ opacity: 1, x: 0, scale: 1 }}
-                        exit={{ opacity: 0, x: isMobile ? -300 : 0, scale: 0.95 }}
+                        exit={{ opacity: 0, x: isMobile ? (direction === 'next' ? -300 : 300) : 0, scale: 0.95 }}
                         transition={{ duration: 0.3, ease: "easeInOut" }}
                         drag={isMobile ? "x" : false}
                         dragConstraints={{ left: 0, right: 0 }}
