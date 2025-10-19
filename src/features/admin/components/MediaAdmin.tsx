@@ -1,18 +1,12 @@
+
 'use client';
 
 // IMPORTANT: To use this component, you need a Cloudinary account.
-// 1. Create a free account at https://cloudinary.com/
-// 2. In your Dashboard, find your "Cloud Name".
-// 3. Go to Settings > Upload and find your "Upload Preset". 
-//    If one doesn't exist, create a new one with "Unsigned" signing mode.
-// 4. Create a new file named .env.local in the root of your project.
-// 5. Add the following lines to your .env.local file, replacing with your actual credentials:
-
-/* .env.local
-NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME=your_cloud_name
-NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET=your_upload_preset
-*/
-
+// 1. Your Cloudinary credentials have been added to the `.env` file.
+// 2. Go to your Cloudinary Settings > Upload page.
+// 3. Find or create an "Upload Preset". Make sure its "Signing Mode" is set to "Unsigned".
+// 4. Copy the name of that preset.
+// 5. Paste the name into the `NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET` value in your `.env` file.
 // 6. Restart your development server for the changes to take effect.
 
 
@@ -115,11 +109,11 @@ export default function MediaAdmin() {
   const { data: mediaAssets, isLoading: isLoadingMedia, refetch: refetchMedia } = useCollection<MediaAsset>(mediaCollectionRef);
 
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
-    if (!process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || !process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET) {
+    if (!process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || !process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET === 'your_upload_preset_name') {
       toast({
         variant: 'destructive',
         title: 'Configuration Error',
-        description: 'Cloudinary credentials are not configured in .env.local file.',
+        description: 'Cloudinary credentials are not fully configured in the .env file.',
       });
       return;
     }
