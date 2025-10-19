@@ -194,18 +194,16 @@ function AdminPage() {
           <Separator className="bg-white/10 mb-8" />
 
           <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col min-h-0">
-            <div className='w-full overflow-x-auto'>
-              <ScrollArea orientation="horizontal" className="pb-2">
-                <TabsList className="inline-flex h-auto">
-                    <TabsTrigger value="home">Home</TabsTrigger>
-                    <TabsTrigger value="projects">Projects</TabsTrigger>
-                    <TabsTrigger value="about">About & Clients</TabsTrigger>
-                    <TabsTrigger value="contact">Contact</TabsTrigger>
-                    <TabsTrigger value="media" className={cn("bg-[#172554] text-white data-[state=active]:bg-destructive")}>Media</TabsTrigger>
-                    {isSuperAdmin && <TabsTrigger value="admins" className={cn("bg-[#172554] text-white data-[state=active]:bg-destructive")}>Admins</TabsTrigger>}
-                </TabsList>
-              </ScrollArea>
-            </div>
+            <ScrollArea orientation="horizontal" className="w-full pb-2">
+              <TabsList className="inline-flex h-auto w-max">
+                  <TabsTrigger value="home">Home</TabsTrigger>
+                  <TabsTrigger value="projects">Projects</TabsTrigger>
+                  <TabsTrigger value="about">About & Clients</TabsTrigger>
+                  <TabsTrigger value="contact">Contact</TabsTrigger>
+                  <TabsTrigger value="media" className={cn("bg-[#172554] text-white data-[state=active]:bg-destructive")}>Media</TabsTrigger>
+                  {isSuperAdmin && <TabsTrigger value="admins" className={cn("bg-[#172554] text-white data-[state=active]:bg-destructive")}>Admins</TabsTrigger>}
+              </TabsList>
+            </ScrollArea>
               <Separator className="bg-white/10 mt-4" />
               <TabsContent value="home" className="flex-1 overflow-auto mt-4">
                   <HomeAdmin />
@@ -261,3 +259,5 @@ function AdminPage() {
 }
 
 export default AdminPage;
+
+    
