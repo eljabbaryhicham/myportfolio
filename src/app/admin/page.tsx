@@ -178,6 +178,7 @@ function AdminPage() {
                   <TabsTrigger value="media" className="flex-1">Media</TabsTrigger>
                   <TabsTrigger value="contact" className="flex-1">Contact</TabsTrigger>
               </TabsList>
+              <Separator className="bg-white/10 mt-4" />
               <TabsContent value="home" className="flex-1 overflow-auto mt-4">
                   <HomeAdmin />
               </TabsContent>
