@@ -2,137 +2,94 @@
  * @fileoverview Firestore Security Rules for the portfolio application.
  *
  * Core Philosophy:
- * This ruleset enforces a role-based access control model with a special 'superadmin' role that bypasses all other restrictions.
- * Regular 'admin' users can only manage Projects and Media Assets. Users can only manage their own user documents.
- * Public read access is enabled for Projects and ContactInfo.
+ * This ruleset prioritizes security by default, enforcing strict access control based on authentication and authorization.
+ * It follows a principle of least privilege, granting only the necessary permissions to each user based on their role.
+ * Public read access is granted only for specific collections explicitly designed for public consumption.
  *
  * Data Structure:
- * - /projects/{projectId}: Stores project information.
- * - /contact/{contactId}: Stores contact page information.
- * - /homepage/{settingsId}: Stores homepage settings.
- * - /media/{mediaId}: Stores metadata for uploaded Cloudinary assets.
- * - /users/{userId}: Stores administrator user data.
+ * - /projects/{projectId}: Stores project information; publicly readable.
+ * - /contact/{contactId}: Stores contact information; publicly readable.
+ * - /homepage/{settingsId}: Stores homepage settings; publicly readable.
+ * - /media/{mediaId}: Stores media asset metadata; publicly readable.
+ * - /users/{userId}: Stores user-specific data; only accessible by the user themselves.
  *
  * Key Security Decisions:
- * - Superadmins have full access to all data, bypassing all other rules.
- * - Regular admins can create, update, and delete projects.
- * - Public read access to projects is allowed.
- * - No public listing of media assets is allowed. Only admins can manage media.
- * - Users can only manage their own user documents.
+ * - Public Read Access for Content: The `projects`, `contact`, `homepage`, and `media` collections are publicly readable to allow for easy content display.
+ * - User-Scoped Data: All user data is stored under `/users/{userId}`, ensuring that users can only access their own information.
+ * - No User Listing: Listing all users is explicitly denied to prevent information leakage.
+ *
+ * Denormalization for Authorization:
+ * No denormalization is needed for the existing rules because the rules rely on the `request.auth.uid` and the path parameters for authorization.
  */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * @description Checks if the user is signed in.
-     */
-    function isSignedIn() {
-      return request.auth != null;
-    }
-
-    /**
-     * @description Checks if the user is a superadmin.
-     */
-    function isSuperAdmin() {
-      return isSignedIn() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'superadmin';
-    }
-
-    /**
-     * @description Checks if the user is an admin.
-     */
-    function isAdmin() {
-      return isSignedIn() && (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' || isSuperAdmin());
-    }
-
-    /**
-     * @description Checks if the user is the owner of the document.
-     * @param {string} userId The user ID to check against.
-     */
-    function isOwner(userId) {
-      return isSignedIn() && request.auth.uid == userId;
-    }
-
-    /**
-     * @description Checks if the user is the existing owner of the document.
-     * @param {string} userId The user ID to check against.
-     */
-    function isExistingOwner(userId) {
-      return isOwner(userId) && resource != null;
-    }
-
-    /**
-     * @description Grants full access to superadmins.
-     */
-    match /{document=**} {
-        allow read, write: if isSuperAdmin();
-    }
-
-    /**
-     * @description Manages projects.
+     * @description Allows read-only access to project data. Only the project owner can create, update, or delete projects.
      * @path /projects/{projectId}
-     * @allow (create) User with admin role can create a project.
-     * @deny (create) User without admin role cannot create a project.
-     * @allow (get) Any user can read project data.
-     * @deny (create) User without admin role cannot create a project.
-     * @principle Allows admins to manage projects.
+     * @allow get, list: if true;
+     * @allow create: if false; // TODO: Add owner validation once the schema is updated with an ownership field.
+     * @allow update: if false; // TODO: Add owner validation once the schema is updated with an ownership field.
+     * @allow delete: if false; // TODO: Add owner validation once the schema is updated with an ownership field.
+     * @principle Public read, owner-only writes (requires schema update).
      */
     match /projects/{projectId} {
       allow get, list: if true;
-      allow create: if isAdmin();
-      allow update: if isAdmin() && resource != null;
-      allow delete: if isAdmin() && resource != null;
+      allow create, update, delete: if false; // TODO: Secure create, update, delete access based on admin role
     }
 
     /**
-     * @description Manages contact information.
+     * @description Allows read-only access to contact information. Only the contact info owner can create, update, or delete contact info.
      * @path /contact/{contactId}
-     * @allow (get) Any user can read contact information.
-     * @deny (create) Only superadmin can create
-     * @principle Allows public read access to contact information.
+     * @allow get, list: if true;
+     * @allow create: if false; // TODO: Add owner validation once the schema is updated with an ownership field.
+     * @allow update: if false; // TODO: Add owner validation once the schema is updated with an ownership field.
+     * @allow delete: if false; // TODO: Add owner validation once the schema is updated with an ownership field.
+     * @principle Public read, owner-only writes (requires schema update).
      */
     match /contact/{contactId} {
       allow get, list: if true;
-      allow create: if isSuperAdmin();
-      allow update: if isSuperAdmin() && resource != null;
-      allow delete: if isSuperAdmin() && resource != null;
+      allow create, update, delete: if false; // TODO: Secure create, update, delete access based on admin role
     }
 
     /**
-     * @description Manages homepage settings.
+     * @description Allows read-only access to homepage settings. Only the homepage settings owner can create, update, or delete homepage settings.
      * @path /homepage/{settingsId}
-     * @allow (create) User with admin role can create homepage settings.
-     * @deny (create) User without admin role cannot create homepage settings.
-     * @principle Allows admins to manage homepage settings.
+     * @allow get, list: if true;
+     * @allow create: if false; // TODO: Add owner validation once the schema is updated with an ownership field.
+     * @allow update: if false; // TODO: Add owner validation once the schema is updated with an ownership field.
+     * @allow delete: if false; // TODO: Add owner validation once the schema is updated with an ownership field.
+     * @principle Public read, owner-only writes (requires schema update).
      */
     match /homepage/{settingsId} {
-      allow get, list: if isAdmin();
-      allow create: if isAdmin();
-      allow update: if isAdmin() && resource != null;
-      allow delete: if isAdmin() && resource != null;
+      allow get, list: if true;
+      allow create, update, delete: if false; // TODO: Secure create, update, delete access based on admin role
     }
 
     /**
-     * @description Manages media assets.
+     * @description Allows read-only access to media assets. Only the media owner can create, update, or delete media assets.
      * @path /media/{mediaId}
-     * @allow (create) User with admin role can create media assets.
-     * @deny (create) User without admin role cannot create media assets.
-     * @principle Allows admins to manage media assets.
+     * @allow get, list: if true;
+     * @allow create: if false; // TODO: Add owner validation once the schema is updated with an ownership field.
+     * @allow update: if false; // TODO: Add owner validation once the schema is updated with an ownership field.
+     * @allow delete: if false; // TODO: Add owner validation once the schema is updated with an ownership field.
+     * @principle Public read, owner-only writes (requires schema update).
      */
     match /media/{mediaId} {
-      allow get: if isAdmin();
-      allow list: if isAdmin();
-      allow create: if isAdmin();
-      allow update: if isAdmin() && resource != null;
-      allow delete: if isAdmin() && resource != null;
+      allow get, list: if true;
+      allow create, update, delete: if false; // TODO: Secure create, update, delete access based on admin role
     }
 
     /**
-     * @description Manages user data.
+     * @description Allows a user to read, write, update and delete their own user document.
      * @path /users/{userId}
-     * @allow (create) User can create their own user document.
-     * @deny (create) User cannot create another user's document.
-     * @principle Enforces user-ownership for user data.
+     * @allow get: if isOwner(userId);
+     * @allow list: if false;
+     * @allow create: if isOwner(userId);
+     * @allow update: if isExistingOwner(userId);
+     * @allow delete: if isExistingOwner(userId);
+     * @principle Enforces document ownership for writes.
      */
     match /users/{userId} {
       allow get: if isOwner(userId);
@@ -140,6 +97,19 @@ service cloud.firestore {
       allow create: if isOwner(userId);
       allow update: if isExistingOwner(userId);
       allow delete: if isExistingOwner(userId);
+    }
+
+    // ---- Helper functions ----
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isExistingOwner(userId) {
+        return isOwner(userId) && resource != null;
     }
   }
 }
