@@ -7,7 +7,7 @@
 // 3. Find or create an "Upload Preset". Make sure its "Signing Mode" is set to "Unsigned".
 // 4. Copy the name of that preset.
 // 5. Paste the name into the `NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET` value in your `.env` file.
-// 6. Restart your development server for the changes to take effect.
+// 6. For deployment, add these variables to your hosting provider's (e.g., Vercel) environment settings.
 
 
 import React, { useCallback, useState, useEffect, useMemo } from 'react';
@@ -180,7 +180,7 @@ export default function MediaAdmin(props: MediaAdminProps) {
   const [internalActiveTab, setInternalActiveTab] = useState<'images' | 'videos'>('images');
   
   const activeTab = props.isDialog ? props.activeTab : internalActiveTab;
-  const setActiveTab = (props.isDialog ? props.setActiveTab : setInternalActiveTab) as (tab: 'images' | 'videos') => void;
+  const setActiveTab = (props.isDialog ? props.setActiveTab : setInternalActiveTab);
   
   const newlyUploadedId = props.isDialog ? props.newlyUploadedId : null;
 
@@ -209,7 +209,8 @@ export default function MediaAdmin(props: MediaAdminProps) {
       toast({
         variant: 'destructive',
         title: 'Configuration Error',
-        description: 'Cloudinary credentials are not fully configured in the .env file.',
+        description: 'Cloudinary variables not set. Add NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME and NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET to your Vercel project settings.',
+        duration: 10000,
       });
       return;
     }
@@ -247,10 +248,9 @@ export default function MediaAdmin(props: MediaAdminProps) {
                   filename: file.name,
               });
 
-              // Await the promise to get the document reference
               const docRef = await docRefPromise as DocumentReference | undefined;
 
-              if (docRef && !props.isDialog) {
+              if (docRef && !props.isDialog && props.onUploadComplete) {
                   props.onUploadComplete(docRef.id, response.resource_type);
               }
 
@@ -495,3 +495,5 @@ export default function MediaAdmin(props: MediaAdminProps) {
     </>
   );
 }
+
+    
