@@ -117,15 +117,12 @@ export default function AboutPage() {
                   <Separator className="bg-white/10 max-w-xs mx-auto mt-2" />
                 </div>
                 
-                <div className="relative w-full overflow-hidden">
-                    <div className="group flex"
-                        onMouseEnter={(e) => e.currentTarget.style.animationPlayState = 'paused'}
-                        onMouseLeave={(e) => e.currentTarget.style.animationPlayState = 'running'}
-                    >
-                        <div className="flex animate-marquee">
+                <div className="group relative w-full overflow-hidden">
+                    <div className="flex animate-marquee group-hover:[animation-play-state:paused]">
+                        <div className="flex min-w-full shrink-0 items-center justify-around">
                             {clientLogos}
                         </div>
-                        <div className="flex animate-marquee" aria-hidden="true">
+                        <div className="flex min-w-full shrink-0 items-center justify-around" aria-hidden="true">
                             {clientLogos}
                         </div>
                     </div>
