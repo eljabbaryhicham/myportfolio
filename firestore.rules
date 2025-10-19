@@ -1,101 +1,143 @@
 /**
- * @description This ruleset enforces a role-based access control model for the portfolio application.
- *  It allows public read access to project, contact and homepage data.
- *  Admin users, identified by their 'admin' or 'superadmin' role in the `/users/{userId}` collection,
- *  can create, update, and delete media assets. User creation is self-creation;
- *  a user can create their own profile. Other user data is not directly accessible.
- * @dataStructure
- *  - /projects/{projectId}: Stores project information. Publicly readable.
- *  - /contact/{contactId}: Stores contact information. Publicly readable.
- *  - /homepage/{settingsId}: Stores homepage settings. Publicly readable.
- *  - /media/{mediaId}: Stores media asset metadata. Writable by admins only.
- *  - /users/{userId}: Stores user profiles. Only the user themselves can create their profile.
- * @keySecurityDecisions
- *  - Public read access to projects, contact info, and homepage settings.
- *  - Only authenticated admins can manage media assets.
- *  - Users can only create their own user document.
- *  - User listing is disallowed.
+ * @fileoverview Firestore Security Rules for the portfolio application.
+ *
+ * Core Philosophy:
+ * This ruleset enforces a strict user-ownership model for user profiles,
+ * and public read access for Projects, ContactInfo, HomePageSettings, and MediaAsset.
+ * Only authenticated users can create, update, or delete data.
+ *
+ * Data Structure:
+ * - /projects/{projectId}: Stores project information; publicly readable, owner-writeable.
+ * - /contact/{contactId}: Stores contact page information; publicly readable, owner-writeable.
+ * - /homepage/{settingsId}: Stores homepage settings; publicly readable, owner-writeable.
+ * - /media/{mediaId}: Stores media asset metadata; publicly readable, owner-writeable.
+ * - /users/{userId}: Stores user profile data; only accessible by the user themselves.
+ *
+ * Key Security Decisions:
+ * - Users can only access their own user documents.
+ * - Listing of users is disallowed for privacy.
+ * - Public read access is granted for general content (projects, contact info, homepage settings, media).
+ *
+ * Denormalization for Authorization:
+ *  - Projects, ContactInfo, HomePageSettings and MediaAsset will have an ownerId field
+ *    to allow simple owner-only write rules.
+ * Structural Segregation:
+ *  - No segregation is needed as all collections are either fully public-read or fully user-private.
  */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * @description Allows public read access to project documents. Only admins can create, update, or delete.
-     * @path /projects/{projectId}
-     * @allow (get, list)
-     * @deny (create, update, delete)
-     * @principle Public read, admin-only write.
+     * @description Checks if the request is made by an authenticated user.
+     * @return {bool} True if the user is signed in, false otherwise.
      */
-    match /projects/{projectId} {
-      allow get, list: if true;
-      allow create, update, delete: if false;
-    }
-
-    /**
-     * @description Allows public read access to contact information. Only admins can create, update, or delete.
-     * @path /contact/{contactId}
-     * @allow (get, list)
-     * @deny (create, update, delete)
-     * @principle Public read, admin-only write.
-     */
-    match /contact/{contactId} {
-      allow get, list: if true;
-      allow create, update, delete: if false;
-    }
-
-    /**
-     * @description Allows public read access to homepage settings. Only admins can create, update, or delete.
-     * @path /homepage/{settingsId}
-     * @allow (get, list)
-     * @deny (create, update, delete)
-     * @principle Public read, admin-only write.
-     */
-    match /homepage/{settingsId} {
-      allow get, list: if true;
-      allow create, update, delete: if false;
-    }
-
-    /**
-     * @description Allows authenticated admins to manage media assets.
-     * @path /media/{mediaId}
-     * @allow (create) User with 'admin' or 'superadmin' role can create a media asset.
-     * @allow (update, delete) User with 'admin' or 'superadmin' role can update or delete an existing media asset.
-     * @deny (create, update, delete) Unauthorized user attempts to create, update, or delete a media asset.
-     * @deny (get, list) Public read is disallowed.
-     * @principle Role-based access control.
-     */
-    match /media/{mediaId} {
-      allow get, list: if false;
-      allow create: if isSignedIn() && isAdmin();
-      allow update: if isSignedIn() && isAdmin() && resource != null;
-      allow delete: if isSignedIn() && isAdmin() && resource != null;
-    }
-
-    /**
-     * @description Allows a user to create their own profile.  No other access is permitted.
-     * @path /users/{userId}
-     * @allow (create) User can create their own profile if their auth UID matches the document ID.
-     * @deny (get, list, update, delete) Unauthorized user attempts to read, list, update, or delete user data.
-     * @principle User-ownership for profile creation.
-     */
-    match /users/{userId} {
-      allow get, list: if false;
-      allow create: if isSignedIn() && isOwner(userId);
-      allow update: if false;
-      allow delete: if false;
-    }
-
     function isSignedIn() {
       return request.auth != null;
     }
 
+    /**
+     * @description Checks if the authenticated user's UID matches the provided userId.
+     * @param {string} userId - The user ID to compare against the authenticated user's UID.
+     * @return {bool} True if the user is the owner, false otherwise.
+     */
     function isOwner(userId) {
-      return request.auth.uid == userId;
+      return isSignedIn() && request.auth.uid == userId;
     }
 
-    function isAdmin() {
-      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ["admin", "superadmin"];
+    /**
+     * @description Checks if the authenticated user is the owner of the existing document.
+     * @param {string} userId - The user ID to compare against the authenticated user's UID.
+     * @return {bool} True if the user is the owner and the document exists.
+     */
+    function isExistingOwner(userId) {
+      return isOwner(userId) && resource != null;
+    }
+    
+    /**
+     * @description Rules for the /projects/{projectId} collection.
+     * @path /projects/{projectId}
+     * @allow (get, list): Any user can read project data.
+     * @allow (create): Authenticated user can create a project if the ownerId matches their UID.
+     * @allow (update, delete): Only the owner of the project can update or delete it.
+     * @deny (create): A non-authenticated user cannot create a project.
+     * @deny (update, delete): A non-owner cannot update or delete the project.
+     * @principle Allows public read access, restricts writes to the owner.
+     */
+    match /projects/{projectId} {
+      allow get, list: if true;
+      allow create: if isSignedIn();
+      allow update, delete: if isExistingOwner(resource.data.ownerId);
+    }
+
+    /**
+     * @description Rules for the /contact/{contactId} collection.
+     * @path /contact/{contactId}
+     * @allow (get, list): Any user can read contact information.
+     * @allow (create): Authenticated user can create contact information. The document must have an ownerId.
+     * @allow (update, delete): Only the owner of the contact information can update or delete it.
+     * @deny (create): A non-authenticated user cannot create contact information.
+     * @deny (update, delete): A non-owner cannot update or delete the contact information.
+     * @principle Allows public read access, restricts writes to the owner.
+     */
+    match /contact/{contactId} {
+      allow get, list: if true;
+      allow create: if isSignedIn();
+      allow update, delete: if isExistingOwner(resource.data.ownerId);
+    }
+
+    /**
+     * @description Rules for the /homepage/{settingsId} collection.
+     * @path /homepage/{settingsId}
+     * @allow (get, list): Any user can read homepage settings.
+     * @allow (create): Authenticated user can create homepage settings if the ownerId matches their UID.
+     * @allow (update, delete): Only the owner of the homepage settings can update or delete it.
+     * @deny (create): A non-authenticated user cannot create homepage settings.
+     * @deny (update, delete): A non-owner cannot update or delete the homepage settings.
+     * @principle Allows public read access, restricts writes to the owner.
+     */
+    match /homepage/{settingsId} {
+      allow get, list: if true;
+      allow create: if isSignedIn();
+      allow update, delete: if isExistingOwner(resource.data.ownerId);
+    }
+
+    /**
+     * @description Rules for the /media/{mediaId} collection.
+     * @path /media/{mediaId}
+     * @allow (get, list): Any user can read media asset metadata.
+     * @allow (create): Authenticated user can create media asset metadata if the ownerId matches their UID.
+     * @allow (update, delete): Only the owner of the media asset can update or delete it.
+     * @deny (create): A non-authenticated user cannot create media asset metadata.
+     * @deny (update, delete): A non-owner cannot update or delete the media asset.
+     * @principle Allows public read access, restricts writes to the owner.
+     */
+    match /media/{mediaId} {
+      allow get, list: if true;
+      allow create: if isSignedIn();
+      allow update, delete: if isExistingOwner(resource.data.ownerId);
+    }
+
+    /**
+     * @description Rules for the /users/{userId} collection.
+     * @path /users/{userId}
+     * @allow (get): Only the user with the matching UID can get their own profile.
+     * @allow (create): Only the user with the matching UID can create their own profile.
+     * @allow (update): Only the user with the matching UID can update their own profile.
+     * @allow (delete): Only the user with the matching UID can delete their own profile.
+     * @deny (get): A user cannot read another user's profile.
+     * @deny (create): A user cannot create a profile for another user.
+     * @deny (update): A user cannot update another user's profile.
+     * @deny (delete): A user cannot delete another user's profile.
+     * @deny (list): Listing users is not allowed.
+     * @principle Enforces strict user-ownership for user profiles.
+     */
+    match /users/{userId} {
+      allow get: if isOwner(userId);
+      allow list: if false;
+      allow create: if isOwner(userId);
+      allow update: if isExistingOwner(userId);
+      allow delete: if isExistingOwner(userId);
     }
   }
 }
