@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useState, useMemo } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { useStorageList, useStorageDelete } from '@/firebase/storage/use-storage';
 import { useStorage, useUser } from '@/firebase';
@@ -83,16 +83,16 @@ export default function MediaAdmin() {
   const { user } = useUser();
   const { toast } = useToast();
   
-  const filesRef = storage ? ref(storage, 'uploads') : null;
+  const filesRef = useMemo(() => (storage ? ref(storage, 'uploads') : null), [storage]);
   const { files, isLoading: isLoadingFiles, refetch: refetchFiles } = useStorageList(filesRef);
-  const { deleteFile } = useStorageDelete();
+  const { deleteFile, isDeleting } = useStorageDelete();
 
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadingFileName, setUploadingFileName] = useState('');
 
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
-    if (!storage || !user) {
+    if (!user) {
       toast({ variant: 'destructive', title: 'Upload Error', description: 'You must be logged in to upload files.' });
       return;
     }
@@ -105,7 +105,7 @@ export default function MediaAdmin() {
         setUploadingFileName(file.name);
         setUploadProgress(0);
         
-        await uploadFile(storage, file, (progress) => {
+        await uploadFile(file, (progress) => {
           setUploadProgress(progress);
         });
 
@@ -129,7 +129,7 @@ export default function MediaAdmin() {
     setUploadProgress(0);
     refetchFiles();
 
-  }, [storage, user, toast, refetchFiles]);
+  }, [user, toast, refetchFiles]);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
