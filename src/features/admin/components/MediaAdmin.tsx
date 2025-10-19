@@ -297,7 +297,7 @@ export default function MediaAdmin() {
                 <DialogTitle>Media Library</DialogTitle>
             </DialogHeader>
             <Tabs defaultValue="images" className="flex-1 flex flex-col min-h-0">
-                <TabsList className="px-4 w-full justify-start rounded-none border-b">
+                <TabsList className="px-4 w-full justify-center rounded-none border-b">
                     <TabsTrigger value="images">
                         <FontAwesomeIcon icon={faFileImage} className="mr-2" />
                         Images
