@@ -77,7 +77,10 @@ export default function RegisterPage() {
         createdAt: new Date().toISOString(),
         permissions: {
           canUploadMedia: true,
-          canDeleteMedia: true,
+          canDeleteMedia: false,
+          canEditProjects: true,
+          canEditContact: false,
+          canEditHome: false,
         }
       }, {});
 
@@ -167,3 +170,5 @@ export default function RegisterPage() {
     </div>
   );
 }
+
+    

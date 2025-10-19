@@ -43,6 +43,10 @@ function AdminPage() {
 
   const isSuperAdmin = user?.email === 'eljabbaryhicham@example.com';
   
+  const canEditHome = isSuperAdmin || user?.permissions?.canEditHome;
+  const canEditProjects = isSuperAdmin || user?.permissions?.canEditProjects;
+  const canEditContact = isSuperAdmin || user?.permissions?.canEditContact;
+  
   useEffect(() => {
     if (isUserLoading) {
       return; // Wait until user status is resolved
@@ -81,7 +85,7 @@ function AdminPage() {
   };
 
   const handlePortfolioFormSubmit = (values: PortfolioItem, minOrder: number) => {
-    if (!firestore) return;
+    if (!firestore || !canEditProjects) return;
 
     if (values.id) {
       // Existing item
@@ -244,3 +248,5 @@ function AdminPage() {
 }
 
 export default AdminPage;
+
+    

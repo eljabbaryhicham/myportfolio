@@ -1,3 +1,4 @@
+
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -15,7 +16,7 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
-import { useDoc, useFirestore, useMemoFirebase, setDocumentNonBlocking } from '@/firebase';
+import { useDoc, useFirestore, useMemoFirebase, setDocumentNonBlocking, useUser } from '@/firebase';
 import { doc } from 'firebase/firestore';
 import { useEffect } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -54,6 +55,9 @@ const defaultFormValues: ContactInfo = {
 export default function ContactAdmin() {
   const { toast } = useToast();
   const firestore = useFirestore();
+  const { user } = useUser();
+  const isSuperAdmin = user?.email === 'eljabbaryhicham@example.com';
+  const canEditContact = isSuperAdmin || (user?.permissions?.canEditContact ?? true);
 
   const contactDocRef = useMemoFirebase(
     () => (firestore ? doc(firestore, 'contact', 'details') : null),
@@ -84,9 +88,17 @@ export default function ContactAdmin() {
       form.reset(values);
     }
   }, [contactInfo, form]);
+  
+  useEffect(() => {
+    if (!canEditContact) {
+      Object.keys(form.getValues()).forEach(key => {
+        form.control.getFieldState(key as keyof ContactInfo).isDirty = false;
+      });
+    }
+  }, [canEditContact, form]);
 
   const onSubmit = (values: ContactInfo) => {
-    if (!contactDocRef) return;
+    if (!contactDocRef || !canEditContact) return;
     setDocumentNonBlocking(contactDocRef, values, { merge: true });
     toast({
       title: 'Contact Info Updated',
@@ -115,6 +127,7 @@ export default function ContactAdmin() {
               <div className="p-6">
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+                    <fieldset disabled={!canEditContact} className="group">
                     <FormField
                         control={form.control}
                         name="name"
@@ -260,8 +273,9 @@ export default function ContactAdmin() {
                         )}
                     />
                     <div className="flex justify-end pt-4">
-                        <Button type="submit">Save Changes</Button>
+                        <Button type="submit" disabled={!canEditContact}>Save Changes</Button>
                     </div>
+                    </fieldset>
                     </form>
                 </Form>
               </div>
@@ -270,3 +284,5 @@ export default function ContactAdmin() {
     </div>
   );
 }
+
+    

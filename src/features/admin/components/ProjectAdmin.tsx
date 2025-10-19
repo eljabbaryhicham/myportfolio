@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useMemo, useState, useEffect, useRef } from 'react';
@@ -18,7 +19,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { useCollection, useFirestore, useMemoFirebase, errorEmitter, FirestorePermissionError } from '@/firebase';
+import { useCollection, useFirestore, useMemoFirebase, errorEmitter, FirestorePermissionError, useUser } from '@/firebase';
 import { useToast } from '@/hooks/use-toast';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { deleteDocumentNonBlocking } from '@/firebase/non-blocking-updates';
@@ -38,8 +39,12 @@ interface ProjectAdminProps {
 
 function ProjectAdmin({ setSelectedItem, setIsSheetOpen, handleFormSubmit }: ProjectAdminProps) {
   const firestore = useFirestore();
+  const { user } = useUser();
   const { toast } = useToast();
   
+  const isSuperAdmin = user?.email === 'eljabbaryhicham@example.com';
+  const canEditProjects = isSuperAdmin || (user?.permissions?.canEditProjects ?? true);
+
   const projectsCollection = useMemoFirebase(() => firestore ? collection(firestore, 'projects') : null, [firestore]);
   const { data: items, isLoading } = useCollection<PortfolioItem>(projectsCollection);
 
@@ -61,8 +66,8 @@ function ProjectAdmin({ setSelectedItem, setIsSheetOpen, handleFormSubmit }: Pro
   }, [items]);
 
   const handleSeedData = async () => {
-    if (!firestore) {
-        toast({ variant: 'destructive', title: 'Error', description: 'Firestore not available' });
+    if (!firestore || !canEditProjects) {
+        toast({ variant: 'destructive', title: 'Permission Denied', description: 'You do not have permission to seed data.' });
         return;
     }
     const batch = writeBatch(firestore);
@@ -89,17 +94,19 @@ function ProjectAdmin({ setSelectedItem, setIsSheetOpen, handleFormSubmit }: Pro
   }
 
   const handleAddItem = () => {
+    if (!canEditProjects) return;
     setSelectedItem(null);
     setIsSheetOpen(true);
   };
 
   const handleEditItem = (item: PortfolioItem) => {
+    if (!canEditProjects) return;
     setSelectedItem(item);
     setIsSheetOpen(true);
   };
   
   const handleDeleteItem = (id: string) => {
-    if (!firestore) return;
+    if (!firestore || !canEditProjects) return;
     deleteDocumentNonBlocking(doc(firestore, 'projects', id));
     toast({
       title: 'Item Deleted',
@@ -108,7 +115,7 @@ function ProjectAdmin({ setSelectedItem, setIsSheetOpen, handleFormSubmit }: Pro
   };
 
   const handleDragEnd = () => {
-    if (!firestore) return;
+    if (!firestore || !canEditProjects) return;
 
     const draggingId = draggingItem.current;
     const dragOverId = dragOverItem.current;
@@ -165,6 +172,7 @@ function ProjectAdmin({ setSelectedItem, setIsSheetOpen, handleFormSubmit }: Pro
   };
 
   const handleDragEnter = (e: React.DragEvent<HTMLTableRowElement>, id: string) => {
+    if (!canEditProjects) return;
     dragOverItem.current = id;
     const target = e.currentTarget as HTMLTableRowElement;
     const rect = target.getBoundingClientRect();
@@ -192,12 +200,12 @@ function ProjectAdmin({ setSelectedItem, setIsSheetOpen, handleFormSubmit }: Pro
             </div>
             <div className="flex items-center gap-2">
                 {!isLoading && items?.length === 0 && (
-                <Button onClick={handleSeedData} variant="secondary" size="sm">
+                <Button onClick={handleSeedData} variant="secondary" size="sm" disabled={!canEditProjects}>
                     <FontAwesomeIcon icon={faCloudUploadAlt} className="mr-2 h-4 w-4" />
                     Seed Projects
                 </Button>
                 )}
-                <Button onClick={handleAddItem} size="sm">
+                <Button onClick={handleAddItem} size="sm" disabled={!canEditProjects}>
                 <FontAwesomeIcon icon={faPlusCircle} className="mr-2 h-4 w-4" />
                 Add New
                 </Button>
@@ -229,18 +237,19 @@ function ProjectAdmin({ setSelectedItem, setIsSheetOpen, handleFormSubmit }: Pro
                 {!isLoading && sortedItems && sortedItems.map((item) => (
                   <TableRow 
                     key={item.id} 
-                    draggable
+                    draggable={canEditProjects}
                     onDragStart={(e) => {
+                      if (!canEditProjects) return;
                       draggingItem.current = item.id;
                       e.currentTarget.classList.add('dragging');
                     }}
                     onDragEnter={(e) => handleDragEnter(e, item.id)}
                     onDragEnd={handleDragEnd}
                     onDragOver={(e) => e.preventDefault()}
-                    className={cn("border-b-0 transition-all cursor-grab relative")}
+                    className={cn("border-b-0 transition-all relative", canEditProjects && "cursor-grab")}
                   >
                     <TableCell className="text-center">
-                      <FontAwesomeIcon icon={faGripVertical} className="h-5 w-5 text-foreground/50" />
+                      <FontAwesomeIcon icon={faGripVertical} className={cn("h-5 w-5 text-foreground/50", !canEditProjects && "opacity-20")} />
                     </TableCell>
                     <TableCell className="flex justify-center">
                       <Image
@@ -257,17 +266,18 @@ function ProjectAdmin({ setSelectedItem, setIsSheetOpen, handleFormSubmit }: Pro
                     <TableCell className="text-center">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon">
+                          <Button variant="ghost" size="icon" disabled={!canEditProjects}>
                             <FontAwesomeIcon icon={faEllipsisH} />
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent className="glass-effect">
-                          <DropdownMenuItem onClick={() => handleEditItem(item)} className="justify-center">
+                          <DropdownMenuItem onClick={() => handleEditItem(item)} className="justify-center" disabled={!canEditProjects}>
                             Edit
                           </DropdownMenuItem>
                           <DropdownMenuItem
                             onClick={() => handleDeleteItem(item.id)}
                             className="text-destructive justify-center"
+                            disabled={!canEditProjects}
                           >
                             Delete
                           </DropdownMenuItem>
@@ -285,3 +295,5 @@ function ProjectAdmin({ setSelectedItem, setIsSheetOpen, handleFormSubmit }: Pro
 }
 
 export default ProjectAdmin;
+
+    

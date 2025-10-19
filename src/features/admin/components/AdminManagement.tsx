@@ -33,6 +33,9 @@ interface AdminUser {
     permissions: {
       canUploadMedia: boolean;
       canDeleteMedia: boolean;
+      canEditProjects: boolean;
+      canEditContact: boolean;
+      canEditHome: boolean;
     }
 }
 
@@ -64,7 +67,7 @@ export default function AdminManagement() {
     });
   }
 
-  const handlePermissionChange = (userId: string, permission: 'canUploadMedia' | 'canDeleteMedia', value: boolean) => {
+  const handlePermissionChange = (userId: string, permission: keyof AdminUser['permissions'], value: boolean) => {
     if (!firestore || !isSuperAdmin) return;
     const userDocRef = doc(firestore, 'users', userId);
     updateDocumentNonBlocking(userDocRef, {
@@ -130,6 +133,33 @@ export default function AdminManagement() {
                           />
                            <Label htmlFor={`delete-${user.id}`} className='text-sm font-medium leading-none'>Delete Media</Label>
                         </div>
+                        <div className="flex items-center space-x-2">
+                          <Checkbox
+                            id={`edit-projects-${user.id}`}
+                            checked={user.permissions?.canEditProjects ?? true}
+                            onCheckedChange={(checked) => handlePermissionChange(user.id, 'canEditProjects', !!checked)}
+                            disabled={!isSuperAdmin}
+                          />
+                           <Label htmlFor={`edit-projects-${user.id}`} className='text-sm font-medium leading-none'>Edit Projects</Label>
+                        </div>
+                         <div className="flex items-center space-x-2">
+                          <Checkbox
+                            id={`edit-contact-${user.id}`}
+                            checked={user.permissions?.canEditContact ?? true}
+                            onCheckedChange={(checked) => handlePermissionChange(user.id, 'canEditContact', !!checked)}
+                            disabled={!isSuperAdmin}
+                          />
+                           <Label htmlFor={`edit-contact-${user.id}`} className='text-sm font-medium leading-none'>Edit Contact</Label>
+                        </div>
+                         <div className="flex items-center space-x-2">
+                          <Checkbox
+                            id={`edit-home-${user.id}`}
+                            checked={user.permissions?.canEditHome ?? true}
+                            onCheckedChange={(checked) => handlePermissionChange(user.id, 'canEditHome', !!checked)}
+                            disabled={!isSuperAdmin}
+                          />
+                           <Label htmlFor={`edit-home-${user.id}`} className='text-sm font-medium leading-none'>Edit Home</Label>
+                        </div>
                       </div>
                     )}
                   </TableCell>
@@ -156,3 +186,5 @@ export default function AdminManagement() {
     </div>
   );
 }
+
+    

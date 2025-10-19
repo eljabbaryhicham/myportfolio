@@ -1,0 +1,293 @@
+
+{
+  "entities": {
+    "Project": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Project",
+      "type": "object",
+      "description": "Represents a project in the portfolio.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Project entity."
+        },
+        "title": {
+          "type": "string",
+          "description": "The title of the project."
+        },
+        "description": {
+          "type": "string",
+          "description": "A brief description of the project."
+        },
+        "imageUrl": {
+          "type": "string",
+          "description": "URL of the project's image.",
+          "format": "uri"
+        },
+        "videoUrl": {
+          "type": "string",
+          "description": "URL of the project's video (if applicable).",
+          "format": "uri"
+        },
+        "isFeatured": {
+          "type": "boolean",
+          "description": "Indicates whether the project is featured on the homepage."
+        },
+        "order": {
+          "type": "number",
+          "description": "The order in which the project will be displayed."
+        }
+      },
+      "required": [
+        "id",
+        "title",
+        "imageUrl",
+        "order"
+      ]
+    },
+    "ContactInfo": {
+      "title": "Contact Info",
+      "description": "Stores contact information for the portfolio owner.",
+      "type": "object",
+      "properties": {
+        "avatarUrl": {
+          "type": "string",
+          "format": "uri"
+        },
+        "name": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string",
+          "format": "email"
+        },
+        "whatsApp": {
+          "type": "string"
+        },
+        "behanceUrl": {
+          "type": "string",
+          "format": "uri"
+        },
+        "linkedinUrl": {
+          "type": "string",
+          "format": "uri"
+        },
+        "fiverrUrl": {
+          "type": "string",
+          "format": "uri"
+        },
+        "instagramUrl": {
+          "type": "string",
+          "format": "uri"
+        },
+        "facebookUrl": {
+          "type": "string",
+          "format": "uri"
+        },
+        "twitterUrl": {
+          "type": "string",
+          "format": "uri"
+        }
+      },
+      "required": [
+        "avatarUrl",
+        "name",
+        "title",
+        "email"
+      ]
+    },
+    "HomePageSettings": {
+      "title": "Home Page Settings",
+      "description": "Stores settings for the homepage, like the featured project.",
+      "type": "object",
+      "properties": {
+        "featuredProjectId": {
+          "type": "string",
+          "description": "The ID of the project featured on the homepage."
+        }
+      },
+      "required": [
+        "featuredProjectId"
+      ]
+    },
+    "MediaAsset": {
+      "title": "Media Asset",
+      "description": "Stores metadata about an uploaded media file.",
+      "type": "object",
+      "properties": {
+        "public_id": {
+          "type": "string",
+          "description": "The public ID from Cloudinary."
+        },
+        "url": {
+          "type": "string",
+          "format": "uri",
+          "description": "The secure URL of the uploaded file."
+        },
+        "resource_type": {
+          "type": "string",
+          "enum": ["image", "video", "raw"],
+          "description": "The type of the media file."
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "The timestamp when the file was uploaded."
+        }
+      },
+      "required": ["public_id", "url", "resource_type", "created_at"]
+    },
+    "User": {
+      "title": "User",
+      "description": "Represents an administrator user in the system.",
+      "type": "object",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "description": "The unique ID from Firebase Authentication."
+        },
+        "username": {
+          "type": "string",
+          "description": "The user's chosen username."
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "description": "The user's email address."
+        },
+        "role": {
+          "type": "string",
+          "enum": ["admin", "superadmin"],
+          "description": "The role of the user."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "The timestamp when the user was created."
+        },
+        "permissions": {
+          "type": "object",
+          "description": "Granular permissions for the admin user.",
+          "properties": {
+            "canUploadMedia": {
+              "type": "boolean",
+              "description": "Whether the user can upload new media files."
+            },
+            "canDeleteMedia": {
+              "type": "boolean",
+              "description": "Whether the user can delete existing media files."
+            },
+            "canEditProjects": {
+              "type": "boolean",
+              "description": "Whether the user can edit portfolio projects."
+            },
+            "canEditContact": {
+              "type": "boolean",
+              "description": "Whether the user can edit contact page settings."
+            },
+            "canEditHome": {
+              "type": "boolean",
+              "description": "Whether the user can edit home page settings."
+            }
+          }
+        }
+      },
+      "required": ["uid", "username", "email", "role", "createdAt"]
+    }
+  },
+  "auth": {
+    "providers": [
+      "password",
+      "anonymous"
+    ]
+  },
+  "firestore": {
+    "structure": [
+      {
+        "path": "/projects/{projectId}",
+        "definition": {
+          "entityName": "Project",
+          "schema": {
+            "$ref": "#/backend/entities/Project"
+          },
+          "description": "Stores project information.",
+          "params": [
+            {
+              "name": "projectId",
+              "description": "The unique identifier for the project."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/contact/{contactId}",
+        "definition": {
+          "entityName": "ContactInfo",
+          "schema": {
+            "$ref": "#/backend/entities/ContactInfo"
+          },
+          "description": "Stores contact page information.",
+          "params": [
+            {
+              "name": "contactId",
+              "description": "The unique identifier for the contact document."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/homepage/{settingsId}",
+        "definition": {
+          "entityName": "HomePageSettings",
+          "schema": {
+            "$ref": "#/backend/entities/HomePageSettings"
+          },
+          "description": "Stores homepage settings.",
+          "params": [
+            {
+              "name": "settingsId",
+              "description": "The unique identifier for the homepage settings document."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/media/{mediaId}",
+        "definition": {
+            "entityName": "MediaAsset",
+            "schema": {
+                "$ref": "#/backend/entities/MediaAsset"
+            },
+            "description": "Stores metadata for uploaded Cloudinary assets.",
+            "params": [
+                {
+                    "name": "mediaId",
+                    "description": "The unique identifier for the media asset."
+                }
+            ]
+        }
+      },
+      {
+        "path": "/users/{userId}",
+        "definition": {
+            "entityName": "User",
+            "schema": {
+                "$ref": "#/backend/entities/User"
+            },
+            "description": "Stores administrator user data.",
+            "params": [
+                {
+                    "name": "userId",
+                    "description": "The unique identifier for the user, matching their Firebase Auth UID."
+                }
+            ]
+        }
+      }
+    ]
+  }
+}
+
+    

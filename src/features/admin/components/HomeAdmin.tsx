@@ -1,3 +1,4 @@
+
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -20,7 +21,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { useDoc, useFirestore, useMemoFirebase, setDocumentNonBlocking, useCollection } from '@/firebase';
+import { useDoc, useFirestore, useMemoFirebase, setDocumentNonBlocking, useCollection, useUser } from '@/firebase';
 import { collection, doc } from 'firebase/firestore';
 import type { PortfolioItem } from '@/features/portfolio/data/portfolio-data';
 import { useEffect } from 'react';
@@ -40,6 +41,10 @@ type HomeAdminFormValues = z.infer<typeof formSchema>;
 export default function HomeAdmin() {
   const { toast } = useToast();
   const firestore = useFirestore();
+  const { user } = useUser();
+
+  const isSuperAdmin = user?.email === 'eljabbaryhicham@example.com';
+  const canEditHome = isSuperAdmin || (user?.permissions?.canEditHome ?? true);
 
   const settingsDocRef = useMemoFirebase(
     () => (firestore ? doc(firestore, 'homepage', 'settings') : null),
@@ -65,8 +70,14 @@ export default function HomeAdmin() {
     }
   }, [homeSettings, form]);
 
+  useEffect(() => {
+    if (!canEditHome) {
+      form.control.getFieldState('featuredProjectId').isDirty = false;
+    }
+  }, [canEditHome, form]);
+
   const onSubmit = (values: HomeAdminFormValues) => {
-    if (!settingsDocRef) return;
+    if (!settingsDocRef || !canEditHome) return;
     
     setDocumentNonBlocking(settingsDocRef, values, { merge: true });
     
@@ -99,6 +110,7 @@ export default function HomeAdmin() {
                 <div className="p-6">
                     <Form {...form}>
                         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 max-w-lg mx-auto">
+                        <fieldset disabled={!canEditHome} className="group">
                         <FormField
                             control={form.control}
                             name="featuredProjectId"
@@ -124,8 +136,9 @@ export default function HomeAdmin() {
                             )}
                         />
                         <div className="flex justify-end pt-4">
-                            <Button type="submit">Save Changes</Button>
+                            <Button type="submit" disabled={!canEditHome}>Save Changes</Button>
                         </div>
+                        </fieldset>
                         </form>
                     </Form>
                 </div>
@@ -134,3 +147,5 @@ export default function HomeAdmin() {
     </div>
   );
 }
+
+    
