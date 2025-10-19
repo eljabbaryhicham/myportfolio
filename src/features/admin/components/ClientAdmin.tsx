@@ -25,14 +25,15 @@ import { deleteDocumentNonBlocking, setDocumentNonBlocking, addDocumentNonBlocki
 import { collection, doc, query, orderBy, writeBatch } from 'firebase/firestore';
 import { cn } from '@/lib/utils';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPlusCircle, faEllipsisH, faCloudUploadAlt } from '@fortawesome/free-solid-svg-icons';
+import { faPlusCircle, faEllipsisH, faCloudUploadAlt, faImages } from '@fortawesome/free-solid-svg-icons';
 import Preloader from '@/components/preloader';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogClose } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
+import MediaAdmin from './MediaAdmin';
 
 interface Client {
   id: string;
@@ -58,7 +59,7 @@ const formSchema = z.object({
 
 type ClientFormValues = z.infer<typeof formSchema>;
 
-function ClientForm({ client, onSubmit, onCancel }: { client: Partial<Client> | null, onSubmit: (values: ClientFormValues) => void, onCancel: () => void }) {
+function ClientForm({ client, onSubmit, onCancel, onChooseFromLibrary }: { client: Partial<Client> | null, onSubmit: (values: ClientFormValues) => void, onCancel: () => void, onChooseFromLibrary: (onSelect: (url: string, type: 'image' | 'video', filename: string) => void) => void }) {
   const form = useForm<ClientFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -66,6 +67,21 @@ function ClientForm({ client, onSubmit, onCancel }: { client: Partial<Client> | 
       logoUrl: client?.logoUrl || '',
     },
   });
+
+  useEffect(() => {
+    form.reset({
+      name: client?.name || '',
+      logoUrl: client?.logoUrl || '',
+    });
+  }, [client, form]);
+
+  const handleChooseLogo = () => {
+    onChooseFromLibrary((url, type) => {
+        if(type === 'image') {
+            form.setValue('logoUrl', url, { shouldValidate: true });
+        }
+    });
+  };
 
   return (
     <Form {...form}>
@@ -89,9 +105,14 @@ function ClientForm({ client, onSubmit, onCancel }: { client: Partial<Client> | 
           render={({ field }) => (
             <FormItem>
               <FormLabel>Logo URL</FormLabel>
-              <FormControl>
-                <Input placeholder="https://example.com/logo.png" {...field} />
-              </FormControl>
+              <div className="flex items-center gap-2">
+                <FormControl>
+                    <Input placeholder="https://example.com/logo.png" {...field} />
+                </FormControl>
+                <Button type="button" variant="outline" size="icon" onClick={handleChooseLogo}>
+                    <FontAwesomeIcon icon={faImages} />
+                </Button>
+              </div>
               <FormMessage />
             </FormItem>
           )}
@@ -118,6 +139,10 @@ export default function ClientAdmin() {
   
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [selectedClient, setSelectedClient] = useState<Partial<Client> | null>(null);
+  
+  const [isLibraryOpen, setIsLibraryOpen] = useState(false);
+  const [librarySelectionConfig, setLibrarySelectionConfig] = useState<{ onSelect: (url: string, type: 'image' | 'video', filename: string) => void } | null>(null);
+
 
   const handleSeedData = async () => {
     if (!firestore || !canEdit) {
@@ -177,108 +202,137 @@ export default function ClientAdmin() {
     setIsFormOpen(false);
     setSelectedClient(null);
   };
+  
+  const handleOpenLibraryForSelection = (onSelect: (url: string, type: 'image' | 'video', filename: string) => void) => {
+    setLibrarySelectionConfig({ onSelect });
+    setIsLibraryOpen(true);
+  };
+
 
   return (
-    <div className="flex-1 flex flex-col h-full">
-        <div className="flex items-start justify-between mb-6">
-            <div className="text-left">
-                <h2 className="text-xl font-bold">Client Management</h2>
-                <p className="text-muted-foreground">
-                Manage the client logos displayed on the About page.
-                </p>
-            </div>
-            <div className="flex items-center gap-2">
-                {!isLoading && (!clients || clients.length === 0) && (
-                <Button onClick={handleSeedData} variant="secondary" size="sm" disabled={!canEdit}>
-                    <FontAwesomeIcon icon={faCloudUploadAlt} className="mr-2 h-4 w-4" />
-                    Seed Clients
-                </Button>
-                )}
-                <Button onClick={handleAddItem} size="sm" disabled={!canEdit}>
-                <FontAwesomeIcon icon={faPlusCircle} className="mr-2 h-4 w-4" />
-                Add New
-                </Button>
-            </div>
-        </div>
-        <div className="flex-1 border rounded-lg overflow-hidden glass-effect">
-        <ScrollArea className="h-full">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-[80px] text-center">Logo</TableHead>
-                  <TableHead>Name</TableHead>
-                  <TableHead className="text-right w-[50px]">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {isLoading && (
+    <>
+      <div className="flex-1 flex flex-col h-full">
+          <div className="flex items-start justify-between mb-6">
+              <div className="text-left">
+                  <h2 className="text-xl font-bold">Client Management</h2>
+                  <p className="text-muted-foreground">
+                  Manage the client logos displayed on the About page.
+                  </p>
+              </div>
+              <div className="flex items-center gap-2">
+                  {!isLoading && (!clients || clients.length === 0) && (
+                  <Button onClick={handleSeedData} variant="secondary" size="sm" disabled={!canEdit}>
+                      <FontAwesomeIcon icon={faCloudUploadAlt} className="mr-2 h-4 w-4" />
+                      Seed Clients
+                  </Button>
+                  )}
+                  <Button onClick={handleAddItem} size="sm" disabled={!canEdit}>
+                  <FontAwesomeIcon icon={faPlusCircle} className="mr-2 h-4 w-4" />
+                  Add New
+                  </Button>
+              </div>
+          </div>
+          <div className="flex-1 border rounded-lg overflow-hidden glass-effect">
+          <ScrollArea className="h-full">
+              <Table>
+                <TableHeader>
                   <TableRow>
-                    <TableCell colSpan={3} className="h-96">
-                      <div className="flex justify-center items-center h-full">
-                        <Preloader />
-                      </div>
-                    </TableCell>
+                    <TableHead className="w-[80px] text-center">Logo</TableHead>
+                    <TableHead>Name</TableHead>
+                    <TableHead className="text-right w-[50px]">Actions</TableHead>
                   </TableRow>
-                )}
-                {!isLoading && clients && clients.map((client) => (
-                  <TableRow key={client.id} className="border-b-0">
-                    <TableCell className="flex justify-center">
-                      <Image
-                        src={client.logoUrl}
-                        alt={client.name}
-                        width={100}
-                        height={40}
-                        className="object-contain h-10 w-24 invert brightness-0"
-                        style={{ filter: 'grayscale(1) brightness(1.5)'}}
-                      />
-                    </TableCell>
-                    <TableCell className="font-medium max-w-[100px] md:max-w-xs truncate">{client.name}</TableCell>
-                    <TableCell className="text-right">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon" disabled={!canEdit}>
-                            <FontAwesomeIcon icon={faEllipsisH} />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent className="glass-effect">
-                          <DropdownMenuItem onClick={() => handleEditItem(client)} disabled={!canEdit}>
-                            Edit
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            onClick={() => handleDeleteItem(client.id)}
-                            className="text-destructive"
-                            disabled={!canEdit}
-                          >
-                            Delete
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-        </ScrollArea>
+                </TableHeader>
+                <TableBody>
+                  {isLoading && (
+                    <TableRow>
+                      <TableCell colSpan={3} className="h-96">
+                        <div className="flex justify-center items-center h-full">
+                          <Preloader />
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  )}
+                  {!isLoading && clients && clients.map((client) => (
+                    <TableRow key={client.id} className="border-b-0">
+                      <TableCell className="flex justify-center">
+                        <Image
+                          src={client.logoUrl}
+                          alt={client.name}
+                          width={100}
+                          height={40}
+                          className="object-contain h-10 w-24 invert brightness-0"
+                          style={{ filter: 'grayscale(1) brightness(1.5)'}}
+                        />
+                      </TableCell>
+                      <TableCell className="font-medium max-w-[100px] md:max-w-xs truncate">{client.name}</TableCell>
+                      <TableCell className="text-right">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon" disabled={!canEdit}>
+                              <FontAwesomeIcon icon={faEllipsisH} />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent className="glass-effect">
+                            <DropdownMenuItem onClick={() => handleEditItem(client)} disabled={!canEdit}>
+                              Edit
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={() => handleDeleteItem(client.id)}
+                              className="text-destructive"
+                              disabled={!canEdit}
+                            >
+                              Delete
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+          </ScrollArea>
+        </div>
+        <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
+          <DialogContent className="glass-effect">
+            <DialogHeader>
+              <DialogTitle>{selectedClient?.id ? 'Edit Client' : 'Add New Client'}</DialogTitle>
+              <DialogDescription>
+                Enter the details for the client.
+              </DialogDescription>
+            </DialogHeader>
+            <ClientForm 
+              client={selectedClient} 
+              onSubmit={handleFormSubmit}
+              onCancel={() => {
+                  setIsFormOpen(false);
+                  setSelectedClient(null);
+              }}
+              onChooseFromLibrary={handleOpenLibraryForSelection}
+              />
+          </DialogContent>
+        </Dialog>
       </div>
-      <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
-        <DialogContent className="glass-effect">
-          <DialogHeader>
-            <DialogTitle>{selectedClient?.id ? 'Edit Client' : 'Add New Client'}</DialogTitle>
-            <DialogDescription>
-              Enter the details for the client.
-            </DialogDescription>
-          </DialogHeader>
-          <ClientForm 
-            client={selectedClient} 
-            onSubmit={handleFormSubmit}
-            onCancel={() => {
-                setIsFormOpen(false);
-                setSelectedClient(null);
-            }}
-            />
-        </DialogContent>
-      </Dialog>
-    </div>
+      
+      <MediaAdmin
+          isDialog={true}
+          isOpen={isLibraryOpen}
+          onOpenChange={setIsLibraryOpen}
+          onMediaSelect={(url, type, filename) => {
+              if (librarySelectionConfig?.onSelect) {
+                  librarySelectionConfig.onSelect(url, type, filename);
+                  setIsFormOpen(true); // Re-focus the form dialog
+              }
+          }}
+          isSelectionMode={!!librarySelectionConfig}
+          onSelectionComplete={() => {
+              setIsLibraryOpen(false);
+              setLibrarySelectionConfig(null);
+          }}
+          activeTab={'images'}
+          setActiveTab={() => {}} // Only show images for logos
+          newlyUploadedId={null}
+      />
+    </>
   );
 }
 

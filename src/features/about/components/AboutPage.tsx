@@ -1,7 +1,6 @@
 
 'use client';
 
-import { Card, CardContent } from '@/components/ui/card';
 import {
   Carousel,
   CarouselContent,
@@ -72,29 +71,21 @@ export default function AboutPage() {
                 <CarouselContent className={isMobile ? '-mt-4 h-48' : '-ml-4'}>
                   {(clients && clients.length > 0) ? clients.map((client) => (
                     <CarouselItem key={client.id} className={isMobile ? 'pt-4 basis-1/2' : 'basis-1/3'}>
-                      <div className="p-1 h-full">
-                        <Card className="h-full glass-effect">
-                          <CardContent className="flex items-center justify-center p-6 h-full">
-                             <MemoizedImage 
-                               src={client.logoUrl} 
-                               alt={`${client.name} logo`}
-                               width={150}
-                               height={50}
-                               className="object-contain w-full h-full max-h-12 invert brightness-0"
-                               style={{ filter: 'grayscale(1) brightness(1.5)' }}
-                             />
-                          </CardContent>
-                        </Card>
+                      <div className="p-1 h-full flex items-center justify-center">
+                         <MemoizedImage 
+                           src={client.logoUrl} 
+                           alt={`${client.name} logo`}
+                           width={150}
+                           height={50}
+                           className="object-contain w-full h-full max-h-12 invert brightness-0"
+                           style={{ filter: 'grayscale(1) brightness(1.5)' }}
+                         />
                       </div>
                     </CarouselItem>
                   )) : (
                     <CarouselItem>
-                      <div className="p-1 h-full">
-                        <Card className="h-full glass-effect">
-                          <CardContent className="flex items-center justify-center p-6 h-full text-muted-foreground">
-                            No clients to display.
-                          </CardContent>
-                        </Card>
+                      <div className="p-1 h-full flex items-center justify-center text-muted-foreground">
+                        No clients to display.
                       </div>
                     </CarouselItem>
                   )}
