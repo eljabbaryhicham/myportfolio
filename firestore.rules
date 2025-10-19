@@ -1,133 +1,113 @@
 /**
- * @fileoverview Firestore Security Rules for the portfolio application.
- *
- * Core Philosophy:
- * This ruleset enforces a strict user-ownership model for user profiles,
- * and public read access for content like projects, contact info, homepage settings, and media.
- * Only authenticated administrators can modify user profiles, while all other
- * content is publicly readable but only writable by authenticated users.
+ * @file Firestore Security Rules
+ * @description This ruleset enforces a strict authorization model.
  *
  * Data Structure:
- * - /projects/{projectId}: Stores project information. Publicly readable.
- * - /contact/{contactId}: Stores contact information. Publicly readable.
- * - /homepage/{settingsId}: Stores homepage settings. Publicly readable.
- * - /media/{mediaId}: Stores media asset metadata. Publicly readable.
- * - /users/{userId}: Stores user profile data, where userId matches the Firebase Auth UID.
+ * - /projects/{projectId}: Stores project information; publicly readable, but only writeable by authenticated users.
+ * - /contact/{contactId}: Stores contact page information; publicly readable, writeable by no one.
+ * - /homepage/{settingsId}: Stores homepage settings; publicly readable, writeable by no one.
+ * - /media/{mediaId}: Stores media asset metadata; publicly readable, writeable by authenticated users with 'admin' role.
+ * - /users/{userId}: Stores administrator user data; only accessible by the user themselves.
  *
  * Key Security Decisions:
- * - Public read access to projects, contact info, homepage settings, and media.
- * - User profiles are only accessible and modifiable by authenticated admins.
- * - No listing of users is allowed.
- * - Flexible data shapes are allowed during this prototyping phase.
+ * - Listing of all users is disallowed for security.
+ * - Public read access is granted to projects, contact information, homepage settings, and media assets.
+ * - Write access is strictly controlled based on authentication and, in some cases, user roles.
  */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-
-    /**
-     * @description Grants public read access to project data and restricts write access.
-     * @path /projects/{projectId}
-     * @allow get, list: if true;
-     * @allow create: if isSignedIn();
-     * @allow update: if isSignedIn();
-     * @allow delete: if isSignedIn();
-     * @deny create: if !isSignedIn();
-     * @deny update: if !isSignedIn();
-     * @deny delete: if !isSignedIn();
-     * @principle Allows public reads, restricts writes to authenticated users.
-     */
-    match /projects/{projectId} {
-      allow get, list: if true;
-      allow create: if isSignedIn();
-      allow update: if isSignedIn();
-      allow delete: if isSignedIn();
-    }
-
-    /**
-     * @description Grants public read access to contact information and restricts write access.
-     * @path /contact/{contactId}
-     * @allow get, list: if true;
-     * @allow create: if isSignedIn();
-     * @allow update: if isSignedIn();
-     * @allow delete: if isSignedIn();
-     * @deny create: if !isSignedIn();
-     * @deny update: if !isSignedIn();
-     * @deny delete: if !isSignedIn();
-     * @principle Allows public reads, restricts writes to authenticated users.
-     */
-    match /contact/{contactId} {
-      allow get, list: if true;
-      allow create: if isSignedIn();
-      allow update: if isSignedIn();
-      allow delete: if isSignedIn();
-    }
-
-    /**
-     * @description Grants public read access to homepage settings and restricts write access.
-     * @path /homepage/{settingsId}
-     * @allow get, list: if true;
-     * @allow create: if isSignedIn();
-     * @allow update: if isSignedIn();
-     * @allow delete: if isSignedIn();
-     * @deny create: if !isSignedIn();
-     * @deny update: if !isSignedIn();
-     * @deny delete: if !isSignedIn();
-     * @principle Allows public reads, restricts writes to authenticated users.
-     */
-    match /homepage/{settingsId} {
-      allow get, list: if true;
-      allow create: if isSignedIn();
-      allow update: if isSignedIn();
-      allow delete: if isSignedIn();
-    }
-
-    /**
-     * @description Grants public read access to media assets and restricts write access.
-     * @path /media/{mediaId}
-     * @allow get, list: if true;
-     * @allow create: if isSignedIn();
-     * @allow update: if isSignedIn();
-     * @allow delete: if isSignedIn();
-     * @deny create: if !isSignedIn();
-     * @deny update: if !isSignedIn();
-     * @deny delete: if !isSignedIn();
-     * @principle Allows public reads, restricts writes to authenticated users.
-     */
-    match /media/{mediaId} {
-      allow get, list: if true;
-      allow create: if isSignedIn();
-      allow update: if isSignedIn();
-      allow delete: if isSignedIn();
-    }
-
-    /**
-     * @description Restricts access to user documents to the owner only.
-     * @path /users/{userId}
-     * @allow get: if isOwner(userId);
-     * @allow list: if false;
-     * @allow create: if isOwner(userId);
-     * @allow update: if isOwner(userId);
-     * @allow delete: if isOwner(userId);
-     * @deny get: if !isOwner(userId);
-     * @deny create: if !isOwner(userId);
-     * @deny update: if !isOwner(userId);
-     * @deny delete: if !isOwner(userId);
-     * @principle Enforces document ownership for all operations.
-     */
-    match /users/{userId} {
-      allow get: if isOwner(userId);
-      allow list: if false;
-      allow create: if isOwner(userId);
-      allow update: if isOwner(userId);
-      allow delete: if isOwner(userId);
-    }
 
     function isSignedIn() {
       return request.auth != null;
     }
 
     function isOwner(userId) {
-        return request.auth.uid == userId;
+      return request.auth.uid == userId;
+    }
+    
+    function isAdmin() {
+      return isSignedIn() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    function isExistingOwner(userId) {
+      return isOwner(userId) && resource != null;
+    }
+
+    /**
+     * @description Controls access to project documents. Projects are publicly readable.
+     * @path /projects/{projectId}
+     * @allow (get, list): Any user can read project data.
+     * @allow (create): Authenticated users can create projects. Must set the project ID.
+     * @allow (update, delete): Only the user who created the project can update or delete it.
+     * @deny create: if false
+     * @deny update: if false
+     * @deny delete: if false
+     * @principle Public read, owner-only writes.
+     */
+    match /projects/{projectId} {
+      allow get, list: if true;
+      allow create: if isSignedIn();
+      allow update, delete: if false; // Not implemented - no ownership field.
+    }
+
+    /**
+     * @description Controls access to contact information documents. Contact information is publicly readable.
+     * @path /contact/{contactId}
+     * @allow (get, list): Any user can read contact data.
+     * @deny create, update, delete: No one can create, update, or delete contact information.
+     * @principle Public read, no writes.
+     */
+    match /contact/{contactId} {
+      allow get, list: if true;
+      allow create, update, delete: if false;
+    }
+
+    /**
+     * @description Controls access to homepage settings documents. Homepage settings are publicly readable.
+     * @path /homepage/{settingsId}
+     * @allow (get, list): Any user can read homepage settings.
+     * @deny create, update, delete: No one can create, update, or delete homepage settings.
+     * @principle Public read, no writes.
+     */
+    match /homepage/{settingsId} {
+      allow get, list: if true;
+      allow create, update, delete: if false;
+    }
+
+    /**
+     * @description Controls access to media asset documents. Media assets are publicly readable.
+     * @path /media/{mediaId}
+     * @allow (get, list): Any user can read media asset data.
+     * @allow (create): Only authenticated admins can create media assets.
+     * @allow (update, delete): Only authenticated admins can update or delete media assets.
+     * @deny create: if !isAdmin();
+     * @deny update: if !isAdmin();
+     * @deny delete: if !isAdmin();
+     * @principle Public read, admin-only writes.
+     */
+    match /media/{mediaId} {
+      allow get, list: if true;
+      allow create: if isAdmin();
+      allow update, delete: if isAdmin() && resource != null;
+    }
+
+    /**
+     * @description Controls access to user documents. Each user can only access their own document.
+     * @path /users/{userId}
+     * @allow get: if isOwner(userId);
+     * @allow create: if isOwner(userId);
+     * @allow update: if isExistingOwner(userId);
+     * @allow delete: if isExistingOwner(userId);
+     * @deny list: Listing all users is not allowed.
+     * @principle Owner-only access.
+     */
+    match /users/{userId} {
+      allow get: if isOwner(userId);
+      allow create: if isOwner(userId);
+      allow update: if isExistingOwner(userId);
+      allow delete: if isExistingOwner(userId);
+      allow list: if false;
     }
   }
 }
