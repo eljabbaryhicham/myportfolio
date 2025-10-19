@@ -14,81 +14,98 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { useAuth } from '@/firebase';
+import { useAuth, useUser } from '@/firebase';
 import {
-  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
 } from 'firebase/auth';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import Link from 'next/link';
 
-
 const formSchema = z.object({
-  email: z.string().email({ message: 'Please enter a valid email.' }),
+  username: z.string().min(3, { message: 'Username must be at least 3 characters.' }),
   password: z.string().min(6, {
     message: 'Password must be at least 6 characters.',
   }),
+  secretCode: z.string().refine(data => data === 'BELOFTED', {
+    message: 'Invalid secret code.',
+  }),
 });
 
-type LoginFormValues = z.infer<typeof formSchema>;
+type RegisterFormValues = z.infer<typeof formSchema>;
 
-export default function LoginPage() {
+export default function RegisterPage() {
   const auth = useAuth();
+  const { user, isUserLoading } = useUser();
   const { toast } = useToast();
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const form = useForm<LoginFormValues>({
+  useEffect(() => {
+    if (!isUserLoading && user) {
+      router.push('/admin');
+    }
+  }, [isUserLoading, user, router]);
+
+  const form = useForm<RegisterFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      email: '',
+      username: '',
       password: '',
+      secretCode: '',
     },
   });
 
-  const handleSignIn = async (values: LoginFormValues) => {
+  const handleSignUp = async (values: RegisterFormValues) => {
     if (!auth) return;
     setIsSubmitting(true);
+    // Firebase requires an email, so we'll construct one from the username.
+    const email = `${values.username.toLowerCase()}@example.com`;
     try {
-      await signInWithEmailAndPassword(auth, values.email, values.password);
+      await createUserWithEmailAndPassword(auth, email, values.password);
       toast({
-        title: 'Signed In',
-        description: 'You have successfully signed in.',
+        title: 'Account Created',
+        description: 'You have successfully signed up.',
       });
       router.push('/admin');
     } catch (error: any) {
       toast({
         variant: 'destructive',
         title: 'Uh oh! Something went wrong.',
-        description: error.message || 'Could not sign in.',
+        description: error.code === 'auth/email-already-in-use' ? 'This username is already taken.' : error.message,
       });
     } finally {
         setIsSubmitting(false);
     }
   };
 
+  if (isUserLoading || user) {
+    // You can show a loader here
+    return null;
+  }
+
   return (
     <div className="flex h-full w-full items-center justify-center p-4">
       <Card className="w-full md:w-1/2 glass-effect">
         <CardHeader>
-            <CardTitle className="text-2xl">Admin Access</CardTitle>
+            <CardTitle className="text-2xl">Create Admin Account</CardTitle>
             <CardDescription>
-                Sign in to manage the portfolio.
+                Enter your details and the secret code to register.
             </CardDescription>
         </CardHeader>
         <CardContent>
             <Form {...form}>
-                <form onSubmit={form.handleSubmit(handleSignIn)} className="space-y-6 pt-4">
+                <form onSubmit={form.handleSubmit(handleSignUp)} className="space-y-6 pt-4">
                 <FormField
                     control={form.control}
-                    name="email"
+                    name="username"
                     render={({ field }) => (
                     <FormItem>
-                        <FormLabel>Email</FormLabel>
+                        <FormLabel>Username</FormLabel>
                         <FormControl>
-                        <Input placeholder="manager@example.com" {...field} />
+                        <Input placeholder="newadmin" {...field} />
                         </FormControl>
                         <FormMessage />
                     </FormItem>
@@ -107,14 +124,27 @@ export default function LoginPage() {
                     </FormItem>
                     )}
                 />
+                <FormField
+                    control={form.control}
+                    name="secretCode"
+                    render={({ field }) => (
+                    <FormItem>
+                        <FormLabel>Secret Code</FormLabel>
+                        <FormControl>
+                        <Input type="password" placeholder="Secret Code" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                    </FormItem>
+                    )}
+                />
                 <Button type="submit" className="w-full" disabled={isSubmitting}>
-                    {isSubmitting ? 'Signing In...' : 'Sign In'}
+                    {isSubmitting ? 'Registering...' : 'Register'}
                 </Button>
                 </form>
             </Form>
             <div className="mt-4 text-center text-sm">
-              <Link href="/register" className="underline text-muted-foreground hover:text-foreground">
-                Create an account
+              <Link href="/login" className="underline text-muted-foreground hover:text-foreground">
+                Already have an account? Sign In
               </Link>
             </div>
         </CardContent>
