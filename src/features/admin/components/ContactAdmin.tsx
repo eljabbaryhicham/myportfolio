@@ -1,4 +1,3 @@
-
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -105,15 +104,15 @@ export default function ContactAdmin() {
 
   return (
     <div className="flex-1 flex flex-col h-full">
+      <div className="mb-6">
+          <h2 className="text-xl font-bold">Contact Page Settings</h2>
+          <p className="text-muted-foreground">
+              Update the information displayed on your public contact page.
+          </p>
+      </div>
       <div className="flex-1 border rounded-lg overflow-hidden glass-effect">
           <ScrollArea className="h-full">
               <div className="p-6">
-                <div className="mb-6">
-                    <h2 className="text-xl font-bold">Contact Page Settings</h2>
-                    <p className="text-muted-foreground">
-                        Update the information displayed on your public contact page.
-                    </p>
-                </div>
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
                     <FormField

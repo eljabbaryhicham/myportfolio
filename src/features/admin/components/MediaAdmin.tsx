@@ -1,14 +1,4 @@
-
 'use client';
-
-// IMPORTANT: To use this component, you need a Cloudinary account.
-// 1. Your Cloudinary credentials have been added to the `.env` file.
-// 2. Go to your Cloudinary Settings > Upload page.
-// 3. Find or create an "Upload Preset". Make sure its "Signing Mode" is set to "Unsigned".
-// 4. Copy the name of that preset.
-// 5. Paste the name into the `NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET` value in your `.env` file.
-// 6. For deployment, add these variables to your hosting provider's (e.g., Vercel) environment settings.
-
 
 import React, { useCallback, useState, useEffect, useMemo } from 'react';
 import { useDropzone } from 'react-dropzone';
@@ -462,9 +452,8 @@ export default function MediaAdmin(props: MediaAdminProps) {
   return (
     <>
       <div className="flex-1 flex flex-col h-full gap-6">
-        <div className="border rounded-lg p-6 glass-effect">
-          <div className='flex justify-between items-start'>
-            <div className='text-center flex-1'>
+        <div className="flex items-start justify-between">
+            <div className="text-left">
                 <h2 className="text-xl font-bold">Media Library (Cloudinary)</h2>
                 <p className="text-muted-foreground mt-1 text-sm">Upload and manage your images and videos.</p>
             </div>
@@ -472,9 +461,9 @@ export default function MediaAdmin(props: MediaAdminProps) {
                 <FontAwesomeIcon icon={faFolderOpen} className="mr-2" />
                 Browse Full Library
             </Button>
-          </div>
-          
-          <div {...getRootProps()} className={cn('mt-4 border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors', isDragActive ? 'border-primary bg-primary/10' : 'border-border hover:border-primary/50', isUploading && 'cursor-not-allowed opacity-50')}>
+        </div>
+        <div className="border rounded-lg p-6 glass-effect">
+          <div {...getRootProps()} className={cn('border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors', isDragActive ? 'border-primary bg-primary/10' : 'border-border hover:border-primary/50', isUploading && 'cursor-not-allowed opacity-50')}>
               <input {...getInputProps()} disabled={isUploading} />
               <div className="flex flex-col items-center gap-2 text-muted-foreground">
                   <FontAwesomeIcon icon={faCloudUploadAlt} className="h-8 w-8" />
@@ -495,5 +484,3 @@ export default function MediaAdmin(props: MediaAdminProps) {
     </>
   );
 }
-
-    

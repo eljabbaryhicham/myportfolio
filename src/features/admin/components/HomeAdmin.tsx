@@ -68,7 +68,6 @@ export default function HomeAdmin() {
   const onSubmit = (values: HomeAdminFormValues) => {
     if (!settingsDocRef) return;
     
-    // This will now use the non-blocking update which emits a contextual error on failure.
     setDocumentNonBlocking(settingsDocRef, values, { merge: true });
     
     toast({
@@ -89,15 +88,15 @@ export default function HomeAdmin() {
 
   return (
     <div className="flex-1 flex flex-col h-full">
+        <div className="mb-6">
+            <h2 className="text-xl font-bold">Home Page Settings</h2>
+            <p className="text-muted-foreground">
+                Choose the video to feature on your homepage.
+            </p>
+        </div>
         <div className="flex-1 border rounded-lg overflow-hidden glass-effect">
             <ScrollArea className="h-full">
                 <div className="p-6">
-                    <div className="mb-6">
-                        <h2 className="text-xl font-bold">Home Page Settings</h2>
-                        <p className="text-muted-foreground">
-                            Choose the video to feature on your homepage.
-                        </p>
-                    </div>
                     <Form {...form}>
                         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 max-w-lg mx-auto">
                         <FormField
