@@ -149,11 +149,11 @@
   }
 
   .marquee {
-    animation: marquee 40s linear infinite;
+    animation: marquee 20s linear infinite;
   }
 
   .marquee-vertical {
-    animation: marquee-vertical 40s linear infinite;
+    animation: marquee-vertical 20s linear infinite;
   }
 }
 
