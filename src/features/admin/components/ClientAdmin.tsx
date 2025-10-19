@@ -34,6 +34,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import MediaAdmin from './MediaAdmin';
+import { Separator } from '@/components/ui/separator';
 
 interface Client {
   id: string;
@@ -59,7 +60,7 @@ const formSchema = z.object({
 
 type ClientFormValues = z.infer<typeof formSchema>;
 
-function ClientForm({ client, onSubmit, onCancel, onChooseFromLibrary }: { client: Partial<Client> | null, onSubmit: (values: ClientFormValues) => void, onCancel: () => void, onChooseFromLibrary: (onSelect: (url: string, type: 'image' | 'video', filename: string) => void) => void }) {
+function ClientForm({ client, onSubmit, onCancel, onChooseFromLibrary, canEdit }: { client: Partial<Client> | null, onSubmit: (values: ClientFormValues) => void, onCancel: () => void, onChooseFromLibrary: (onSelect: (url: string, type: 'image' | 'video', filename: string) => void) => void, canEdit: boolean }) {
   const form = useForm<ClientFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -75,7 +76,16 @@ function ClientForm({ client, onSubmit, onCancel, onChooseFromLibrary }: { clien
     });
   }, [client, form]);
 
+  useEffect(() => {
+    if (!canEdit) {
+      Object.keys(form.getValues()).forEach(key => {
+        form.control.getFieldState(key as keyof ClientFormValues).isDirty = false;
+      });
+    }
+  }, [canEdit, form]);
+
   const handleChooseLogo = () => {
+    if (!canEdit) return;
     onChooseFromLibrary((url, type) => {
         if(type === 'image') {
             form.setValue('logoUrl', url, { shouldValidate: true });
@@ -86,41 +96,43 @@ function ClientForm({ client, onSubmit, onCancel, onChooseFromLibrary }: { clien
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-        <FormField
-          control={form.control}
-          name="name"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Client Name</FormLabel>
-              <FormControl>
-                <Input placeholder="Client Name" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="logoUrl"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Logo URL</FormLabel>
-              <div className="flex items-center gap-2">
+        <fieldset disabled={!canEdit} className="group space-y-8">
+            <FormField
+            control={form.control}
+            name="name"
+            render={({ field }) => (
+                <FormItem>
+                <FormLabel>Client Name</FormLabel>
                 <FormControl>
-                    <Input placeholder="https://example.com/logo.png" {...field} />
+                    <Input placeholder="Client Name" {...field} />
                 </FormControl>
-                <Button type="button" variant="outline" size="icon" onClick={handleChooseLogo}>
-                    <FontAwesomeIcon icon={faImages} />
-                </Button>
-              </div>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <div className="flex justify-end space-x-4">
-            <Button type="button" variant="outline" onClick={onCancel}>Cancel</Button>
-            <Button type="submit">Save</Button>
-        </div>
+                <FormMessage />
+                </FormItem>
+            )}
+            />
+            <FormField
+            control={form.control}
+            name="logoUrl"
+            render={({ field }) => (
+                <FormItem>
+                <FormLabel>Logo URL</FormLabel>
+                <div className="flex items-center gap-2">
+                    <FormControl>
+                        <Input placeholder="https://example.com/logo.png" {...field} />
+                    </FormControl>
+                    <Button type="button" variant="outline" size="icon" onClick={handleChooseLogo}>
+                        <FontAwesomeIcon icon={faImages} />
+                    </Button>
+                </div>
+                <FormMessage />
+                </FormItem>
+            )}
+            />
+            <div className="flex justify-end space-x-4">
+                <Button type="button" variant="outline" onClick={onCancel}>Cancel</Button>
+                <Button type="submit">Save</Button>
+            </div>
+        </fieldset>
       </form>
     </Form>
   );
@@ -132,7 +144,7 @@ export default function ClientAdmin() {
   const { toast } = useToast();
 
   const isSuperAdmin = user?.email === 'eljabbaryhicham@example.com';
-  const canEdit = isSuperAdmin || (user?.permissions?.canEditProjects ?? true); // Using canEditProjects for now
+  const canEdit = isSuperAdmin || (user?.permissions?.canEditAbout ?? true); 
 
   const clientsQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'clients'), orderBy('order')) : null, [firestore]);
   const { data: clients, isLoading } = useCollection<Client>(clientsQuery);
@@ -204,6 +216,7 @@ export default function ClientAdmin() {
   };
   
   const handleOpenLibraryForSelection = (onSelect: (url: string, type: 'image' | 'video', filename: string) => void) => {
+    if (!canEdit) return;
     setLibrarySelectionConfig({ onSelect });
     setIsLibraryOpen(true);
   };
@@ -211,13 +224,10 @@ export default function ClientAdmin() {
 
   return (
     <>
-      <div className="flex-1 flex flex-col h-full">
+      <div className="flex-1 flex flex-col h-full min-h-0">
           <div className="flex items-start justify-between mb-6">
               <div className="text-left">
-                  <h2 className="text-xl font-bold">Client Management</h2>
-                  <p className="text-muted-foreground">
-                  Manage the client logos displayed on the About page.
-                  </p>
+                  {/* Title and description are now in the parent component */}
               </div>
               <div className="flex items-center gap-2">
                   {!isLoading && (!clients || clients.length === 0) && (
@@ -232,72 +242,110 @@ export default function ClientAdmin() {
                   </Button>
               </div>
           </div>
-          <div className="flex-1 border rounded-lg overflow-hidden glass-effect">
-          <ScrollArea className="h-full">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-[80px] text-center">Logo</TableHead>
-                    <TableHead>Name</TableHead>
-                    <TableHead className="text-right w-[50px]">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {isLoading && (
-                    <TableRow>
-                      <TableCell colSpan={3} className="h-96">
-                        <div className="flex justify-center items-center h-full">
-                          <Preloader />
+          <div className="flex-1 rounded-lg overflow-hidden glass-effect min-h-0">
+            <ScrollArea className="h-full">
+                {isLoading ? (
+                    <div className="flex justify-center items-center h-96">
+                        <Preloader />
+                    </div>
+                ) : (
+                <>
+                    {/* Mobile View */}
+                    <div className="md:hidden p-4 space-y-4">
+                        {clients?.map(client => (
+                            <div key={client.id} className="p-4 rounded-lg bg-black/10 border border-white/10 flex items-center justify-between">
+                                <div className="flex items-center gap-4">
+                                    <Image
+                                        src={client.logoUrl}
+                                        alt={client.name}
+                                        width={80}
+                                        height={32}
+                                        className="object-contain h-8 w-20 invert brightness-0"
+                                        style={{ filter: 'grayscale(1) brightness(1.5)'}}
+                                    />
+                                    <p className="font-medium truncate">{client.name}</p>
+                                </div>
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                        <Button variant="ghost" size="icon" disabled={!canEdit}>
+                                            <FontAwesomeIcon icon={faEllipsisH} />
+                                        </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent className="glass-effect">
+                                        <DropdownMenuItem onClick={() => handleEditItem(client)}>Edit</DropdownMenuItem>
+                                        <DropdownMenuItem onClick={() => handleDeleteItem(client.id)} className="text-destructive">Delete</DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
+                            </div>
+                        ))}
+                    </div>
+
+                    {/* Desktop View */}
+                    <div className="hidden md:block">
+                        <Table>
+                            <TableHeader>
+                            <TableRow>
+                                <TableHead className="w-[100px] text-center">Logo</TableHead>
+                                <TableHead>Name</TableHead>
+                                <TableHead className="text-right w-[50px]">Actions</TableHead>
+                            </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                            {clients && clients.map((client) => (
+                                <TableRow key={client.id} className="border-b-0">
+                                <TableCell className="flex justify-center">
+                                    <Image
+                                    src={client.logoUrl}
+                                    alt={client.name}
+                                    width={100}
+                                    height={40}
+                                    className="object-contain h-10 w-24 invert brightness-0"
+                                    style={{ filter: 'grayscale(1) brightness(1.5)'}}
+                                    />
+                                </TableCell>
+                                <TableCell className="font-medium max-w-[100px] md:max-w-xs truncate">{client.name}</TableCell>
+                                <TableCell className="text-right">
+                                    <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                        <Button variant="ghost" size="icon" disabled={!canEdit}>
+                                        <FontAwesomeIcon icon={faEllipsisH} />
+                                        </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent className="glass-effect">
+                                        <DropdownMenuItem onClick={() => handleEditItem(client)}>
+                                        Edit
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem
+                                        onClick={() => handleDeleteItem(client.id)}
+                                        className="text-destructive"
+                                        >
+                                        Delete
+                                        </DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                    </DropdownMenu>
+                                </TableCell>
+                                </TableRow>
+                            ))}
+                            </TableBody>
+                        </Table>
+                    </div>
+
+                    {!isLoading && (!clients || clients.length === 0) && (
+                        <div className="flex items-center justify-center h-48 text-muted-foreground">
+                            <p>No clients to display.</p>
                         </div>
-                      </TableCell>
-                    </TableRow>
-                  )}
-                  {!isLoading && clients && clients.map((client) => (
-                    <TableRow key={client.id} className="border-b-0">
-                      <TableCell className="flex justify-center">
-                        <Image
-                          src={client.logoUrl}
-                          alt={client.name}
-                          width={100}
-                          height={40}
-                          className="object-contain h-10 w-24 invert brightness-0"
-                          style={{ filter: 'grayscale(1) brightness(1.5)'}}
-                        />
-                      </TableCell>
-                      <TableCell className="font-medium max-w-[100px] md:max-w-xs truncate">{client.name}</TableCell>
-                      <TableCell className="text-right">
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon" disabled={!canEdit}>
-                              <FontAwesomeIcon icon={faEllipsisH} />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent className="glass-effect">
-                            <DropdownMenuItem onClick={() => handleEditItem(client)} disabled={!canEdit}>
-                              Edit
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                              onClick={() => handleDeleteItem(client.id)}
-                              className="text-destructive"
-                              disabled={!canEdit}
-                            >
-                              Delete
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-          </ScrollArea>
-        </div>
+                    )}
+                </>
+                )}
+            </ScrollArea>
+          </div>
         <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
           <DialogContent className="glass-effect">
             <DialogHeader>
               <DialogTitle>{selectedClient?.id ? 'Edit Client' : 'Add New Client'}</DialogTitle>
               <DialogDescription>
                 Enter the details for the client.
+                {!canEdit && <span className="text-destructive font-bold block mt-2"> (Read-only)</span>}
               </DialogDescription>
             </DialogHeader>
             <ClientForm 
@@ -308,6 +356,7 @@ export default function ClientAdmin() {
                   setSelectedClient(null);
               }}
               onChooseFromLibrary={handleOpenLibraryForSelection}
+              canEdit={canEdit}
               />
           </DialogContent>
         </Dialog>
