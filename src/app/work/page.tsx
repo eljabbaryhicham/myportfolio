@@ -226,6 +226,9 @@ export default function WorkPage() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
+  const isSuperAdmin = user?.email === 'eljabbaryhicham@example.com';
+  const canEditProjects = isSuperAdmin || (user?.permissions?.canEditProjects ?? true);
+
   const projectsQuery = useMemoFirebase(
     () =>
       firestore
@@ -377,7 +380,7 @@ export default function WorkPage() {
   };
 
   const handlePortfolioFormSubmit = (values: PortfolioItem) => {
-    if (!firestore) return;
+    if (!firestore || !canEditProjects) return;
 
     if (values.id) {
       const dataToSave = { ...values, order: values.order ?? 0 };
@@ -731,6 +734,7 @@ export default function WorkPage() {
             item={selectedItemForEdit}
             onSubmit={handlePortfolioFormSubmit}
             onChooseFromLibrary={handleOpenLibraryForSelection}
+            canEdit={canEditProjects}
           />
           <MediaAdmin 
             isDialog={true}
@@ -755,5 +759,7 @@ export default function WorkPage() {
     </>
   );
 }
+
+    
 
     
