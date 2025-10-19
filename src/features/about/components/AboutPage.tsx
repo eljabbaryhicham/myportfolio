@@ -57,8 +57,11 @@ export default function AboutPage() {
           {isLoading ? (
             <Preloader />
           ) : (
-            <div className="w-full max-w-sm md:max-w-2xl mx-auto">
-              <h2 className="text-2xl font-bold tracking-tight text-center mb-8">Our Clients</h2>
+            <div className="w-full max-w-sm md:max-w-4xl mx-auto">
+              <div className="text-center">
+                <h2 className="text-2xl font-bold tracking-tight mb-2">Our Clients</h2>
+                <Separator className="bg-white/10 max-w-xs mx-auto mb-8" />
+              </div>
               <Carousel
                 plugins={[plugin.current]}
                 opts={{
