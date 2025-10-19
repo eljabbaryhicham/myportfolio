@@ -1,109 +1,150 @@
 /**
- * @description This ruleset enforces a role-based access control model for the portfolio application.
- * Only authenticated users with the 'admin' or 'superadmin' role can create, update, or delete data.
- * Read access is generally public, with restrictions for user-specific data.
- * @dataStructure
- * - /projects/{projectId}: Stores project information. Publicly readable.
- * - /contact/{contactId}: Stores contact page information. Publicly readable.
- * - /homepage/{settingsId}: Stores homepage settings. Publicly readable.
- * - /media/{mediaId}: Stores media asset metadata. Only admins can create/update/delete.
- * - /users/{userId}: Stores administrator user data, only accessible by the user themselves.
- * @keySecurityDecisions
- * - Public read access for project, contact, and homepage data to allow for easy display on the website.
- * - Strict role-based access control for creating, updating, and deleting media assets and user data.
- * - User documents are only accessible by the user and secured via the `isOwner()` function.
- * - No user listing is allowed.
+ * @file Firestore Security Rules
+ * @description This ruleset enforces a role-based access control model with special considerations for media uploads.
+ *
+ * Data Structure:
+ * - /projects/{projectId}: Publicly readable project data.
+ * - /contact/{contactId}: Publicly readable contact information.
+ * - /homepage/{settingsId}: Publicly readable homepage settings.
+ * - /media/{mediaId}:  Metadata about uploaded media assets; write access is restricted to admins.
+ * - /users/{userId}:  User profiles, accessible only by the user themselves.
+ *
+ * Key Security Decisions:
+ * - Public read access to projects, contact info and homepage settings.
+ * - Strict owner-only access to user profiles.
+ * - Media uploads and deletions are restricted to authenticated admins with specific permissions.
+ *
+ * Denormalization for Authorization:
+ * - The 'User' entity includes a 'role' field and 'permissions' object that determines authorization for media uploads and deletions.
+ *
+ * Structural Segregation:
+ * - Public and private data is separated into different collections. Public data (projects, contact info, homepage settings) resides in top-level collections.
  */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
+    /**
+     * @description Allows read access to projects and restricts write access to authenticated admins.
+     * @path /projects/{projectId}
+     * @allow get, list: if true;
+     * @allow create: if false;
+     * @allow update: if false;
+     * @allow delete: if false;
+     * @principle Public read, admin-only write.
+     */
+    match /projects/{projectId} {
+      allow get: if true;
+      allow list: if true;
+      allow create: if false;
+      allow update: if false;
+      allow delete: if false;
+    }
+
+    /**
+     * @description Allows read access to contact information and restricts write access to authenticated admins.
+     * @path /contact/{contactId}
+     * @allow get, list: if true;
+     * @allow create: if false;
+     * @allow update: if false;
+     * @allow delete: if false;
+     * @principle Public read, admin-only write.
+     */
+    match /contact/{contactId} {
+      allow get: if true;
+      allow list: if true;
+      allow create: if false;
+      allow update: if false;
+      allow delete: if false;
+    }
+
+    /**
+     * @description Allows read access to homepage settings and restricts write access to authenticated admins.
+     * @path /homepage/{settingsId}
+     * @allow get, list: if true;
+     * @allow create: if false;
+     * @allow update: if false;
+     * @allow delete: if false;
+     * @principle Public read, admin-only write.
+     */
+    match /homepage/{settingsId} {
+      allow get: if true;
+      allow list: if true;
+      allow create: if false;
+      allow update: if false;
+      allow delete: if false;
+    }
+
+    /**
+     * @description Restricts write access to media assets to authenticated admins with 'canUploadMedia' permission.
+     * @path /media/{mediaId}
+     * @allow get, list: if isAdminWithMediaPermissions();
+     * @allow create: if isAdminWithMediaPermissions();
+     * @allow update: if false;
+     * @allow delete: if isAdminWithMediaPermissions() && resource != null;
+     * @principle Role-based access control for media management.
+     */
+    match /media/{mediaId} {
+      allow get: if isAdminWithMediaPermissions();
+      allow list: if isAdminWithMediaPermissions();
+      allow create: if isAdminWithMediaPermissions();
+      allow update: if false;
+      allow delete: if isAdminWithMediaPermissions() && resource != null;
+    }
+
+    /**
+     * @description Restricts access to user profiles to the owning user.
+     * @path /users/{userId}
+     * @allow get, list: if isOwner(userId);
+     * @allow create: if isOwner(userId);
+     * @allow update: if isExistingOwner(userId);
+     * @allow delete: if isExistingOwner(userId);
+     * @principle Owner-only access to user data.
+     */
+    match /users/{userId} {
+        allow get: if isOwner(userId);
+        allow list: if isOwner(userId);
+        allow create: if isOwner(userId);
+        allow update: if isExistingOwner(userId);
+        allow delete: if isExistingOwner(userId);
+    }
+
+    // ---- Helper functions ----
+
+    /**
+     * @description Checks if the user is signed in.
+     * @return {bool} True if the user is signed in, false otherwise.
+     */
     function isSignedIn() {
       return request.auth != null;
     }
 
+    /**
+     * @description Checks if the user is the owner of the resource.
+     * @param {string} userId The user ID to check against.
+     * @return {bool} True if the user is the owner, false otherwise.
+     */
     function isOwner(userId) {
-      return request.auth.uid == userId;
-    }
-
-    function isAdmin() {
-        return isSignedIn() && (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'superadmin');
+        return isSignedIn() && request.auth.uid == userId;
     }
 
     /**
-     * @description Manages access to project documents.
-     * @path /projects/{projectId}
-     * @allow (get, list): Any user can read project data.
-     * @allow (create, update, delete): Only admins can modify project data.
-     * @deny (create, update, delete): Non-admins cannot modify project data.
-     * @principle Public read, admin-only write.
+     * @description Checks if the user is the owner of the resource and the resource exists.
+     * @param {string} userId The user ID to check against.
+     * @return {bool} True if the user is the owner and the resource exists, false otherwise.
      */
-    match /projects/{projectId} {
-      allow get, list: if true;
-      allow create, update, delete: if isAdmin();
+    function isExistingOwner(userId) {
+        return isOwner(userId) && resource != null;
     }
 
     /**
-     * @description Manages access to contact information documents.
-     * @path /contact/{contactId}
-     * @allow (get, list): Any user can read contact information.
-     * @allow (create, update, delete): Only admins can modify contact information.
-     * @deny (create, update, delete): Non-admins cannot modify contact information.
-     * @principle Public read, admin-only write.
+     * @description Checks if the user is an admin with media upload/delete permissions.
+     * @return {bool} True if the user is an admin, false otherwise.
      */
-    match /contact/{contactId} {
-      allow get, list: if true;
-      allow create, update, delete: if isAdmin();
-    }
-
-    /**
-     * @description Manages access to homepage settings documents.
-     * @path /homepage/{settingsId}
-     * @allow (get, list): Any user can read homepage settings.
-     * @allow (create, update, delete): Only admins can modify homepage settings.
-     * @deny (create, update, delete): Non-admins cannot modify homepage settings.
-     * @principle Public read, admin-only write.
-     */
-    match /homepage/{settingsId} {
-      allow get, list: if true;
-      allow create, update, delete: if isAdmin();
-    }
-
-    /**
-     * @description Manages access to media asset documents.
-     * @path /media/{mediaId}
-     * @allow (get, list): Any user can read media asset metadata.
-     * @allow (create, update, delete): Only admins can modify media asset metadata.
-     * @deny (create): Non-admins cannot create media assets.
-     * @deny (update): Non-admins cannot update media assets.
-     * @deny (delete): Non-admins cannot delete media assets.
-     * @principle Admin-only write access for media assets.
-     */
-    match /media/{mediaId} {
-      allow get, list: if true;
-      allow create: if isAdmin();
-      allow update: if isAdmin() && resource != null;
-      allow delete: if isAdmin() && resource != null;
-    }
-
-    /**
-     * @description Manages access to user documents.
-     * @path /users/{userId}
-     * @allow (get): Only the user can read their own data.
-     * @allow (create): Only the user can create their own document.
-     * @allow (update): Only the user can update their own data.
-     * @allow (delete): Only the user can delete their own account.
-     * @deny (create): If the user tries to create a document with an ID that doesn't match their own.
-     * @deny (update): If the user tries to modify another user's document.
-     * @deny (delete): If the user tries to delete another user's document.
-     * @principle Enforces user-ownership for user-specific data.
-     */
-    match /users/{userId} {
-        allow get: if isOwner(userId);
-        allow create: if isOwner(userId);
-        allow update: if isOwner(userId) && resource != null;
-        allow delete: if isOwner(userId) && resource != null;
-        allow list: if false;
+    function isAdminWithMediaPermissions() {
+      return isSignedIn() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['admin', 'superadmin']
+             && (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.permissions.canUploadMedia == true
+             || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.permissions.canDeleteMedia == true);
     }
   }
 }
