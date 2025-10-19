@@ -306,6 +306,7 @@ export default function WorkPage() {
 
   const handleItemClick = (item: PortfolioItem) => {
     setDirection(null); // Reset direction for first open
+    setSelectedItem(item);
     updateUrl(slugify(item.title));
   };
   
@@ -320,6 +321,7 @@ export default function WorkPage() {
 
   const handleOpenChange = (open: boolean) => {
     if (!open) {
+      setSelectedItem(null);
       updateUrl(null);
     }
   };
@@ -345,7 +347,9 @@ export default function WorkPage() {
     setDirection('next');
     const currentIndex = filteredItems.findIndex(item => item.id === selectedItem.id);
     const nextIndex = (currentIndex + 1) % filteredItems.length;
-    updateUrl(slugify(filteredItems[nextIndex].title));
+    const nextItem = filteredItems[nextIndex];
+    setSelectedItem(nextItem);
+    updateUrl(slugify(nextItem.title));
   };
 
   const handlePreviousProject = () => {
@@ -353,7 +357,9 @@ export default function WorkPage() {
     setDirection('prev');
     const currentIndex = filteredItems.findIndex(item => item.id === selectedItem.id);
     const prevIndex = (currentIndex - 1 + filteredItems.length) % filteredItems.length;
-    updateUrl(slugify(filteredItems[prevIndex].title));
+    const prevItem = filteredItems[prevIndex];
+    setSelectedItem(prevItem);
+    updateUrl(slugify(prevItem.title));
   };
 
   const handleDialogMouseMove = () => {
@@ -510,7 +516,6 @@ export default function WorkPage() {
             onMouseMove={handleDialogMouseMove}
             onMouseEnter={handleDialogMouseEnter}
             onMouseLeave={handleDialogMouseLeave}
-            asChild
           >
             <motion.div
                 onDragEnd={handleDragEnd}
@@ -754,5 +759,7 @@ export default function WorkPage() {
     </>
   );
 }
+
+    
 
     
