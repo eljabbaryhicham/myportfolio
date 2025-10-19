@@ -19,8 +19,8 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import ReactMarkdown from 'react-markdown';
 import rehypeRaw from 'rehype-raw';
 import rehypeSanitize, { defaultSchema } from 'rehype-sanitize';
-import { useCollection, useFirestore, useMemoFirebase, useUser } from '@/firebase';
-import { collection, query, orderBy } from 'firebase/firestore';
+import { useCollection, useFirestore, useMemoFirebase, useUser, setDocumentNonBlocking, addDocumentNonBlocking } from '@/firebase';
+import { collection, query, orderBy, doc } from 'firebase/firestore';
 import { PortfolioItem } from '@/features/portfolio/data/portfolio-data';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUpDown, faXmark, faExpand, faPalette, faFilm, faArrowLeft, faArrowRight, faPencilAlt } from '@fortawesome/free-solid-svg-icons';
@@ -29,6 +29,9 @@ import Preloader from '@/components/preloader';
 import { useIsExtraWide } from '@/hooks/use-is-extra-wide';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useRouter } from 'next/navigation';
+import { PortfolioItemFormSheet } from '@/features/admin/components/PortfolioItemForm';
+import MediaAdmin from '@/features/admin/components/MediaAdmin';
+import { useToast } from '@/hooks/use-toast';
 
 const VideoPlayer = dynamic(() => import('@/components/video-player'), {
   ssr: false,
@@ -157,13 +160,12 @@ const PortfolioMedia = ({
 };
 PortfolioMedia.displayName = 'PortfolioMedia';
 
-const PortfolioGridItem = ({ item, onClick, isAdmin }: { item: PortfolioItem, onClick: () => void, isAdmin: boolean }) => {
+const PortfolioGridItem = ({ item, onClick, onEditClick, isAdmin }: { item: PortfolioItem, onClick: () => void, onEditClick: () => void, isAdmin: boolean }) => {
   const [isLoaded, setIsLoaded] = useState(false);
-  const router = useRouter();
 
   const handleEditClick = (e: React.MouseEvent) => {
     e.stopPropagation(); // Prevent the main onClick from firing
-    router.push('/admin');
+    onEditClick();
   };
 
   return (
@@ -239,6 +241,7 @@ const PortfolioGridItem = ({ item, onClick, isAdmin }: { item: PortfolioItem, on
 export default function WorkPage() {
   const firestore = useFirestore();
   const { user } = useUser();
+  const { toast } = useToast();
   const projectsQuery = useMemoFirebase(
     () =>
       firestore
@@ -248,8 +251,14 @@ export default function WorkPage() {
   );
   const { data: portfolioItems, isLoading } = useCollection<PortfolioItem>(projectsQuery);
 
+  const minOrder = useMemo(() => {
+    if (!portfolioItems || portfolioItems.length === 0) return 0;
+    return Math.min(...portfolioItems.map(i => i.order || 0));
+  }, [portfolioItems]);
 
   const [selectedItem, setSelectedItem] = useState<PortfolioItem | null>(null);
+  const [selectedItemForEdit, setSelectedItemForEdit] = useState<PortfolioItem | null>(null);
+  const [isFormSheetOpen, setIsFormSheetOpen] = useState(false);
   const [visibleItems, setVisibleItems] = useState(12);
   const [detailsModalOpen, setDetailsModalOpen] = useState(false);
   const [filter, setFilter] = useState<'all' | 'image' | 'video'>('all');
@@ -260,6 +269,9 @@ export default function WorkPage() {
   const [isCloseButtonVisible, setIsCloseButtonVisible] = useState(false);
   const inactivityTimer = useRef<NodeJS.Timeout | null>(null);
   const isMobile = useIsMobile();
+  
+  const [isLibraryOpen, setIsLibraryOpen] = useState(false);
+  const [librarySelectionConfig, setLibrarySelectionConfig] = useState<{ onSelect: (url: string, type: 'image' | 'video', filename: string) => void } | null>(null);
 
 
   useEffect(() => {
@@ -334,6 +346,38 @@ export default function WorkPage() {
     setIsCloseButtonVisible(false);
   };
 
+  const handleEditItem = (item: PortfolioItem) => {
+    setSelectedItemForEdit(item);
+    setIsFormSheetOpen(true);
+  };
+
+  const handlePortfolioFormSubmit = (values: PortfolioItem) => {
+    if (!firestore) return;
+
+    if (values.id) {
+      const dataToSave = { ...values, order: values.order ?? 0 };
+      const docRef = doc(firestore, 'projects', values.id);
+      setDocumentNonBlocking(docRef, dataToSave, { merge: true });
+      toast({
+        title: 'Changes Saved',
+        description: 'Your portfolio has been updated.',
+      });
+    } else {
+      const dataToSave = { ...values, order: minOrder - 1 };
+      addDocumentNonBlocking(collection(firestore, 'projects'), dataToSave);
+      toast({
+        title: 'Item Added',
+        description: 'A new item has been added to your portfolio.',
+      });
+    }
+    setIsFormSheetOpen(false);
+  };
+
+  const handleOpenLibraryForSelection = (onSelect: (url: string, type: 'image' | 'video', filename: string) => void) => {
+    setLibrarySelectionConfig({ onSelect });
+    setIsLibraryOpen(true);
+  };
+
   
   return (
     <>
@@ -377,6 +421,7 @@ export default function WorkPage() {
                       key={item.id}
                       item={item}
                       onClick={() => setSelectedItem(item)}
+                      onEditClick={() => handleEditItem(item)}
                       isAdmin={!!user}
                     />
                   ))}
@@ -595,6 +640,31 @@ export default function WorkPage() {
           </DialogClose>
         </DialogContent>
       </Dialog>
+
+      {!!user && (
+        <>
+          <PortfolioItemFormSheet 
+            isOpen={isFormSheetOpen}
+            setIsOpen={setIsFormSheetOpen}
+            item={selectedItemForEdit}
+            onSubmit={handlePortfolioFormSubmit}
+            onChooseFromLibrary={handleOpenLibraryForSelection}
+          />
+          <MediaAdmin 
+            isDialog={true}
+            isOpen={isLibraryOpen}
+            onOpenChange={setIsLibraryOpen}
+            onMediaSelect={(url, type, filename) => {
+              // This is a dummy function as this flow is handled inside the form
+            }}
+            isSelectionMode={!!librarySelectionConfig}
+            onSelectionComplete={() => {
+              setIsLibraryOpen(false);
+              setLibrarySelectionConfig(null);
+            }}
+          />
+        </>
+      )}
     </>
   );
 }
