@@ -50,7 +50,7 @@ const PortfolioMedia = ({
   onFullscreenClick: (url: string) => void;
 }) => {
   const [isContentLoaded, setIsContentLoaded] = useState(false);
-  
+
   useEffect(() => {
     // When the item `id` changes, reset the content loaded state to show the preloader
     setIsContentLoaded(false);
@@ -763,3 +763,4 @@ export default function WorkPage() {
     
 
     
+
