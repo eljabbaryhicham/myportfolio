@@ -34,7 +34,9 @@ function AdminPage() {
   const [selectedPortfolioItem, setSelectedPortfolioItem] = useState<PortfolioItem | null>(null);
   const [isPortfolioSheetOpen, setIsPortfolioSheetOpen] = useState(false);
   const [isLibraryOpen, setIsLibraryOpen] = useState(false);
-  const [librarySelectionConfig, setLibrarySelectionConfig] = useState<{ onSelect: (url: string, type: 'image' | 'video') => void } | null>(null);
+  const [librarySelectionConfig, setLibrarySelectionConfig] = useState<{ onSelect: (url: string, type: 'image' | 'video', filename: string) => void } | null>(null);
+  const [activeTab, setActiveTab] = useState('projects');
+  const [fromMediaLibrary, setFromMediaLibrary] = useState(false);
   
   useEffect(() => {
     if (!isUserLoading && !user) {
@@ -82,28 +84,43 @@ function AdminPage() {
         description: 'A new item has been added to your portfolio.',
       });
     }
+
+    if (fromMediaLibrary) {
+        setActiveTab('projects');
+        setFromMediaLibrary(false);
+    }
     setIsPortfolioSheetOpen(false);
   };
   
-  const handleOpenPortfolioFormWithMedia = (url: string, type: 'image' | 'video') => {
+  const handleOpenPortfolioFormWithMedia = (url: string, type: 'image' | 'video', filename: string) => {
+    const title = filename.split('.').slice(0, -1).join('.'); // Remove file extension
     setSelectedPortfolioItem({
       id: '',
-      title: '',
+      title: title || 'New Project',
       description: '',
       type: type,
       thumbnailUrl: type === 'video' ? '' : url, // For videos, thumbnail might be different
       sourceUrl: url,
       thumbnailHint: '',
     });
+    setFromMediaLibrary(true);
     setIsLibraryOpen(false); // Close library
     setIsPortfolioSheetOpen(true); // Open form
   };
 
-  const handleOpenLibraryForSelection = (onSelect: (url: string, type: 'image' | 'video') => void) => {
+  const handleOpenLibraryForSelection = (onSelect: (url: string, type: 'image' | 'video', filename: string) => void) => {
     setLibrarySelectionConfig({ onSelect });
     setIsLibraryOpen(true);
   };
-
+  
+  const handlePortfolioSheetOpenChange = (isOpen: boolean) => {
+    setIsPortfolioSheetOpen(isOpen);
+    if (!isOpen && fromMediaLibrary) {
+        // If form is closed without saving, go back to media library
+        setActiveTab('media');
+        setFromMediaLibrary(false);
+    }
+  };
 
   if (isUserLoading || !user) {
     return (
@@ -134,7 +151,7 @@ function AdminPage() {
 
           <Separator className="bg-white/10 mb-8" />
 
-          <Tabs defaultValue="projects" className="flex-1 flex flex-col min-h-0">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col min-h-0">
               <TabsList className="w-full">
                   <TabsTrigger value="home" className="flex-1">Home</TabsTrigger>
                   <TabsTrigger value="projects" className="flex-1">Projects</TabsTrigger>
@@ -152,7 +169,7 @@ function AdminPage() {
                   />
               </TabsContent>
               <TabsContent value="media" className="flex-1 overflow-auto mt-4">
-                  {isUserLoading ? <Preloader /> : <MediaAdmin onLibraryOpenRequest={() => setIsLibraryOpen(true)} />}
+                  {isUserLoading ? <Preloader /> : <MediaAdmin onLibraryOpenRequest={() => setIsLibraryOpen(true)} onMediaSelect={handleOpenPortfolioFormWithMedia} />}
               </TabsContent>
               <TabsContent value="contact" className="flex-1 overflow-auto mt-4">
                   <ContactAdmin />
@@ -162,7 +179,7 @@ function AdminPage() {
       </div>
       <PortfolioItemFormSheet 
         isOpen={isPortfolioSheetOpen}
-        setIsOpen={setIsPortfolioSheetOpen}
+        setIsOpen={handlePortfolioSheetOpenChange}
         item={selectedPortfolioItem}
         onSubmit={(values) => handlePortfolioFormSubmit(values, 0)} // Note: minOrder logic is now in ProjectAdmin, may need to pass it up
         onChooseFromLibrary={handleOpenLibraryForSelection}

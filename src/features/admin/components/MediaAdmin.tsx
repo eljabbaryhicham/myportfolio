@@ -1,4 +1,3 @@
-
 'use client';
 
 // IMPORTANT: To use this component, you need a Cloudinary account.
@@ -51,7 +50,7 @@ const MediaFileCard = ({
   onDelete: (publicId: string, id: string, resourceType: string) => void;
   onCopy: (url: string) => void;
   isNewlyUploaded: boolean;
-  onMediaSelect: (url: string, type: 'image' | 'video') => void;
+  onMediaSelect: (url: string, type: 'image' | 'video', filename: string) => void;
   isSelectionMode: boolean;
 }) => {
   
@@ -60,7 +59,7 @@ const MediaFileCard = ({
   };
 
   const handleSelect = () => {
-    onMediaSelect(file.url, file.resource_type === 'video' ? 'video' : 'image');
+    onMediaSelect(file.url, file.resource_type === 'video' ? 'video' : 'image', file.filename);
   };
 
   const fileName = file.filename || file.public_id.split('/').pop() || 'Untitled';
@@ -95,7 +94,7 @@ const MediaFileCard = ({
               </div>
             ) : (
               <div className="flex gap-2">
-                <Button size="sm" variant="default" onClick={() => onMediaSelect(file.url, file.resource_type === 'video' ? 'video' : 'image')}>
+                <Button size="sm" variant="default" onClick={() => onMediaSelect(file.url, file.resource_type === 'video' ? 'video' : 'image', file.filename)}>
                   <FontAwesomeIcon icon={faPlus} />
                 </Button>
                 <Button size="sm" variant="secondary" onClick={() => onCopy(file.url)}>
@@ -134,9 +133,9 @@ const MediaFileCard = ({
 interface StandaloneMediaAdminProps {
   isDialog?: false;
   onLibraryOpenRequest: () => void;
+  onMediaSelect: (url: string, type: 'image' | 'video', filename: string) => void;
   isOpen?: never;
   onOpenChange?: never;
-  onMediaSelect?: never;
   isSelectionMode?: never;
   onSelectionComplete?: never;
 }
@@ -145,7 +144,7 @@ interface DialogMediaAdminProps {
   isDialog: true;
   isOpen: boolean;
   onOpenChange: (isOpen: boolean) => void;
-  onMediaSelect: (url: string, type: 'image' | 'video') => void;
+  onMediaSelect: (url: string, type: 'image' | 'video', filename: string) => void;
   isSelectionMode: boolean;
   onSelectionComplete: () => void;
   onLibraryOpenRequest?: never;
@@ -297,10 +296,12 @@ export default function MediaAdmin(props: MediaAdminProps) {
     toast({ title: "Copied!", description: "File URL copied to clipboard."});
   }
 
-  const handleMediaSelect = (url: string, type: 'image' | 'video') => {
+  const handleMediaSelect = (url: string, type: 'image' | 'video', filename: string) => {
     if(props.isDialog) {
-        props.onMediaSelect(url, type);
+        props.onMediaSelect(url, type, filename);
         props.onSelectionComplete();
+    } else if (props.onMediaSelect) {
+        props.onMediaSelect(url, type, filename);
     }
   };
 
@@ -332,8 +333,8 @@ export default function MediaAdmin(props: MediaAdminProps) {
                   onDelete={handleDelete} 
                   onCopy={handleCopy}
                   isNewlyUploaded={file.id === newlyUploadedId}
-                  onMediaSelect={props.isDialog ? handleMediaSelect : props.onMediaSelect!}
-                  isSelectionMode={props.isDialog ? props.isSelectionMode : false}
+                  onMediaSelect={handleMediaSelect}
+                  isSelectionMode={!!(props.isDialog && props.isSelectionMode)}
                 />
             ))}
         </div>
