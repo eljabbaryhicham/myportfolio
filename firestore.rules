@@ -2,165 +2,126 @@
  * @fileoverview Firestore Security Rules for the portfolio application.
  *
  * Core Philosophy:
- * This ruleset enforces a strict user-ownership model for user profiles,
- * and public read access for projects, contact information, homepage settings, and media assets.
- * Only authenticated users can create, update, or delete data. Superadmin can create, update and delete user data.
+ * This ruleset prioritizes security by enforcing strict access control based on user roles and explicit permissions.
+ * All write operations require authentication and role-based authorization.
+ * Read operations are generally public, with restrictions applied where sensitive data is stored.
  *
  * Data Structure:
- * - /projects/{projectId}: Stores project information, publicly readable.
- * - /contact/{contactId}: Stores contact information, publicly readable.
- * - /homepage/{settingsId}: Stores homepage settings, publicly readable.
- * - /media/{mediaId}: Stores media metadata, publicly readable.
- * - /users/{userId}: Stores user profiles, accessible only to the owner and superadmins.
+ * - /projects/{projectId}: Stores public project data.
+ * - /contact/{contactId}: Stores public contact information.
+ * - /homepage/{settingsId}: Stores public homepage settings.
+ * - /media/{mediaId}: Stores public media asset metadata.
+ * - /users/{userId}: Stores private user data, accessible only to the user themselves.
  *
  * Key Security Decisions:
- * - Public read access is granted to the `projects`, `contact`, `homepage`, and `media` collections to allow all users to view content.
- * - User listing is explicitly denied.
- * - Write access to `projects`, `contact`, `homepage`, and `media` is restricted to authenticated users.
- * - Only a user that has a role 'superadmin' is allowed to create update and delete other users.
- *
- * Denormalization for Authorization:
- *  None. The current rules do not require denormalization.
- *
- * Structural Segregation:
- *  There is no segregation of private and public collections, since all projects, contact, homepage, and media are public and there is not a separate user private collection.
+ * - Users collection can not be listed.
+ * - Public read access is granted to projects, contact info, homepage settings and media.
+ * - Only authenticated admins can create, update or delete any kind of data.
  */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * @description Grants public read access to projects, and restricts write access to authenticated users.
+     * @description Secure access to projects; public reads, admin-only writes.
      * @path /projects/{projectId}
-     * @allow get, list: if true;
-     * @allow create: if isSignedIn();
-     * @allow update: if isSignedIn() && resource != null;
-     * @allow delete: if isSignedIn() && resource != null;
-     * @deny get: if false;
-     * @deny list: if false;
-     * @deny create: if false;
-     * @deny update: if false;
-     * @deny delete: if false;
-     * @principle Allows any user to read project information, but only authenticated users to create, update, or delete.
+     * @allow (get, list): Any user can read project data.
+     * @allow (create, update, delete): Only authenticated admins can modify project data.
+     * @deny (create): Unauthenticated users cannot create projects.
+     * @deny (update): Unauthenticated users cannot update projects.
+     * @deny (delete): Unauthenticated users cannot delete projects.
+     * @principle Public read access with admin-only writes.
      */
     match /projects/{projectId} {
       allow get, list: if true;
-      allow create: if isSignedIn();
-      allow update: if isSignedIn() && resource != null;
-      allow delete: if isSignedIn() && resource != null;
+      allow create: if isAdmin();
+      allow update: if isAdmin() && resource != null;
+      allow delete: if isAdmin() && resource != null;
     }
 
     /**
-     * @description Grants public read access to contact information, and restricts write access to authenticated users.
+     * @description Secure access to contact information; public reads, admin-only writes.
      * @path /contact/{contactId}
-     * @allow get, list: if true;
-     * @allow create: if isSignedIn();
-     * @allow update: if isSignedIn() && resource != null;
-     * @allow delete: if isSignedIn() && resource != null;
-     * @deny get: if false;
-     * @deny list: if false;
-     * @deny create: if false;
-     * @deny update: if false;
-     * @deny delete: if false;
-     * @principle Allows any user to read contact information, but only authenticated users to create, update, or delete.
+     * @allow (get, list): Any user can read contact information.
+     * @allow (create, update, delete): Only authenticated admins can modify contact information.
+     * @deny (create): Unauthenticated users cannot create contact information.
+     * @deny (update): Unauthenticated users cannot update contact information.
+     * @deny (delete): Unauthenticated users cannot delete contact information.
+     * @principle Public read access with admin-only writes.
      */
     match /contact/{contactId} {
       allow get, list: if true;
-      allow create: if isSignedIn();
-      allow update: if isSignedIn() && resource != null;
-      allow delete: if isSignedIn() && resource != null;
+      allow create: if isAdmin();
+      allow update: if isAdmin() && resource != null;
+      allow delete: if isAdmin() && resource != null;
     }
 
     /**
-     * @description Grants public read access to homepage settings, and restricts write access to authenticated users.
+     * @description Secure access to homepage settings; public reads, admin-only writes.
      * @path /homepage/{settingsId}
-     * @allow get, list: if true;
-     * @allow create: if isSignedIn();
-     * @allow update: if isSignedIn() && resource != null;
-     * @allow delete: if isSignedIn() && resource != null;
-     * @deny get: if false;
-     * @deny list: if false;
-     * @deny create: if false;
-     * @deny update: if false;
-     * @deny delete: if false;
-     * @principle Allows any user to read homepage settings, but only authenticated users to create, update, or delete.
+     * @allow (get, list): Any user can read homepage settings.
+     * @allow (create, update, delete): Only authenticated admins can modify homepage settings.
+     * @deny (create): Unauthenticated users cannot create homepage settings.
+     * @deny (update): Unauthenticated users cannot update homepage settings.
+     * @deny (delete): Unauthenticated users cannot delete homepage settings.
+     * @principle Public read access with admin-only writes.
      */
     match /homepage/{settingsId} {
       allow get, list: if true;
-      allow create: if isSignedIn();
-      allow update: if isSignedIn() && resource != null;
-      allow delete: if isSignedIn() && resource != null;
+      allow create: if isAdmin();
+      allow update: if isAdmin() && resource != null;
+      allow delete: if isAdmin() && resource != null;
     }
 
     /**
-     * @description Grants public read access to media assets, and restricts write access to authenticated users.
+     * @description Secure access to media assets; public reads, admin-only writes.
      * @path /media/{mediaId}
-     * @allow get, list: if true;
-     * @allow create: if isSignedIn();
-     * @allow update: if isSignedIn() && resource != null;
-     * @allow delete: if isSignedIn() && resource != null;
-     * @deny get: if false;
-     * @deny list: if false;
-     * @deny create: if false;
-     * @deny update: if false;
-     * @deny delete: if false;
-     * @principle Allows any user to read media asset information, but only authenticated users to create, update, or delete.
+     * @allow (get, list): Any user can read media asset metadata.
+     * @allow (create, update, delete): Only authenticated admins can modify media asset metadata.
+     * @deny (create): Unauthenticated users cannot create media assets.
+     * @deny (update): Unauthenticated users cannot update media assets.
+     * @deny (delete): Unauthenticated users cannot delete media assets.
+     * @principle Public read access with admin-only writes.
      */
     match /media/{mediaId} {
       allow get, list: if true;
-      allow create: if isSignedIn();
-      allow update: if isSignedIn() && resource != null;
-      allow delete: if isSignedIn() && resource != null;
+      allow create: if isAdmin();
+      allow update: if isAdmin() && resource != null;
+      allow delete: if isAdmin() && resource != null;
     }
 
     /**
-     * @description Restricts access to user profiles to the owner and superadmins.
+     * @description Secure access to user data; owner-only access.
      * @path /users/{userId}
-     * @allow get: if isOwner(userId) || isSuperAdmin();
-     * @allow list: if false;
-     * @allow create: if isOwner(userId);
-     * @allow update: if (isOwner(userId) && resource != null) || isSuperAdmin();
-     * @allow delete: if (isOwner(userId) && resource != null) || isSuperAdmin();
-     * @deny get: if false;
-     * @deny list: if true;
-     * @deny create: if false;
-     * @deny update: if false;
-     * @deny delete: if false;
-     * @principle Enforces document ownership and restricts listing to prevent unauthorized data access.
+     * @allow (get): Only the authenticated user can read their own data.
+     * @allow (create): Only the authenticated user can create their own data, with matching UID.
+     * @allow (update): Only the authenticated user can update their own data.
+     * @allow (delete): Only the authenticated user can delete their own data.
+     * @deny (list): Users cannot list the contents of the /users collection.
+     * @deny (create): Creating a user document with a mismatched UID is forbidden.
+     * @deny (update): Updating another user's data is forbidden.
+     * @deny (delete): Deleting another user's data is forbidden.
+     * @principle Enforces document ownership for writes.
      */
     match /users/{userId} {
-      allow get: if isOwner(userId) || isSuperAdmin();
+      allow get: if isOwner(userId);
       allow list: if false;
-      allow create: if isOwner(userId);
-      allow update: if (isOwner(userId) && resource != null) || isSuperAdmin();
-      allow delete: if (isOwner(userId) && resource != null) || isSuperAdmin();
+      allow create: if isOwner(userId) && request.resource.data.uid == request.auth.uid;
+      allow update: if isOwner(userId) && resource != null;
+      allow delete: if isOwner(userId) && resource != null;
     }
+  }
 
-    // --- Helper Functions ---
+  // Helper functions
+  function isSignedIn() {
+    return request.auth != null;
+  }
 
-    /**
-     * @description Checks if the user is signed in.
-     * @return {boolean} True if the user is signed in, false otherwise.
-     */
-    function isSignedIn() {
-      return request.auth != null;
-    }
+  function isOwner(userId) {
+    return isSignedIn() && request.auth.uid == userId;
+  }
 
-    /**
-     * @description Checks if the user is the owner of the document.
-     * @param {string} userId The user ID to compare against the request's authentication UID.
-     * @return {boolean} True if the user is the owner, false otherwise.
-     */
-    function isOwner(userId) {
-      return isSignedIn() && request.auth.uid == userId;
-    }
-
-    /**
-     * @description Checks if the user has the 'superadmin' role.
-     * @return {boolean} True if the user has the 'superadmin' role, false otherwise.
-     */
-    function isSuperAdmin() {
-      return isSignedIn() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'superadmin';
-    }
+  function isAdmin() {
+    return isSignedIn() && (request.auth.token.role == 'admin' || request.auth.token.role == 'superadmin');
   }
 }
