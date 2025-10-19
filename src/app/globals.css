@@ -147,10 +147,6 @@
   .blob-3 {
     animation: blob-anim-3 12s infinite;
   }
-
-  .marquee {
-    animation: marquee 30s linear infinite;
-  }
 }
 
 @keyframes blob-anim-1 {
@@ -229,9 +225,4 @@
 
 .animate-glow {
   animation: glow 1.5s ease-in-out infinite;
-}
-
-@keyframes marquee {
-  from { transform: translateX(0); }
-  to { transform: translateX(-100%); }
 }
