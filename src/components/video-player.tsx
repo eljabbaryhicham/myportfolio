@@ -1,7 +1,7 @@
 
 'use client';
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef } from 'react';
 import Plyr, { Options, SourceInfo } from 'plyr';
 import 'plyr-react/plyr.css';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -19,57 +19,50 @@ interface VideoPlayerProps {
 const VideoPlayer = ({ source, poster, previewThumbnailsSrc, autoplay, loop, muted, controls = true }: VideoPlayerProps) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const playerRef = useRef<Plyr | null>(null);
-  const [isMounted, setIsMounted] = useState(false);
   const isMobile = useIsMobile();
 
   useEffect(() => {
-    setIsMounted(true);
-  }, []);
-
-  useEffect(() => {
-    if (!isMounted || !videoRef.current || !source) {
-      return;
+    if (videoRef.current) {
+      const options: Options = {
+        settings: ['quality', 'speed', 'loop'],
+        quality: {
+          default: isMobile ? 576 : 1080,
+          options: [4320, 2160, 1440, 1080, 720, 576, 480, 360, 240],
+        },
+        previewThumbnails: {
+          enabled: !!previewThumbnailsSrc,
+          src: previewThumbnailsSrc || '',
+        },
+        fullscreen: {
+          enabled: true,
+          fallback: true,
+          iosNative: true,
+        },
+        autoplay: autoplay || false,
+        loop: { active: loop || false },
+        muted: muted || false,
+        controls: controls ? ['play-large', 'play', 'progress', 'current-time', 'mute', 'volume', 'captions', 'settings', 'pip', 'airplay', 'fullscreen'] : [],
+      };
+      
+      const player = new Plyr(videoRef.current, options);
+      playerRef.current = player;
     }
 
-    const videoElement = videoRef.current;
-    
-    if (playerRef.current) {
-      playerRef.current.destroy();
-      playerRef.current = null;
-    }
-
-    const options: Options = {
-      settings: ['quality', 'speed', 'loop'],
-      quality: {
-        default: isMobile ? 576 : 1080, 
-        options: [4320, 2160, 1440, 1080, 720, 576, 480, 360, 240], 
-      },
-      previewThumbnails: {
-        enabled: !!previewThumbnailsSrc,
-        src: previewThumbnailsSrc || '',
-      },
-      fullscreen: {
-        enabled: true,
-        fallback: true,
-        iosNative: true,
-      },
-      autoplay: autoplay || false,
-      loop: { active: loop || false },
-      muted: muted || false,
-      controls: controls ? ['play-large', 'play', 'progress', 'current-time', 'mute', 'volume', 'captions', 'settings', 'pip', 'airplay', 'fullscreen'] : [],
-    };
-    
-    playerRef.current = new Plyr(videoElement, options);
-
-    playerRef.current.source = source;
-
+    // Cleanup function to destroy the player instance when the component unmounts.
     return () => {
       if (playerRef.current) {
         playerRef.current.destroy();
         playerRef.current = null;
       }
     };
-  }, [isMounted, source, previewThumbnailsSrc, isMobile, autoplay, loop, muted, controls]);
+  }, [isMobile, previewThumbnailsSrc, autoplay, loop, muted, controls]); // This effect runs once to initialize/destroy the player.
+
+  // A separate effect to update the source when it changes.
+  useEffect(() => {
+    if (playerRef.current && source) {
+      playerRef.current.source = source;
+    }
+  }, [source]);
 
   return (
     <video
