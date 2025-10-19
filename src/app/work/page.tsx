@@ -380,7 +380,15 @@ export default function WorkPage() {
   };
 
   const handlePortfolioFormSubmit = (values: PortfolioItem) => {
-    if (!firestore || !canEditProjects) return;
+    if (!firestore) return;
+    if(!canEditProjects) {
+        toast({
+            variant: 'destructive',
+            title: 'Permission Denied',
+            description: 'You do not have permission to edit projects.',
+        });
+        return;
+    }
 
     if (values.id) {
       const dataToSave = { ...values, order: values.order ?? 0 };
