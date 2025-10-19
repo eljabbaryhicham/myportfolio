@@ -1,108 +1,132 @@
 /**
- * @description This ruleset enforces a role-based access control model for the portfolio application.
- *  It allows admins to manage projects, contact information, homepage settings, and media assets.
- *  Regular users can only read projects and contact information.
- *  User documents are private and only accessible to the owner.
- * @dataStructure
- *  /projects/{projectId}: Stores project information.
- *  /contact/{contactId}: Stores contact page information.
- *  /homepage/{settingsId}: Stores homepage settings.
- *  /media/{mediaId}: Stores metadata for uploaded Cloudinary assets.
- *  /users/{userId}: Stores administrator user data.
- * @keySecurityDecisions
- *  - Only authenticated users can access the admin functionalities.
- *  - Media uploads and deletes are restricted to admin users with appropriate permissions.
- *  - User listing is explicitly disallowed.
- *  - Superadmins can manage all users, including granting or revoking admin privileges.
+ * @fileoverview Firestore Security Rules for the portfolio application.
+ *
+ * Core Philosophy:
+ * This ruleset enforces a role-based access control model for administrative data (users, media)
+ * and public read access for content data (projects, contact info, homepage settings).
+ * Only authenticated 'admin' and 'superadmin' users can create or modify administrative data,
+ * while read access to content is open to all.
+ *
+ * Data Structure:
+ * - /projects/{projectId}: Stores project data, publicly readable.
+ * - /contact/{contactId}: Stores contact information, publicly readable.
+ * - /homepage/{settingsId}: Stores homepage settings, publicly readable.
+ * - /media/{mediaId}: Stores media asset metadata, only writable by admins.
+ * - /users/{userId}: Stores user profiles, only accessible to the user themselves and superadmins.
+ *
+ * Key Security Decisions:
+ * - Public read access to content collections enables wide data availability.
+ * - Strict role-based access control protects administrative data.
+ * - User listing is implicitly denied due to the lack of a general 'list' permission on the /users collection.
+ *
+ * Denormalization for Authorization:
+ * This ruleset assumes that the `User` document contains a `role` field (either "admin" or "superadmin")
+ * which determines authorization for administrative tasks such as media uploads.
+ *
+ * Structural Segregation:
+ * The ruleset separates public content (projects, contact, homepage) from private user data.
  */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * @description Allows admins to manage projects.
+     * @description Grants public read access to project data and restricts writes to authenticated administrators.
      * @path /projects/{projectId}
-     * @allow (create) User with 'admin' role can create a project.
-     * @deny (create) User without 'admin' role cannot create a project.
-     * @allow (get, list) All users can read projects.
-     * @deny (update, delete) Non-admin users cannot update or delete projects.
-     * @principle Enforces role-based access control for project management.
+     * @allow get, list: if true;
+     * @allow create: if isAdmin();
+     * @allow update: if isAdmin() && resource != null;
+     * @allow delete: if isAdmin() && resource != null;
+     * @deny create: if !isAdmin();
+     * @deny update: if !isAdmin();
+     * @deny delete: if !isAdmin();
+     * @principle Allows any user to read project data, but restricts modifications to administrators.
      */
     match /projects/{projectId} {
       allow get, list: if true;
       allow create: if isAdmin();
-      allow update: if isAdmin();
-      allow delete: if isAdmin();
+      allow update: if isAdmin() && resource != null;
+      allow delete: if isAdmin() && resource != null;
     }
 
     /**
-     * @description Allows admins to manage contact information.
+     * @description Grants public read access to contact information and restricts writes to authenticated administrators.
      * @path /contact/{contactId}
-     * @allow (create) User with 'admin' role can create contact information.
-     * @deny (create) User without 'admin' role cannot create contact information.
-     * @allow (get, list) All users can read contact information.
-     * @deny (update, delete) Non-admin users cannot update or delete contact information.
-     * @principle Enforces role-based access control for contact information management.
+     * @allow get, list: if true;
+     * @allow create: if isAdmin();
+     * @allow update: if isAdmin() && resource != null;
+     * @allow delete: if isAdmin() && resource != null;
+     * @deny create: if !isAdmin();
+     * @deny update: if !isAdmin();
+     * @deny delete: if !isAdmin();
+     * @principle Allows any user to read contact information, but restricts modifications to administrators.
      */
     match /contact/{contactId} {
       allow get, list: if true;
       allow create: if isAdmin();
-      allow update: if isAdmin();
-      allow delete: if isAdmin();
+      allow update: if isAdmin() && resource != null;
+      allow delete: if isAdmin() && resource != null;
     }
 
     /**
-     * @description Allows admins to manage homepage settings.
+     * @description Grants public read access to homepage settings and restricts writes to authenticated administrators.
      * @path /homepage/{settingsId}
-     * @allow (create) User with 'admin' role can create homepage settings.
-     * @deny (create) User without 'admin' role cannot create homepage settings.
-     * @allow (get, list) All users can read homepage settings.
-     * @deny (update, delete) Non-admin users cannot update or delete homepage settings.
-     * @principle Enforces role-based access control for homepage settings management.
+     * @allow get, list: if true;
+     * @allow create: if isAdmin();
+     * @allow update: if isAdmin() && resource != null;
+     * @allow delete: if isAdmin() && resource != null;
+     * @deny create: if !isAdmin();
+     * @deny update: if !isAdmin();
+     * @deny delete: if !isAdmin();
+     * @principle Allows any user to read homepage settings, but restricts modifications to administrators.
      */
     match /homepage/{settingsId} {
       allow get, list: if true;
       allow create: if isAdmin();
-      allow update: if isAdmin();
-      allow delete: if isAdmin();
+      allow update: if isAdmin() && resource != null;
+      allow delete: if isAdmin() && resource != null;
     }
 
     /**
-     * @description Allows admins with 'canUploadMedia' permission to create media assets.
-     *  Allows admins with 'canDeleteMedia' permission to delete media assets.
+     * @description Restricts media asset creation, updates, and deletes to authenticated administrators.
      * @path /media/{mediaId}
-     * @allow (create) User with 'admin' role and 'canUploadMedia' permission can create a media asset.
-     * @deny (create) User without 'admin' role or 'canUploadMedia' permission cannot create a media asset.
-     * @allow (get, list) All users can read media assets.
-     * @deny (update) Non-admin users cannot update media assets.
-     * @allow (delete) User with 'admin' role and 'canDeleteMedia' permission can delete a media asset.
-     * @deny (delete) User without 'admin' role or 'canDeleteMedia' permission cannot delete a media asset.
-     * @principle Enforces role-based access control for media asset management.
+     * @allow get, list: if isAdmin();
+     * @allow create: if isAdmin();
+     * @allow update: if isAdmin() && resource != null;
+     * @allow delete: if isAdmin() && resource != null;
+     * @deny get, list: if !isAdmin();
+     * @deny create: if !isAdmin();
+     * @deny update: if !isAdmin();
+     * @deny delete: if !isAdmin();
+     * @principle Enforces role-based access control to protect media assets from unauthorized modification.
      */
     match /media/{mediaId} {
-      allow get, list: if true;
-      allow create: if isAdmin() && hasPermission('canUploadMedia');
-      allow update: if false;
-      allow delete: if isAdmin() && hasPermission('canDeleteMedia');
+      allow get, list: if isAdmin();
+      allow create: if isAdmin();
+      allow update: if isAdmin() && resource != null;
+      allow delete: if isAdmin() && resource != null;
     }
 
     /**
-     * @description Allows a user to read, update, and delete their own user document.  Only superadmins can create users.
+     * @description Restricts user data access to the user themselves and superadmins.
      * @path /users/{userId}
-     * @allow (create) User can create their own document if the userId matches their auth.uid.
-     * @allow (get, list) User can read their own document.
-     * @allow (update, delete) User can update and delete their own document.
-     * @deny (create) User cannot create a document with a userId that does not match their auth.uid.
-     * @deny (get, list) User cannot read another user's document.
-     * @deny (update, delete) User cannot update or delete another user's document.
-     * @principle Enforces document ownership for user data.
+     * @allow get: if isOwner(userId) || isSuperAdmin();
+     * @allow list: if false;
+     * @allow create: if isOwner(userId);
+     * @allow update: if (isOwner(userId) && resource != null) || isSuperAdmin();
+     * @allow delete: if isSuperAdmin() && resource != null;
+     * @deny get: if !isOwner(userId) && !isSuperAdmin();
+     * @deny create: if !isOwner(userId);
+     * @deny update: if (!isOwner(userId) && !isSuperAdmin()) || resource == null;
+     * @deny delete: if !isSuperAdmin() || resource == null;
+     * @principle Enforces strict user-ownership for data privacy.
      */
     match /users/{userId} {
-      allow get: if isOwner(userId);
+      allow get: if isOwner(userId) || isSuperAdmin();
       allow list: if false;
-      allow create: if request.auth.uid == userId && isSuperAdmin();
-      allow update: if isOwner(userId);
-      allow delete: if isOwner(userId);
+      allow create: if isOwner(userId);
+      allow update: if (isOwner(userId) && resource != null) || isSuperAdmin();
+      allow delete: if isSuperAdmin() && resource != null;
     }
 
     function isSignedIn() {
@@ -114,15 +138,11 @@ service cloud.firestore {
     }
 
     function isAdmin() {
-      return isSignedIn() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+      return isSignedIn() && (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'superadmin');
     }
 
     function isSuperAdmin() {
-        return isSignedIn() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'superadmin';
-    }
-
-    function hasPermission(permission) {
-      return isSignedIn() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.permissions[permission] == true;
+       return isSignedIn() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'superadmin';
     }
   }
 }
