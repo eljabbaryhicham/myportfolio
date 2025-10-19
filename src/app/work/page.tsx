@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import Image from 'next/image';
@@ -32,6 +31,7 @@ import { PortfolioItemFormSheet } from '@/features/admin/components/PortfolioIte
 import MediaAdmin from '@/features/admin/components/MediaAdmin';
 import { useToast } from '@/hooks/use-toast';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 
 
 const VideoPlayer = dynamic(() => import('@/components/video-player'), {
@@ -243,6 +243,10 @@ export default function WorkPage() {
   const firestore = useFirestore();
   const { user } = useUser();
   const { toast } = useToast();
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
   const projectsQuery = useMemoFirebase(
     () =>
       firestore
@@ -251,11 +255,8 @@ export default function WorkPage() {
     [firestore]
   );
   const { data: portfolioItems, isLoading } = useCollection<PortfolioItem>(projectsQuery);
-
-  const minOrder = useMemo(() => {
-    if (!portfolioItems || portfolioItems.length === 0) return 0;
-    return Math.min(...portfolioItems.map(i => i.order || 0));
-  }, [portfolioItems]);
+  
+  const selectedId = searchParams.get('id');
 
   const [selectedItem, setSelectedItem] = useState<PortfolioItem | null>(null);
   const [selectedItemForEdit, setSelectedItemForEdit] = useState<PortfolioItem | null>(null);
@@ -275,17 +276,45 @@ export default function WorkPage() {
   const [librarySelectionConfig, setLibrarySelectionConfig] = useState<{ onSelect: (url: string, type: 'image' | 'video', filename: string) => void } | null>(null);
   const [dialogActiveTab, setDialogActiveTab] = useState<'images' | 'videos'>('images');
 
-
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
-
   const filteredItems = useMemo(() => {
     if (!portfolioItems) return [];
     if (filter === 'all') return portfolioItems;
     return portfolioItems.filter(item => item.type === filter);
   }, [portfolioItems, filter]);
+  
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
+  // Effect to set selected item based on URL
+  useEffect(() => {
+    if (selectedId && portfolioItems) {
+      const item = portfolioItems.find(p => p.id === selectedId);
+      setSelectedItem(item || null);
+    } else {
+      setSelectedItem(null);
+    }
+  }, [selectedId, portfolioItems]);
+  
+  const updateUrl = (id: string | null) => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (id) {
+      params.set('id', id);
+      router.push(`${pathname}?${params.toString()}`, { scroll: false });
+    } else {
+      params.delete('id');
+      router.push(`${pathname}?${params.toString()}`, { scroll: false });
+    }
+  };
+
+  const handleItemClick = (item: PortfolioItem) => {
+    updateUrl(item.id);
+  };
+  
+  const minOrder = useMemo(() => {
+    if (!portfolioItems || portfolioItems.length === 0) return 0;
+    return Math.min(...portfolioItems.map(i => i.order || 0));
+  }, [portfolioItems]);
 
   const showMoreItems = () => {
     setVisibleItems(prevVisibleItems => prevVisibleItems + 8);
@@ -293,7 +322,7 @@ export default function WorkPage() {
 
   const handleOpenChange = (open: boolean) => {
     if (!open) {
-      setSelectedItem(null);
+      updateUrl(null);
     }
   };
 
@@ -317,14 +346,14 @@ export default function WorkPage() {
     if (!selectedItem || !filteredItems) return;
     const currentIndex = filteredItems.findIndex(item => item.id === selectedItem.id);
     const nextIndex = (currentIndex + 1) % filteredItems.length;
-    setSelectedItem(filteredItems[nextIndex]);
+    updateUrl(filteredItems[nextIndex].id);
   };
 
   const handlePreviousProject = () => {
     if (!selectedItem || !filteredItems) return;
     const currentIndex = filteredItems.findIndex(item => item.id === selectedItem.id);
     const prevIndex = (currentIndex - 1 + filteredItems.length) % filteredItems.length;
-    setSelectedItem(filteredItems[prevIndex]);
+    updateUrl(filteredItems[prevIndex].id);
   };
 
   const handleDialogMouseMove = () => {
@@ -434,7 +463,7 @@ export default function WorkPage() {
                     <PortfolioGridItem 
                       key={item.id}
                       item={item}
-                      onClick={() => setSelectedItem(item)}
+                      onClick={() => handleItemClick(item)}
                       onEditClick={() => handleEditItem(item)}
                       isAdmin={!!user}
                     />
@@ -457,13 +486,6 @@ export default function WorkPage() {
       <Dialog open={!!selectedItem} onOpenChange={handleOpenChange}>
           <AnimatePresence>
             {selectedItem && (
-              <motion.div
-                  key={selectedItem.id}
-                  initial={{ opacity: 0, x: isMobile ? 300 : 0 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: isMobile ? -300 : 0 }}
-                  transition={{ duration: 0.3, ease: "easeInOut" }}
-              >
                   <DialogContent
                     className={cn(
                       "glass-effect p-0 flex flex-col group",
@@ -476,6 +498,11 @@ export default function WorkPage() {
                     asChild
                   >
                     <motion.div
+                        key={selectedItem.id}
+                        initial={{ opacity: 0, x: isMobile ? 300 : 0, scale: 0.95 }}
+                        animate={{ opacity: 1, x: 0, scale: 1 }}
+                        exit={{ opacity: 0, x: isMobile ? -300 : 0, scale: 0.95 }}
+                        transition={{ duration: 0.3, ease: "easeInOut" }}
                         drag={isMobile ? "x" : false}
                         dragConstraints={{ left: 0, right: 0 }}
                         onDragEnd={handleDragEnd}
@@ -553,7 +580,6 @@ export default function WorkPage() {
                     </DialogClose>
                   </motion.div>
                 </DialogContent>
-              </motion.div>
             )}
         </AnimatePresence>
       </Dialog>
@@ -702,3 +728,5 @@ export default function WorkPage() {
     </>
   );
 }
+
+    
