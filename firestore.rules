@@ -1,62 +1,41 @@
 /**
  * @file Firestore Security Rules
- * @description This ruleset enforces a strict authorization model.
+ * @description This ruleset enforces a strict user-ownership model for user data and public read access for other data.
  *
  * Data Structure:
- * - /projects/{projectId}: Stores project information; publicly readable, but only writeable by authenticated users.
- * - /contact/{contactId}: Stores contact page information; publicly readable, writeable by no one.
- * - /homepage/{settingsId}: Stores homepage settings; publicly readable, writeable by no one.
- * - /media/{mediaId}: Stores media asset metadata; publicly readable, writeable by authenticated users with 'admin' role.
- * - /users/{userId}: Stores administrator user data; only accessible by the user themselves.
+ * - /projects/{projectId}: Stores project information. Publicly readable.
+ * - /contact/{contactId}: Stores contact information. Publicly readable.
+ * - /homepage/{settingsId}: Stores homepage settings. Publicly readable.
+ * - /media/{mediaId}: Stores media asset metadata. Publicly readable.
+ * - /users/{userId}: Stores user-specific data. Only accessible to the owner.
  *
  * Key Security Decisions:
- * - Listing of all users is disallowed for security.
- * - Public read access is granted to projects, contact information, homepage settings, and media assets.
- * - Write access is strictly controlled based on authentication and, in some cases, user roles.
+ * - User listing is disallowed to protect user privacy.
+ * - Public read access is granted to projects, contact info, homepage settings, and media assets to facilitate content delivery.
+ * - User documents are strictly controlled by their respective owners.
  */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    function isSignedIn() {
-      return request.auth != null;
-    }
-
-    function isOwner(userId) {
-      return request.auth.uid == userId;
-    }
-    
-    function isAdmin() {
-      return isSignedIn() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
-    }
-
-    function isExistingOwner(userId) {
-      return isOwner(userId) && resource != null;
-    }
-
     /**
-     * @description Controls access to project documents. Projects are publicly readable.
+     * @description Allows public read access to project data, but restricts write access to the owner.
      * @path /projects/{projectId}
      * @allow (get, list): Any user can read project data.
-     * @allow (create): Authenticated users can create projects. Must set the project ID.
-     * @allow (update, delete): Only the user who created the project can update or delete it.
-     * @deny create: if false
-     * @deny update: if false
-     * @deny delete: if false
-     * @principle Public read, owner-only writes.
+     * @deny (create, update, delete): No one can create, update, or delete project data directly through the client.
+     * @principle Public read, no client writes.
      */
     match /projects/{projectId} {
       allow get, list: if true;
-      allow create: if isSignedIn();
-      allow update, delete: if false; // Not implemented - no ownership field.
+      allow create, update, delete: if false;
     }
 
     /**
-     * @description Controls access to contact information documents. Contact information is publicly readable.
+     * @description Allows public read access to contact information, but restricts write access.
      * @path /contact/{contactId}
-     * @allow (get, list): Any user can read contact data.
-     * @deny create, update, delete: No one can create, update, or delete contact information.
-     * @principle Public read, no writes.
+     * @allow (get, list): Any user can read contact information.
+     * @deny (create, update, delete): No one can create, update, or delete contact information directly through the client.
+     * @principle Public read, no client writes.
      */
     match /contact/{contactId} {
       allow get, list: if true;
@@ -64,50 +43,72 @@ service cloud.firestore {
     }
 
     /**
-     * @description Controls access to homepage settings documents. Homepage settings are publicly readable.
+     * @description Allows public read access to homepage settings, but restricts write access.
      * @path /homepage/{settingsId}
      * @allow (get, list): Any user can read homepage settings.
-     * @deny create, update, delete: No one can create, update, or delete homepage settings.
-     * @principle Public read, no writes.
+     * @deny (create, update, delete): No one can create, update, or delete homepage settings directly through the client.
+     * @principle Public read, no client writes.
      */
     match /homepage/{settingsId} {
       allow get, list: if true;
       allow create, update, delete: if false;
     }
 
-    /**
-     * @description Controls access to media asset documents. Media assets are publicly readable.
+   /**
+     * @description Allows public read access to media assets, but restricts write access.
      * @path /media/{mediaId}
-     * @allow (get, list): Any user can read media asset data.
-     * @allow (create): Only authenticated admins can create media assets.
-     * @allow (update, delete): Only authenticated admins can update or delete media assets.
-     * @deny create: if !isAdmin();
-     * @deny update: if !isAdmin();
-     * @deny delete: if !isAdmin();
-     * @principle Public read, admin-only writes.
+     * @allow (get, list): Any user can read media assets.
+     * @deny (create, update, delete): No one can create, update, or delete media assets directly through the client.
+     * @principle Public read, no client writes.
      */
     match /media/{mediaId} {
-      allow get, list: if true;
-      allow create: if isAdmin();
-      allow update, delete: if isAdmin() && resource != null;
+        allow get, list: if true;
+        allow create, update, delete: if false;
     }
 
     /**
-     * @description Controls access to user documents. Each user can only access their own document.
+     * @description Manages user-specific data, ensuring only the authenticated user can access their own data.
      * @path /users/{userId}
-     * @allow get: if isOwner(userId);
-     * @allow create: if isOwner(userId);
-     * @allow update: if isExistingOwner(userId);
-     * @allow delete: if isExistingOwner(userId);
-     * @deny list: Listing all users is not allowed.
-     * @principle Owner-only access.
+     * @allow (create): Only the authenticated user can create their own document if the userId matches their auth UID.
+     * @allow (get, update, delete): Only the authenticated user can get, update, or delete their own document.
+     * @deny (list): Listing users is not allowed.
+     * @deny (create): Creating a user is disallowed if the userId does not match the auth UID.
+     * @deny (update, delete): Updating/deleting a user is disallowed if the user does not exist.
+     * @principle Enforces strict document ownership based on user ID.
      */
     match /users/{userId} {
       allow get: if isOwner(userId);
+      allow list: if false;
       allow create: if isOwner(userId);
       allow update: if isExistingOwner(userId);
       allow delete: if isExistingOwner(userId);
-      allow list: if false;
     }
+  }
+
+  // --- Helper Functions ---
+  /**
+   * @description Checks if the request is authenticated.
+   * @return {boolean} True if the user is signed in, false otherwise.
+   */
+  function isSignedIn() {
+    return request.auth != null;
+  }
+
+  /**
+   * @description Checks if the authenticated user ID matches the provided user ID.
+   * @param {string} userId The user ID to compare against the authenticated user's UID.
+   * @return {boolean} True if the user is the owner, false otherwise.
+   */
+  function isOwner(userId) {
+    return isSignedIn() && request.auth.uid == userId;
+  }
+
+  /**
+   * @description Combines ownership and existence checks.
+   * @param {string} userId The user ID of the supposed owner.
+   * @return {boolean} True if the user owns the document and the document exists.
+   */
+  function isExistingOwner(userId) {
+    return isOwner(userId) && resource != null;
   }
 }
