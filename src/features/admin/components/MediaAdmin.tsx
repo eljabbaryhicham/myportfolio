@@ -382,20 +382,22 @@ export default function MediaAdmin(props: MediaAdminProps) {
 
   const commonDialogContent = (
     <>
+      <DialogHeader className="p-4 border-b text-center">
+          <DialogTitle>{props.isDialog && props.isSelectionMode ? "Choose Media" : "Media Library"}</DialogTitle>
+      </DialogHeader>
       <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'images' | 'videos')} className="flex-1 flex flex-col min-h-0">
-          <DialogHeader className="p-4 border-b text-center">
-              <DialogTitle>{props.isDialog && props.isSelectionMode ? "Choose Media" : "Media Library"}</DialogTitle>
-              <TabsList className="mt-8">
-                  <TabsTrigger value="images" className="py-2 px-4 text-base">
-                      <FontAwesomeIcon icon={faFileImage} className="mr-2" />
-                      Images
-                  </TabsTrigger>
-                  <TabsTrigger value="videos" className="py-2 px-4 text-base">
-                      <FontAwesomeIcon icon={faFilm} className="mr-2" />
-                      Videos
-                  </TabsTrigger>
-              </TabsList>
-          </DialogHeader>
+          <div className='px-4 pt-4'>
+            <TabsList>
+                <TabsTrigger value="images" className="py-2 px-4 text-base">
+                    <FontAwesomeIcon icon={faFileImage} className="mr-2" />
+                    Images
+                </TabsTrigger>
+                <TabsTrigger value="videos" className="py-2 px-4 text-base">
+                    <FontAwesomeIcon icon={faFilm} className="mr-2" />
+                    Videos
+                </TabsTrigger>
+            </TabsList>
+          </div>
           
           <ScrollArea className="flex-1">
               <TabsContent value="images" className="p-4 m-0">
