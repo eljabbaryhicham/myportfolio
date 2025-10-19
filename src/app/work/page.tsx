@@ -238,6 +238,7 @@ const PortfolioGridItem = ({ item, onClick, onEditClick, isAdmin }: { item: Port
   );
 };
 
+const slugify = (text: string) => text.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, '');
 
 export default function WorkPage() {
   const firestore = useFirestore();
@@ -256,7 +257,7 @@ export default function WorkPage() {
   );
   const { data: portfolioItems, isLoading } = useCollection<PortfolioItem>(projectsQuery);
   
-  const selectedId = searchParams.get('id');
+  const selectedSlug = searchParams.get('id');
 
   const [selectedItem, setSelectedItem] = useState<PortfolioItem | null>(null);
   const [selectedItemForEdit, setSelectedItemForEdit] = useState<PortfolioItem | null>(null);
@@ -289,18 +290,18 @@ export default function WorkPage() {
 
   // Effect to set selected item based on URL
   useEffect(() => {
-    if (selectedId && portfolioItems) {
-      const item = portfolioItems.find(p => p.id === selectedId);
+    if (selectedSlug && portfolioItems) {
+      const item = portfolioItems.find(p => slugify(p.title) === selectedSlug);
       setSelectedItem(item || null);
     } else {
       setSelectedItem(null);
     }
-  }, [selectedId, portfolioItems]);
+  }, [selectedSlug, portfolioItems]);
   
-  const updateUrl = (id: string | null) => {
+  const updateUrl = (slug: string | null) => {
     const params = new URLSearchParams(searchParams.toString());
-    if (id) {
-      params.set('id', id);
+    if (slug) {
+      params.set('id', slug);
     } else {
       params.delete('id');
     }
@@ -309,7 +310,7 @@ export default function WorkPage() {
   };
 
   const handleItemClick = (item: PortfolioItem) => {
-    updateUrl(item.id);
+    updateUrl(slugify(item.title));
   };
   
   const minOrder = useMemo(() => {
@@ -348,7 +349,7 @@ export default function WorkPage() {
     setDirection('next');
     const currentIndex = filteredItems.findIndex(item => item.id === selectedItem.id);
     const nextIndex = (currentIndex + 1) % filteredItems.length;
-    updateUrl(filteredItems[nextIndex].id);
+    updateUrl(slugify(filteredItems[nextIndex].title));
   };
 
   const handlePreviousProject = () => {
@@ -356,7 +357,7 @@ export default function WorkPage() {
     setDirection('prev');
     const currentIndex = filteredItems.findIndex(item => item.id === selectedItem.id);
     const prevIndex = (currentIndex - 1 + filteredItems.length) % filteredItems.length;
-    updateUrl(filteredItems[prevIndex].id);
+    updateUrl(slugify(filteredItems[prevIndex].title));
   };
 
   const handleDialogMouseMove = () => {
@@ -500,15 +501,15 @@ export default function WorkPage() {
                     onMouseLeave={handleDialogMouseLeave}
                     key={selectedItem.id}
                     asChild
+                    drag={isMobile ? "x" : false}
+                    dragConstraints={{ left: 0, right: 0 }}
+                    onDragEnd={handleDragEnd}
                   >
                     <motion.div
                         initial={{ opacity: 0, x: isMobile ? (direction === 'next' ? 300 : -300) : 0, scale: 0.95 }}
                         animate={{ opacity: 1, x: 0, scale: 1 }}
                         exit={{ opacity: 0, x: isMobile ? (direction === 'next' ? -300 : 300) : 0, scale: 0.95 }}
                         transition={{ duration: 0.3, ease: "easeInOut" }}
-                        drag={isMobile ? "x" : false}
-                        dragConstraints={{ left: 0, right: 0 }}
-                        onDragEnd={handleDragEnd}
                     >
                     <div className="flex flex-col flex-1 min-h-0">
                       <DialogHeader className="p-4 md:p-6 flex-shrink-0 relative">
@@ -735,3 +736,4 @@ export default function WorkPage() {
     
 
     
+
