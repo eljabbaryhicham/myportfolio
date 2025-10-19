@@ -90,7 +90,11 @@ export default function AboutAdmin() {
 
   const onSubmit = (values: AboutFormValues) => {
     if (!aboutContentRef || !canEditAbout) return;
-    setDocumentNonBlocking(aboutContentRef, values, { merge: true });
+    const dataToSave = {
+      ...values,
+      logoUrl: values.logoUrl || '', // Ensure logoUrl is not undefined
+    };
+    setDocumentNonBlocking(aboutContentRef, dataToSave, { merge: true });
     toast({
       title: 'About Page Updated',
       description: 'Your "About Us" page has been successfully updated.',
