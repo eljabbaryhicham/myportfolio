@@ -128,7 +128,7 @@ function AdminPage() {
   const handleUploadComplete = async (docId: string, resourceType: 'image' | 'video') => {
     if (!docId) return;
     setNewlyUploadedId(docId);
-    setActiveTab(resourceType === 'video' ? 'videos' : 'images');
+    setActiveTab('media'); // Switch to media tab
     setIsLibraryOpen(true); // Open the library
     // Reset the animation highlight after a delay
     setTimeout(() => setNewlyUploadedId(null), 2000);
@@ -206,8 +206,14 @@ function AdminPage() {
             setIsLibraryOpen(false);
             setLibrarySelectionConfig(null);
         }}
-        activeTab={activeTab as 'images' | 'videos'}
-        setActiveTab={(tab) => setActiveTab(tab)}
+        activeTab={activeTab === 'media' ? 'images' : activeTab as 'images' | 'videos'}
+        setActiveTab={(tab) => {
+          if (activeTab === 'media') {
+            // This state change is local to the dialog
+          } else {
+            setActiveTab(tab)
+          }
+        }}
         newlyUploadedId={newlyUploadedId}
       />
     </>
