@@ -44,7 +44,7 @@ export default function AboutPage() {
       <div className="p-[5%] pb-4">
         <div className="container mx-auto px-0">
             <div className="mb-8 text-center">
-              <h1 className="text-3xl md:text-4xl font-bold tracking-tight">Our Clients</h1>
+              <h1 className="text-3xl md:text-4xl font-bold tracking-tight">About Us</h1>
               <p className="mt-2 max-w-2xl mx-auto text-base md:text-lg text-foreground/70">
                 Trusted by leading artists and brands from around the world.
               </p>
@@ -58,6 +58,7 @@ export default function AboutPage() {
             <Preloader />
           ) : (
             <div className="w-full max-w-sm md:max-w-2xl mx-auto">
+              <h2 className="text-2xl font-bold tracking-tight text-center mb-8">Our Clients</h2>
               <Carousel
                 plugins={[plugin.current]}
                 opts={{
@@ -71,15 +72,16 @@ export default function AboutPage() {
                   {(clients && clients.length > 0) ? clients.map((client) => (
                     <CarouselItem key={client.id} className={isMobile ? 'pt-4 basis-1/2' : 'basis-1/3'}>
                       <div className="p-1 h-full flex flex-col items-center justify-center gap-4 group cursor-pointer">
-                         <MemoizedImage 
-                           src={client.logoUrl} 
-                           alt={`${client.name} logo`}
-                           width={150}
-                           height={40}
-                           className="object-contain w-full h-10 invert brightness-0"
-                           style={{ filter: 'grayscale(1) brightness(1.5)' }}
-                         />
-                         <p className="text-sm text-white whitespace-nowrap transition-colors group-hover:text-primary">{client.name}</p>
+                         <div className="relative w-[150px] h-[40px]">
+                           <MemoizedImage 
+                             src={client.logoUrl} 
+                             alt={`${client.name} logo`}
+                             fill
+                             className="object-contain w-full h-10 invert brightness-0 transition-all duration-300 group-hover:filter-none"
+                             style={{ filter: 'grayscale(1) brightness(1.5)' }}
+                           />
+                         </div>
+                         <p className="text-sm text-white whitespace-nowrap transition-colors duration-300 group-hover:text-primary">{client.name}</p>
                       </div>
                     </CarouselItem>
                   )) : (
