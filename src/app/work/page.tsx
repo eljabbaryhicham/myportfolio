@@ -28,7 +28,6 @@ import { Separator } from '@/components/ui/separator';
 import Preloader from '@/components/preloader';
 import { useIsExtraWide } from '@/hooks/use-is-extra-wide';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { useRouter } from 'next/navigation';
 import { PortfolioItemFormSheet } from '@/features/admin/components/PortfolioItemForm';
 import MediaAdmin from '@/features/admin/components/MediaAdmin';
 import { useToast } from '@/hooks/use-toast';
@@ -272,6 +271,7 @@ export default function WorkPage() {
   
   const [isLibraryOpen, setIsLibraryOpen] = useState(false);
   const [librarySelectionConfig, setLibrarySelectionConfig] = useState<{ onSelect: (url: string, type: 'image' | 'video', filename: string) => void } | null>(null);
+  const [dialogActiveTab, setDialogActiveTab] = useState<'images' | 'videos'>('images');
 
 
   useEffect(() => {
@@ -655,13 +655,18 @@ export default function WorkPage() {
             isOpen={isLibraryOpen}
             onOpenChange={setIsLibraryOpen}
             onMediaSelect={(url, type, filename) => {
-              // This is a dummy function as this flow is handled inside the form
+              if (librarySelectionConfig?.onSelect) {
+                librarySelectionConfig.onSelect(url, type, filename);
+              }
             }}
             isSelectionMode={!!librarySelectionConfig}
             onSelectionComplete={() => {
               setIsLibraryOpen(false);
               setLibrarySelectionConfig(null);
             }}
+            activeTab={dialogActiveTab}
+            setActiveTab={setDialogActiveTab}
+            newlyUploadedId={null}
           />
         </>
       )}
