@@ -111,6 +111,33 @@
       "required": [
         "featuredProjectId"
       ]
+    },
+    "MediaAsset": {
+      "title": "Media Asset",
+      "description": "Stores metadata about an uploaded media file.",
+      "type": "object",
+      "properties": {
+        "public_id": {
+          "type": "string",
+          "description": "The public ID from Cloudinary."
+        },
+        "url": {
+          "type": "string",
+          "format": "uri",
+          "description": "The secure URL of the uploaded file."
+        },
+        "resource_type": {
+          "type": "string",
+          "enum": ["image", "video", "raw"],
+          "description": "The type of the media file."
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "The timestamp when the file was uploaded."
+        }
+      },
+      "required": ["public_id", "url", "resource_type", "created_at"]
     }
   },
   "auth": {
@@ -167,6 +194,22 @@
               "description": "The unique identifier for the homepage settings document."
             }
           ]
+        }
+      },
+      {
+        "path": "/media/{mediaId}",
+        "definition": {
+            "entityName": "MediaAsset",
+            "schema": {
+                "$ref": "#/backend/entities/MediaAsset"
+            },
+            "description": "Stores metadata for uploaded Cloudinary assets.",
+            "params": [
+                {
+                    "name": "mediaId",
+                    "description": "The unique identifier for the media asset."
+                }
+            ]
         }
       }
     ]

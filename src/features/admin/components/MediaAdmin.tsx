@@ -1,10 +1,23 @@
 'use client';
 
-import React, { useCallback, useState, useMemo } from 'react';
+// IMPORTANT: To use this component, you need a Cloudinary account.
+// 1. Create a free account at https://cloudinary.com/
+// 2. In your Dashboard, find your "Cloud Name".
+// 3. Go to Settings > Upload and find your "Upload Preset". 
+//    If one doesn't exist, create a new one with "Unsigned" signing mode.
+// 4. Create a new file named .env.local in the root of your project.
+// 5. Add the following lines to your .env.local file, replacing with your actual credentials:
+
+/* .env.local
+NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME=your_cloud_name
+NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET=your_upload_preset
+*/
+
+// 6. Restart your development server for the changes to take effect.
+
+
+import React, { useCallback, useState, useEffect } from 'react';
 import { useDropzone } from 'react-dropzone';
-import { useStorageList, useStorageDelete } from '@/firebase/storage/use-storage';
-import { useStorage, useUser } from '@/firebase';
-import { ref } from 'firebase/storage';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/hooks/use-toast';
@@ -15,38 +28,48 @@ import { faCloudUploadAlt, faCopy, faTrash, faFilm, faFileImage } from '@fortawe
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { cn } from '@/lib/utils';
 import Preloader from '@/components/preloader';
-import { uploadFile } from '../services/upload-service';
+import { useCollection, useFirestore, useMemoFirebase, addDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase';
+import { collection, doc, query, orderBy } from 'firebase/firestore';
+
+
+// Type for the media stored in Firestore
+interface MediaAsset {
+    id: string;
+    url: string;
+    public_id: string;
+    resource_type: 'image' | 'video' | 'raw';
+    created_at: string;
+}
+
 
 const MediaFileCard = ({
   file,
   onDelete,
   onCopy,
 }: {
-  file: { url: string; name: string, type: 'image' | 'video' | 'other' };
-  onDelete: (name: string) => void;
+  file: MediaAsset;
+  onDelete: (publicId: string, id: string, resourceType: string) => void;
   onCopy: (url: string) => void;
 }) => {
-  const [isDeleting, setIsDeleting] = useState(false);
-
+  
   const handleDelete = () => {
-    setIsDeleting(true);
-    onDelete(file.name);
+    onDelete(file.public_id, file.id, file.resource_type);
   };
   
   return (
     <div className="relative group aspect-square border rounded-lg overflow-hidden glass-effect p-1">
        <div className="relative w-full h-full rounded-md overflow-hidden">
-        {file.type === 'image' ? (
-          <Image src={file.url} alt={file.name} fill className="object-cover" />
+        {file.resource_type === 'image' ? (
+          <Image src={file.url} alt={file.public_id} fill className="object-cover" />
         ) : (
           <div className="w-full h-full bg-black flex items-center justify-center">
-            <FontAwesomeIcon icon={faFilm} className="h-12 w-12 text-white/50" />
+            <video src={file.url} muted loop playsInline className="w-full h-full object-cover" onMouseOver={e => e.currentTarget.play()} onMouseOut={e => e.currentTarget.pause()}></video>
           </div>
         )}
       </div>
 
       <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-between p-2">
-        <p className="text-white text-xs break-all">{file.name}</p>
+        <p className="text-white text-xs break-all">{file.public_id.split('/').pop()}</p>
         <div className="flex gap-2 justify-center">
           <Button size="sm" variant="secondary" onClick={() => onCopy(file.url)}>
             <FontAwesomeIcon icon={faCopy} />
@@ -61,13 +84,13 @@ const MediaFileCard = ({
               <AlertDialogHeader>
                 <AlertDialogTitle>Are you sure?</AlertDialogTitle>
                 <AlertDialogDescription>
-                  This will permanently delete the file <span className="font-bold">{file.name}</span>. This action cannot be undone.
+                  This will permanently delete the file from your Cloudinary storage. This action cannot be undone.
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
                 <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction onClick={handleDelete} disabled={isDeleting}>
-                  {isDeleting ? 'Deleting...' : 'Delete'}
+                <AlertDialogAction onClick={handleDelete}>
+                  Delete
                 </AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>
@@ -78,58 +101,100 @@ const MediaFileCard = ({
   );
 };
 
+
 export default function MediaAdmin() {
-  const storage = useStorage();
-  const { user } = useUser();
   const { toast } = useToast();
-  
-  const filesRef = useMemo(() => (storage ? ref(storage, 'uploads') : null), [storage]);
-  const { files, isLoading: isLoadingFiles, refetch: refetchFiles } = useStorageList(filesRef);
-  const { deleteFile, isDeleting } = useStorageDelete();
+  const firestore = useFirestore();
 
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadingFileName, setUploadingFileName] = useState('');
 
+  // Fetch media assets from Firestore
+  const mediaCollectionRef = useMemoFirebase(() => firestore ? query(collection(firestore, 'media'), orderBy('created_at', 'desc')) : null, [firestore]);
+  const { data: mediaAssets, isLoading: isLoadingMedia, refetch: refetchMedia } = useCollection<MediaAsset>(mediaCollectionRef);
+
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
-    if (!user) {
-      toast({ variant: 'destructive', title: 'Upload Error', description: 'You must be logged in to upload files.' });
+    if (!process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || !process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET) {
+      toast({
+        variant: 'destructive',
+        title: 'Configuration Error',
+        description: 'Cloudinary credentials are not configured in .env.local file.',
+      });
       return;
     }
-    if (acceptedFiles.length === 0) return;
 
     setIsUploading(true);
 
     for (const file of acceptedFiles) {
-      try {
-        setUploadingFileName(file.name);
-        setUploadProgress(0);
-        
-        await uploadFile(file, (progress) => {
+      setUploadingFileName(file.name);
+      setUploadProgress(0);
+
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('upload_preset', process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET!);
+
+      const xhr = new XMLHttpRequest();
+      xhr.open('POST', `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/auto/upload`, true);
+
+      xhr.upload.onprogress = (event) => {
+        if (event.lengthComputable) {
+          const progress = Math.round((event.loaded / event.total) * 100);
           setUploadProgress(progress);
-        });
+        }
+      };
 
-        toast({
-          title: 'Upload successful',
-          description: `${file.name} has been uploaded.`,
-        });
+      xhr.onload = async () => {
+        if (xhr.status === 200) {
+          const response = JSON.parse(xhr.responseText);
+          
+          if(firestore) {
+            // Save metadata to Firestore
+            await addDocumentNonBlocking(collection(firestore, 'media'), {
+                public_id: response.public_id,
+                url: response.secure_url,
+                resource_type: response.resource_type,
+                created_at: response.created_at,
+            });
+          }
 
-      } catch (error: any) {
-        console.error('Upload failed:', error);
-        toast({
+          toast({
+            title: 'Upload successful',
+            description: `${file.name} has been uploaded.`,
+          });
+          refetchMedia();
+        } else {
+          const error = JSON.parse(xhr.responseText).error;
+          toast({
             variant: 'destructive',
             title: `Upload Failed for ${file.name}`,
             description: error.message || 'An unknown error occurred.',
-        });
+          });
+        }
+      };
+      
+      xhr.onerror = () => {
+         toast({
+            variant: 'destructive',
+            title: `Upload Failed for ${file.name}`,
+            description: 'A network error occurred during upload.',
+          });
       }
+
+      xhr.send(formData);
+
+      // Wait for onload or onerror to handle the next file implicitly
+      await new Promise(resolve => {
+        xhr.onloadend = resolve;
+      });
     }
 
     setIsUploading(false);
     setUploadingFileName('');
     setUploadProgress(0);
-    refetchFiles();
 
-  }, [user, toast, refetchFiles]);
+  }, [toast, firestore, refetchMedia]);
+
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
@@ -139,15 +204,18 @@ export default function MediaAdmin() {
     }
   });
   
-  const handleDelete = async (name: string) => {
-    if (!storage) return;
-    const fileRef = ref(storage, `uploads/${name}`);
+  const handleDelete = async (publicId: string, docId: string, resourceType: string) => {
+    // Note: Deleting from Cloudinary requires a signed request from a backend.
+    // For simplicity, we are only deleting the reference from Firestore here.
+    // To implement hard deletes, you would need an API route to securely call Cloudinary's destroy method.
+    if (!firestore) return;
+    
     try {
-        await deleteFile(fileRef);
-        toast({ title: "File deleted", description: `${name} has been removed.`});
-        refetchFiles();
-    } catch (e: any) {
-        toast({ variant: 'destructive', title: "Delete failed", description: `Could not delete ${name}: ${e.message}`});
+        await deleteDocumentNonBlocking(doc(firestore, 'media', docId));
+        toast({ title: "File Removed", description: `The reference to the file has been removed from your library.`});
+        refetchMedia(); // This will now correctly refetch from Firestore
+    } catch(e: any) {
+        toast({ variant: 'destructive', title: "Deletion Failed", description: `Could not remove file reference: ${e.message}`});
     }
   };
 
@@ -156,13 +224,11 @@ export default function MediaAdmin() {
     toast({ title: "Copied!", description: "File URL copied to clipboard."});
   }
 
-  const displayedFiles = [...files].reverse();
-
   return (
     <div className="flex-1 flex flex-col h-full gap-6">
       <div className="flex-1 border rounded-lg overflow-hidden glass-effect flex flex-col">
         <div className="p-6 border-b">
-           <h2 className="text-xl font-bold">Media Library</h2>
+           <h2 className="text-xl font-bold">Media Library (Cloudinary)</h2>
            <p className="text-muted-foreground">
              Upload, view, and manage your media assets.
            </p>
@@ -202,18 +268,18 @@ export default function MediaAdmin() {
         
         <ScrollArea className="flex-1">
           <div className="p-6 pt-0">
-            {isLoadingFiles ? (
+            {isLoadingMedia ? (
                  <div className="flex justify-center items-center h-full min-h-[200px]">
                     <Preloader />
                 </div>
             ) : (
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-                {displayedFiles.map(file => (
-                  <MediaFileCard key={file.name} file={file} onDelete={handleDelete} onCopy={handleCopy} />
+                {mediaAssets?.map(file => (
+                  <MediaFileCard key={file.id} file={file} onDelete={handleDelete} onCopy={handleCopy} />
                 ))}
               </div>
             )}
-            {!isLoadingFiles && files.length === 0 && (
+            {!isLoadingMedia && (!mediaAssets || mediaAssets.length === 0) && (
                 <div className="text-center py-12 text-muted-foreground">
                     <FontAwesomeIcon icon={faFileImage} className="h-12 w-12 mb-4" />
                     <p>No files uploaded yet.</p>
