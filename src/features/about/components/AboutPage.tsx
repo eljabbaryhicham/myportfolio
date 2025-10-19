@@ -1,24 +1,15 @@
 
 'use client';
 
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-} from '@/components/ui/carousel';
-import { memo, useMemo, useRef } from 'react';
+import { memo } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
-import { useIsMobile } from '@/hooks/use-mobile';
 import Image from 'next/image';
 import { useCollection, useDoc, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection, query, orderBy, doc } from 'firebase/firestore';
 import Preloader from '@/components/preloader';
-import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
 import Logo from '@/components/logo';
-import Autoplay from "embla-carousel-autoplay"
-
 
 interface Client {
   id: string;
@@ -37,12 +28,7 @@ interface AboutPageContent {
 const MemoizedImage = memo(Image);
 
 export default function AboutPage() {
-  const isMobile = useIsMobile();
   const firestore = useFirestore();
-
-  const plugin = useRef(
-    Autoplay({ delay: 2000, stopOnInteraction: true, stopOnMouseEnter: true })
-  );
 
   const clientsQuery = useMemoFirebase(
     () => firestore ? query(collection(firestore, 'clients'), orderBy('order')) : null,
@@ -58,6 +44,28 @@ export default function AboutPage() {
   
   const isLoading = isLoadingClients || isLoadingContent;
   const logoUrl = aboutContent?.logoUrl || "https://i.imgur.com/N9c8oEJ.png";
+
+  const clientLogos = clients && clients.length > 0 ? (
+    clients.map((client) => (
+      <div key={client.id} className="flex-shrink-0 px-8" style={{ minWidth: '150px' }}>
+          <div className="group/item flex flex-col items-center justify-center gap-2 cursor-pointer p-4">
+              <div className="relative w-[150px] h-[40px]">
+              <MemoizedImage
+                  src={client.logoUrl}
+                  alt={`${client.name} logo`}
+                  fill
+                  className="object-contain w-full h-10 grayscale brightness-0 invert transition-all duration-300 group-hover/item:filter-none"
+              />
+              </div>
+              <p className="text-sm text-white whitespace-nowrap transition-colors duration-300 group-hover/item:text-primary">{client.name}</p>
+          </div>
+      </div>
+    ))
+  ) : (
+    <div className="p-1 h-full flex items-center justify-center text-muted-foreground">
+        No clients to display.
+    </div>
+  );
 
   return (
     <div className="h-full w-full flex flex-col">
@@ -109,40 +117,19 @@ export default function AboutPage() {
                   <Separator className="bg-white/10 max-w-xs mx-auto mt-2" />
                 </div>
                 
-                 <Carousel
-                    opts={{
-                      align: "start",
-                      loop: true,
-                    }}
-                    plugins={[plugin.current]}
-                    className="w-full"
-                    onMouseEnter={plugin.current.stop}
-                    onMouseLeave={plugin.current.reset}
-                  >
-                    <CarouselContent>
-                      {(clients && clients.length > 0) ? clients.map((client) => (
-                        <CarouselItem key={client.id} className="basis-1/2 md:basis-1/3 lg:basis-1/4">
-                          <div className="p-1">
-                            <div className="group/item flex flex-col items-center justify-center gap-2 cursor-pointer p-4">
-                                <div className="relative w-[150px] h-[40px]">
-                                <MemoizedImage
-                                    src={client.logoUrl}
-                                    alt={`${client.name} logo`}
-                                    fill
-                                    className="object-contain w-full h-10 grayscale brightness-0 invert transition-all duration-300 group-hover/item:filter-none"
-                                />
-                                </div>
-                                <p className="text-sm text-white whitespace-nowrap transition-colors duration-300 group-hover/item:text-primary">{client.name}</p>
-                            </div>
-                          </div>
-                        </CarouselItem>
-                      )) : (
-                        <div className="p-1 h-full flex items-center justify-center text-muted-foreground">
-                            No clients to display.
+                <div className="relative w-full overflow-hidden">
+                    <div className="group flex"
+                        onMouseEnter={(e) => e.currentTarget.style.animationPlayState = 'paused'}
+                        onMouseLeave={(e) => e.currentTarget.style.animationPlayState = 'running'}
+                    >
+                        <div className="flex animate-marquee">
+                            {clientLogos}
                         </div>
-                      )}
-                    </CarouselContent>
-                  </Carousel>
+                        <div className="flex animate-marquee" aria-hidden="true">
+                            {clientLogos}
+                        </div>
+                    </div>
+                </div>
 
                 <div className="text-center mt-8 md:mt-12">
                   <p className="text-foreground/70">
