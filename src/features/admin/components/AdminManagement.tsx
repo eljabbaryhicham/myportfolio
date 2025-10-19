@@ -41,7 +41,7 @@ export default function AdminManagement() {
   const { toast } = useToast();
 
   const usersQuery = useMemoFirebase(
-    () => (firestore ? query(collection(firestore, 'users'), orderBy('createdAt', 'desc')) : null),
+    () => (firestore ? query(collection(firestore, 'users'), orderBy('username', 'asc')) : null),
     [firestore]
   );
   const { data: users, isLoading } = useCollection<AdminUser>(usersQuery);
