@@ -14,7 +14,7 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { useAuth, useUser } from '@/firebase';
+import { useAuth, useUser, useFirestore, setDocumentNonBlocking } from '@/firebase';
 import {
   createUserWithEmailAndPassword,
 } from 'firebase/auth';
@@ -23,6 +23,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import Link from 'next/link';
+import { doc } from 'firebase/firestore';
 
 const formSchema = z.object({
   username: z.string().min(3, { message: 'Username must be at least 3 characters.' }),
@@ -38,6 +39,7 @@ type RegisterFormValues = z.infer<typeof formSchema>;
 
 export default function RegisterPage() {
   const auth = useAuth();
+  const firestore = useFirestore();
   const { user, isUserLoading } = useUser();
   const { toast } = useToast();
   const router = useRouter();
@@ -59,12 +61,23 @@ export default function RegisterPage() {
   });
 
   const handleSignUp = async (values: RegisterFormValues) => {
-    if (!auth) return;
+    if (!auth || !firestore) return;
     setIsSubmitting(true);
-    // Firebase requires an email, so we'll construct one from the username.
+    
     const email = `${values.username.toLowerCase()}@example.com`;
     try {
-      await createUserWithEmailAndPassword(auth, email, values.password);
+      const userCredential = await createUserWithEmailAndPassword(auth, email, values.password);
+      
+      // After successful auth creation, create user doc in Firestore
+      const userDocRef = doc(firestore, 'users', userCredential.user.uid);
+      await setDocumentNonBlocking(userDocRef, {
+        uid: userCredential.user.uid,
+        username: values.username,
+        email: userCredential.user.email,
+        role: 'admin', // default role
+        createdAt: new Date().toISOString(),
+      }, {});
+
       toast({
         title: 'Account Created',
         description: 'You have successfully signed up.',
@@ -82,7 +95,6 @@ export default function RegisterPage() {
   };
 
   if (isUserLoading || user) {
-    // You can show a loader here
     return null;
   }
 
@@ -152,3 +164,5 @@ export default function RegisterPage() {
     </div>
   );
 }
+
+    

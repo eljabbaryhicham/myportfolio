@@ -1,3 +1,4 @@
+
 {
   "entities": {
     "Project": {
@@ -138,6 +139,37 @@
         }
       },
       "required": ["public_id", "url", "resource_type", "created_at"]
+    },
+    "User": {
+        "title": "User",
+        "description": "Represents an administrator user in the system.",
+        "type": "object",
+        "properties": {
+            "uid": {
+                "type": "string",
+                "description": "The unique ID from Firebase Authentication."
+            },
+            "username": {
+                "type": "string",
+                "description": "The user's chosen username."
+            },
+            "email": {
+                "type": "string",
+                "format": "email",
+                "description": "The user's email address."
+            },
+            "role": {
+                "type": "string",
+                "enum": ["admin", "superadmin"],
+                "description": "The role of the user."
+            },
+            "createdAt": {
+                "type": "string",
+                "format": "date-time",
+                "description": "The timestamp when the user was created."
+            }
+        },
+        "required": ["uid", "username", "email", "role", "createdAt"]
     }
   },
   "auth": {
@@ -211,7 +243,25 @@
                 }
             ]
         }
+      },
+      {
+        "path": "/users/{userId}",
+        "definition": {
+            "entityName": "User",
+            "schema": {
+                "$ref": "#/backend/entities/User"
+            },
+            "description": "Stores administrator user data.",
+            "params": [
+                {
+                    "name": "userId",
+                    "description": "The unique identifier for the user, matching their Firebase Auth UID."
+                }
+            ]
+        }
       }
     ]
   }
 }
+
+    

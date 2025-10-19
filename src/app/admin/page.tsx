@@ -22,6 +22,7 @@ import { PortfolioItemFormSheet } from '@/features/admin/components/PortfolioIte
 import { addDocumentNonBlocking, setDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { collection, doc, DocumentReference } from 'firebase/firestore';
 import { useFirestore } from '@/firebase';
+import AdminManagement from '@/features/admin/components/AdminManagement';
 
 
 function AdminPage() {
@@ -40,6 +41,8 @@ function AdminPage() {
   const [fromMediaLibrary, setFromMediaLibrary] = useState(false);
   const [newlyUploadedId, setNewlyUploadedId] = useState<string | null>(null);
   const [dialogActiveTab, setDialogActiveTab] = useState<'images' | 'videos'>('images');
+
+  const isSuperAdmin = user?.email === 'eljabbaryhicham@example.com';
   
   useEffect(() => {
     if (!isUserLoading && !user) {
@@ -177,6 +180,7 @@ function AdminPage() {
                   <TabsTrigger value="projects" className="flex-1">Projects</TabsTrigger>
                   <TabsTrigger value="media" className="flex-1">Media</TabsTrigger>
                   <TabsTrigger value="contact" className="flex-1">Contact</TabsTrigger>
+                  {isSuperAdmin && <TabsTrigger value="admins" className="flex-1">Admins</TabsTrigger>}
               </TabsList>
               <Separator className="bg-white/10 mt-4" />
               <TabsContent value="home" className="flex-1 overflow-auto mt-4">
@@ -195,6 +199,11 @@ function AdminPage() {
               <TabsContent value="contact" className="flex-1 overflow-auto mt-4">
                   <ContactAdmin />
               </TabsContent>
+               {isSuperAdmin && (
+                <TabsContent value="admins" className="flex-1 overflow-auto mt-4">
+                  <AdminManagement />
+                </TabsContent>
+              )}
           </Tabs>
         </div>
       </div>
@@ -224,3 +233,5 @@ function AdminPage() {
 }
 
 export default AdminPage;
+
+    
