@@ -76,7 +76,12 @@ export default function AboutAdmin() {
 
   useEffect(() => {
     if (aboutContent) {
-      form.reset(aboutContent);
+      form.reset({
+        title: aboutContent.title || '',
+        content: aboutContent.content || '',
+        imageUrl: aboutContent.imageUrl || '',
+        logoUrl: aboutContent.logoUrl || '',
+      });
     }
   }, [aboutContent, form]);
 
