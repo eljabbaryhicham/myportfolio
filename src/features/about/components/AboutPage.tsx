@@ -109,42 +109,25 @@ export default function AboutPage() {
                   <h2 className="text-2xl font-bold tracking-tight">Our Clients</h2>
                   <Separator className="bg-white/10 max-w-xs mx-auto mt-2" />
                 </div>
-                <div className='w-full overflow-hidden relative'>
-                  <div className="flex w-max group">
-                      <div className="flex animate-marquee group-hover:[animation-play-state:paused]">
-                          {(duplicatedClients && duplicatedClients.length > 0) ? duplicatedClients.map((client, index) => (
-                          <div key={`${client.id}-${index}-1`} className="mx-8 flex flex-col items-center justify-center gap-2 cursor-pointer group/item">
-                              <div className="relative w-[150px] h-[40px]">
-                                <MemoizedImage 
-                                    src={client.logoUrl} 
-                                    alt={`${client.name} logo`}
-                                    fill
-                                    className="object-contain w-full h-10 grayscale brightness-0 invert transition-all duration-300 group-hover/item:filter-none"
-                                />
-                              </div>
-                              <p className="text-sm text-white whitespace-nowrap transition-colors duration-300 group-hover/item:text-primary">{client.name}</p>
+                <div className='w-full overflow-hidden relative group'>
+                  <div className="flex animate-marquee group-hover:[animation-play-state:paused]">
+                      {(duplicatedClients && duplicatedClients.length > 0) ? duplicatedClients.map((client, index) => (
+                      <div key={`${client.id}-${index}-1`} className="mx-8 flex flex-col items-center justify-center gap-2 cursor-pointer group/item shrink-0">
+                          <div className="relative w-[150px] h-[40px]">
+                            <MemoizedImage 
+                                src={client.logoUrl} 
+                                alt={`${client.name} logo`}
+                                fill
+                                className="object-contain w-full h-10 grayscale brightness-0 invert transition-all duration-300 group-hover/item:filter-none"
+                            />
                           </div>
-                          )) : (
-                              <div className="p-1 h-full flex items-center justify-center text-muted-foreground">
-                                  No clients to display.
-                              </div>
-                          )}
+                          <p className="text-sm text-white whitespace-nowrap transition-colors duration-300 group-hover/item:text-primary">{client.name}</p>
                       </div>
-                       <div className="flex animate-marquee group-hover:[animation-play-state:paused]" aria-hidden="true">
-                          {(duplicatedClients && duplicatedClients.length > 0) ? duplicatedClients.map((client, index) => (
-                          <div key={`${client.id}-${index}-2`} className="mx-8 flex flex-col items-center justify-center gap-2 cursor-pointer group/item">
-                              <div className="relative w-[150px] h-[40px]">
-                                <MemoizedImage 
-                                    src={client.logoUrl} 
-                                    alt={`${client.name} logo`}
-                                    fill
-                                    className="object-contain w-full h-10 grayscale brightness-0 invert transition-all duration-300 group-hover/item:filter-none"
-                                />
-                              </div>
-                              <p className="text-sm text-white whitespace-nowrap transition-colors duration-300 group-hover/item:text-primary">{client.name}</p>
+                      )) : (
+                          <div className="p-1 h-full flex items-center justify-center text-muted-foreground">
+                              No clients to display.
                           </div>
-                          )) : null}
-                      </div>
+                      )}
                   </div>
                 </div>
 

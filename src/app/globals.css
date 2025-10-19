@@ -149,11 +149,7 @@
   }
 
   .marquee {
-    animation: marquee 20s linear infinite;
-  }
-
-  .marquee-vertical {
-    animation: marquee-vertical 20s linear infinite;
+    animation: marquee 30s linear infinite;
   }
 }
 
@@ -237,9 +233,5 @@
 
 @keyframes marquee {
   from { transform: translateX(0); }
-  to { transform: translateX(-50%); }
-}
-@keyframes marquee-vertical {
-  from { transform: translateY(0); }
-  to { transform: translateY(-50%); }
+  to { transform: translateX(-100%); }
 }
