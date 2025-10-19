@@ -90,20 +90,20 @@ const MediaFileCard = ({
                 <p className="font-bold">Select</p>
               </div>
             ) : (
-              <div className="flex gap-2">
-                <Button size="sm" variant="ghost" onClick={() => onPreview(file)} title="Preview">
+              <div className="flex flex-wrap items-center justify-center gap-1 md:gap-2">
+                <Button size="icon" variant="ghost" onClick={() => onPreview(file)} title="Preview" className="h-8 w-8 md:h-10 md:w-10">
                   <FontAwesomeIcon icon={faEye} />
                 </Button>
-                <Button size="sm" variant="default" onClick={() => onMediaSelect(file.url, file.resource_type === 'video' ? 'video' : 'image', file.filename)} title="Create Project">
+                <Button size="icon" variant="default" onClick={() => onMediaSelect(file.url, file.resource_type === 'video' ? 'video' : 'image', file.filename)} title="Create Project" className="h-8 w-8 md:h-10 md:w-10">
                   <FontAwesomeIcon icon={faPlus} />
                 </Button>
-                <Button size="sm" variant="secondary" onClick={() => onCopy(file.url)} title="Copy URL">
+                <Button size="icon" variant="secondary" onClick={() => onCopy(file.url)} title="Copy URL" className="h-8 w-8 md:h-10 md:w-10">
                   <FontAwesomeIcon icon={faCopy} />
                 </Button>
                 {canDelete && (
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
-                      <Button size="sm" variant="destructive" title="Delete">
+                      <Button size="icon" variant="destructive" title="Delete" className="h-8 w-8 md:h-10 md:w-10">
                         <FontAwesomeIcon icon={faTrash} />
                       </Button>
                     </AlertDialogTrigger>
