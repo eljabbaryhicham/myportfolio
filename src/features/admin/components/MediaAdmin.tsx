@@ -138,12 +138,15 @@ const MediaFileCard = ({
 
 interface StandaloneMediaAdminProps {
   isDialog?: false;
-  onLibraryOpenRequest: () => void;
   onMediaSelect: (url: string, type: 'image' | 'video', filename: string) => void;
+  onUploadComplete: (docId: string, resourceType: 'image' | 'video') => void;
   isOpen?: never;
   onOpenChange?: never;
   isSelectionMode?: never;
   onSelectionComplete?: never;
+  activeTab?: never;
+  setActiveTab?: never;
+  newlyUploadedId?: never;
 }
 
 interface DialogMediaAdminProps {
@@ -153,7 +156,10 @@ interface DialogMediaAdminProps {
   onMediaSelect: (url: string, type: 'image' | 'video', filename: string) => void;
   isSelectionMode: boolean;
   onSelectionComplete: () => void;
-  onLibraryOpenRequest?: never;
+  activeTab: 'images' | 'videos';
+  setActiveTab: (tab: 'images' | 'videos') => void;
+  newlyUploadedId: string | null;
+  onUploadComplete?: never;
 }
 
 type MediaAdminProps = StandaloneMediaAdminProps | DialogMediaAdminProps;
@@ -165,9 +171,13 @@ export default function MediaAdmin(props: MediaAdminProps) {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadingFileName, setUploadingFileName] = useState('');
-  const [activeTab, setActiveTab] = useState<'images' | 'videos'>('images');
-  const [newlyUploadedId, setNewlyUploadedId] = useState<string | null>(null);
   const [previewFile, setPreviewFile] = useState<MediaAsset | null>(null);
+
+  // Determine active tab state management
+  const [internalActiveTab, setInternalActiveTab] = useState<'images' | 'videos'>('images');
+  const activeTab = props.isDialog ? props.activeTab : internalActiveTab;
+  const setActiveTab = props.isDialog ? props.setActiveTab : setInternalActiveTab;
+  const newlyUploadedId = props.isDialog ? props.newlyUploadedId : null;
 
   // Fetch media assets from Firestore
   const mediaCollectionRef = useMemoFirebase(() => firestore ? query(collection(firestore, 'media'), orderBy('created_at', 'desc')) : null, [firestore]);
@@ -224,24 +234,21 @@ export default function MediaAdmin(props: MediaAdminProps) {
           const response = JSON.parse(xhr.responseText);
           
           if(firestore) {
-            const docRefPromise = addDocumentNonBlocking(collection(firestore, 'media'), {
-                public_id: response.public_id,
-                url: response.secure_url,
-                resource_type: response.resource_type,
-                created_at: response.created_at,
-                filename: file.name,
-            }) as Promise<DocumentReference>;
+            try {
+              const docRef = await addDocumentNonBlocking(collection(firestore, 'media'), {
+                  public_id: response.public_id,
+                  url: response.secure_url,
+                  resource_type: response.resource_type,
+                  created_at: response.created_at,
+                  filename: file.name,
+              }) as DocumentReference | undefined;
 
-            docRefPromise.then((docRef) => {
-                if (docRef) {
-                    setNewlyUploadedId(docRef.id);
-                    setActiveTab(response.resource_type === 'video' ? 'videos' : 'images');
-                    if (props.isDialog === false) {
-                      props.onLibraryOpenRequest();
-                    }
-                    setTimeout(() => setNewlyUploadedId(null), 2000);
-                }
-            });
+              if (docRef && !props.isDialog) {
+                  props.onUploadComplete(docRef.id, response.resource_type);
+              }
+            } catch (e) {
+                console.error("Error saving to Firestore: ", e);
+            }
           }
 
           toast({
@@ -469,12 +476,6 @@ export default function MediaAdmin(props: MediaAdminProps) {
                   </p>
               </div>
           )}
-          <div className="mt-4 flex justify-center">
-              <Button onClick={props.onLibraryOpenRequest}>
-                  <FontAwesomeIcon icon={faImages} className="mr-2" />
-                  View Library
-              </Button>
-          </div>
         </div>
       </div>
       {previewDialog}

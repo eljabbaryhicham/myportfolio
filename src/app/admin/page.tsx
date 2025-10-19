@@ -37,6 +37,7 @@ function AdminPage() {
   const [librarySelectionConfig, setLibrarySelectionConfig] = useState<{ onSelect: (url: string, type: 'image' | 'video', filename: string) => void } | null>(null);
   const [activeTab, setActiveTab] = useState('projects');
   const [fromMediaLibrary, setFromMediaLibrary] = useState(false);
+  const [newlyUploadedId, setNewlyUploadedId] = useState<string | null>(null);
   
   useEffect(() => {
     if (!isUserLoading && !user) {
@@ -122,6 +123,14 @@ function AdminPage() {
     }
   };
 
+  const handleUploadComplete = (docId: string, resourceType: 'image' | 'video') => {
+    setNewlyUploadedId(docId);
+    setActiveTab(resourceType === 'video' ? 'videos' : 'images');
+    setIsLibraryOpen(true);
+    // Reset the animation highlight after a delay
+    setTimeout(() => setNewlyUploadedId(null), 2000);
+  };
+
   if (isUserLoading || !user) {
     return (
         <div className="fixed inset-0 z-[200] flex items-center justify-center bg-background">
@@ -169,7 +178,7 @@ function AdminPage() {
                   />
               </TabsContent>
               <TabsContent value="media" className="flex-1 overflow-auto mt-4">
-                  {isUserLoading ? <Preloader /> : <MediaAdmin onLibraryOpenRequest={() => setIsLibraryOpen(true)} onMediaSelect={handleOpenPortfolioFormWithMedia} />}
+                  {isUserLoading ? <Preloader /> : <MediaAdmin onUploadComplete={handleUploadComplete} onMediaSelect={handleOpenPortfolioFormWithMedia} />}
               </TabsContent>
               <TabsContent value="contact" className="flex-1 overflow-auto mt-4">
                   <ContactAdmin />
@@ -194,6 +203,9 @@ function AdminPage() {
             setIsLibraryOpen(false);
             setLibrarySelectionConfig(null);
         }}
+        activeTab={activeTab as 'images' | 'videos'}
+        setActiveTab={(tab) => setActiveTab(tab)}
+        newlyUploadedId={newlyUploadedId}
       />
     </>
   );
