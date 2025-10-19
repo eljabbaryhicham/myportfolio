@@ -157,7 +157,7 @@ const PortfolioMedia = ({
     );
   }
 
-  return null;
+  return <div className="relative aspect-video bg-black flex justify-center items-center group w-full"><Preloader /></div>;
 };
 PortfolioMedia.displayName = 'PortfolioMedia';
 
@@ -506,110 +506,112 @@ export default function WorkPage() {
       </div>
 
       <Dialog open={!!selectedItem} onOpenChange={handleOpenChange}>
-        <AnimatePresence mode="wait" initial={false} custom={direction}>
-          {selectedItem && (
-            <DialogContent
-              className={cn(
-                "glass-effect p-0 flex flex-col group",
-                "w-[95vw] max-w-7xl",
-                isExtraWide || isDescriptionLong ? "h-[90vh]" : "max-h-[90vh]"
-              )}
-              onMouseMove={handleDialogMouseMove}
-              onMouseEnter={handleDialogMouseEnter}
-              onMouseLeave={handleDialogMouseLeave}
-              key={selectedItem.id}
-              // Remove asChild and drag props from here
-            >
-              <motion.div
-                className='h-full w-full'
-                custom={direction}
-                variants={variants}
-                initial="enter"
-                animate="center"
-                exit="exit"
-                transition={{
-                  x: { type: "spring", stiffness: 300, damping: 30 },
-                  opacity: { duration: 0.2 }
-                }}
-                drag={isMobile ? "x" : false}
-                dragConstraints={{ left: 0, right: 0 }}
-                onDragEnd={handleDragEnd}
-              >
-                <div className="flex flex-col flex-1 min-h-0 h-full">
-                  <DialogHeader className="p-4 md:p-6 flex-shrink-0 relative">
-                    <div className="text-center">
-                      <DialogTitle className="text-xl md:text-2xl">
-                        {selectedItem.title}
-                      </DialogTitle>
-                      <DialogDescription className="text-sm md:text-base text-center text-foreground/70 mt-2 md:mt-4 whitespace-pre-wrap max-w-2xl mx-auto">
-                          {selectedItem.description}
-                      </DialogDescription>
-                    </div>
-                  
-                    <div className="mt-4 flex justify-between px-8 md:px-0 md:block">
-                      <Button
-                          variant="outline"
-                          size="icon"
-                          onClick={handlePreviousProject}
-                          disabled={filteredItems.length <= 1}
-                          className="md:absolute md:left-16 md:top-1/2 md:-translate-y-1/2 h-8 w-8 md:h-10 md:w-10"
-                      >
-                          <FontAwesomeIcon icon={faArrowLeft} className="h-4 w-4 md:h-5 md:w-5" />
-                          <span className="sr-only">Previous Project</span>
-                      </Button>
-                      <Button
-                          variant="outline"
-                          size="icon"
-                          onClick={handleNextProject}
-                          disabled={filteredItems.length <= 1}
-                          className="md:absolute md:right-16 md:top-1/2 md:-translate-y-1/2 h-8 w-8 md:h-10 md:w-10"
-                      >
-                          <FontAwesomeIcon icon={faArrowRight} className="h-4 w-4 md:h-5 md:w-5" />
-                          <span className="sr-only">Next Project</span>
-                      </Button>
-                    </div>
-                  </DialogHeader>
-                  
-                  <Separator className="bg-white/10 my-0" />
-                  
-                  <ScrollArea className="flex-1 min-h-0">
-                    <div className="relative flex flex-col justify-center h-full">
-                      <div className="w-full my-auto">
-                        {isClient && (
-                          <PortfolioMedia
-                            key={selectedItem.id}
-                            item={selectedItem}
-                            onFullscreenClick={setFullscreenImageUrl}
-                          />
-                        )}
-                      </div>
-                        
-                      {selectedItem.details && (
-                        <div className="p-4 md:p-6 text-center flex-shrink-0">
+          <DialogContent
+            className={cn(
+              "glass-effect p-0 flex flex-col group overflow-hidden",
+              "w-[95vw] max-w-7xl",
+              isExtraWide || isDescriptionLong ? "h-[90vh]" : "max-h-[90vh]"
+            )}
+            onMouseMove={handleDialogMouseMove}
+            onMouseEnter={handleDialogMouseEnter}
+            onMouseLeave={handleDialogMouseLeave}
+            onDragEnd={handleDragEnd}
+            drag={isMobile ? "x" : false}
+            dragConstraints={{ left: 0, right: 0 }}
+            asChild
+          >
+          <motion.div>
+            <AnimatePresence mode="wait" initial={false} custom={direction}>
+              {selectedItem && (
+                  <motion.div
+                    className='h-full w-full'
+                    key={selectedItem.id}
+                    custom={direction}
+                    variants={variants}
+                    initial="enter"
+                    animate="center"
+                    exit="exit"
+                    transition={{
+                      x: { type: "spring", stiffness: 300, damping: 30 },
+                      opacity: { duration: 0.2 }
+                    }}
+                  >
+                    <div className="flex flex-col flex-1 min-h-0 h-full">
+                      <DialogHeader className="p-4 md:p-6 flex-shrink-0 relative">
+                        <div className="text-center">
+                          <DialogTitle className="text-xl md:text-2xl">
+                            {selectedItem.title}
+                          </DialogTitle>
+                          <DialogDescription className="text-sm md:text-base text-center text-foreground/70 mt-2 md:mt-4 whitespace-pre-wrap max-w-2xl mx-auto">
+                              {selectedItem.description}
+                          </DialogDescription>
+                        </div>
+                      
+                        <div className="mt-4 flex justify-between px-8 md:px-0 md:block">
                           <Button
-                            variant="default"
-                            onClick={() => setDetailsModalOpen(true)}
+                              variant="outline"
+                              size="icon"
+                              onClick={handlePreviousProject}
+                              disabled={filteredItems.length <= 1}
+                              className="md:absolute md:left-16 md:top-1/2 md:-translate-y-1/2 h-8 w-8 md:h-10 md:w-10"
                           >
-                            <FontAwesomeIcon icon={faUpDown} className="mr-2" />
-                            Show Details
+                              <FontAwesomeIcon icon={faArrowLeft} className="h-4 w-4 md:h-5 md:w-5" />
+                              <span className="sr-only">Previous Project</span>
+                          </Button>
+                          <Button
+                              variant="outline"
+                              size="icon"
+                              onClick={handleNextProject}
+                              disabled={filteredItems.length <= 1}
+                              className="md:absolute md:right-16 md:top-1/2 md:-translate-y-1/2 h-8 w-8 md:h-10 md:w-10"
+                          >
+                              <FontAwesomeIcon icon={faArrowRight} className="h-4 w-4 md:h-5 md:w-5" />
+                              <span className="sr-only">Next Project</span>
                           </Button>
                         </div>
-                      )}
-                    </div>
-                  </ScrollArea>
+                      </DialogHeader>
+                      
+                      <Separator className="bg-white/10 my-0" />
+                      
+                      <ScrollArea className="flex-1 min-h-0">
+                        <div className="relative flex flex-col justify-center h-full">
+                          <div className="w-full my-auto">
+                            {isClient && (
+                              <PortfolioMedia
+                                key={selectedItem.id}
+                                item={selectedItem}
+                                onFullscreenClick={setFullscreenImageUrl}
+                              />
+                            )}
+                          </div>
+                            
+                          {selectedItem.details && (
+                            <div className="p-4 md:p-6 text-center flex-shrink-0">
+                              <Button
+                                variant="default"
+                                onClick={() => setDetailsModalOpen(true)}
+                              >
+                                <FontAwesomeIcon icon={faUpDown} className="mr-2" />
+                                Show Details
+                              </Button>
+                            </div>
+                          )}
+                        </div>
+                      </ScrollArea>
 
-                </div>
-                <DialogClose className={cn(
-                    "absolute right-4 top-4 z-10 h-8 w-8 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center ring-offset-background transition-opacity focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 hover:opacity-100",
-                    isMobile ? "opacity-70" : (isCloseButtonVisible ? "opacity-70" : "opacity-0")
-                )}>
-                  <FontAwesomeIcon icon={faXmark} className="h-4 w-4" />
-                  <span className="sr-only">Close</span>
-                </DialogClose>
-              </motion.div>
-            </DialogContent>
-          )}
-        </AnimatePresence>
+                    </div>
+                    <DialogClose className={cn(
+                        "absolute right-4 top-4 z-10 h-8 w-8 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center ring-offset-background transition-opacity focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 hover:opacity-100",
+                        isMobile ? "opacity-70" : (isCloseButtonVisible ? "opacity-70" : "opacity-0")
+                    )}>
+                      <FontAwesomeIcon icon={faXmark} className="h-4 w-4" />
+                      <span className="sr-only">Close</span>
+                    </DialogClose>
+                  </motion.div>
+              )}
+            </AnimatePresence>
+            </motion.div>
+          </DialogContent>
       </Dialog>
       
       {/* Nested Dialog for Details */}
