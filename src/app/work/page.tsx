@@ -51,11 +51,6 @@ const PortfolioMedia = ({
 }) => {
   const [isContentLoaded, setIsContentLoaded] = useState(false);
 
-  useEffect(() => {
-    // When the item `id` changes, reset the content loaded state to show the preloader
-    setIsContentLoaded(false);
-  }, [item.id]);
-
   const videoSource = useMemo(() => {
     const youtubeRegex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
     const vimeoRegex = /(?:https?:\/\/)?(?:www\.)?vimeo\.com\/(?:channels\/(?:\w+\/)?|groups\/(?:[^\/]*)\/videos\/|album\/(?:\d+)\/video\/|)(\d+)/;
@@ -649,7 +644,7 @@ export default function WorkPage() {
                               if (!isClient || !src) return null;
                               
                               const youtubeRegex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
-                              const vimeoRegex = /(?:https?:\/\/)?(?:www\.)?vimeo\.com\/(?:channels\/(?:\w+\/)?|groups\/(?:\/]*)\/videos\/|album\/(?:\d+)\/video\/|)(\d+)/;
+                              const vimeoRegex = /(?:https?:\/\/)?(?:www\.)?vimeo\.com\/(?:channels\/(?:\w+\/)?|groups\/(?:[^\/]*)\/videos\/|album\/(?:\d+)\/video\/|)(\d+)/;
                               
                               let videoSource: { type: 'video'; sources: { src: string; provider: 'youtube' | 'vimeo' }[] } | { type: 'video'; sources: { src: string; type: string }[] } | null = null;
                               const youtubeMatch = src.match(youtubeRegex);
@@ -760,5 +755,3 @@ export default function WorkPage() {
     </>
   );
 }
-
-    
