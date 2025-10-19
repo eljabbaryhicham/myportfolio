@@ -118,8 +118,7 @@ export default function AboutPage() {
                                     src={client.logoUrl} 
                                     alt={`${client.name} logo`}
                                     fill
-                                    className="object-contain w-full h-10 invert brightness-0 transition-all duration-300 group-hover/item:filter-none"
-                                    style={{ filter: 'grayscale(1) brightness(1.5)' }}
+                                    className="object-contain w-full h-10 grayscale brightness-0 invert transition-all duration-300 group-hover/item:filter-none"
                                 />
                               </div>
                               <p className="text-sm text-white whitespace-nowrap transition-colors duration-300 group-hover/item:text-primary">{client.name}</p>
@@ -138,8 +137,7 @@ export default function AboutPage() {
                                     src={client.logoUrl} 
                                     alt={`${client.name} logo`}
                                     fill
-                                    className="object-contain w-full h-10 invert brightness-0 transition-all duration-300 group-hover/item:filter-none"
-                                    style={{ filter: 'grayscale(1) brightness(1.5)' }}
+                                    className="object-contain w-full h-10 grayscale brightness-0 invert transition-all duration-300 group-hover/item:filter-none"
                                 />
                               </div>
                               <p className="text-sm text-white whitespace-nowrap transition-colors duration-300 group-hover/item:text-primary">{client.name}</p>

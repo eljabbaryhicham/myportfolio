@@ -349,8 +349,7 @@ export default function ClientAdmin() {
                                         alt={client.name}
                                         width={80}
                                         height={32}
-                                        className="object-contain h-8 w-20 invert brightness-0"
-                                        style={{ filter: 'grayscale(1) brightness(1.5)'}}
+                                        className="object-contain h-8 w-20 grayscale brightness-0 invert"
                                     />
                                     <p className="font-medium truncate">{client.name}</p>
                                 </div>
@@ -400,8 +399,7 @@ export default function ClientAdmin() {
                                     alt={client.name}
                                     width={100}
                                     height={40}
-                                    className="object-contain h-10 w-24 invert brightness-0"
-                                    style={{ filter: 'grayscale(1) brightness(1.5)'}}
+                                    className="object-contain h-10 w-24 grayscale brightness-0 invert"
                                     />
                                 </TableCell>
                                 <TableCell className="font-medium max-w-[100px] md:max-w-xs truncate">{client.name}</TableCell>
