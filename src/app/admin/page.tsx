@@ -22,6 +22,7 @@ import { addDocumentNonBlocking, setDocumentNonBlocking } from '@/firebase/non-b
 import { collection, doc } from 'firebase/firestore';
 import { useFirestore } from '@/firebase';
 import AdminManagement from '@/features/admin/components/AdminManagement';
+import ClientAdmin from '@/features/admin/components/ClientAdmin';
 
 
 function AdminPage() {
@@ -195,6 +196,7 @@ function AdminPage() {
                   <TabsTrigger value="projects" className="flex-1">Projects</TabsTrigger>
                   <TabsTrigger value="media" className="flex-1">Media</TabsTrigger>
                   <TabsTrigger value="contact" className="flex-1">Contact</TabsTrigger>
+                   <TabsTrigger value="clients" className="flex-1">Clients</TabsTrigger>
                   {isSuperAdmin && <TabsTrigger value="admins" className="flex-1">Admins</TabsTrigger>}
               </TabsList>
               <Separator className="bg-white/10 mt-4" />
@@ -213,6 +215,9 @@ function AdminPage() {
               </TabsContent>
               <TabsContent value="contact" className="flex-1 overflow-auto mt-4">
                   <ContactAdmin />
+              </TabsContent>
+               <TabsContent value="clients" className="flex-1 overflow-auto mt-4">
+                  <ClientAdmin />
               </TabsContent>
                {isSuperAdmin && (
                 <TabsContent value="admins" className="flex-1 overflow-auto mt-4">
@@ -249,3 +254,5 @@ function AdminPage() {
 }
 
 export default AdminPage;
+
+    
