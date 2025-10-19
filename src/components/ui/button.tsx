@@ -19,6 +19,7 @@ const buttonVariants = cva(
           "glass-effect text-foreground",
         ghost: "glass-effect text-foreground",
         link: "text-primary underline-offset-4 hover:underline",
+        "dark-blue": "bg-[#172554] text-white hover:bg-[#172554]/90",
       },
       size: {
         default: "h-10 px-4 py-2",
