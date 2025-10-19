@@ -293,20 +293,21 @@ export default function MediaAdmin() {
       
       <Dialog open={isLibraryOpen} onOpenChange={setIsLibraryOpen}>
         <DialogContent className="w-[95vw] h-[90vh] glass-effect p-0 flex flex-col">
-            <DialogHeader className="p-4 border-b">
-                <DialogTitle>Media Library</DialogTitle>
-            </DialogHeader>
             <Tabs defaultValue="images" className="flex-1 flex flex-col min-h-0">
-                <TabsList className="px-4 w-full justify-center rounded-none border-b">
-                    <TabsTrigger value="images">
-                        <FontAwesomeIcon icon={faFileImage} className="mr-2" />
-                        Images
-                    </TabsTrigger>
-                    <TabsTrigger value="videos">
-                        <FontAwesomeIcon icon={faFilm} className="mr-2" />
-                        Videos
-                    </TabsTrigger>
-                </TabsList>
+                <DialogHeader className="p-4 border-b text-center">
+                    <DialogTitle>Media Library</DialogTitle>
+                    <TabsList className="mt-4">
+                        <TabsTrigger value="images" className="py-2 px-4 text-base">
+                            <FontAwesomeIcon icon={faFileImage} className="mr-2" />
+                            Images
+                        </TabsTrigger>
+                        <TabsTrigger value="videos" className="py-2 px-4 text-base">
+                            <FontAwesomeIcon icon={faFilm} className="mr-2" />
+                            Videos
+                        </TabsTrigger>
+                    </TabsList>
+                </DialogHeader>
+                
                 <ScrollArea className="flex-1">
                 <TabsContent value="images" className="p-4 m-0">
                     {renderLibrary(imageAssets, 'image')}
