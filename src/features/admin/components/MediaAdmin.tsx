@@ -17,14 +17,15 @@ import { useToast } from '@/hooks/use-toast';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import Image from 'next/image';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCloudUploadAlt, faCopy, faTrash, faFilm, faFileImage, faImages, faXmark, faPlus, faCheck } from '@fortawesome/free-solid-svg-icons';
+import { faCloudUploadAlt, faCopy, faTrash, faFilm, faFileImage, faImages, faXmark, faPlus, faCheck, faEye } from '@fortawesome/free-solid-svg-icons';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose, DialogDescription } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
 import Preloader from '@/components/preloader';
 import { useCollection, useFirestore, useMemoFirebase, addDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase';
 import { collection, doc, query, orderBy, DocumentReference } from 'firebase/firestore';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import VideoPlayer from '@/components/video-player';
 
 
 // Type for the media stored in Firestore
@@ -42,6 +43,7 @@ const MediaFileCard = ({
   file,
   onDelete,
   onCopy,
+  onPreview,
   isNewlyUploaded,
   onMediaSelect,
   isSelectionMode
@@ -49,6 +51,7 @@ const MediaFileCard = ({
   file: MediaAsset;
   onDelete: (publicId: string, id: string, resourceType: string) => void;
   onCopy: (url: string) => void;
+  onPreview: (file: MediaAsset) => void;
   isNewlyUploaded: boolean;
   onMediaSelect: (url: string, type: 'image' | 'video', filename: string) => void;
   isSelectionMode: boolean;
@@ -94,15 +97,18 @@ const MediaFileCard = ({
               </div>
             ) : (
               <div className="flex gap-2">
-                <Button size="sm" variant="default" onClick={() => onMediaSelect(file.url, file.resource_type === 'video' ? 'video' : 'image', file.filename)}>
+                <Button size="sm" variant="ghost" onClick={() => onPreview(file)} title="Preview">
+                  <FontAwesomeIcon icon={faEye} />
+                </Button>
+                <Button size="sm" variant="default" onClick={() => onMediaSelect(file.url, file.resource_type === 'video' ? 'video' : 'image', file.filename)} title="Create Project">
                   <FontAwesomeIcon icon={faPlus} />
                 </Button>
-                <Button size="sm" variant="secondary" onClick={() => onCopy(file.url)}>
+                <Button size="sm" variant="secondary" onClick={() => onCopy(file.url)} title="Copy URL">
                   <FontAwesomeIcon icon={faCopy} />
                 </Button>
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
-                    <Button size="sm" variant="destructive">
+                    <Button size="sm" variant="destructive" title="Delete">
                       <FontAwesomeIcon icon={faTrash} />
                     </Button>
                   </AlertDialogTrigger>
@@ -161,6 +167,7 @@ export default function MediaAdmin(props: MediaAdminProps) {
   const [uploadingFileName, setUploadingFileName] = useState('');
   const [activeTab, setActiveTab] = useState<'images' | 'videos'>('images');
   const [newlyUploadedId, setNewlyUploadedId] = useState<string | null>(null);
+  const [previewFile, setPreviewFile] = useState<MediaAsset | null>(null);
 
   // Fetch media assets from Firestore
   const mediaCollectionRef = useMemoFirebase(() => firestore ? query(collection(firestore, 'media'), orderBy('created_at', 'desc')) : null, [firestore]);
@@ -332,6 +339,7 @@ export default function MediaAdmin(props: MediaAdminProps) {
                   file={file} 
                   onDelete={handleDelete} 
                   onCopy={handleCopy}
+                  onPreview={setPreviewFile}
                   isNewlyUploaded={file.id === newlyUploadedId}
                   onMediaSelect={handleMediaSelect}
                   isSelectionMode={!!(props.isDialog && props.isSelectionMode)}
@@ -341,77 +349,135 @@ export default function MediaAdmin(props: MediaAdminProps) {
     );
   }
 
+  const renderPreviewContent = () => {
+    if (!previewFile) return null;
+
+    if (previewFile.resource_type === 'image') {
+      return (
+        <div className="relative w-full h-full">
+          <Image
+            src={previewFile.url}
+            alt={previewFile.filename}
+            fill
+            className="object-contain"
+          />
+        </div>
+      );
+    }
+
+    if (previewFile.resource_type === 'video') {
+      return (
+        <VideoPlayer
+          source={{
+            type: 'video',
+            sources: [{ src: previewFile.url, type: 'video/mp4' }],
+          }}
+        />
+      );
+    }
+    return null;
+  };
+
+  const commonDialogContent = (
+    <>
+      <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'images' | 'videos')} className="flex-1 flex flex-col min-h-0">
+          <DialogHeader className="p-4 border-b text-center">
+              <DialogTitle>{props.isDialog && props.isSelectionMode ? "Choose Media" : "Media Library"}</DialogTitle>
+              <TabsList className="mt-8">
+                  <TabsTrigger value="images" className="py-2 px-4 text-base">
+                      <FontAwesomeIcon icon={faFileImage} className="mr-2" />
+                      Images
+                  </TabsTrigger>
+                  <TabsTrigger value="videos" className="py-2 px-4 text-base">
+                      <FontAwesomeIcon icon={faFilm} className="mr-2" />
+                      Videos
+                  </TabsTrigger>
+              </TabsList>
+          </DialogHeader>
+          
+          <ScrollArea className="flex-1">
+              <TabsContent value="images" className="p-4 m-0">
+                  {renderLibrary(imageAssets, 'image')}
+              </TabsContent>
+              <TabsContent value="videos" className="p-4 m-0">
+                  {renderLibrary(videoAssets, 'video')}
+              </TabsContent>
+          </ScrollArea>
+      </Tabs>
+      <DialogClose className={cn(
+          "absolute right-4 top-4 h-8 w-8",
+          "flex items-center justify-center rounded-full transition-opacity",
+          "bg-destructive text-destructive-foreground opacity-70 hover:opacity-100",
+          "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+          "disabled:pointer-events-none"
+      )}>
+          <FontAwesomeIcon icon={faXmark} className="h-4 w-4" />
+          <span className="sr-only">Close</span>
+      </DialogClose>
+    </>
+  );
+
+  const previewDialog = (
+    <Dialog open={!!previewFile} onOpenChange={(isOpen) => !isOpen && setPreviewFile(null)}>
+      <DialogContent className="w-[95vw] h-[90vh] glass-effect p-0 flex flex-col items-center justify-center bg-black/80 border-0">
+        <DialogHeader className="absolute top-4 left-4 z-10">
+          <DialogTitle className="text-white/80">{previewFile?.filename}</DialogTitle>
+        </DialogHeader>
+        {renderPreviewContent()}
+        <DialogClose className={cn(
+          "absolute top-4 right-4 z-10 h-8 w-8 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center hover:opacity-100 transition-opacity"
+        )}>
+          <FontAwesomeIcon icon={faXmark} className="h-4 w-4" />
+          <span className="sr-only">Close</span>
+        </DialogClose>
+      </DialogContent>
+    </Dialog>
+  );
+
   if (props.isDialog) {
       return (
-        <Dialog open={props.isOpen} onOpenChange={props.onOpenChange}>
-            <DialogContent className="w-[95vw] h-[90vh] glass-effect p-0 flex flex-col">
-                <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'images' | 'videos')} className="flex-1 flex flex-col min-h-0">
-                    <DialogHeader className="p-4 border-b text-center">
-                        <DialogTitle>{props.isSelectionMode ? "Choose Media" : "Media Library"}</DialogTitle>
-                        <TabsList className="mt-8">
-                            <TabsTrigger value="images" className="py-2 px-4 text-base">
-                                <FontAwesomeIcon icon={faFileImage} className="mr-2" />
-                                Images
-                            </TabsTrigger>
-                            <TabsTrigger value="videos" className="py-2 px-4 text-base">
-                                <FontAwesomeIcon icon={faFilm} className="mr-2" />
-                                Videos
-                            </TabsTrigger>
-                        </TabsList>
-                    </DialogHeader>
-                    
-                    <ScrollArea className="flex-1">
-                        <TabsContent value="images" className="p-4 m-0">
-                            {renderLibrary(imageAssets, 'image')}
-                        </TabsContent>
-                        <TabsContent value="videos" className="p-4 m-0">
-                            {renderLibrary(videoAssets, 'video')}
-                        </TabsContent>
-                    </ScrollArea>
-                </Tabs>
-                <DialogClose className={cn(
-                    "absolute right-4 top-4 h-8 w-8",
-                    "flex items-center justify-center rounded-full transition-opacity",
-                    "bg-destructive text-destructive-foreground opacity-70 hover:opacity-100",
-                    "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
-                    "disabled:pointer-events-none"
-                )}>
-                    <FontAwesomeIcon icon={faXmark} className="h-4 w-4" />
-                    <span className="sr-only">Close</span>
-                </DialogClose>
-            </DialogContent>
-        </Dialog>
+        <>
+          <Dialog open={props.isOpen} onOpenChange={props.onOpenChange}>
+              <DialogContent className="w-[95vw] h-[90vh] glass-effect p-0 flex flex-col">
+                  {commonDialogContent}
+              </DialogContent>
+          </Dialog>
+          {previewDialog}
+        </>
       );
   }
 
   return (
-    <div className="flex-1 flex flex-col h-full gap-6">
-      <div className="border rounded-lg p-6 glass-effect">
-        <h2 className="text-xl font-bold text-center">Media Library (Cloudinary)</h2>
-        <p className="text-muted-foreground mt-1 text-center text-sm">Upload and manage your images and videos.</p>
-        
-        <div {...getRootProps()} className={cn('mt-4 border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors', isDragActive ? 'border-primary bg-primary/10' : 'border-border hover:border-primary/50', isUploading && 'cursor-not-allowed opacity-50')}>
-            <input {...getInputProps()} disabled={isUploading} />
-            <div className="flex flex-col items-center gap-2 text-muted-foreground">
-                <FontAwesomeIcon icon={faCloudUploadAlt} className="h-8 w-8" />
-                {isUploading ? (<p className="text-sm">Uploading...</p>) : isDragActive ? (<p className="text-sm">Drop files here...</p>) : (<p className="text-sm">Drag & drop files, or click to select</p>)}
-            </div>
-        </div>
-        {isUploading && (
-            <div className="mt-4">
-                <Progress value={uploadProgress} className="w-full" />
-                <p className="text-sm text-center mt-2 text-muted-foreground">
-                  Uploading: {uploadingFileName} ({Math.round(uploadProgress)}%)
-                </p>
-            </div>
-        )}
-         <div className="mt-4 flex justify-center">
-            <Button onClick={props.onLibraryOpenRequest}>
-                <FontAwesomeIcon icon={faImages} className="mr-2" />
-                View Library
-            </Button>
+    <>
+      <div className="flex-1 flex flex-col h-full gap-6">
+        <div className="border rounded-lg p-6 glass-effect">
+          <h2 className="text-xl font-bold text-center">Media Library (Cloudinary)</h2>
+          <p className="text-muted-foreground mt-1 text-center text-sm">Upload and manage your images and videos.</p>
+          
+          <div {...getRootProps()} className={cn('mt-4 border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors', isDragActive ? 'border-primary bg-primary/10' : 'border-border hover:border-primary/50', isUploading && 'cursor-not-allowed opacity-50')}>
+              <input {...getInputProps()} disabled={isUploading} />
+              <div className="flex flex-col items-center gap-2 text-muted-foreground">
+                  <FontAwesomeIcon icon={faCloudUploadAlt} className="h-8 w-8" />
+                  {isUploading ? (<p className="text-sm">Uploading...</p>) : isDragActive ? (<p className="text-sm">Drop files here...</p>) : (<p className="text-sm">Drag & drop files, or click to select</p>)}
+              </div>
+          </div>
+          {isUploading && (
+              <div className="mt-4">
+                  <Progress value={uploadProgress} className="w-full" />
+                  <p className="text-sm text-center mt-2 text-muted-foreground">
+                    Uploading: {uploadingFileName} ({Math.round(uploadProgress)}%)
+                  </p>
+              </div>
+          )}
+          <div className="mt-4 flex justify-center">
+              <Button onClick={props.onLibraryOpenRequest}>
+                  <FontAwesomeIcon icon={faImages} className="mr-2" />
+                  View Library
+              </Button>
+          </div>
         </div>
       </div>
-    </div>
+      {previewDialog}
+    </>
   );
 }
