@@ -26,7 +26,7 @@ import Link from 'next/link';
 
 
 const formSchema = z.object({
-  email: z.string().email({ message: 'Please enter a valid email.' }),
+  login: z.string().min(1, { message: 'Please enter your username or email.' }),
   password: z.string().min(6, {
     message: 'Password must be at least 6 characters.',
   }),
@@ -43,7 +43,7 @@ export default function LoginPage() {
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      email: '',
+      login: '',
       password: '',
     },
   });
@@ -51,8 +51,17 @@ export default function LoginPage() {
   const handleSignIn = async (values: LoginFormValues) => {
     if (!auth) return;
     setIsSubmitting(true);
+
+    let emailToSignIn: string;
+    // Check if the login input is an email or a username
+    if (values.login.includes('@')) {
+      emailToSignIn = values.login; // Assume it's an email
+    } else {
+      emailToSignIn = `${values.login.toLowerCase()}@example.com`; // Assume it's a username
+    }
+    
     try {
-      await signInWithEmailAndPassword(auth, values.email, values.password);
+      await signInWithEmailAndPassword(auth, emailToSignIn, values.password);
       toast({
         title: 'Signed In',
         description: 'You have successfully signed in.',
@@ -62,7 +71,7 @@ export default function LoginPage() {
       toast({
         variant: 'destructive',
         title: 'Uh oh! Something went wrong.',
-        description: error.message || 'Could not sign in.',
+        description: error.message || 'Could not sign in. Please check your credentials.',
       });
     } finally {
         setIsSubmitting(false);
@@ -83,12 +92,12 @@ export default function LoginPage() {
                 <form onSubmit={form.handleSubmit(handleSignIn)} className="space-y-6 pt-4">
                 <FormField
                     control={form.control}
-                    name="email"
+                    name="login"
                     render={({ field }) => (
                     <FormItem>
-                        <FormLabel>Email</FormLabel>
+                        <FormLabel>Username or Email</FormLabel>
                         <FormControl>
-                        <Input placeholder="manager@example.com" {...field} />
+                        <Input placeholder="admin or admin@example.com" {...field} />
                         </FormControl>
                         <FormMessage />
                     </FormItem>
