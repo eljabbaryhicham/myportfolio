@@ -1,115 +1,142 @@
 /**
- * @fileoverview Firestore Security Rules for the portfolio application.
+ * @description This ruleset enforces a role-based access control model for the portfolio application.
+ * It provides granular access based on user roles (admin, superadmin) and individual permissions (e.g., canUploadMedia, canDeleteMedia).
+ * Additionally, it ensures data consistency by validating relationships between user UIDs and document IDs.
  *
- * Core Philosophy:
- * This ruleset prioritizes security by default, enforcing strict access control based on authentication and authorization.
- * It follows a principle of least privilege, granting only the necessary permissions to each user based on their role.
- * Public read access is granted only for specific collections explicitly designed for public consumption.
+ * @dataStructure
+ * - /projects/{projectId}: Stores project information, publicly readable.
+ * - /contact/{contactId}: Stores contact information, publicly readable.
+ * - /homepage/{settingsId}: Stores homepage settings, publicly readable.
+ * - /media/{mediaId}: Stores metadata for media assets, write access controlled by admin roles.
+ * - /users/{userId}: Stores user data, only accessible to the user themselves and superadmins.
  *
- * Data Structure:
- * - /projects/{projectId}: Stores project information; publicly readable.
- * - /contact/{contactId}: Stores contact information; publicly readable.
- * - /homepage/{settingsId}: Stores homepage settings; publicly readable.
- * - /media/{mediaId}: Stores media asset metadata; publicly readable.
- * - /users/{userId}: Stores user-specific data; only accessible by the user themselves.
+ * @keySecurityDecisions
+ * - Public read access for projects, contact info, and homepage settings.
+ * - Media asset creation and management restricted to authenticated users with 'admin' or 'superadmin' roles and the 'canUploadMedia' permission.
+ * - User data is strictly private, accessible only to the user themselves or superadmins.
+ * - No user listing is allowed.
  *
- * Key Security Decisions:
- * - Public Read Access for Content: The `projects`, `contact`, `homepage`, and `media` collections are publicly readable to allow for easy content display.
- * - User-Scoped Data: All user data is stored under `/users/{userId}`, ensuring that users can only access their own information.
- * - No User Listing: Listing all users is explicitly denied to prevent information leakage.
- *
- * Denormalization for Authorization:
- * No denormalization is needed for the existing rules because the rules rely on the `request.auth.uid` and the path parameters for authorization.
+ * @denormalizationForAuthorization
+ * - User roles and permissions are stored directly within the /users/{userId} document to simplify authorization checks.
  */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * @description Allows read-only access to project data. Only the project owner can create, update, or delete projects.
+     * @description Allows anyone to read project information. Writes are disallowed.
      * @path /projects/{projectId}
-     * @allow get, list: if true;
-     * @allow create: if false; // TODO: Add owner validation once the schema is updated with an ownership field.
-     * @allow update: if false; // TODO: Add owner validation once the schema is updated with an ownership field.
-     * @allow delete: if false; // TODO: Add owner validation once the schema is updated with an ownership field.
-     * @principle Public read, owner-only writes (requires schema update).
+     * @allow (get, list) - Any user can read project information.
+     * @deny (create, update, delete) - No one can write project information through direct Firestore access.
+     * @principle Public read access for projects.
      */
     match /projects/{projectId} {
-      allow get, list: if true;
-      allow create, update, delete: if false; // TODO: Secure create, update, delete access based on admin role
+      allow get: if true;
+      allow list: if true;
+      allow create: if false;
+      allow update: if false;
+      allow delete: if false;
     }
 
     /**
-     * @description Allows read-only access to contact information. Only the contact info owner can create, update, or delete contact info.
+     * @description Allows anyone to read contact information. Writes are disallowed.
      * @path /contact/{contactId}
-     * @allow get, list: if true;
-     * @allow create: if false; // TODO: Add owner validation once the schema is updated with an ownership field.
-     * @allow update: if false; // TODO: Add owner validation once the schema is updated with an ownership field.
-     * @allow delete: if false; // TODO: Add owner validation once the schema is updated with an ownership field.
-     * @principle Public read, owner-only writes (requires schema update).
+     * @allow (get, list) - Any user can read contact information.
+     * @deny (create, update, delete) - No one can write contact information through direct Firestore access.
+     * @principle Public read access for contact information.
      */
     match /contact/{contactId} {
-      allow get, list: if true;
-      allow create, update, delete: if false; // TODO: Secure create, update, delete access based on admin role
+      allow get: if true;
+      allow list: if true;
+      allow create: if false;
+      allow update: if false;
+      allow delete: if false;
     }
 
     /**
-     * @description Allows read-only access to homepage settings. Only the homepage settings owner can create, update, or delete homepage settings.
+     * @description Allows anyone to read homepage settings. Writes are disallowed.
      * @path /homepage/{settingsId}
-     * @allow get, list: if true;
-     * @allow create: if false; // TODO: Add owner validation once the schema is updated with an ownership field.
-     * @allow update: if false; // TODO: Add owner validation once the schema is updated with an ownership field.
-     * @allow delete: if false; // TODO: Add owner validation once the schema is updated with an ownership field.
-     * @principle Public read, owner-only writes (requires schema update).
+     * @allow (get, list) - Any user can read homepage settings.
+     * @deny (create, update, delete) - No one can write homepage settings through direct Firestore access.
+     * @principle Public read access for homepage settings.
      */
     match /homepage/{settingsId} {
-      allow get, list: if true;
-      allow create, update, delete: if false; // TODO: Secure create, update, delete access based on admin role
+      allow get: if true;
+      allow list: if true;
+      allow create: if false;
+      allow update: if false;
+      allow delete: if false;
     }
 
     /**
-     * @description Allows read-only access to media assets. Only the media owner can create, update, or delete media assets.
+     * @description Allows admins with 'canUploadMedia' permission to create media assets. Read access is public. Update and delete are disallowed.
      * @path /media/{mediaId}
-     * @allow get, list: if true;
-     * @allow create: if false; // TODO: Add owner validation once the schema is updated with an ownership field.
-     * @allow update: if false; // TODO: Add owner validation once the schema is updated with an ownership field.
-     * @allow delete: if false; // TODO: Add owner validation once the schema is updated with an ownership field.
-     * @principle Public read, owner-only writes (requires schema update).
+     * @allow (get, list) - Any user can read media asset information.
+     * @allow (create) - Authenticated admins with 'canUploadMedia' can create media assets. Example: User with role 'admin', canUploadMedia=true
+     * @deny (create) - Non-authenticated users or admins without 'canUploadMedia' cannot create. Example: Anonymous user or user with role 'viewer'.
+     * @deny (update, delete) - No one can update or delete media assets.
+     * @principle Role-based access control for media asset creation.
      */
     match /media/{mediaId} {
-      allow get, list: if true;
-      allow create, update, delete: if false; // TODO: Secure create, update, delete access based on admin role
+      allow get: if true;
+      allow list: if true;
+      allow create: if isSignedIn() && isAdminWithMediaUploadPermission();
+      allow update: if false;
+      allow delete: if false;
     }
 
     /**
-     * @description Allows a user to read, write, update and delete their own user document.
+     * @description Allows a user to read and write their own user document. Superadmins can read any user document.
      * @path /users/{userId}
-     * @allow get: if isOwner(userId);
-     * @allow list: if false;
-     * @allow create: if isOwner(userId);
-     * @allow update: if isExistingOwner(userId);
-     * @allow delete: if isExistingOwner(userId);
-     * @principle Enforces document ownership for writes.
+     * @allow (get) - The user can read their own document, or a superadmin can read any user document.
+     * @allow (create) - A user can create their own document if the userId matches their auth UID.
+     * @allow (update) - The user can update their own document, or a superadmin can update any user document.
+     * @allow (delete) - The user can delete their own document, or a superadmin can delete any user document.
+     * @deny (get, create, update, delete) - Any other user attempting to access another user's document.
+     * @principle User-ownership and superadmin access for user data.
      */
     match /users/{userId} {
-      allow get: if isOwner(userId);
+      allow get: if isOwner(userId) || isSuperAdmin();
       allow list: if false;
-      allow create: if isOwner(userId);
-      allow update: if isExistingOwner(userId);
-      allow delete: if isExistingOwner(userId);
+      allow create: if isOwner(userId) && request.auth.uid == userId;
+      allow update: if isExistingOwner(userId) || isSuperAdmin();
+      allow delete: if isExistingOwner(userId) || isSuperAdmin();
     }
 
-    // ---- Helper functions ----
+    /**
+     * @description Helper function to determine if the user is signed in.
+     */
     function isSignedIn() {
       return request.auth != null;
     }
 
+    /**
+     * @description Helper function to determine if the user is the owner of the document based on the provided userId.
+     */
     function isOwner(userId) {
-      return isSignedIn() && request.auth.uid == userId;
+      return request.auth.uid == userId;
     }
 
+    /**
+     * @description Helper function to determine if the user is the owner of the document and the document exists.
+     */
     function isExistingOwner(userId) {
-        return isOwner(userId) && resource != null;
+      return isOwner(userId) && resource != null;
+    }
+
+    /**
+     * @description Helper function to determine if the user has the 'admin' role with 'canUploadMedia' permission.
+     */
+    function isAdminWithMediaUploadPermission() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin'
+          && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.permissions.canUploadMedia == true;
+    }
+
+    /**
+     * @description Helper function to determine if the user has the 'superadmin' role.
+     */
+    function isSuperAdmin() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'superadmin';
     }
   }
 }
