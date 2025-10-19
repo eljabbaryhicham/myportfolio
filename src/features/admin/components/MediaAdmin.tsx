@@ -443,7 +443,7 @@ export default function MediaAdmin(props: MediaAdminProps) {
 
   const previewDialog = (
     <Dialog open={!!previewFile} onOpenChange={(isOpen) => !isOpen && setPreviewFile(null)}>
-      <DialogContent className="w-[95vw] h-[90vh] glass-effect p-0 flex flex-col items-center justify-center bg-black/80 border-0">
+      <DialogContent className="w-[80vw] max-w-[80vw] h-[90vh] glass-effect p-0 flex flex-col items-center justify-center bg-black/80 border-0">
         <DialogHeader className="absolute top-4 left-4 z-10">
           <DialogTitle className="text-white/80">{previewFile?.filename}</DialogTitle>
         </DialogHeader>
@@ -462,7 +462,7 @@ export default function MediaAdmin(props: MediaAdminProps) {
       return (
         <>
           <Dialog open={props.isOpen} onOpenChange={props.onOpenChange}>
-              <DialogContent className="w-[95vw] h-[90vh] glass-effect p-0 flex flex-col">
+              <DialogContent className="w-[80vw] max-w-[80vw] h-[90vh] glass-effect p-0 flex flex-col">
                   {commonDialogContent}
               </DialogContent>
           </Dialog>

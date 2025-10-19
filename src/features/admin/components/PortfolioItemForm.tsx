@@ -141,7 +141,7 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onCho
 
     return (
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
-            <DialogContent className="w-[90vw] md:w-full md:max-w-[50vw] h-[90vh] flex flex-col glass-effect p-0 rounded-lg">
+            <DialogContent className="w-[80vw] max-w-[80vw] h-[90vh] flex flex-col glass-effect p-0 rounded-lg">
                 <DialogHeader className="p-6 pb-0">
                     <DialogTitle>{item ? 'Edit' : 'Add'} Portfolio Item</DialogTitle>
                     <DialogDescription>

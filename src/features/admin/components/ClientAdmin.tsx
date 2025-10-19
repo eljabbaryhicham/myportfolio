@@ -441,7 +441,7 @@ export default function ClientAdmin() {
             </ScrollArea>
           </div>
         <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
-          <DialogContent className="glass-effect">
+          <DialogContent className="w-[80vw] max-w-lg glass-effect">
             <DialogHeader>
               <DialogTitle>{selectedClient?.id ? 'Edit Client' : 'Add New Client'}</DialogTitle>
               <DialogDescription>

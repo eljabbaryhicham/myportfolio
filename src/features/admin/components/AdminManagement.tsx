@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useCollection, useFirestore, useMemoFirebase, updateDocumentNonBlocking, useUser } from '@/firebase';
@@ -65,7 +66,7 @@ function PermissionsDialog({ user, isOpen, onOpenChange, onSave }: { user: Admin
 
     return (
         <Dialog open={isOpen} onOpenChange={onOpenChange}>
-            <DialogContent className="glass-effect">
+            <DialogContent className="w-[80vw] max-w-2xl glass-effect">
                 <DialogHeader>
                     <DialogTitle>Edit Permissions for {user.username}</DialogTitle>
                     <DialogDescription>
