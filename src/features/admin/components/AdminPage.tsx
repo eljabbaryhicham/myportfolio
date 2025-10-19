@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -34,6 +33,8 @@ function AdminPage() {
 
   const [selectedPortfolioItem, setSelectedPortfolioItem] = useState<PortfolioItem | null>(null);
   const [isPortfolioSheetOpen, setIsPortfolioSheetOpen] = useState(false);
+  const [isLibraryOpen, setIsLibraryOpen] = useState(false);
+  const [librarySelectionConfig, setLibrarySelectionConfig] = useState<{ onSelect: (url: string, type: 'image' | 'video') => void } | null>(null);
   
   useEffect(() => {
     if (!isUserLoading && !user) {
@@ -84,17 +85,23 @@ function AdminPage() {
     setIsPortfolioSheetOpen(false);
   };
   
-  const openPortfolioFormWithMedia = (mediaUrl: string, mediaType: 'image' | 'video') => {
+  const handleOpenPortfolioFormWithMedia = (url: string, type: 'image' | 'video') => {
     setSelectedPortfolioItem({
       id: '',
       title: '',
       description: '',
-      type: mediaType,
-      thumbnailUrl: mediaType === 'video' ? '' : mediaUrl, // For videos, thumbnail might be different
-      sourceUrl: mediaUrl,
+      type: type,
+      thumbnailUrl: type === 'video' ? '' : url, // For videos, thumbnail might be different
+      sourceUrl: url,
       thumbnailHint: '',
     });
-    setIsPortfolioSheetOpen(true);
+    setIsLibraryOpen(false); // Close library
+    setIsPortfolioSheetOpen(true); // Open form
+  };
+
+  const handleOpenLibraryForSelection = (onSelect: (url: string, type: 'image' | 'video') => void) => {
+    setLibrarySelectionConfig({ onSelect });
+    setIsLibraryOpen(true);
   };
 
 
@@ -145,7 +152,7 @@ function AdminPage() {
                   />
               </TabsContent>
               <TabsContent value="media" className="flex-1 overflow-auto mt-4">
-                  {isUserLoading ? <Preloader /> : <MediaAdmin onSelectMedia={openPortfolioFormWithMedia} />}
+                  {isUserLoading ? <Preloader /> : <MediaAdmin onLibraryOpenRequest={() => setIsLibraryOpen(true)} />}
               </TabsContent>
               <TabsContent value="contact" className="flex-1 overflow-auto mt-4">
                   <ContactAdmin />
@@ -158,6 +165,18 @@ function AdminPage() {
         setIsOpen={setIsPortfolioSheetOpen}
         item={selectedPortfolioItem}
         onSubmit={(values) => handlePortfolioFormSubmit(values, 0)} // Note: minOrder logic is now in ProjectAdmin, may need to pass it up
+        onChooseFromLibrary={handleOpenLibraryForSelection}
+      />
+      <MediaAdmin 
+        isDialog={true}
+        isOpen={isLibraryOpen}
+        onOpenChange={setIsLibraryOpen}
+        onMediaSelect={librarySelectionConfig ? librarySelectionConfig.onSelect : handleOpenPortfolioFormWithMedia}
+        isSelectionMode={!!librarySelectionConfig}
+        onSelectionComplete={() => {
+            setIsLibraryOpen(false);
+            setLibrarySelectionConfig(null);
+        }}
       />
     </>
   );

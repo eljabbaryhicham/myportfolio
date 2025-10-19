@@ -36,7 +36,7 @@ import { useEffect } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faXmark } from '@fortawesome/free-solid-svg-icons';
+import { faXmark, faImages } from '@fortawesome/free-solid-svg-icons';
 
 const formSchema = z.object({
   title: z.string().min(2, {
@@ -61,9 +61,10 @@ interface PortfolioItemFormProps {
   onSubmit: (values: PortfolioItem) => void;
   isOpen: boolean; 
   setIsOpen: (isOpen: boolean) => void;
+  onChooseFromLibrary: (onSelect: (url: string, type: 'image' | 'video') => void) => void;
 }
 
-export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit}: PortfolioItemFormProps) {
+export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onChooseFromLibrary}: PortfolioItemFormProps) {
     const form = useForm<PortfolioItemFormValues>({
       resolver: zodResolver(formSchema),
       defaultValues: {
@@ -111,6 +112,19 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit}: Port
           description: values.description,
           title: values.title,
           thumbnailUrl: values.thumbnailUrl,
+        });
+    };
+
+    const handleChooseThumbnail = () => {
+        onChooseFromLibrary((url) => {
+            form.setValue('thumbnailUrl', url, { shouldValidate: true });
+        });
+    };
+
+    const handleChooseSource = () => {
+        onChooseFromLibrary((url, type) => {
+            form.setValue('sourceUrl', url, { shouldValidate: true });
+            form.setValue('type', type, { shouldValidate: true });
         });
     };
 
@@ -179,7 +193,7 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit}: Port
                           render={({ field }) => (
                               <FormItem>
                               <FormLabel>Type</FormLabel>
-                              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                              <Select onValueChange={field.onChange} value={field.value}>
                                   <FormControl>
                                   <SelectTrigger>
                                       <SelectValue placeholder="Select a type" />
@@ -200,9 +214,14 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit}: Port
                           render={({ field }) => (
                               <FormItem>
                               <FormLabel>Thumbnail URL</FormLabel>
-                              <FormControl>
-                                  <Input placeholder="https://example.com/thumbnail.jpg" {...field} />
-                              </FormControl>
+                                <div className="flex items-center gap-2">
+                                  <FormControl>
+                                      <Input placeholder="https://example.com/thumbnail.jpg" {...field} />
+                                  </FormControl>
+                                  <Button type="button" variant="outline" size="icon" onClick={handleChooseThumbnail}>
+                                    <FontAwesomeIcon icon={faImages} />
+                                  </Button>
+                                </div>
                               <FormMessage />
                               </FormItem>
                           )}
@@ -228,11 +247,16 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit}: Port
                           name="sourceUrl"
                           render={({ field }) => (
                               <FormItem>
-                              <FormLabel>Source URL</FormLabel>
-                              <FormControl>
-                                  <Input placeholder="https://example.com/full-image.jpg" {...field} />
-                              </FormControl>
-                              <FormMessage />
+                                <FormLabel>Source URL</FormLabel>
+                                <div className="flex items-center gap-2">
+                                  <FormControl>
+                                      <Input placeholder="https://example.com/full-image.jpg" {...field} />
+                                  </FormControl>
+                                   <Button type="button" variant="outline" size="icon" onClick={handleChooseSource}>
+                                    <FontAwesomeIcon icon={faImages} />
+                                  </Button>
+                                </div>
+                                <FormMessage />
                               </FormItem>
                           )}
                           />

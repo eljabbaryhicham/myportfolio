@@ -18,7 +18,7 @@ import { useToast } from '@/hooks/use-toast';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import Image from 'next/image';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCloudUploadAlt, faCopy, faTrash, faFilm, faFileImage, faImages, faXmark, faPlus } from '@fortawesome/free-solid-svg-icons';
+import { faCloudUploadAlt, faCopy, faTrash, faFilm, faFileImage, faImages, faXmark, faPlus, faCheck } from '@fortawesome/free-solid-svg-icons';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
@@ -44,24 +44,36 @@ const MediaFileCard = ({
   onDelete,
   onCopy,
   isNewlyUploaded,
-  onCreateProject
+  onMediaSelect,
+  isSelectionMode
 }: {
   file: MediaAsset;
   onDelete: (publicId: string, id: string, resourceType: string) => void;
   onCopy: (url: string) => void;
   isNewlyUploaded: boolean;
-  onCreateProject: (url: string, type: 'image' | 'video') => void;
+  onMediaSelect: (url: string, type: 'image' | 'video') => void;
+  isSelectionMode: boolean;
 }) => {
   
   const handleDelete = () => {
     onDelete(file.public_id, file.id, file.resource_type);
   };
 
+  const handleSelect = () => {
+    onMediaSelect(file.url, file.resource_type === 'video' ? 'video' : 'image');
+  };
+
   const fileName = file.filename || file.public_id.split('/').pop() || 'Untitled';
   
   return (
     <div className={cn("flex flex-col gap-2", isNewlyUploaded && 'animate-shake')}>
-      <div className="relative group aspect-square border rounded-lg overflow-hidden glass-effect p-1">
+      <div 
+        className={cn(
+          "relative group aspect-square border rounded-lg overflow-hidden glass-effect p-1",
+          isSelectionMode && "cursor-pointer"
+        )}
+        onClick={isSelectionMode ? handleSelect : undefined}
+      >
         <div className="relative w-full h-full rounded-md overflow-hidden">
           {file.resource_type === 'image' ? (
             <Image src={file.url} alt={file.public_id} fill className="object-cover" />
@@ -72,36 +84,46 @@ const MediaFileCard = ({
           )}
         </div>
 
-        <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-2">
-          <div className="flex gap-2 justify-center">
-            <Button size="sm" variant="default" onClick={() => onCreateProject(file.url, file.resource_type === 'video' ? 'video' : 'image')}>
-              <FontAwesomeIcon icon={faPlus} />
-            </Button>
-            <Button size="sm" variant="secondary" onClick={() => onCopy(file.url)}>
-              <FontAwesomeIcon icon={faCopy} />
-            </Button>
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button size="sm" variant="destructive">
-                  <FontAwesomeIcon icon={faTrash} />
+        <div className={cn(
+            "absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center p-2",
+            isSelectionMode && "group-hover:opacity-100"
+        )}>
+           {isSelectionMode ? (
+              <div className="text-white text-center">
+                <FontAwesomeIcon icon={faCheck} className="h-8 w-8 mb-2" />
+                <p className="font-bold">Select</p>
+              </div>
+            ) : (
+              <div className="flex gap-2">
+                <Button size="sm" variant="default" onClick={() => onMediaSelect(file.url, file.resource_type === 'video' ? 'video' : 'image')}>
+                  <FontAwesomeIcon icon={faPlus} />
                 </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    This will permanently delete the file from your Cloudinary storage. This action cannot be undone.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction onClick={handleDelete}>
-                    Delete
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-          </div>
+                <Button size="sm" variant="secondary" onClick={() => onCopy(file.url)}>
+                  <FontAwesomeIcon icon={faCopy} />
+                </Button>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button size="sm" variant="destructive">
+                      <FontAwesomeIcon icon={faTrash} />
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        This will permanently delete the file from your Cloudinary storage. This action cannot be undone.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction onClick={handleDelete}>
+                        Delete
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </div>
+            )}
         </div>
       </div>
       <p className="text-xs text-center text-muted-foreground truncate" title={fileName}>{fileName}</p>
@@ -109,18 +131,35 @@ const MediaFileCard = ({
   );
 };
 
-interface MediaAdminProps {
-  onSelectMedia: (url: string, type: 'image' | 'video') => void;
+interface StandaloneMediaAdminProps {
+  isDialog?: false;
+  onLibraryOpenRequest: () => void;
+  isOpen?: never;
+  onOpenChange?: never;
+  onMediaSelect?: never;
+  isSelectionMode?: never;
+  onSelectionComplete?: never;
 }
 
-export default function MediaAdmin({ onSelectMedia }: MediaAdminProps) {
+interface DialogMediaAdminProps {
+  isDialog: true;
+  isOpen: boolean;
+  onOpenChange: (isOpen: boolean) => void;
+  onMediaSelect: (url: string, type: 'image' | 'video') => void;
+  isSelectionMode: boolean;
+  onSelectionComplete: () => void;
+  onLibraryOpenRequest?: never;
+}
+
+type MediaAdminProps = StandaloneMediaAdminProps | DialogMediaAdminProps;
+
+export default function MediaAdmin(props: MediaAdminProps) {
   const { toast } = useToast();
   const firestore = useFirestore();
 
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadingFileName, setUploadingFileName] = useState('');
-  const [isLibraryOpen, setIsLibraryOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'images' | 'videos'>('images');
   const [newlyUploadedId, setNewlyUploadedId] = useState<string | null>(null);
 
@@ -179,21 +218,22 @@ export default function MediaAdmin({ onSelectMedia }: MediaAdminProps) {
           const response = JSON.parse(xhr.responseText);
           
           if(firestore) {
-            // Save metadata to Firestore
             const docRefPromise = addDocumentNonBlocking(collection(firestore, 'media'), {
                 public_id: response.public_id,
                 url: response.secure_url,
                 resource_type: response.resource_type,
                 created_at: response.created_at,
-                filename: file.name, // Save the original filename
+                filename: file.name,
             }) as Promise<DocumentReference>;
 
             docRefPromise.then((docRef) => {
                 if (docRef) {
                     setNewlyUploadedId(docRef.id);
                     setActiveTab(response.resource_type === 'video' ? 'videos' : 'images');
-                    setIsLibraryOpen(true);
-                    setTimeout(() => setNewlyUploadedId(null), 3000); // Remove animation trigger after 3s
+                    if (props.isDialog === false) {
+                      props.onLibraryOpenRequest();
+                    }
+                    setTimeout(() => setNewlyUploadedId(null), 2000);
                 }
             });
           }
@@ -231,7 +271,7 @@ export default function MediaAdmin({ onSelectMedia }: MediaAdminProps) {
     setUploadingFileName('');
     setUploadProgress(0);
 
-  }, [toast, firestore]);
+  }, [toast, firestore, props]);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
@@ -256,6 +296,14 @@ export default function MediaAdmin({ onSelectMedia }: MediaAdminProps) {
     navigator.clipboard.writeText(url);
     toast({ title: "Copied!", description: "File URL copied to clipboard."});
   }
+
+  const handleMediaSelect = (url: string, type: 'image' | 'video') => {
+    if(props.isDialog) {
+        props.onMediaSelect(url, type);
+        props.onSelectionComplete();
+    }
+  };
+
 
   const renderLibrary = (assets: MediaAsset[], type: 'image' | 'video') => {
     if (isLoadingMedia) {
@@ -284,11 +332,55 @@ export default function MediaAdmin({ onSelectMedia }: MediaAdminProps) {
                   onDelete={handleDelete} 
                   onCopy={handleCopy}
                   isNewlyUploaded={file.id === newlyUploadedId}
-                  onCreateProject={onSelectMedia}
+                  onMediaSelect={props.isDialog ? handleMediaSelect : props.onMediaSelect!}
+                  isSelectionMode={props.isDialog ? props.isSelectionMode : false}
                 />
             ))}
         </div>
     );
+  }
+
+  if (props.isDialog) {
+      return (
+        <Dialog open={props.isOpen} onOpenChange={props.onOpenChange}>
+            <DialogContent className="w-[95vw] h-[90vh] glass-effect p-0 flex flex-col">
+                <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'images' | 'videos')} className="flex-1 flex flex-col min-h-0">
+                    <DialogHeader className="p-4 border-b text-center">
+                        <DialogTitle>{props.isSelectionMode ? "Choose Media" : "Media Library"}</DialogTitle>
+                        <TabsList className="mt-8">
+                            <TabsTrigger value="images" className="py-2 px-4 text-base">
+                                <FontAwesomeIcon icon={faFileImage} className="mr-2" />
+                                Images
+                            </TabsTrigger>
+                            <TabsTrigger value="videos" className="py-2 px-4 text-base">
+                                <FontAwesomeIcon icon={faFilm} className="mr-2" />
+                                Videos
+                            </TabsTrigger>
+                        </TabsList>
+                    </DialogHeader>
+                    
+                    <ScrollArea className="flex-1">
+                        <TabsContent value="images" className="p-4 m-0">
+                            {renderLibrary(imageAssets, 'image')}
+                        </TabsContent>
+                        <TabsContent value="videos" className="p-4 m-0">
+                            {renderLibrary(videoAssets, 'video')}
+                        </TabsContent>
+                    </ScrollArea>
+                </Tabs>
+                <DialogClose className={cn(
+                    "absolute right-4 top-4 h-8 w-8",
+                    "flex items-center justify-center rounded-full transition-opacity",
+                    "bg-destructive text-destructive-foreground opacity-70 hover:opacity-100",
+                    "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+                    "disabled:pointer-events-none"
+                )}>
+                    <FontAwesomeIcon icon={faXmark} className="h-4 w-4" />
+                    <span className="sr-only">Close</span>
+                </DialogClose>
+            </DialogContent>
+        </Dialog>
+      );
   }
 
   return (
@@ -313,51 +405,12 @@ export default function MediaAdmin({ onSelectMedia }: MediaAdminProps) {
             </div>
         )}
          <div className="mt-4 flex justify-center">
-            <Button onClick={() => setIsLibraryOpen(true)}>
+            <Button onClick={props.onLibraryOpenRequest}>
                 <FontAwesomeIcon icon={faImages} className="mr-2" />
                 View Library
             </Button>
         </div>
       </div>
-      
-      <Dialog open={isLibraryOpen} onOpenChange={setIsLibraryOpen}>
-        <DialogContent className="w-[95vw] h-[90vh] glass-effect p-0 flex flex-col">
-            <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'images' | 'videos')} className="flex-1 flex flex-col min-h-0">
-                <DialogHeader className="p-4 border-b text-center">
-                    <DialogTitle>Media Library</DialogTitle>
-                    <TabsList className="mt-8">
-                        <TabsTrigger value="images" className="py-2 px-4 text-base">
-                            <FontAwesomeIcon icon={faFileImage} className="mr-2" />
-                            Images
-                        </TabsTrigger>
-                        <TabsTrigger value="videos" className="py-2 px-4 text-base">
-                            <FontAwesomeIcon icon={faFilm} className="mr-2" />
-                            Videos
-                        </TabsTrigger>
-                    </TabsList>
-                </DialogHeader>
-                
-                <ScrollArea className="flex-1">
-                <TabsContent value="images" className="p-4 m-0">
-                    {renderLibrary(imageAssets, 'image')}
-                </TabsContent>
-                <TabsContent value="videos" className="p-4 m-0">
-                    {renderLibrary(videoAssets, 'video')}
-                </TabsContent>
-                </ScrollArea>
-            </Tabs>
-             <DialogClose className={cn(
-                  "absolute right-4 top-4 h-8 w-8",
-                  "flex items-center justify-center rounded-full transition-opacity",
-                  "bg-destructive text-destructive-foreground opacity-70 hover:opacity-100",
-                  "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
-                  "disabled:pointer-events-none"
-                )}>
-                <FontAwesomeIcon icon={faXmark} className="h-4 w-4" />
-                <span className="sr-only">Close</span>
-            </DialogClose>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }
