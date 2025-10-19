@@ -3,11 +3,10 @@
 
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { useAuth } from '@/firebase';
+import { useAuth, useUser } from '@/firebase';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import { signOut } from 'firebase/auth';
-import { useUser } from '@/firebase';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import ProjectAdmin from '@/features/admin/components/ProjectAdmin';
 import ContactAdmin from '@/features/admin/components/ContactAdmin';
@@ -20,7 +19,7 @@ import HomeAdmin from '@/features/admin/components/HomeAdmin';
 import { PortfolioItem } from '@/features/portfolio/data/portfolio-data';
 import { PortfolioItemFormSheet } from '@/features/admin/components/PortfolioItemForm';
 import { addDocumentNonBlocking, setDocumentNonBlocking } from '@/firebase/non-blocking-updates';
-import { collection, doc, DocumentReference } from 'firebase/firestore';
+import { collection, doc } from 'firebase/firestore';
 import { useFirestore } from '@/firebase';
 import AdminManagement from '@/features/admin/components/AdminManagement';
 
@@ -45,20 +44,36 @@ function AdminPage() {
   const isSuperAdmin = user?.email === 'eljabbaryhicham@example.com';
   
   useEffect(() => {
-    if (!isUserLoading && !user) {
-      router.push('/login');
+    if (isUserLoading) {
+      return; // Wait until user status is resolved
     }
-  }, [isUserLoading, user, router]);
+    if (!user) {
+      router.push('/login');
+      return;
+    }
+    // If a user is logged in but is not the super admin, sign them out.
+    if (user && !isSuperAdmin) {
+        handleLogout(true); // Pass a flag to show a specific message
+    }
+  }, [isUserLoading, user, isSuperAdmin, router]);
 
 
-  const handleLogout = async () => {
+  const handleLogout = async (isUnauthorized = false) => {
     if (!auth) return;
     try {
       await signOut(auth);
-      toast({
-        title: "Signed Out",
-        description: "You have successfully signed out.",
-      });
+      if (isUnauthorized) {
+          toast({
+              variant: "destructive",
+              title: "Access Denied",
+              description: "You do not have permission to access the admin panel.",
+          });
+      } else {
+          toast({
+              title: "Signed Out",
+              description: "You have successfully signed out.",
+          });
+      }
       router.push("/login");
     } catch (error: any) {
       toast({
@@ -145,7 +160,9 @@ function AdminPage() {
     setTimeout(() => setNewlyUploadedId(null), 2000);
   };
 
-  if (isUserLoading || !user) {
+  // If the user is being authenticated or is not the super admin, show a preloader.
+  // The useEffect handles the actual redirection or logout.
+  if (isUserLoading || !user || !isSuperAdmin) {
     return (
         <div className="fixed inset-0 z-[200] flex items-center justify-center bg-background">
             <Preloader />
@@ -161,11 +178,11 @@ function AdminPage() {
             <div className="text-center md:text-left">
               <h1 className="text-2xl md:text-4xl font-bold tracking-tight">Admin Panel</h1>
               <p className="mt-2 text-md md:text-lg text-foreground/70 break-all">
-                Welcome, {user.email?.split('@')[0]}!
+                Welcome, {user.username || user.email?.split('@')[0]}!
               </p>
             </div>
             <div className="flex items-center gap-2 md:gap-4 flex-wrap justify-center">
-              <Button onClick={handleLogout} variant="secondary">
+              <Button onClick={() => handleLogout(false)} variant="secondary">
                 <FontAwesomeIcon icon={faRightFromBracket} className="mr-2 h-4 w-4" />
                 Sign Out
               </Button>
@@ -194,7 +211,7 @@ function AdminPage() {
                   />
               </TabsContent>
               <TabsContent value="media" className="flex-1 overflow-auto mt-4">
-                  {isUserLoading ? <Preloader /> : <MediaAdmin onUploadComplete={handleUploadComplete} onLibraryOpenRequest={() => setIsLibraryOpen(true)} onMediaSelect={handleOpenPortfolioFormWithMedia} />}
+                  <MediaAdmin onUploadComplete={handleUploadComplete} onLibraryOpenRequest={() => setIsLibraryOpen(true)} onMediaSelect={handleOpenPortfolioFormWithMedia} />
               </TabsContent>
               <TabsContent value="contact" className="flex-1 overflow-auto mt-4">
                   <ContactAdmin />
@@ -233,5 +250,3 @@ function AdminPage() {
 }
 
 export default AdminPage;
-
-    
