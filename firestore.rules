@@ -3,65 +3,54 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    //
-    // Get a user's role from their user document.
-    //
-    function getRole(uid) {
-      return get(/databases/$(database)/documents/users/$(uid)).data.role;
-    }
-
-    //
-    // Get a user's permissions from their user document.
-    //
-    function getPermissions(uid) {
-      return get(/databases/$(database)/documents/users/$(uid)).data.permissions;
-    }
-
-    //
-    // Check if a user is an admin or superadmin.
-    //
-    function isSuperAdmin(uid) {
-      return getRole(uid) == 'superadmin';
-    }
-
-    //
-    // Check if the currently authenticated user is an admin
-    //
+    // Helper function to check if a user is an admin
     function isAdmin() {
       return request.auth != null && exists(/databases/$(database)/documents/users/$(request.auth.uid));
     }
-    
-    match /projects/{projectId} {
-      allow read, write: if isAdmin();
+
+    // Helper function to check for super admin
+    function isSuperAdmin() {
+      return request.auth != null && request.auth.token.email == 'eljabbaryhicham@example.com';
     }
-    
+
+    // Helper function to check if the user has a specific permission
+    function hasPermission(permission) {
+      let userDoc = get(/databases/$(database)/documents/users/$(request.auth.uid));
+      return userDoc.data.permissions[permission] == true;
+    }
+
+    // PUBLIC-READABLE COLLECTIONS
+    // Projects, contact, and homepage settings can be read by anyone, but only written by admins.
+    match /projects/{projectId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
     match /contact/{contactId} {
       allow read: if true;
       allow write: if isAdmin();
     }
-    
+
     match /homepage/{settingsId} {
       allow read: if true;
       allow write: if isAdmin();
     }
 
-    match /users/{userId} {
-      // Admins can be read by any other admin (for the admin management panel).
-      allow list: if isAdmin();
-      // Only the superadmin can create, update, or delete other user records.
-      // A user can read their own record.
-      allow read, create, update, delete: if isSuperAdmin(request.auth.uid) || request.auth.uid == userId;
+    // ADMIN-ONLY COLLECTIONS
+    // Media assets can be read by any admin, created if they have permission, and deleted if they have permission
+    match /media/{mediaId} {
+      allow read: if isAdmin();
+      allow create: if isAdmin() && hasPermission('canUploadMedia');
+      allow update: if isAdmin() && hasPermission('canUploadMedia');
+      allow delete: if isAdmin() && hasPermission('canDeleteMedia');
     }
 
-    match /media/{mediaId} {
-      // Any authenticated admin can read the media list and individual documents.
+    // User documents can be read by any admin.
+    // Only a super admin can create, update, or delete other users.
+    // Admins cannot delete themselves.
+    match /users/{userId} {
       allow read: if isAdmin();
-      
-      // An admin can create a media document if they have the canUploadMedia permission.
-      allow create: if getPermissions(request.auth.uid).canUploadMedia == true;
-      
-      // An admin can delete a media document if they have the canDeleteMedia permission.
-      allow delete: if getPermissions(request.auth.uid).canDeleteMedia == true;
+      allow create, update, delete: if isSuperAdmin() && request.auth.uid != userId;
     }
   }
 }
