@@ -183,29 +183,28 @@ function ProjectAdmin({ setSelectedItem, setIsSheetOpen, handleFormSubmit }: Pro
 
   return (
     <div className="flex-1 flex flex-col h-full">
-      <div className="flex-1 border rounded-lg overflow-hidden glass-effect">
-        <ScrollArea className="h-full">
-          <div className="p-6">
-            <div className="flex items-center justify-between mb-6">
-                <div className="text-center w-full">
-                    <h2 className="text-xl font-bold">Portfolio Projects</h2>
-                    <p className="text-muted-foreground">
-                    Add, edit, and reorder the projects in your portfolio.
-                    </p>
-                </div>
-                <div className="flex items-center gap-2 md:gap-4 flex-wrap justify-end absolute top-6 right-6">
-                    {!isLoading && items?.length === 0 && (
-                    <Button onClick={handleSeedData} variant="secondary" size="sm">
-                        <FontAwesomeIcon icon={faCloudUploadAlt} className="mr-2 h-4 w-4" />
-                        Seed Projects
-                    </Button>
-                    )}
-                    <Button onClick={handleAddItem} size="sm">
-                    <FontAwesomeIcon icon={faPlusCircle} className="mr-2 h-4 w-4" />
-                    Add New
-                    </Button>
-                </div>
+        <div className="flex items-start justify-between mb-6">
+            <div className="text-left">
+                <h2 className="text-xl font-bold">Portfolio Projects</h2>
+                <p className="text-muted-foreground">
+                Add, edit, and reorder the projects in your portfolio.
+                </p>
             </div>
+            <div className="flex items-center gap-2">
+                {!isLoading && items?.length === 0 && (
+                <Button onClick={handleSeedData} variant="secondary" size="sm">
+                    <FontAwesomeIcon icon={faCloudUploadAlt} className="mr-2 h-4 w-4" />
+                    Seed Projects
+                </Button>
+                )}
+                <Button onClick={handleAddItem} size="sm">
+                <FontAwesomeIcon icon={faPlusCircle} className="mr-2 h-4 w-4" />
+                Add New
+                </Button>
+            </div>
+        </div>
+        <div className="flex-1 border rounded-lg overflow-hidden glass-effect">
+        <ScrollArea className="h-full">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -279,7 +278,6 @@ function ProjectAdmin({ setSelectedItem, setIsSheetOpen, handleFormSubmit }: Pro
                 ))}
               </TableBody>
             </Table>
-          </div>
         </ScrollArea>
       </div>
     </div>
