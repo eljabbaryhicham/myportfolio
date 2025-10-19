@@ -116,8 +116,8 @@ function AdminPage() {
   const handlePortfolioSheetOpenChange = (isOpen: boolean) => {
     setIsPortfolioSheetOpen(isOpen);
     if (!isOpen && fromMediaLibrary) {
-        // If form is closed without saving, go back to media library
-        setActiveTab('media');
+        // If form is closed without saving, go back to media library dialog
+        setIsLibraryOpen(true);
         setFromMediaLibrary(false);
     }
   };
