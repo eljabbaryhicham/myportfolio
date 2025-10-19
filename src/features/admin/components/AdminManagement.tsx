@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
+import { useCollection, useFirestore, useMemoFirebase, updateDocumentNonBlocking } from '@/firebase';
 import { collection, query, orderBy, doc, deleteDoc } from 'firebase/firestore';
 import {
   Table,
@@ -20,7 +20,8 @@ import { faTrash } from '@fortawesome/free-solid-svg-icons';
 import { useToast } from '@/hooks/use-toast';
 import { useMemo } from 'react';
 import { deleteDocumentNonBlocking } from '@/firebase/non-blocking-updates';
-
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
 
 interface AdminUser {
     id: string;
@@ -29,6 +30,10 @@ interface AdminUser {
     email: string;
     role: 'admin' | 'superadmin';
     createdAt: string;
+    permissions: {
+      canUploadMedia: boolean;
+      canDeleteMedia: boolean;
+    }
 }
 
 export default function AdminManagement() {
@@ -48,7 +53,6 @@ export default function AdminManagement() {
   const handleDeleteUser = (userId: string, username: string) => {
     if (!firestore) return;
     
-    // This deletes the user's document from the 'users' collection in Firestore.
     deleteDocumentNonBlocking(doc(firestore, 'users', userId));
 
     toast({
@@ -58,11 +62,19 @@ export default function AdminManagement() {
     });
   }
 
+  const handlePermissionChange = (userId: string, permission: 'canUploadMedia' | 'canDeleteMedia', value: boolean) => {
+    if (!firestore) return;
+    const userDocRef = doc(firestore, 'users', userId);
+    updateDocumentNonBlocking(userDocRef, {
+      [`permissions.${permission}`]: value,
+    });
+  };
+
   return (
     <div className="flex-1 flex flex-col h-full">
       <div className="mb-6">
         <h2 className="text-xl font-bold">Admin Management</h2>
-        <p className="text-muted-foreground">View and manage administrator accounts.</p>
+        <p className="text-muted-foreground">View and manage administrator accounts and permissions.</p>
       </div>
       <div className="flex-1 border rounded-lg overflow-hidden glass-effect">
         <ScrollArea className="h-full">
@@ -72,7 +84,7 @@ export default function AdminManagement() {
                 <TableHead>Username</TableHead>
                 <TableHead>Email</TableHead>
                 <TableHead>Role</TableHead>
-                <TableHead>Joined</TableHead>
+                <TableHead>Permissions</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -95,7 +107,28 @@ export default function AdminManagement() {
                       {user.email === 'eljabbaryhicham@example.com' ? 'Super Admin' : 'Admin'}
                     </Badge>
                   </TableCell>
-                  <TableCell>{new Date(user.createdAt).toLocaleDateString()}</TableCell>
+                  <TableCell>
+                    {user.email !== 'eljabbaryhicham@example.com' && (
+                      <div className="flex flex-col gap-2">
+                         <div className="flex items-center space-x-2">
+                          <Checkbox
+                            id={`upload-${user.id}`}
+                            checked={user.permissions?.canUploadMedia ?? true}
+                            onCheckedChange={(checked) => handlePermissionChange(user.id, 'canUploadMedia', !!checked)}
+                          />
+                          <Label htmlFor={`upload-${user.id}`} className='text-sm font-medium leading-none'>Upload Media</Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <Checkbox
+                            id={`delete-${user.id}`}
+                            checked={user.permissions?.canDeleteMedia ?? true}
+                            onCheckedChange={(checked) => handlePermissionChange(user.id, 'canDeleteMedia', !!checked)}
+                          />
+                           <Label htmlFor={`delete-${user.id}`} className='text-sm font-medium leading-none'>Delete Media</Label>
+                        </div>
+                      </div>
+                    )}
+                  </TableCell>
                   <TableCell className="text-right">
                     {user.email !== 'eljabbaryhicham@example.com' && (
                        <Button variant="ghost" size="icon" onClick={() => handleDeleteUser(user.id, user.username)}>

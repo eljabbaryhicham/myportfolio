@@ -68,14 +68,17 @@ export default function RegisterPage() {
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, values.password);
       
-      // After successful auth creation, create user doc in Firestore
       const userDocRef = doc(firestore, 'users', userCredential.user.uid);
       await setDocumentNonBlocking(userDocRef, {
         uid: userCredential.user.uid,
         username: values.username,
         email: userCredential.user.email,
-        role: 'admin', // default role
+        role: 'admin',
         createdAt: new Date().toISOString(),
+        permissions: {
+          canUploadMedia: true,
+          canDeleteMedia: true,
+        }
       }, {});
 
       toast({
@@ -164,5 +167,3 @@ export default function RegisterPage() {
     </div>
   );
 }
-
-    

@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useCallback, useState, useEffect, useMemo } from 'react';
@@ -13,7 +14,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose, DialogDescription } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
 import Preloader from '@/components/preloader';
-import { useCollection, useFirestore, useMemoFirebase, addDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase';
+import { useCollection, useFirestore, useMemoFirebase, addDocumentNonBlocking, deleteDocumentNonBlocking, useUser } from '@/firebase';
 import { collection, doc, query, orderBy, DocumentReference } from 'firebase/firestore';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import VideoPlayer from '@/components/video-player';
@@ -37,7 +38,8 @@ const MediaFileCard = ({
   onPreview,
   isNewlyUploaded,
   onMediaSelect,
-  isSelectionMode
+  isSelectionMode,
+  canDelete,
 }: {
   file: MediaAsset;
   onDelete: (publicId: string, id: string, resourceType: string) => void;
@@ -46,6 +48,7 @@ const MediaFileCard = ({
   isNewlyUploaded: boolean;
   onMediaSelect: (url: string, type: 'image' | 'video', filename: string) => void;
   isSelectionMode: boolean;
+  canDelete: boolean;
 }) => {
   
   const handleDelete = () => {
@@ -97,27 +100,29 @@ const MediaFileCard = ({
                 <Button size="sm" variant="secondary" onClick={() => onCopy(file.url)} title="Copy URL">
                   <FontAwesomeIcon icon={faCopy} />
                 </Button>
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <Button size="sm" variant="destructive" title="Delete">
-                      <FontAwesomeIcon icon={faTrash} />
-                    </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        This will permanently delete the file from your Cloudinary storage. This action cannot be undone.
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>Cancel</AlertDialogCancel>
-                      <AlertDialogAction onClick={handleDelete}>
-                        Delete
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
+                {canDelete && (
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button size="sm" variant="destructive" title="Delete">
+                        <FontAwesomeIcon icon={faTrash} />
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          This will permanently delete the file from your Cloudinary storage. This action cannot be undone.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={handleDelete}>
+                          Delete
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                )}
               </div>
             )}
         </div>
@@ -160,19 +165,20 @@ type MediaAdminProps = StandaloneMediaAdminProps | DialogMediaAdminProps;
 export default function MediaAdmin(props: MediaAdminProps) {
   const { toast } = useToast();
   const firestore = useFirestore();
+  const { user } = useUser();
 
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadingFileName, setUploadingFileName] = useState('');
   const [previewFile, setPreviewFile] = useState<MediaAsset | null>(null);
 
-  // Determine active tab state management
-  const [internalActiveTab, setInternalActiveTab] = useState<'images' | 'videos'>('images');
-  
-  const activeTab = props.isDialog ? props.activeTab : internalActiveTab;
-  const setActiveTab = (props.isDialog ? props.setActiveTab : setInternalActiveTab);
+  const activeTab = props.isDialog ? props.activeTab : 'images';
+  const setActiveTab = props.isDialog ? props.setActiveTab : () => {};
   
   const newlyUploadedId = props.isDialog ? props.newlyUploadedId : null;
+
+  const canUpload = user?.permissions?.canUploadMedia ?? true;
+  const canDelete = user?.permissions?.canDeleteMedia ?? true;
 
   // Fetch media assets from Firestore
   const mediaCollectionRef = useMemoFirebase(() => firestore ? query(collection(firestore, 'media'), orderBy('created_at', 'desc')) : null, [firestore]);
@@ -201,6 +207,15 @@ export default function MediaAdmin(props: MediaAdminProps) {
         title: 'Configuration Error',
         description: 'Cloudinary variables not set. Add NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME and NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET to your Vercel project settings.',
         duration: 10000,
+      });
+      return;
+    }
+
+    if (!canUpload) {
+      toast({
+        variant: 'destructive',
+        title: 'Permission Denied',
+        description: 'You do not have permission to upload files.',
       });
       return;
     }
@@ -279,18 +294,19 @@ export default function MediaAdmin(props: MediaAdminProps) {
     setUploadingFileName('');
     setUploadProgress(0);
 
-  }, [toast, firestore, props]);
+  }, [toast, firestore, props, canUpload]);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     accept: { 
       'image/*': ['.jpeg', '.jpg', '.png', '.gif', '.webp', '.svg'],
       'video/*': ['.mp4', '.mov', '.webm'],
-    }
+    },
+    disabled: !canUpload || isUploading,
   });
   
   const handleDelete = async (publicId: string, docId: string, resourceType: string) => {
-    if (!firestore) return;
+    if (!firestore || !canDelete) return;
     
     try {
         await deleteDocumentNonBlocking(doc(firestore, 'media', docId));
@@ -345,6 +361,7 @@ export default function MediaAdmin(props: MediaAdminProps) {
                   isNewlyUploaded={file.id === newlyUploadedId}
                   onMediaSelect={handleMediaSelect}
                   isSelectionMode={!!(props.isDialog && props.isSelectionMode)}
+                  canDelete={canDelete}
                 />
             ))}
         </div>
@@ -466,11 +483,11 @@ export default function MediaAdmin(props: MediaAdminProps) {
             </Button>
         </div>
         <div className="border rounded-lg p-6 glass-effect">
-          <div {...getRootProps()} className={cn('border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors', isDragActive ? 'border-primary bg-primary/10' : 'border-border hover:border-primary/50', isUploading && 'cursor-not-allowed opacity-50')}>
-              <input {...getInputProps()} disabled={isUploading} />
+          <div {...getRootProps()} className={cn('border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors', isDragActive && canUpload ? 'border-primary bg-primary/10' : 'border-border hover:border-primary/50', (!canUpload || isUploading) && 'cursor-not-allowed opacity-50')}>
+              <input {...getInputProps()} />
               <div className="flex flex-col items-center gap-2 text-muted-foreground">
                   <FontAwesomeIcon icon={faCloudUploadAlt} className="h-8 w-8" />
-                  {isUploading ? (<p className="text-sm">Uploading...</p>) : isDragActive ? (<p className="text-sm">Drop files here...</p>) : (<p className="text-sm">Drag & drop files, or click to select</p>)}
+                  {isUploading ? (<p className="text-sm">Uploading...</p>) : !canUpload ? (<p className="text-sm text-destructive-foreground/70">You do not have permission to upload.</p>) : isDragActive ? (<p className="text-sm">Drop files here...</p>) : (<p className="text-sm">Drag & drop files, or click to select</p>)}
               </div>
           </div>
           {isUploading && (

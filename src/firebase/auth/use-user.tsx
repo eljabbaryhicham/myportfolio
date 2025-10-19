@@ -13,7 +13,10 @@ export interface AppUser {
     email: string | null;
     username?: string;
     role?: 'admin' | 'superadmin';
-    // Add other fields from your Firestore user document here
+    permissions?: {
+      canUploadMedia?: boolean;
+      canDeleteMedia?: boolean;
+    }
 }
 
 /**
@@ -56,6 +59,7 @@ export const useUser = (): { user: AppUser | null, isUserLoading: boolean, userE
         email: authUser.email,
         username: userDoc.username,
         role: userDoc.role,
+        permissions: userDoc.permissions,
         ...userDoc
       });
     } else {
