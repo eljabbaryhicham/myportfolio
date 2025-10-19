@@ -1,82 +1,26 @@
 
 'use client';
 
-import Image from 'next/image';
 import { Card, CardContent } from '@/components/ui/card';
 import {
   Carousel,
   CarouselContent,
   CarouselItem,
 } from '@/components/ui/carousel';
-import { Badge } from '@/components/ui/badge';
 import { memo, useRef } from 'react';
 import Autoplay from 'embla-carousel-autoplay';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faStar } from '@fortawesome/free-solid-svg-icons';
 import { Separator } from '@/components/ui/separator';
+import { useIsMobile } from '@/hooks/use-mobile';
+import Image from 'next/image';
 
-const clients = [
-  {
-    name: 'Komfortrauschen',
-    category: 'Band',
-    image: 'https://picsum.photos/seed/client1/400/400',
-    hint: 'woman portrait',
-  },
-  {
-    name: 'Alec Troniq',
-    category: 'Live-Act',
-    image: 'https://picsum.photos/seed/client2/400/400',
-    hint: 'person singing',
-  },
-  {
-    name: 'Anda Morts',
-    category: 'Band',
-    image: 'https://picsum.photos/seed/client3/400/400',
-    hint: 'microphone stage',
-  },
-  {
-    name: 'Annett Gapstream',
-    category: 'DJ',
-    image: 'https://picsum.photos/seed/client4/400/400',
-    hint: 'dj performance',
-  },
-  {
-    name: 'Brezel Göring & Psycho',
-    category: 'Band',
-    image: 'https://picsum.photos/seed/client5/400/400',
-    hint: 'man portrait',
-  },
-  {
-    name: 'Client Six',
-    category: 'Solo Artist',
-    image: 'https://picsum.photos/seed/client6/400/400',
-    hint: 'guitar player',
-  },
-  {
-    name: 'Client Seven',
-    category: 'Band',
-    image: 'https://picsum.photos/seed/client7/400/400',
-    hint: 'drummer silhouette',
-  },
-  {
-    name: 'Client Eight',
-    category: 'Electronic Duo',
-    image: 'https://picsum.photos/seed/client8/400/400',
-    hint: 'synthesizer setup',
-  },
-  {
-    name: 'Client Nine',
-    category: 'Vocalist',
-    image: 'https://picsum.photos/seed/client9/400/400',
-    hint: 'woman singing',
-  },
-  {
-    name: 'Client Ten',
-    category: 'Producer',
-    image: 'https://picsum.photos/seed/client10/400/400',
-    hint: 'mixing board',
-  },
+const clientLogos = [
+  { name: 'QuantumLeap', logo: 'https://i.imgur.com/3yGeJkf.png' },
+  { name: 'StellarForge', logo: 'https://i.imgur.com/S5a0T3b.png' },
+  { name: 'ApexInnovate', logo: 'https://i.imgur.com/KzU5FmM.png' },
+  { name: 'NexusCore', logo: 'https://i.imgur.com/b9x3a0D.png' },
+  { name: 'VertexDynamics', logo: 'https://i.imgur.com/wRkFgdS.png' },
+  { name: 'MomentumSuite', logo: 'https://i.imgur.com/wE6f6R3.png' },
 ];
 
 const MemoizedImage = memo(Image);
@@ -85,6 +29,7 @@ export default function AboutPage() {
   const plugin = useRef(
     Autoplay({ delay: 2000, stopOnInteraction: true })
   );
+  const isMobile = useIsMobile();
 
   return (
     <div className="h-full w-full flex flex-col">
@@ -100,44 +45,35 @@ export default function AboutPage() {
       </div>
       <Separator className="bg-white/10" />
       <ScrollArea className="flex-1">
-        <div className="p-[5%] pt-4">
-          <div className="w-full max-w-2xl mx-auto">
+        <div className="p-[5%] pt-4 flex flex-col items-center justify-center h-full">
+          <div className="w-full max-w-sm md:max-w-2xl mx-auto">
             <Carousel
               plugins={[plugin.current]}
               opts={{
                 align: 'start',
                 loop: true,
               }}
+              orientation={isMobile ? 'vertical' : 'horizontal'}
               className="w-full"
               onMouseEnter={plugin.current.stop}
               onMouseLeave={plugin.current.reset}
             >
-              <CarouselContent className='-ml-0'>
-                {clients.map((client, index) => (
-                  <CarouselItem key={index}>
-                    <div className="p-1">
-                      <div className="relative aspect-video overflow-hidden rounded-lg group">
-                          <MemoizedImage
-                            src={client.image}
-                            alt={client.name}
-                            fill
-                            className="object-cover transition-transform duration-300 group-hover:scale-105"
-                            data-ai-hint={client.hint}
-                            sizes="(max-width: 768px) 100vw, 50vw"
-                          />
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
-                          <div className="absolute top-2 left-2">
-                            <Badge variant="secondary" className="bg-green-500/20 text-green-300 border-green-500/30">
-                              <FontAwesomeIcon icon={faStar} className="h-3 w-3 mr-1" />
-                              {client.category}
-                            </Badge>
-                          </div>
-                          <div className="absolute bottom-4 left-4">
-                            <h3 className="text-lg font-bold text-white">
-                              {client.name}
-                            </h3>
-                          </div>
-                      </div>
+              <CarouselContent className={isMobile ? '-mt-4 h-48' : '-ml-4'}>
+                {clientLogos.map((client, index) => (
+                  <CarouselItem key={index} className={isMobile ? 'pt-4 basis-1/2' : 'basis-1/3'}>
+                    <div className="p-1 h-full">
+                      <Card className="h-full glass-effect">
+                        <CardContent className="flex items-center justify-center p-6 h-full">
+                           <MemoizedImage 
+                             src={client.logo} 
+                             alt={`${client.name} logo`}
+                             width={150}
+                             height={50}
+                             className="object-contain w-full h-full max-h-12 invert brightness-0"
+                             style={{ filter: 'grayscale(1) brightness(1.5)' }}
+                           />
+                        </CardContent>
+                      </Card>
                     </div>
                   </CarouselItem>
                 ))}
@@ -146,7 +82,7 @@ export default function AboutPage() {
 
             <div className="text-center mt-8 md:mt-12">
               <p className="text-foreground/70">
-                Trusted by {clients.length}+ amazing clients worldwide
+                Trusted by 1000+ amazing clients worldwide
               </p>
             </div>
           </div>
