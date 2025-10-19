@@ -43,7 +43,7 @@ export function useStorageList(pathRef: StorageReference | null) {
         };
       });
       const filesData = await Promise.all(filePromises);
-      setFiles(filesData); // Correctly set the state
+      setFiles(filesData);
       setError(null);
     } catch (e) {
       setError(e as Error);
@@ -63,19 +63,14 @@ export function useStorageList(pathRef: StorageReference | null) {
 
 // Hook to delete a file
 export function useStorageDelete() {
-    const [isLoading, setIsLoading] = useState(false);
-
     const deleteFile = async (fileRef: StorageReference) => {
-        setIsLoading(true);
         try {
             await deleteObject(fileRef);
-            setIsLoading(false);
         } catch (e) {
-            setIsLoading(false);
             console.error("Delete Error:", e);
             throw e; // re-throw to be caught by caller
         }
     };
 
-    return { deleteFile, isLoading };
+    return { deleteFile };
 }

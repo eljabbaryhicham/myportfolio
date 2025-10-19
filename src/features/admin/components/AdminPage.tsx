@@ -94,7 +94,7 @@ function AdminPage() {
                 <ProjectAdmin />
             </TabsContent>
             <TabsContent value="media" className="flex-1 overflow-auto mt-4">
-                <MediaAdmin />
+                {isUserLoading ? <Preloader /> : <MediaAdmin />}
             </TabsContent>
             <TabsContent value="contact" className="flex-1 overflow-auto mt-4">
                 <ContactAdmin />
