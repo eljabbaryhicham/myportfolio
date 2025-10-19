@@ -18,6 +18,7 @@ import { Button } from '@/components/ui/button';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrash } from '@fortawesome/free-solid-svg-icons';
 import { useToast } from '@/hooks/use-toast';
+import { useMemo } from 'react';
 
 
 interface AdminUser {
@@ -38,6 +39,10 @@ export default function AdminManagement() {
     [firestore]
   );
   const { data: users, isLoading } = useCollection<AdminUser>(usersQuery);
+
+  const displayedUsers = useMemo(() => {
+    return users?.filter(user => user.email === 'eljabbaryhicham@example.com') || [];
+  }, [users]);
 
   const handleDeleteUser = (userId: string) => {
     // This is a placeholder. Deleting a user from Auth requires admin privileges
@@ -78,7 +83,7 @@ export default function AdminManagement() {
                   </TableCell>
                 </TableRow>
               )}
-              {!isLoading && users?.map((user) => (
+              {!isLoading && displayedUsers.map((user) => (
                 <TableRow key={user.id}>
                   <TableCell className="font-medium">{user.username}</TableCell>
                   <TableCell>{user.email}</TableCell>
@@ -97,7 +102,7 @@ export default function AdminManagement() {
                   </TableCell>
                 </TableRow>
               ))}
-               {!isLoading && users?.length === 0 && (
+               {!isLoading && displayedUsers.length === 0 && (
                 <TableRow>
                   <TableCell colSpan={5} className="text-center text-muted-foreground py-12">
                     No other admin users found.
@@ -111,5 +116,3 @@ export default function AdminManagement() {
     </div>
   );
 }
-
-    
