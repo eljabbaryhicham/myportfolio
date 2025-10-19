@@ -439,7 +439,7 @@ export default function WorkPage() {
       scale: 1,
     },
     exit: (direction: 'next' | 'prev' | null) => ({
-      x: direction === 'next' ? '-100%' : direction === 'prev' ? '100%' : '0%',
+      x: direction === 'prev' ? '100%' : direction === 'next' ? '-100%' : '0%',
       opacity: 0,
       scale: 0.95,
     }),
@@ -521,7 +521,8 @@ export default function WorkPage() {
                 onDragEnd={handleDragEnd}
                 drag={isMobile ? "x" : false}
                 dragConstraints={{ left: 0, right: 0 }}
-                className="flex-1 flex flex-col min-h-0"
+                dragElastic={0.2}
+                className="flex-1 flex flex-col min-h-0 h-full w-full"
             >
             <AnimatePresence mode="wait" initial={false} custom={direction}>
               {selectedItem && (
@@ -648,7 +649,7 @@ export default function WorkPage() {
                               if (!isClient || !src) return null;
                               
                               const youtubeRegex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
-                              const vimeoRegex = /(?:https?:\/\/)?(?:www\.)?vimeo\.com\/(?:channels\/(?:\w+\/)?|groups\/(?:[^\/]*)\/videos\/|album\/(?:\d+)\/video\/|)(\d+)/;
+                              const vimeoRegex = /(?:https?:\/\/)?(?:www\.)?vimeo\.com\/(?:channels\/(?:\w+\/)?|groups\/(?:\/]*)\/videos\/|album\/(?:\d+)\/video\/|)(\d+)/;
                               
                               let videoSource: { type: 'video'; sources: { src: string; provider: 'youtube' | 'vimeo' }[] } | { type: 'video'; sources: { src: string; type: string }[] } | null = null;
                               const youtubeMatch = src.match(youtubeRegex);
@@ -761,6 +762,3 @@ export default function WorkPage() {
 }
 
     
-
-    
-
