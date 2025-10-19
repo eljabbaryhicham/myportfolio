@@ -19,15 +19,16 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import ReactMarkdown from 'react-markdown';
 import rehypeRaw from 'rehype-raw';
 import rehypeSanitize, { defaultSchema } from 'rehype-sanitize';
-import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
+import { useCollection, useFirestore, useMemoFirebase, useUser } from '@/firebase';
 import { collection, query, orderBy } from 'firebase/firestore';
 import { PortfolioItem } from '@/features/portfolio/data/portfolio-data';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faUpDown, faXmark, faExpand, faPalette, faFilm, faArrowLeft, faArrowRight } from '@fortawesome/free-solid-svg-icons';
+import { faUpDown, faXmark, faExpand, faPalette, faFilm, faArrowLeft, faArrowRight, faPencilAlt } from '@fortawesome/free-solid-svg-icons';
 import { Separator } from '@/components/ui/separator';
 import Preloader from '@/components/preloader';
 import { useIsExtraWide } from '@/hooks/use-is-extra-wide';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useRouter } from 'next/navigation';
 
 const VideoPlayer = dynamic(() => import('@/components/video-player'), {
   ssr: false,
@@ -156,8 +157,14 @@ const PortfolioMedia = ({
 };
 PortfolioMedia.displayName = 'PortfolioMedia';
 
-const PortfolioGridItem = ({ item, onClick }: { item: PortfolioItem, onClick: () => void }) => {
+const PortfolioGridItem = ({ item, onClick, isAdmin }: { item: PortfolioItem, onClick: () => void, isAdmin: boolean }) => {
   const [isLoaded, setIsLoaded] = useState(false);
+  const router = useRouter();
+
+  const handleEditClick = (e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent the main onClick from firing
+    router.push('/admin');
+  };
 
   return (
     <div className="p-[2px] rounded-lg glass-effect">
@@ -212,6 +219,17 @@ const PortfolioGridItem = ({ item, onClick }: { item: PortfolioItem, onClick: ()
                 <FontAwesomeIcon icon={faPalette} className="h-1/2 w-1/2 text-white/80" />
             </div>
         )}
+         {isAdmin && isLoaded && (
+          <Button
+            variant="default"
+            size="sm"
+            className="absolute top-4 left-4 h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+            onClick={handleEditClick}
+          >
+            <FontAwesomeIcon icon={faPencilAlt} className="h-4 w-4" />
+            <span className="sr-only">Edit Project</span>
+          </Button>
+        )}
       </div>
     </div>
   );
@@ -220,6 +238,7 @@ const PortfolioGridItem = ({ item, onClick }: { item: PortfolioItem, onClick: ()
 
 export default function WorkPage() {
   const firestore = useFirestore();
+  const { user } = useUser();
   const projectsQuery = useMemoFirebase(
     () =>
       firestore
@@ -358,6 +377,7 @@ export default function WorkPage() {
                       key={item.id}
                       item={item}
                       onClick={() => setSelectedItem(item)}
+                      isAdmin={!!user}
                     />
                   ))}
                 </div>
@@ -578,11 +598,3 @@ export default function WorkPage() {
     </>
   );
 }
-
-    
-
-    
-
-    
-
-    
