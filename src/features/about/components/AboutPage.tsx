@@ -1,7 +1,7 @@
 
 'use client';
 
-import { memo } from 'react';
+import { memo, useEffect, useRef } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import Image from 'next/image';
@@ -14,6 +14,13 @@ import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEnvelope, faArrowRight } from '@fortawesome/free-solid-svg-icons';
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+} from "@/components/ui/carousel"
+import Autoplay from "embla-carousel-autoplay"
+
 
 interface Client {
   id: string;
@@ -33,6 +40,9 @@ const MemoizedImage = memo(Image);
 
 export default function AboutPage() {
   const firestore = useFirestore();
+  const autoplay = useRef(
+    Autoplay({ delay: 2000, stopOnInteraction: true, stopOnMouseEnter: true })
+  )
 
   const clientsQuery = useMemoFirebase(
     () => firestore ? query(collection(firestore, 'clients'), orderBy('order')) : null,
@@ -48,28 +58,6 @@ export default function AboutPage() {
   
   const isLoading = isLoadingClients || isLoadingContent;
   const logoUrl = aboutContent?.logoUrl || "https://i.imgur.com/N9c8oEJ.png";
-
-  const clientLogos = clients && clients.length > 0 ? (
-    clients.map((client) => (
-      <div key={client.id} className="flex-shrink-0 px-8" style={{ minWidth: '150px' }}>
-          <div className="group/item flex flex-col items-center justify-center gap-2 cursor-pointer p-4">
-              <div className="relative w-[150px] h-[40px]">
-              <MemoizedImage
-                  src={client.logoUrl}
-                  alt={`${client.name} logo`}
-                  fill
-                  className="object-contain w-full h-10 grayscale brightness-0 invert transition-all duration-300 group-hover/item:filter-none"
-              />
-              </div>
-              <p className="text-sm text-white whitespace-nowrap transition-colors duration-300 group-hover/item:text-primary">{client.name}</p>
-          </div>
-      </div>
-    ))
-  ) : (
-    <div className="p-1 h-full flex items-center justify-center text-muted-foreground">
-        No clients to display.
-    </div>
-  );
 
   return (
     <div className="h-full w-full flex flex-col">
@@ -110,7 +98,7 @@ export default function AboutPage() {
                                 Contact Us
                             </Link>
                         </Button>
-                        <Button asChild variant="dark-blue">
+                        <Button asChild variant="grey">
                              <Link href="/work">
                                 Explore Our Works
                                 <FontAwesomeIcon icon={faArrowRight} className="ml-2" />
@@ -135,17 +123,39 @@ export default function AboutPage() {
                   <Separator className="bg-white/10 max-w-xs mx-auto mt-2" />
                 </div>
                 
-                <div className="group relative w-full overflow-hidden">
-                    <div className="flex animate-marquee group-hover:[animation-play-state:paused]">
-                        <div className="flex min-w-full shrink-0 items-center justify-around">
-                            {clientLogos}
-                        </div>
-                        <div className="flex min-w-full shrink-0 items-center justify-around" aria-hidden="true">
-                            {clientLogos}
-                        </div>
-                    </div>
-                </div>
-
+                <Carousel
+                  plugins={[autoplay.current]}
+                  opts={{
+                    align: "start",
+                    loop: true,
+                  }}
+                  className="w-full"
+                >
+                  <CarouselContent>
+                    {clients && clients.length > 0 ? (
+                       clients.map((client) => (
+                        <CarouselItem key={client.id} className="basis-1/2 md:basis-1/3 lg:basis-1/5">
+                            <div className="group/item flex flex-col items-center justify-center gap-2 cursor-pointer p-4">
+                                <div className="relative w-[150px] h-[40px]">
+                                <MemoizedImage
+                                    src={client.logoUrl}
+                                    alt={`${client.name} logo`}
+                                    fill
+                                    className="object-contain w-full h-10 grayscale brightness-0 invert transition-all duration-300 group-hover/item:filter-none"
+                                />
+                                </div>
+                                <p className="text-sm text-white whitespace-nowrap transition-colors duration-300 group-hover/item:text-primary">{client.name}</p>
+                            </div>
+                        </CarouselItem>
+                      ))
+                    ) : (
+                      <div className="p-1 h-full flex items-center justify-center text-muted-foreground col-span-full">
+                          No clients to display.
+                      </div>
+                    )}
+                  </CarouselContent>
+                </Carousel>
+                
                 <div className="text-center mt-8 md:mt-12">
                   <p className="text-foreground/70">
                     Trusted by 1000+ amazing clients worldwide
