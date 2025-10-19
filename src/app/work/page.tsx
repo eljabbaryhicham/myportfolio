@@ -331,6 +331,7 @@ export default function WorkPage() {
   const handleNextProject = () => {
     if (!selectedItem || !filteredItems) return;
     setDirection('next');
+    setIsDialogMediaLoading(true);
     const currentIndex = filteredItems.findIndex(item => item.id === selectedItem.id);
     const nextIndex = (currentIndex + 1) % filteredItems.length;
     const nextItem = filteredItems[nextIndex];
@@ -341,6 +342,7 @@ export default function WorkPage() {
   const handlePreviousProject = () => {
     if (!selectedItem || !filteredItems) return;
     setDirection('prev');
+    setIsDialogMediaLoading(true);
     const currentIndex = filteredItems.findIndex(item => item.id === selectedItem.id);
     const prevIndex = (currentIndex - 1 + filteredItems.length) % filteredItems.length;
     const prevItem = filteredItems[prevIndex];

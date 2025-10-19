@@ -224,5 +224,5 @@
 }
 
 .animate-glow {
-  animation: glow 1.5s ease-in-out 2;
+  animation: glow 1.5s ease-in-out infinite;
 }

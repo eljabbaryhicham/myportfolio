@@ -52,7 +52,7 @@ export function AppNav() {
                   className={cn(
                     "group relative flex h-10 w-10 items-center justify-center rounded-md transition-all duration-300 hover:scale-110",
                     isActive
-                      ? "bg-destructive text-destructive-foreground scale-110"
+                      ? "bg-destructive text-destructive-foreground scale-110 animate-glow"
                       : "text-foreground/70 glass-effect"
                   )}
                 >
@@ -95,7 +95,7 @@ export function AppNav() {
                 className={cn(
                   "group relative flex h-10 w-10 items-center justify-center rounded-md transition-all duration-300 hover:scale-110",
                   isActive
-                    ? "bg-destructive text-destructive-foreground scale-110"
+                    ? "bg-destructive text-destructive-foreground scale-110 animate-glow"
                     : "text-foreground/70 glass-effect"
                 )}
               >
