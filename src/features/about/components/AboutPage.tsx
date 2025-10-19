@@ -66,8 +66,6 @@ export default function AboutPage() {
                 }}
                 orientation={isMobile ? 'vertical' : 'horizontal'}
                 className="w-full"
-                onMouseEnter={plugin.current.stop}
-                onMouseLeave={plugin.current.play}
               >
                 <CarouselContent className={isMobile ? '-mt-4 h-48' : '-ml-4'}>
                   {(clients && clients.length > 0) ? clients.map((client) => (
@@ -81,7 +79,7 @@ export default function AboutPage() {
                            className="object-contain w-full h-10 invert brightness-0"
                            style={{ filter: 'grayscale(1) brightness(1.5)' }}
                          />
-                         <p className="text-sm text-foreground whitespace-nowrap transition-colors text-white group-hover:text-destructive">{client.name}</p>
+                         <p className="text-sm text-white whitespace-nowrap transition-colors group-hover:text-primary">{client.name}</p>
                       </div>
                     </CarouselItem>
                   )) : (
