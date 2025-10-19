@@ -20,7 +20,7 @@ import HomeAdmin from '@/features/admin/components/HomeAdmin';
 import { PortfolioItem } from '@/features/portfolio/data/portfolio-data';
 import { PortfolioItemFormSheet } from '@/features/admin/components/PortfolioItemForm';
 import { addDocumentNonBlocking, setDocumentNonBlocking } from '@/firebase/non-blocking-updates';
-import { collection, doc } from 'firebase/firestore';
+import { collection, doc, DocumentReference } from 'firebase/firestore';
 import { useFirestore } from '@/firebase';
 
 
@@ -117,19 +117,25 @@ function AdminPage() {
   
   const handlePortfolioSheetOpenChange = (isOpen: boolean) => {
     setIsPortfolioSheetOpen(isOpen);
-    if (!isOpen) {
-        // If form is closed, reset the 'fromMediaLibrary' flag
-        if (fromMediaLibrary) {
-            setFromMediaLibrary(false);
-        }
+    if (!isOpen && fromMediaLibrary) {
+        // If form is closed without saving when coming from media library,
+        // reopen the media library dialog.
+        setIsLibraryOpen(true);
+        setFromMediaLibrary(false); // Reset the flag
     }
   };
 
   const handleUploadComplete = async (docId: string, resourceType: 'image' | 'video') => {
     if (!docId) return;
     setNewlyUploadedId(docId);
-    setActiveTab('media'); // Switch to media tab
+    
+    // Switch to media tab only if not already on it, to avoid unnecessary re-renders.
+    if(activeTab !== 'media') {
+      setActiveTab('media');
+    }
+    
     setIsLibraryOpen(true); // Open the library
+    
     // Reset the animation highlight after a delay
     setTimeout(() => setNewlyUploadedId(null), 2000);
   };
@@ -206,13 +212,9 @@ function AdminPage() {
             setIsLibraryOpen(false);
             setLibrarySelectionConfig(null);
         }}
-        activeTab={activeTab === 'media' ? 'images' : activeTab as 'images' | 'videos'}
+        activeTab={activeTab === 'media' ? 'images' : 'images'}
         setActiveTab={(tab) => {
-          if (activeTab === 'media') {
             // This state change is local to the dialog
-          } else {
-            setActiveTab(tab)
-          }
         }}
         newlyUploadedId={newlyUploadedId}
       />
