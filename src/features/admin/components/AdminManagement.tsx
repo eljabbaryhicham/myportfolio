@@ -2,7 +2,7 @@
 'use client';
 
 import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
-import { collection, query, orderBy } from 'firebase/firestore';
+import { collection, query, orderBy, doc, deleteDoc } from 'firebase/firestore';
 import {
   Table,
   TableBody,
@@ -19,6 +19,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrash } from '@fortawesome/free-solid-svg-icons';
 import { useToast } from '@/hooks/use-toast';
 import { useMemo } from 'react';
+import { deleteDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 
 
 interface AdminUser {
@@ -44,14 +45,16 @@ export default function AdminManagement() {
     return users || [];
   }, [users]);
 
-  const handleDeleteUser = (userId: string) => {
-    // This is a placeholder. Deleting a user from Auth requires admin privileges
-    // and should be handled by a backend function, not directly from the client.
-    console.warn(`Deletion of user ${userId} should be handled by a secure backend function.`);
+  const handleDeleteUser = (userId: string, username: string) => {
+    if (!firestore) return;
+    
+    // This deletes the user's document from the 'users' collection in Firestore.
+    deleteDocumentNonBlocking(doc(firestore, 'users', userId));
+
     toast({
-        variant: 'destructive',
-        title: 'Action Not Implemented',
-        description: 'User deletion must be done from a secure admin backend.',
+        title: `Admin '${username}' Removed`,
+        description: 'The user has been removed from the list. To fully revoke their access, delete them from Firebase Authentication as well.',
+        duration: 8000,
     });
   }
 
@@ -95,7 +98,7 @@ export default function AdminManagement() {
                   <TableCell>{new Date(user.createdAt).toLocaleDateString()}</TableCell>
                   <TableCell className="text-right">
                     {user.email !== 'eljabbaryhicham@example.com' && (
-                       <Button variant="ghost" size="icon" onClick={() => handleDeleteUser(user.id)}>
+                       <Button variant="ghost" size="icon" onClick={() => handleDeleteUser(user.id, user.username)}>
                             <FontAwesomeIcon icon={faTrash} className="h-4 w-4 text-destructive" />
                        </Button>
                     )}
