@@ -5,12 +5,13 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowRight } from '@fortawesome/free-solid-svg-icons';
-import H5Player from "@/components/H5Player";
 import type { PortfolioItem } from "../data/portfolio-data";
 import { cn } from "@/lib/utils";
 import Preloader from "@/components/preloader";
 import { defaultPortfolioItems } from "../data/portfolio-data";
 import { useMemo } from "react";
+import VideoPlayer from "@/components/video-player";
+import type { SourceInfo } from "plyr";
 
 interface HomePageContentProps {
     featuredProject: PortfolioItem | null;
@@ -19,15 +20,25 @@ interface HomePageContentProps {
 
 export default function HomePageContent({ featuredProject, isLoading }: HomePageContentProps) {
   
-  const videoSrc = useMemo(() => {
+  const videoSource = useMemo(() => {
     const project = featuredProject || defaultPortfolioItems.find(item => item.featured && item.type === 'video');
     if (!project) return null;
-    
+
+    let sourceInfo: SourceInfo;
     if (project.sources && project.sources.length > 0) {
-      // Find the highest quality source, assuming they are sorted or pick one
-      return project.sources.sort((a, b) => b.size - a.size)[0].src;
+      sourceInfo = {
+        type: 'video',
+        sources: project.sources.map(s => ({ src: s.src, type: 'video/mp4', size: s.size })),
+      };
+    } else if (project.sourceUrl) {
+      sourceInfo = {
+        type: 'video',
+        sources: [{ src: project.sourceUrl }],
+      };
+    } else {
+      return null;
     }
-    return project.sourceUrl;
+    return sourceInfo;
   }, [featuredProject]);
 
 
@@ -37,25 +48,16 @@ export default function HomePageContent({ featuredProject, isLoading }: HomePage
         "w-full max-w-4xl aspect-video", 
         "relative rounded-lg overflow-hidden glass-effect border border-border/50"
       )}>
-        {isLoading || !videoSrc ? (
+        {isLoading || !videoSource ? (
           <Preloader /> 
         ) : (
-          <H5Player 
-            source={videoSrc} 
-            options={{
-                isLive: false,
-                fluid: true,
-                muted: true,
-                autoplay: true,
-                loop: true,
-                poster: featuredProject?.thumbnailUrl,
-                control: {
-                  playAndPause: false,
-                  progress: false,
-                  volume: false,
-                  fullscreen: false,
-                }
-            }}
+          <VideoPlayer
+            source={videoSource}
+            poster={featuredProject?.thumbnailUrl}
+            autoplay
+            loop
+            muted
+            controls={false}
           />
         )}
       </div>
