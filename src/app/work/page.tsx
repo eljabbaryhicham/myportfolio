@@ -170,7 +170,7 @@ const PortfolioGridItem = ({ item, onClick, onEditClick, isAdmin }: { item: Port
             isLoaded ? "opacity-100 group-hover:scale-105" : "opacity-0"
           )}
           data-ai-hint={item.thumbnailHint}
-          sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
+          sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
           onLoad={() => setIsLoaded(true)}
         />
         <div className={cn(
@@ -547,10 +547,7 @@ export default function WorkPage() {
                     initial="enter"
                     animate="center"
                     exit="exit"
-                    transition={{
-                      x: { type: "spring", stiffness: 300, damping: 30 },
-                      opacity: { duration: 0.2 }
-                    }}
+                    transition={{ type: 'tween', duration: 0.3, ease: 'easeOut' }}
                   >
                     <div className="flex flex-col flex-1 min-h-0 h-full">
                       <DialogHeader className="p-4 md:p-6 flex-shrink-0 relative">
@@ -781,3 +778,6 @@ export default function WorkPage() {
     
 
 
+
+
+    

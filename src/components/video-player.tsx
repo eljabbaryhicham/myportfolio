@@ -49,6 +49,8 @@ const VideoPlayer = ({
     // Append it to the wrapper div managed by React
     wrapper.appendChild(videoElement);
 
+    const useThumbnails = !isMobile && !!previewThumbnailsSrc;
+
     const options: Options = {
       settings: ['quality', 'speed', 'loop'],
       quality: {
@@ -56,8 +58,8 @@ const VideoPlayer = ({
         options: [4320, 2160, 1440, 1080, 720, 576, 480, 360, 240],
       },
       previewThumbnails: {
-        enabled: !!previewThumbnailsSrc,
-        src: previewThumbnailsSrc || '',
+        enabled: useThumbnails,
+        src: useThumbnails ? previewThumbnailsSrc! : '',
       },
       fullscreen: {
         enabled: true,
@@ -110,10 +112,12 @@ const VideoPlayer = ({
     // We only want this effect to run once on mount, and clean up on unmount.
     // The source update is handled internally by Plyr after initialization.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [source, isMobile]); // Re-run if the source changes
+  }, [source, isMobile]); // Re-run if the source or mobile status changes
 
   // This div is the stable container that React will manage.
   return <div ref={wrapperRef} className="plyr-react plyr" />;
 };
 
 export default VideoPlayer;
+
+    
