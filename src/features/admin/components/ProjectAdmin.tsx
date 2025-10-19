@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useMemo, useState, useEffect, useRef } from 'react';
@@ -17,11 +18,10 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { PortfolioItemFormSheet } from '@/app/admin/portfolio-item-form';
 import { useCollection, useFirestore, useMemoFirebase, errorEmitter, FirestorePermissionError } from '@/firebase';
 import { useToast } from '@/hooks/use-toast';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { addDocumentNonBlocking, deleteDocumentNonBlocking, setDocumentNonBlocking } from '@/firebase/non-blocking-updates';
+import { deleteDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { collection, doc, writeBatch } from 'firebase/firestore';
 import { defaultPortfolioItems, type PortfolioItem } from '@/features/portfolio/data/portfolio-data';
 import { cn } from '@/lib/utils';
@@ -29,12 +29,16 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlusCircle, faEllipsisH, faCloudUploadAlt, faGripVertical } from '@fortawesome/free-solid-svg-icons';
 import Preloader from '@/components/preloader';
 
-function ProjectAdmin() {
+interface ProjectAdminProps {
+  setSelectedItem: (item: PortfolioItem | null) => void;
+  setIsSheetOpen: (isOpen: boolean) => void;
+  handleFormSubmit: (values: PortfolioItem, minOrder: number) => void;
+}
+
+
+function ProjectAdmin({ setSelectedItem, setIsSheetOpen, handleFormSubmit }: ProjectAdminProps) {
   const firestore = useFirestore();
   const { toast } = useToast();
-  
-  const [selectedItem, setSelectedItem] = useState<PortfolioItem | null>(null);
-  const [isSheetOpen, setIsSheetOpen] = useState(false);
   
   const projectsCollection = useMemoFirebase(() => firestore ? collection(firestore, 'projects') : null, [firestore]);
   const { data: items, isLoading } = useCollection<PortfolioItem>(projectsCollection);
@@ -101,30 +105,6 @@ function ProjectAdmin() {
       title: 'Item Deleted',
       description: 'The portfolio item has been removed.',
     });
-  };
-
-  const handleFormSubmit = (values: PortfolioItem) => {
-    if (!firestore) return;
-
-    if (values.id) {
-      // Existing item
-      const dataToSave = { ...values, order: values.order ?? 0 };
-      const docRef = doc(firestore, 'projects', values.id);
-      setDocumentNonBlocking(docRef, dataToSave, { merge: true });
-       toast({
-        title: 'Changes Saved',
-        description: 'Your portfolio has been updated.',
-      });
-    } else {
-      // New item, place it at the beginning
-      const dataToSave = { ...values, order: minOrder - 1 };
-      addDocumentNonBlocking(collection(firestore, 'projects'), dataToSave);
-       toast({
-        title: 'Item Added',
-        description: 'A new item has been added to your portfolio.',
-      });
-    }
-    setIsSheetOpen(false);
   };
 
   const handleDragEnd = () => {
@@ -302,12 +282,6 @@ function ProjectAdmin() {
           </div>
         </ScrollArea>
       </div>
-      <PortfolioItemFormSheet 
-        isOpen={isSheetOpen}
-        setIsOpen={setIsSheetOpen}
-        item={selectedItem}
-        onSubmit={handleFormSubmit}
-      />
     </div>
   );
 }

@@ -18,7 +18,7 @@ import { useToast } from '@/hooks/use-toast';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import Image from 'next/image';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCloudUploadAlt, faCopy, faTrash, faFilm, faFileImage, faImages, faXmark } from '@fortawesome/free-solid-svg-icons';
+import { faCloudUploadAlt, faCopy, faTrash, faFilm, faFileImage, faImages, faXmark, faPlus } from '@fortawesome/free-solid-svg-icons';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
@@ -43,12 +43,14 @@ const MediaFileCard = ({
   file,
   onDelete,
   onCopy,
-  isNewlyUploaded
+  isNewlyUploaded,
+  onCreateProject
 }: {
   file: MediaAsset;
   onDelete: (publicId: string, id: string, resourceType: string) => void;
   onCopy: (url: string) => void;
   isNewlyUploaded: boolean;
+  onCreateProject: (url: string, type: 'image' | 'video') => void;
 }) => {
   
   const handleDelete = () => {
@@ -72,6 +74,9 @@ const MediaFileCard = ({
 
         <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-2">
           <div className="flex gap-2 justify-center">
+            <Button size="sm" variant="default" onClick={() => onCreateProject(file.url, file.resource_type === 'video' ? 'video' : 'image')}>
+              <FontAwesomeIcon icon={faPlus} />
+            </Button>
             <Button size="sm" variant="secondary" onClick={() => onCopy(file.url)}>
               <FontAwesomeIcon icon={faCopy} />
             </Button>
@@ -104,7 +109,11 @@ const MediaFileCard = ({
   );
 };
 
-export default function MediaAdmin() {
+interface MediaAdminProps {
+  onSelectMedia: (url: string, type: 'image' | 'video') => void;
+}
+
+export default function MediaAdmin({ onSelectMedia }: MediaAdminProps) {
   const { toast } = useToast();
   const firestore = useFirestore();
 
@@ -275,6 +284,7 @@ export default function MediaAdmin() {
                   onDelete={handleDelete} 
                   onCopy={handleCopy}
                   isNewlyUploaded={file.id === newlyUploadedId}
+                  onCreateProject={onSelectMedia}
                 />
             ))}
         </div>
