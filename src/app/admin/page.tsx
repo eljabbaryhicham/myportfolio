@@ -23,6 +23,8 @@ import { collection, doc } from 'firebase/firestore';
 import { useFirestore } from '@/firebase';
 import AdminManagement from '@/features/admin/components/AdminManagement';
 import AboutAdmin from '@/features/admin/components/AboutAdmin';
+import { cn } from '@/lib/utils';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 
 function AdminPage() {
@@ -37,7 +39,7 @@ function AdminPage() {
   const [isPortfolioSheetOpen, setIsPortfolioSheetOpen] = useState(false);
   const [isLibraryOpen, setIsLibraryOpen] = useState(false);
   const [librarySelectionConfig, setLibrarySelectionConfig] = useState<{ onSelect: (url: string, type: 'image' | 'video', filename: string) => void } | null>(null);
-  const [activeTab, setActiveTab] = useState('projects');
+  const [activeTab, setActiveTab] = useState('home');
   const [fromMediaLibrary, setFromMediaLibrary] = useState(false);
   const [newlyUploadedId, setNewlyUploadedId] = useState<string | null>(null);
   const [dialogActiveTab, setDialogActiveTab] = useState<'images' | 'videos'>('images');
@@ -192,14 +194,16 @@ function AdminPage() {
           <Separator className="bg-white/10 mb-8" />
 
           <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col min-h-0">
-              <TabsList className="w-full">
-                  <TabsTrigger value="home" className="flex-1">Home</TabsTrigger>
-                  <TabsTrigger value="projects" className="flex-1">Projects</TabsTrigger>
-                  <TabsTrigger value="about" className="flex-1">About & Clients</TabsTrigger>
-                  <TabsTrigger value="media" className="flex-1">Media</TabsTrigger>
-                  <TabsTrigger value="contact" className="flex-1">Contact</TabsTrigger>
-                  {isSuperAdmin && <TabsTrigger value="admins" className="flex-1">Admins</TabsTrigger>}
-              </TabsList>
+              <ScrollArea orientation="horizontal" className="pb-2">
+                <TabsList className="w-full justify-start">
+                    <TabsTrigger value="home" className="flex-1">Home</TabsTrigger>
+                    <TabsTrigger value="projects" className="flex-1">Projects</TabsTrigger>
+                    <TabsTrigger value="about" className="flex-1">About & Clients</TabsTrigger>
+                    <TabsTrigger value="contact" className="flex-1">Contact</TabsTrigger>
+                    <TabsTrigger value="media" className={cn("flex-1", "bg-[#172554] text-white data-[state=active]:bg-destructive")}>Media</TabsTrigger>
+                    {isSuperAdmin && <TabsTrigger value="admins" className={cn("flex-1", "bg-[#172554] text-white data-[state=active]:bg-destructive")}>Admins</TabsTrigger>}
+                </TabsList>
+              </ScrollArea>
               <Separator className="bg-white/10 mt-4" />
               <TabsContent value="home" className="flex-1 overflow-auto mt-4">
                   <HomeAdmin />
@@ -214,11 +218,11 @@ function AdminPage() {
               <TabsContent value="about" className="flex-1 overflow-auto mt-4">
                   <AboutAdmin />
               </TabsContent>
-              <TabsContent value="media" className="flex-1 overflow-auto mt-4">
-                  <MediaAdmin onUploadComplete={handleUploadComplete} onLibraryOpenRequest={() => setIsLibraryOpen(true)} onMediaSelect={handleOpenPortfolioFormWithMedia} />
-              </TabsContent>
               <TabsContent value="contact" className="flex-1 overflow-auto mt-4">
                   <ContactAdmin />
+              </TabsContent>
+              <TabsContent value="media" className="flex-1 overflow-auto mt-4">
+                  <MediaAdmin onUploadComplete={handleUploadComplete} onLibraryOpenRequest={() => setIsLibraryOpen(true)} onMediaSelect={handleOpenPortfolioFormWithMedia} />
               </TabsContent>
                {isSuperAdmin && (
                 <TabsContent value="admins" className="flex-1 overflow-auto mt-4">

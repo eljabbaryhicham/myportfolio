@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useMemo, useState, useEffect } from 'react';
+import { useMemo, useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   Table,
@@ -18,14 +18,14 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { useCollection, useFirestore, useMemoFirebase, useUser } from '@/firebase';
+import { useCollection, useFirestore, useMemoFirebase, useUser, errorEmitter, FirestorePermissionError } from '@/firebase';
 import { useToast } from '@/hooks/use-toast';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { deleteDocumentNonBlocking, setDocumentNonBlocking, addDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { collection, doc, query, orderBy, writeBatch } from 'firebase/firestore';
 import { cn } from '@/lib/utils';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPlusCircle, faEllipsisH, faCloudUploadAlt, faImages } from '@fortawesome/free-solid-svg-icons';
+import { faPlusCircle, faEllipsisH, faCloudUploadAlt, faImages, faGripVertical } from '@fortawesome/free-solid-svg-icons';
 import Preloader from '@/components/preloader';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
@@ -34,7 +34,6 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import MediaAdmin from './MediaAdmin';
-import { Separator } from '@/components/ui/separator';
 
 interface Client {
   id: string;
@@ -149,12 +148,21 @@ export default function ClientAdmin() {
   const clientsQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'clients'), orderBy('order')) : null, [firestore]);
   const { data: clients, isLoading } = useCollection<Client>(clientsQuery);
   
+  const [sortedClients, setSortedClients] = useState<Client[]>([]);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [selectedClient, setSelectedClient] = useState<Partial<Client> | null>(null);
   
   const [isLibraryOpen, setIsLibraryOpen] = useState(false);
   const [librarySelectionConfig, setLibrarySelectionConfig] = useState<{ onSelect: (url: string, type: 'image' | 'video', filename: string) => void } | null>(null);
 
+  const draggingItem = useRef<string | null>(null);
+  const dragOverItem = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (clients) {
+        setSortedClients([...clients].sort((a, b) => (a.order ?? 0) - (b.order ?? 0)));
+    }
+  }, [clients]);
 
   const handleSeedData = async () => {
     if (!firestore || !canEdit) {
@@ -202,7 +210,7 @@ export default function ClientAdmin() {
     if (selectedClient && selectedClient.id) {
         // Editing existing client
         const clientRef = doc(firestore, 'clients', selectedClient.id);
-        setDocumentNonBlocking(clientRef, values, { merge: true });
+        setDocumentNonBlocking(clientRef, { ...values, order: selectedClient.order ?? 0 }, { merge: true });
         toast({ title: 'Client Updated', description: 'The client has been updated.'});
     } else {
         // Adding new client
@@ -220,6 +228,78 @@ export default function ClientAdmin() {
     setLibrarySelectionConfig({ onSelect });
     setIsLibraryOpen(true);
   };
+
+  const handleDragEnd = () => {
+    if (!firestore || !canEdit) return;
+
+    const draggingId = draggingItem.current;
+    const dragOverId = dragOverItem.current;
+
+    draggingItem.current = null;
+    dragOverItem.current = null;
+    
+    document.querySelectorAll('.dragging').forEach(el => el.classList.remove('dragging'));
+    document.querySelectorAll('.drag-over-top').forEach(el => el.classList.remove('drag-over-top'));
+    document.querySelectorAll('.drag-over-bottom').forEach(el => el.classList.remove('drag-over-bottom'));
+
+
+    if (!draggingId || !dragOverId || draggingId === dragOverId) {
+      return;
+    }
+    
+    const dragIndex = sortedClients.findIndex(item => item.id === draggingId);
+    const hoverIndex = sortedClients.findIndex(item => item.id === dragOverId);
+
+    if (dragIndex === -1 || hoverIndex === -1) return;
+
+    const newSortedItems = [...sortedClients];
+    const [draggedItem] = newSortedItems.splice(dragIndex, 1);
+    newSortedItems.splice(hoverIndex, 0, draggedItem);
+    
+    setSortedClients(newSortedItems);
+
+    const batch = writeBatch(firestore);
+    newSortedItems.forEach((item, index) => {
+        const docRef = doc(firestore, 'clients', item.id);
+        if (item.order !== index) {
+            batch.update(docRef, { order: index });
+        }
+    });
+
+    batch.commit().then(() => {
+        toast({ title: "Reordered!", description: "Client order has been updated." });
+    }).catch(e => {
+        if (clients) {
+          setSortedClients([...clients].sort((a, b) => (a.order ?? 0) - (b.order ?? 0)));
+        }
+        errorEmitter.emit(
+          'permission-error',
+          new FirestorePermissionError({
+            path: 'clients',
+            operation: 'update',
+            requestResourceData: { note: `Batch update to reorder ${newSortedItems.length} documents.` },
+          })
+        );
+    });
+  };
+
+  const handleDragEnter = (e: React.DragEvent<HTMLElement>, id: string) => {
+    if (!canEdit) return;
+    dragOverItem.current = id;
+    const target = e.currentTarget;
+    const rect = target.getBoundingClientRect();
+    const midpoint = rect.top + rect.height / 2;
+
+    target.parentElement?.querySelectorAll('.drag-over-top, .drag-over-bottom').forEach(el => {
+      el.classList.remove('drag-over-top', 'drag-over-bottom');
+    });
+
+    if (e.clientY < midpoint) {
+      target.classList.add('drag-over-top');
+    } else {
+      target.classList.add('drag-over-bottom');
+    }
+  }
 
 
   return (
@@ -252,9 +332,18 @@ export default function ClientAdmin() {
                 <>
                     {/* Mobile View */}
                     <div className="md:hidden p-4 space-y-4">
-                        {clients?.map(client => (
-                            <div key={client.id} className="p-4 rounded-lg bg-black/10 border border-white/10 flex items-center justify-between">
+                        {sortedClients?.map(client => (
+                            <div 
+                                key={client.id}
+                                draggable={canEdit}
+                                onDragStart={(e) => { if (canEdit) { draggingItem.current = client.id; e.currentTarget.classList.add('dragging'); }}}
+                                onDragEnter={(e) => handleDragEnter(e, client.id)}
+                                onDragEnd={handleDragEnd}
+                                onDragOver={(e) => e.preventDefault()}
+                                className="p-4 rounded-lg bg-black/10 border border-white/10 flex items-center justify-between relative"
+                            >
                                 <div className="flex items-center gap-4">
+                                    <FontAwesomeIcon icon={faGripVertical} className={cn("h-5 w-5 text-foreground/50", !canEdit && "opacity-20", canEdit && "cursor-grab")} />
                                     <Image
                                         src={client.logoUrl}
                                         alt={client.name}
@@ -285,14 +374,26 @@ export default function ClientAdmin() {
                         <Table>
                             <TableHeader>
                             <TableRow>
+                                <TableHead className="w-[40px]"></TableHead>
                                 <TableHead className="w-[100px] text-center">Logo</TableHead>
                                 <TableHead>Name</TableHead>
                                 <TableHead className="text-right w-[50px]">Actions</TableHead>
                             </TableRow>
                             </TableHeader>
                             <TableBody>
-                            {clients && clients.map((client) => (
-                                <TableRow key={client.id} className="border-b-0">
+                            {sortedClients && sortedClients.map((client) => (
+                                <TableRow 
+                                    key={client.id}
+                                    draggable={canEdit}
+                                    onDragStart={(e) => { if (canEdit) { draggingItem.current = client.id; e.currentTarget.classList.add('dragging'); }}}
+                                    onDragEnter={(e) => handleDragEnter(e, client.id)}
+                                    onDragEnd={handleDragEnd}
+                                    onDragOver={(e) => e.preventDefault()}
+                                    className={cn("border-b-0 transition-all relative", canEdit && "cursor-grab")}
+                                >
+                                <TableCell className="text-center">
+                                  <FontAwesomeIcon icon={faGripVertical} className={cn("h-5 w-5 text-foreground/50", !canEdit && "opacity-20")} />
+                                </TableCell>
                                 <TableCell className="flex justify-center">
                                     <Image
                                     src={client.logoUrl}
