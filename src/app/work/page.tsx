@@ -480,17 +480,26 @@ export default function WorkPage() {
                 </div>
                )}
               {!isLoading && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 md:gap-4">
-                  {filteredItems.slice(0, visibleItems).map(item => (
-                    <PortfolioGridItem 
-                      key={item.id}
-                      item={item}
-                      onClick={() => handleItemClick(item)}
-                      onEditClick={() => handleEditItem(item)}
-                      isAdmin={!!user}
-                    />
-                  ))}
-                </div>
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={filter}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.3 }}
+                    className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 md:gap-4"
+                  >
+                    {filteredItems.slice(0, visibleItems).map(item => (
+                      <PortfolioGridItem 
+                        key={item.id}
+                        item={item}
+                        onClick={() => handleItemClick(item)}
+                        onEditClick={() => handleEditItem(item)}
+                        isAdmin={!!user}
+                      />
+                    ))}
+                  </motion.div>
+                </AnimatePresence>
               )}
 
               {filteredItems.length > 0 && visibleItems < filteredItems.length && (
@@ -770,4 +779,5 @@ export default function WorkPage() {
     
 
     
+
 
