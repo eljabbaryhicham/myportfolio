@@ -17,6 +17,7 @@ export interface AppUser {
       canUploadMedia?: boolean;
       canDeleteMedia?: boolean;
       canEditProjects?: boolean;
+      canEditAbout?: boolean;
       canEditContact?: boolean;
       canEditHome?: boolean;
     }
@@ -79,5 +80,3 @@ export const useUser = (): { user: AppUser | null, isUserLoading: boolean, userE
 
   return { user: appUser, isUserLoading, userError };
 };
-
-    

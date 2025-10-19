@@ -23,6 +23,7 @@ import { collection, doc } from 'firebase/firestore';
 import { useFirestore } from '@/firebase';
 import AdminManagement from '@/features/admin/components/AdminManagement';
 import ClientAdmin from '@/features/admin/components/ClientAdmin';
+import AboutAdmin from '@/features/admin/components/AboutAdmin';
 
 
 function AdminPage() {
@@ -46,6 +47,7 @@ function AdminPage() {
   
   const canEditHome = isSuperAdmin || (user?.permissions?.canEditHome ?? true);
   const canEditProjects = isSuperAdmin || (user?.permissions?.canEditProjects ?? true);
+  const canEditAbout = isSuperAdmin || (user?.permissions?.canEditAbout ?? true);
   const canEditContact = isSuperAdmin || (user?.permissions?.canEditContact ?? true);
   
   useEffect(() => {
@@ -194,6 +196,7 @@ function AdminPage() {
               <TabsList className="w-full">
                   <TabsTrigger value="home" className="flex-1">Home</TabsTrigger>
                   <TabsTrigger value="projects" className="flex-1">Projects</TabsTrigger>
+                  <TabsTrigger value="about" className="flex-1">About</TabsTrigger>
                   <TabsTrigger value="media" className="flex-1">Media</TabsTrigger>
                   <TabsTrigger value="contact" className="flex-1">Contact</TabsTrigger>
                    <TabsTrigger value="clients" className="flex-1">Clients</TabsTrigger>
@@ -209,6 +212,9 @@ function AdminPage() {
                     setIsSheetOpen={setIsPortfolioSheetOpen}
                     handleFormSubmit={handlePortfolioFormSubmit}
                   />
+              </TabsContent>
+              <TabsContent value="about" className="flex-1 overflow-auto mt-4">
+                  <AboutAdmin />
               </TabsContent>
               <TabsContent value="media" className="flex-1 overflow-auto mt-4">
                   <MediaAdmin onUploadComplete={handleUploadComplete} onLibraryOpenRequest={() => setIsLibraryOpen(true)} onMediaSelect={handleOpenPortfolioFormWithMedia} />
@@ -254,5 +260,3 @@ function AdminPage() {
 }
 
 export default AdminPage;
-
-    

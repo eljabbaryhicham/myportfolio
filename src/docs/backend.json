@@ -113,6 +113,31 @@
         "featuredProjectId"
       ]
     },
+    "AboutPageContent": {
+      "title": "About Page Content",
+      "description": "Stores the editable content for the About Us page.",
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string",
+          "description": "The main heading for the about section."
+        },
+        "content": {
+          "type": "string",
+          "description": "The paragraph content for the about section."
+        },
+        "imageUrl": {
+          "type": "string",
+          "format": "uri",
+          "description": "URL of the image for the about section."
+        }
+      },
+      "required": [
+        "title",
+        "content",
+        "imageUrl"
+      ]
+    },
     "MediaAsset": {
       "title": "Media Asset",
       "description": "Stores metadata about an uploaded media file.",
@@ -183,6 +208,10 @@
             "canEditProjects": {
               "type": "boolean",
               "description": "Whether the user can edit portfolio projects."
+            },
+            "canEditAbout": {
+              "type": "boolean",
+              "description": "Whether the user can edit the about page."
             },
             "canEditContact": {
               "type": "boolean",
@@ -279,6 +308,22 @@
         }
       },
       {
+        "path": "/about/{contentId}",
+        "definition": {
+          "entityName": "AboutPageContent",
+          "schema": {
+            "$ref": "#/backend/entities/AboutPageContent"
+          },
+          "description": "Stores the content for the About Us page.",
+          "params": [
+            {
+              "name": "contentId",
+              "description": "The unique identifier for the about page content document."
+            }
+          ]
+        }
+      },
+      {
         "path": "/media/{mediaId}",
         "definition": {
             "entityName": "MediaAsset",
@@ -329,5 +374,3 @@
     ]
   }
 }
-
-    

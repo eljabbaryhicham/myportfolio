@@ -36,6 +36,7 @@ interface AdminUser {
       canUploadMedia: boolean;
       canDeleteMedia: boolean;
       canEditProjects: boolean;
+      canEditAbout: boolean;
       canEditContact: boolean;
       canEditHome: boolean;
     }
@@ -108,7 +109,16 @@ export default function AdminManagement() {
                 />
                     <Label htmlFor={`edit-projects-${user.id}`} className='text-sm font-medium leading-none'>Edit Projects</Label>
                 </div>
-                    <div className="flex items-center space-x-2">
+                <div className="flex items-center space-x-2">
+                <Checkbox
+                    id={`edit-about-${user.id}`}
+                    checked={user.permissions?.canEditAbout ?? true}
+                    onCheckedChange={(checked) => handlePermissionChange(user.id, 'canEditAbout', !!checked)}
+                    disabled={!isSuperAdmin}
+                />
+                    <Label htmlFor={`edit-about-${user.id}`} className='text-sm font-medium leading-none'>Edit About</Label>
+                </div>
+                <div className="flex items-center space-x-2">
                 <Checkbox
                     id={`edit-contact-${user.id}`}
                     checked={user.permissions?.canEditContact ?? true}

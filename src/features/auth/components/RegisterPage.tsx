@@ -79,6 +79,7 @@ export default function RegisterPage() {
           canUploadMedia: true,
           canDeleteMedia: false,
           canEditProjects: true,
+          canEditAbout: false,
           canEditContact: false,
           canEditHome: false,
         }
@@ -170,5 +171,3 @@ export default function RegisterPage() {
     </div>
   );
 }
-
-    
