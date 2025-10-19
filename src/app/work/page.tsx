@@ -98,13 +98,6 @@ const PortfolioMedia = ({
   if (item.type === 'video' && videoSource) {
     return (
       <div className="relative aspect-video bg-black flex items-center justify-center w-full">
-        <Image
-            src={item.thumbnailUrl}
-            alt="poster image"
-            fill
-            className="opacity-0 pointer-events-none"
-            onLoad={() => setIsContentLoaded(true)}
-        />
         {!isContentLoaded && (
           <div className="absolute inset-0 z-10 flex items-center justify-center bg-black">
             <Preloader />
@@ -118,6 +111,7 @@ const PortfolioMedia = ({
             source={videoSource}
             poster={item.thumbnailUrl}
             previewThumbnailsSrc={item.previewThumbnailsSrc}
+            onReady={() => setIsContentLoaded(true)}
           />
         </div>
       </div>
@@ -515,13 +509,12 @@ export default function WorkPage() {
             onMouseMove={handleDialogMouseMove}
             onMouseEnter={handleDialogMouseEnter}
             onMouseLeave={handleDialogMouseLeave}
-            asChild
-          >
-          <motion.div
             onDragEnd={handleDragEnd}
             drag={isMobile ? "x" : false}
             dragConstraints={{ left: 0, right: 0 }}
+            asChild
           >
+            <motion.div>
             <AnimatePresence mode="wait" initial={false} custom={direction}>
               {selectedItem && (
                   <motion.div

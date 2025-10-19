@@ -14,6 +14,7 @@ interface VideoPlayerProps {
   loop?: boolean;
   muted?: boolean;
   controls?: boolean;
+  onReady?: () => void;
 }
 
 const VideoPlayer = ({
@@ -24,6 +25,7 @@ const VideoPlayer = ({
   loop,
   muted,
   controls = true,
+  onReady,
 }: VideoPlayerProps) => {
   const wrapperRef = useRef<HTMLDivElement>(null);
   const playerRef = useRef<Plyr | null>(null);
@@ -86,6 +88,11 @@ const VideoPlayer = ({
     const player = new Plyr(videoElement, options);
     playerRef.current = player;
     player.source = source;
+
+    if (onReady) {
+        player.on('ready', onReady);
+    }
+
 
     // The cleanup function is critical
     return () => {
