@@ -1,112 +1,67 @@
+
 rules_version = '2';
+
 service cloud.firestore {
   match /databases/{database}/documents {
-
-    /**
-     * @description Grants public read access for projects, but restricts modifications to admins/superadmins.
-     * @path /projects/{projectId}
-     * @allow (get, list) if true
-     * @allow (create, update, delete) if request.auth != null && isAdmin()
-     * @deny (create, update, delete) if request.auth == null
-     * @principle Allows public read access while enforcing admin-only writes.
-     */
-    match /projects/{projectId} {
-      allow get: if true;
-      allow list: if true;
-      allow create: if request.auth != null && isAdmin();
-      allow update: if request.auth != null && isAdmin();
-      allow delete: if request.auth != null && isAdmin();
+    //
+    // Get a user's role from their user document.
+    //
+    function getRole(uid) {
+      return get(/databases/$(database)/documents/users/$(uid)).data.role;
     }
 
-    /**
-     * @description Restricts access to contact information to admins/superadmins only.
-     * @path /contact/{contactId}
-     * @allow (create, update, delete) if request.auth != null && isAdmin()
-     * @allow (get, list) if request.auth != null && isAdmin()
-     * @deny (create, update, delete) if request.auth == null || !isAdmin()
-     * @deny (get, list) if request.auth == null || !isAdmin()
-     * @principle Enforces admin-only access to sensitive contact information.
-     */
-    match /contact/{contactId} {
-      allow get: if request.auth != null && isAdmin();
-      allow list: if request.auth != null && isAdmin();
-      allow create: if request.auth != null && isAdmin();
-      allow update: if request.auth != null && isAdmin();
-      allow delete: if request.auth != null && isAdmin();
+    //
+    // Get a user's permissions from their user document.
+    //
+    function getPermissions(uid) {
+      return get(/databases/$(database)/documents/users/$(uid)).data.permissions;
     }
 
-    /**
-     * @description Restricts access to homepage settings to admins/superadmins only.
-     * @path /homepage/{settingsId}
-     * @allow (create, update, delete) if request.auth != null && isAdmin()
-     * @allow (get, list) if request.auth != null && isAdmin()
-     * @deny (create, update, delete) if request.auth == null || !isAdmin()
-     * @deny (get, list) if request.auth == null || !isAdmin()
-     * @principle Enforces admin-only access to homepage settings.
-     */
-    match /homepage/{settingsId} {
-      allow get: if request.auth != null && isAdmin();
-      allow list: if request.auth != null && isAdmin();
-      allow create: if request.auth != null && isAdmin();
-      allow update: if request.auth != null && isAdmin();
-      allow delete: if request.auth != null && isAdmin();
+    //
+    // Check if a user is an admin or superadmin.
+    //
+    function isSuperAdmin(uid) {
+      return getRole(uid) == 'superadmin';
     }
 
-    /**
-     * @description Restricts access to media assets to admins/superadmins only.
-     * @path /media/{mediaId}
-     * @allow (create, update, delete) if request.auth != null && isAdmin()
-     * @allow (get, list) if request.auth != null && isAdmin()
-     * @deny (create, update, delete) if request.auth == null || !isAdmin()
-     * @deny (get, list) if request.auth == null || !isAdmin()
-     * @principle Enforces admin-only access to media assets.
-     */
-    match /media/{mediaId} {
-      allow get: if request.auth != null && isAdmin();
-      allow list: if request.auth != null && isAdmin();
-      allow create: if request.auth != null && isAdmin();
-      allow update: if request.auth != null && isAdmin();
-      allow delete: if request.auth != null && isAdmin();
-    }
-
-    /**
-     * @description Restricts access to user data to the user themselves and superadmins.
-     * @path /users/{userId}
-     * @allow create: if request.auth.uid == userId;
-     * @allow get: if request.auth.uid == userId || isSuperAdmin();
-     * @allow list: if false;
-     * @allow update: if (request.auth.uid == userId || isSuperAdmin()) && resource != null;
-     * @allow delete: if isSuperAdmin() && resource != null;
-     * @deny list: if true;
-     * @principle Enforces user-only access to their own data, with superadmin override.
-     */
-    match /users/{userId} {
-      allow get: if request.auth.uid == userId || isSuperAdmin();
-      allow list: if false;
-      allow create: if request.auth.uid == userId;
-      allow update: if request.auth.uid == userId || isSuperAdmin();
-      allow delete: if isSuperAdmin();
-    }
-
-
-    function isSignedIn() {
-      return request.auth != null;
-    }
-
-    function isOwner(userId) {
-        return request.auth.uid == userId;
-    }
-
+    //
+    // Check if the currently authenticated user is an admin
+    //
     function isAdmin() {
-      return request.auth.token.role == 'admin' || request.auth.token.role == 'superadmin';
+      return request.auth != null && exists(/databases/$(database)/documents/users/$(request.auth.uid));
+    }
+    
+    match /projects/{projectId} {
+      allow read, write: if isAdmin();
+    }
+    
+    match /contact/{contactId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    
+    match /homepage/{settingsId} {
+      allow read: if true;
+      allow write: if isAdmin();
     }
 
-    function isSuperAdmin() {
-        return request.auth.token.role == 'superadmin';
+    match /users/{userId} {
+      // Admins can be read by any other admin (for the admin management panel).
+      allow list: if isAdmin();
+      // Only the superadmin can create, update, or delete other user records.
+      // A user can read their own record.
+      allow read, create, update, delete: if isSuperAdmin(request.auth.uid) || request.auth.uid == userId;
     }
 
-    function isExistingOwner(userId) {
-      return isOwner(userId) && resource != null;
+    match /media/{mediaId} {
+      // Any authenticated admin can read the media list and individual documents.
+      allow read: if isAdmin();
+      
+      // An admin can create a media document if they have the canUploadMedia permission.
+      allow create: if getPermissions(request.auth.uid).canUploadMedia == true;
+      
+      // An admin can delete a media document if they have the canDeleteMedia permission.
+      allow delete: if getPermissions(request.auth.uid).canDeleteMedia == true;
     }
   }
 }
