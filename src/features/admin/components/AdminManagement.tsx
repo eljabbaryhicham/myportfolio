@@ -137,88 +137,91 @@ export default function AdminManagement() {
         <h2 className="text-xl font-bold">Admin Management</h2>
         <p className="text-muted-foreground">View and manage administrator accounts and permissions.</p>
       </div>
-       <div className="flex-1 rounded-lg overflow-hidden glass-effect">
-         {isLoading && (
-            <div className="flex justify-center items-center h-full min-h-96">
-                <Preloader />
-            </div>
-         )}
-         {!isLoading && (
-            <ScrollArea className="h-full">
-                {/* Mobile View */}
-                <div className="md:hidden p-4 space-y-4">
-                    {displayedUsers.map((user, index) => (
-                        <div key={user.id} className="p-4 rounded-lg glass-effect border">
-                            <div className='flex justify-between items-start'>
-                                <div>
-                                    <p className="font-bold">{user.username}</p>
-                                    <p className="text-sm text-muted-foreground">{user.email}</p>
-                                </div>
-                                <Badge variant={user.email === 'eljabbaryhicham@example.com' ? 'destructive' : 'secondary'} className="ml-2 whitespace-nowrap">
-                                    {user.email === 'eljabbaryhicham@example.com' ? 'Super Admin' : 'Admin'}
-                                </Badge>
+      
+      {isLoading && (
+        <div className="flex justify-center items-center h-full min-h-96">
+            <Preloader />
+        </div>
+      )}
+      
+      {!isLoading && (
+        <>
+            {/* Mobile View */}
+            <div className="md:hidden space-y-4">
+                {displayedUsers.map((user, index) => (
+                    <div key={user.id} className="p-4 rounded-lg glass-effect border">
+                        <div className='flex justify-between items-start'>
+                            <div>
+                                <p className="font-bold">{user.username}</p>
+                                <p className="text-sm text-muted-foreground">{user.email}</p>
                             </div>
-                            <Separator className="my-4 bg-white/10" />
-                            <div className='flex justify-between items-center'>
-                                <div className='space-y-1'>
-                                    <p className="font-medium text-sm">Permissions</p>
-                                    {renderPermissionCheckboxes(user)}
-                                </div>
-                                {user.email !== 'eljabbaryhicham@example.com' && (
-                                    <Button variant="ghost" size="icon" onClick={() => handleDeleteUser(user.id, user.username)} disabled={!isSuperAdmin}>
-                                        <FontAwesomeIcon icon={faTrash} className="h-4 w-4 text-destructive" />
-                                    </Button>
-                                )}
-                            </div>
-                        </div>
-                    ))}
-                </div>
-
-                {/* Desktop View */}
-                <div className="hidden md:block">
-                    <Table>
-                        <TableHeader>
-                        <TableRow>
-                            <TableHead>Username</TableHead>
-                            <TableHead>Email</TableHead>
-                            <TableHead>Role</TableHead>
-                            <TableHead>Permissions</TableHead>
-                            <TableHead className="text-right">Actions</TableHead>
-                        </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                        {!isLoading && displayedUsers.map((user) => (
-                            <TableRow key={user.id}>
-                            <TableCell className="font-medium">{user.username}</TableCell>
-                            <TableCell>{user.email}</TableCell>
-                            <TableCell>
-                                <Badge variant={user.email === 'eljabbaryhicham@example.com' ? 'destructive' : 'secondary'}>
+                            <Badge variant={user.email === 'eljabbaryhicham@example.com' ? 'destructive' : 'secondary'} className="ml-2 whitespace-nowrap">
                                 {user.email === 'eljabbaryhicham@example.com' ? 'Super Admin' : 'Admin'}
-                                </Badge>
-                            </TableCell>
-                            <TableCell>
+                            </Badge>
+                        </div>
+                        <Separator className="my-4 bg-white/10" />
+                        <div className='flex justify-between items-center'>
+                            <div className='space-y-1'>
+                                <p className="font-medium text-sm">Permissions</p>
                                 {renderPermissionCheckboxes(user)}
-                            </TableCell>
-                            <TableCell className="text-right">
-                                {user.email !== 'eljabbaryhicham@example.com' && (
+                            </div>
+                            {user.email !== 'eljabbaryhicham@example.com' && (
                                 <Button variant="ghost" size="icon" onClick={() => handleDeleteUser(user.id, user.username)} disabled={!isSuperAdmin}>
-                                        <FontAwesomeIcon icon={faTrash} className="h-4 w-4 text-destructive" />
+                                    <FontAwesomeIcon icon={faTrash} className="h-4 w-4 text-destructive" />
                                 </Button>
-                                )}
-                            </TableCell>
-                            </TableRow>
-                        ))}
-                        </TableBody>
-                    </Table>
-                </div>
-                 {!isLoading && displayedUsers.length === 0 && (
-                    <div className="text-center text-muted-foreground py-12">
-                        No admin users found.
+                            )}
+                        </div>
                     </div>
-                )}
-            </ScrollArea>
-         )}
-      </div>
+                ))}
+            </div>
+
+            {/* Desktop View */}
+            <div className="hidden md:block flex-1 rounded-lg overflow-hidden glass-effect">
+              <ScrollArea className='h-full'>
+                <Table>
+                    <TableHeader>
+                    <TableRow>
+                        <TableHead>Username</TableHead>
+                        <TableHead>Email</TableHead>
+                        <TableHead>Role</TableHead>
+                        <TableHead>Permissions</TableHead>
+                        <TableHead className="text-right">Actions</TableHead>
+                    </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                    {displayedUsers.map((user) => (
+                        <TableRow key={user.id}>
+                        <TableCell className="font-medium">{user.username}</TableCell>
+                        <TableCell>{user.email}</TableCell>
+                        <TableCell>
+                            <Badge variant={user.email === 'eljabbaryhicham@example.com' ? 'destructive' : 'secondary'}>
+                            {user.email === 'eljabbaryhicham@example.com' ? 'Super Admin' : 'Admin'}
+                            </Badge>
+                        </TableCell>
+                        <TableCell>
+                            {renderPermissionCheckboxes(user)}
+                        </TableCell>
+                        <TableCell className="text-right">
+                            {user.email !== 'eljabbaryhicham@example.com' && (
+                            <Button variant="ghost" size="icon" onClick={() => handleDeleteUser(user.id, user.username)} disabled={!isSuperAdmin}>
+                                    <FontAwesomeIcon icon={faTrash} className="h-4 w-4 text-destructive" />
+                            </Button>
+                            )}
+                        </TableCell>
+                        </TableRow>
+                    ))}
+                    </TableBody>
+                </Table>
+                </ScrollArea>
+            </div>
+            
+            {!isLoading && displayedUsers.length === 0 && (
+                <div className="text-center text-muted-foreground py-12">
+                    No admin users found.
+                </div>
+            )}
+        </>
+      )}
     </div>
   );
 }
