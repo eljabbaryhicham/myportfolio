@@ -17,8 +17,9 @@ export function useStorageList(pathRef: StorageReference | null) {
   const [error, setError] = useState<Error | null>(null);
 
   const getFileType = (contentType: string | undefined): 'image' | 'video' | 'other' => {
-    if (contentType?.startsWith('image/')) return 'image';
-    if (contentType?.startsWith('video/')) return 'video';
+    if (!contentType) return 'other';
+    if (contentType.startsWith('image/')) return 'image';
+    if (contentType.startsWith('video/')) return 'video';
     return 'other';
   };
 
@@ -42,7 +43,7 @@ export function useStorageList(pathRef: StorageReference | null) {
         };
       });
       const filesData = await Promise.all(filePromises);
-      setFiles(filesData.reverse()); // Show newest files first
+      setFiles(filesData); // Correctly set the state
       setError(null);
     } catch (e) {
       setError(e as Error);

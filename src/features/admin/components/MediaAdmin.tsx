@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useCallback, useState, useMemo } from 'react';
+import React, { useCallback, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { useStorageList, useStorageDelete } from '@/firebase/storage/use-storage';
 import { useStorage, useUser } from '@/firebase';
@@ -83,7 +83,7 @@ export default function MediaAdmin() {
   const { user } = useUser();
   const { toast } = useToast();
   
-  const filesRef = useMemo(() => (storage ? ref(storage, 'uploads') : null), [storage]);
+  const filesRef = storage ? ref(storage, 'uploads') : null;
   const { files, isLoading: isLoadingFiles, refetch: refetchFiles } = useStorageList(filesRef);
   const { deleteFile } = useStorageDelete();
 
@@ -134,7 +134,7 @@ export default function MediaAdmin() {
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     accept: {
-      'image/*': ['.jpeg', '.jpg', '.png', '.gif', '.webp'],
+      'image/*': ['.jpeg', '.jpg', '.png', '.gif', '.webp', '.svg'],
       'video/*': ['.mp4', '.mov', '.webm'],
     }
   });
@@ -155,6 +155,8 @@ export default function MediaAdmin() {
     navigator.clipboard.writeText(url);
     toast({ title: "Copied!", description: "File URL copied to clipboard."});
   }
+
+  const displayedFiles = [...files].reverse();
 
   return (
     <div className="flex-1 flex flex-col h-full gap-6">
@@ -206,7 +208,7 @@ export default function MediaAdmin() {
                 </div>
             ) : (
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-                {files.map(file => (
+                {displayedFiles.map(file => (
                   <MediaFileCard key={file.name} file={file} onDelete={handleDelete} onCopy={handleCopy} />
                 ))}
               </div>
