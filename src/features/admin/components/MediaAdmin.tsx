@@ -106,10 +106,13 @@ export default function MediaAdmin() {
 
   // Fetch media assets from Firestore
   const mediaCollectionRef = useMemoFirebase(() => firestore ? query(collection(firestore, 'media'), orderBy('created_at', 'desc')) : null, [firestore]);
-  const { data: mediaAssets, isLoading: isLoadingMedia, refetch: refetchMedia } = useCollection<MediaAsset>(mediaCollectionRef);
+  const { data: mediaAssets, isLoading: isLoadingMedia } = useCollection<MediaAsset>(mediaCollectionRef);
 
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
-    if (!process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || !process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET === 'your_upload_preset_name') {
+    const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
+    const uploadPreset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
+
+    if (!cloudName || !uploadPreset || uploadPreset === 'your_upload_preset') {
       toast({
         variant: 'destructive',
         title: 'Configuration Error',
@@ -126,10 +129,10 @@ export default function MediaAdmin() {
 
       const formData = new FormData();
       formData.append('file', file);
-      formData.append('upload_preset', process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET!);
+      formData.append('upload_preset', uploadPreset);
 
       const xhr = new XMLHttpRequest();
-      xhr.open('POST', `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/auto/upload`, true);
+      xhr.open('POST', `https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`, true);
 
       xhr.upload.onprogress = (event) => {
         if (event.lengthComputable) {
@@ -144,7 +147,7 @@ export default function MediaAdmin() {
           
           if(firestore) {
             // Save metadata to Firestore
-            await addDocumentNonBlocking(collection(firestore, 'media'), {
+            addDocumentNonBlocking(collection(firestore, 'media'), {
                 public_id: response.public_id,
                 url: response.secure_url,
                 resource_type: response.resource_type,
@@ -156,7 +159,6 @@ export default function MediaAdmin() {
             title: 'Upload successful',
             description: `${file.name} has been uploaded.`,
           });
-          refetchMedia();
         } else {
           const error = JSON.parse(xhr.responseText).error;
           toast({
@@ -187,7 +189,7 @@ export default function MediaAdmin() {
     setUploadingFileName('');
     setUploadProgress(0);
 
-  }, [toast, firestore, refetchMedia]);
+  }, [toast, firestore]);
 
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -207,7 +209,6 @@ export default function MediaAdmin() {
     try {
         await deleteDocumentNonBlocking(doc(firestore, 'media', docId));
         toast({ title: "File Removed", description: `The reference to the file has been removed from your library.`});
-        refetchMedia(); // This will now correctly refetch from Firestore
     } catch(e: any) {
         toast({ variant: 'destructive', title: "Deletion Failed", description: `Could not remove file reference: ${e.message}`});
     }
