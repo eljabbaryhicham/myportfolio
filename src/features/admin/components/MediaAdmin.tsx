@@ -81,7 +81,7 @@ const MediaFileCard = ({
         </div>
 
         <div className={cn(
-            "absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center p-2",
+            "absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center p-2 z-10",
             isSelectionMode && "group-hover:opacity-100"
         )}>
            {isSelectionMode ? (

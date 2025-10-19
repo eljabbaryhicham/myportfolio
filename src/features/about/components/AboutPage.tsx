@@ -14,12 +14,7 @@ import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEnvelope, faArrowRight } from '@fortawesome/free-solid-svg-icons';
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-} from "@/components/ui/carousel"
-import Autoplay from "embla-carousel-autoplay"
+import { cn } from '@/lib/utils';
 
 
 interface Client {
@@ -40,9 +35,6 @@ const MemoizedImage = memo(Image);
 
 export default function AboutPage() {
   const firestore = useFirestore();
-  const autoplay = useRef(
-    Autoplay({ delay: 2000, stopOnInteraction: true, stopOnMouseEnter: true })
-  )
 
   const clientsQuery = useMemoFirebase(
     () => firestore ? query(collection(firestore, 'clients'), orderBy('order')) : null,
@@ -80,7 +72,7 @@ export default function AboutPage() {
             <>
               {aboutContent && (
                 <motion.div 
-                  className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 items-center max-w-sm md:max-w-4xl mx-auto mb-12 md:mb-16"
+                  className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 items-center justify-items-center max-w-sm md:max-w-4xl mx-auto mb-12 md:mb-16"
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5 }}
@@ -123,18 +115,11 @@ export default function AboutPage() {
                   <Separator className="bg-white/10 max-w-xs mx-auto mt-2" />
                 </div>
                 
-                <Carousel
-                  plugins={[autoplay.current]}
-                  opts={{
-                    align: "start",
-                    loop: true,
-                  }}
-                  className="w-full"
-                >
-                  <CarouselContent>
-                    {clients && clients.length > 0 ? (
-                       clients.map((client) => (
-                        <CarouselItem key={client.id} className="basis-1/2 md:basis-1/3 lg:basis-1/5">
+                {clients && clients.length > 0 ? (
+                  <div className="group relative w-full overflow-hidden">
+                    <div className="flex animate-marquee group-hover:[animation-play-state:paused]">
+                      {[...clients, ...clients].map((client, index) => (
+                        <div key={`${client.id}-${index}`} className="flex-shrink-0 mx-4 w-36">
                             <div className="group/item flex flex-col items-center justify-center gap-2 cursor-pointer p-4">
                                 <div className="relative w-[150px] h-[40px]">
                                 <MemoizedImage
@@ -146,15 +131,15 @@ export default function AboutPage() {
                                 </div>
                                 <p className="text-sm text-white whitespace-nowrap transition-colors duration-300 group-hover/item:text-primary">{client.name}</p>
                             </div>
-                        </CarouselItem>
-                      ))
-                    ) : (
-                      <div className="p-1 h-full flex items-center justify-center text-muted-foreground col-span-full">
-                          No clients to display.
-                      </div>
-                    )}
-                  </CarouselContent>
-                </Carousel>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="p-1 h-full flex items-center justify-center text-muted-foreground col-span-full">
+                      No clients to display.
+                  </div>
+                )}
                 
                 <div className="text-center mt-8 md:mt-12">
                   <p className="text-foreground/70">
