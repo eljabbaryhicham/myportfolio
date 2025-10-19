@@ -267,11 +267,11 @@ export default function MediaAdmin() {
           <h2 className="text-xl font-bold">Media Library (Cloudinary)</h2>
           <p className="text-muted-foreground mt-1">Upload and manage your images and videos.</p>
           
-          <div {...getRootProps()} className={cn('mt-4 border-2 border-dashed rounded-lg p-12 text-center cursor-pointer transition-colors', isDragActive ? 'border-primary bg-primary/10' : 'border-border hover:border-primary/50', isUploading && 'cursor-not-allowed opacity-50')}>
+          <div {...getRootProps()} className={cn('mt-4 border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors', isDragActive ? 'border-primary bg-primary/10' : 'border-border hover:border-primary/50', isUploading && 'cursor-not-allowed opacity-50')}>
               <input {...getInputProps()} disabled={isUploading} />
               <div className="flex flex-col items-center gap-2 text-muted-foreground">
-                  <FontAwesomeIcon icon={faCloudUploadAlt} className="h-10 w-10" />
-                  {isUploading ? (<p>Uploading...</p>) : isDragActive ? (<p>Drop files here...</p>) : (<p>Drag & drop files here, or click to select</p>)}
+                  <FontAwesomeIcon icon={faCloudUploadAlt} className="h-8 w-8" />
+                  {isUploading ? (<p className="text-sm">Uploading...</p>) : isDragActive ? (<p className="text-sm">Drop files here...</p>) : (<p className="text-sm">Drag & drop files, or click to select</p>)}
               </div>
           </div>
           {isUploading && (
@@ -301,5 +301,3 @@ export default function MediaAdmin() {
     </div>
   );
 }
-
-    
