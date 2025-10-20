@@ -194,15 +194,14 @@ function AdminPage() {
           <Separator className="bg-white/10 mb-8" />
 
           <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col min-h-0">
-            <div className="w-full flex justify-between items-center">
-              <div className="flex-grow"></div>
+            <div className="w-full flex justify-center items-center relative">
               <TabsList className="flex-wrap h-auto justify-center">
                 <TabsTrigger value="home" className="glass-effect data-[state=active]:bg-destructive">Home</TabsTrigger>
                 <TabsTrigger value="projects" className="glass-effect data-[state=active]:bg-destructive">Projects</TabsTrigger>
                 <TabsTrigger value="about" className="glass-effect data-[state=active]:bg-destructive">About & Clients</TabsTrigger>
                 <TabsTrigger value="contact" className="glass-effect data-[state=active]:bg-destructive">Contact</TabsTrigger>
               </TabsList>
-              <div className="flex-grow flex justify-end">
+              <div className="absolute right-0">
                 <TabsList className="flex-wrap h-auto justify-center">
                   <TabsTrigger value="media" className="glass-effect bg-blue-900/50 text-white data-[state=active]:bg-destructive data-[state=active]:animate-glow px-4 py-2">Media</TabsTrigger>
                   {isSuperAdmin && <TabsTrigger value="admins" className="glass-effect bg-blue-900/50 text-white data-[state=active]:bg-destructive data-[state=active]:animate-glow px-4 py-2">Admins</TabsTrigger>}
@@ -264,5 +263,7 @@ function AdminPage() {
 }
 
 export default AdminPage;
+
+    
 
     
