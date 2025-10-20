@@ -32,11 +32,15 @@ import {
   DialogClose,
 } from '@/components/ui/dialog';
 import type { PortfolioItem } from '@/features/portfolio/data/portfolio-data';
-import { useEffect } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faXmark, faImages } from '@fortawesome/free-solid-svg-icons';
+import { faXmark, faImages, faUpload, faSpinner } from '@fortawesome/free-solid-svg-icons';
+import { useToast } from '@/hooks/use-toast';
+import { addDocumentNonBlocking, useFirestore } from '@/firebase';
+import { collection, DocumentReference } from 'firebase/firestore';
+
 
 const formSchema = z.object({
   title: z.string().min(2, {
@@ -61,11 +65,18 @@ interface PortfolioItemFormProps {
   onSubmit: (values: PortfolioItem) => void;
   isOpen: boolean; 
   setIsOpen: (isOpen: boolean) => void;
-  onChooseFromLibrary: (onSelect: (url: string, type: 'image' | 'video') => void) => void;
+  onChooseFromLibrary: (onSelect: (url: string, type: 'image' | 'video', filename: string) => void) => void;
   canEdit: boolean;
 }
 
 export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onChooseFromLibrary, canEdit}: PortfolioItemFormProps) {
+    const { toast } = useToast();
+    const firestore = useFirestore();
+
+    const [isUploading, setIsUploading] = useState<null | 'thumbnail' | 'source'>(null);
+    const thumbnailUploadRef = useRef<HTMLInputElement>(null);
+    const sourceUploadRef = useRef<HTMLInputElement>(null);
+
     const form = useForm<PortfolioItemFormValues>({
       resolver: zodResolver(formSchema),
       defaultValues: {
@@ -119,24 +130,98 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onCho
         onSubmit({
           id: item?.id || '', // id will be handled by parent
           ...values,
-          type: values.type,
-          description: values.description,
-          title: values.title,
-          thumbnailUrl: values.thumbnailUrl,
         });
     };
 
     const handleChooseThumbnail = () => {
-        onChooseFromLibrary((url) => {
+        onChooseFromLibrary((url, type, filename) => {
+            if (type !== 'image') {
+              toast({ variant: 'destructive', title: 'Invalid Thumbnail', description: 'Thumbnails must be an image file.'});
+              return;
+            }
             form.setValue('thumbnailUrl', url, { shouldValidate: true });
         });
     };
 
     const handleChooseSource = () => {
-        onChooseFromLibrary((url, type) => {
+        onChooseFromLibrary((url, type, filename) => {
             form.setValue('sourceUrl', url, { shouldValidate: true });
             form.setValue('type', type, { shouldValidate: true });
         });
+    };
+
+    const handleUpload = useCallback(async (file: File, field: 'thumbnail' | 'source') => {
+      const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
+      const uploadPreset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
+      
+      if (!cloudName || !uploadPreset || uploadPreset === 'your_upload_preset') {
+          toast({
+              variant: 'destructive',
+              title: 'Configuration Error',
+              description: 'Cloudinary environment variables are not set.',
+              duration: 8000,
+          });
+          return;
+      }
+      
+      setIsUploading(field);
+
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('upload_preset', uploadPreset);
+
+      try {
+        const response = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`, {
+            method: 'POST',
+            body: formData,
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error.message || 'An unknown error occurred.');
+        }
+
+        const data = await response.json();
+
+        if (firestore) {
+            addDocumentNonBlocking(collection(firestore, 'media'), {
+                public_id: data.public_id,
+                url: data.secure_url,
+                resource_type: data.resource_type,
+                created_at: data.created_at,
+                filename: file.name,
+            });
+        }
+        
+        toast({ title: 'Upload successful', description: `${file.name} has been uploaded.` });
+        
+        const resourceType = data.resource_type === 'video' ? 'video' : 'image';
+
+        if(field === 'thumbnail') {
+          if (resourceType !== 'image') {
+            toast({ variant: 'destructive', title: 'Invalid Thumbnail', description: 'Thumbnails must be an image file.'});
+          } else {
+            form.setValue('thumbnailUrl', data.secure_url, { shouldValidate: true });
+          }
+        } else if (field === 'source') {
+          form.setValue('sourceUrl', data.secure_url, { shouldValidate: true });
+          form.setValue('type', resourceType, { shouldValidate: true });
+        }
+
+      } catch (error: any) {
+          toast({ variant: 'destructive', title: `Upload Failed for ${file.name}`, description: error.message });
+      } finally {
+          setIsUploading(null);
+      }
+    }, [toast, firestore, form]);
+
+    const onFileSelect = (e: React.ChangeEvent<HTMLInputElement>, field: 'thumbnail' | 'source') => {
+        const file = e.target.files?.[0];
+        if (file) {
+            handleUpload(file, field);
+        }
+        // Reset file input to allow uploading the same file again
+        e.target.value = '';
     };
 
     return (
@@ -153,7 +238,7 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onCho
                   <div className="p-6">
                     <Form {...form}>
                       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8">
-                        <fieldset disabled={!canEdit} className="group space-y-8">
+                        <fieldset disabled={!canEdit || !!isUploading} className="group space-y-8">
                           <FormField
                           control={form.control}
                           name="title"
@@ -226,16 +311,28 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onCho
                           name="thumbnailUrl"
                           render={({ field }) => (
                               <FormItem>
-                              <FormLabel>Thumbnail URL</FormLabel>
+                                <FormLabel>Thumbnail URL</FormLabel>
                                 <div className="flex items-center gap-2">
                                   <FormControl>
                                       <Input placeholder="https://example.com/thumbnail.jpg" {...field} />
                                   </FormControl>
-                                  <Button type="button" variant="outline" size="icon" onClick={handleChooseThumbnail}>
-                                    <FontAwesomeIcon icon={faImages} />
+                                  <input 
+                                      type="file" 
+                                      ref={thumbnailUploadRef} 
+                                      className="hidden" 
+                                      onChange={(e) => onFileSelect(e, 'thumbnail')}
+                                      accept="image/*"
+                                  />
+                                  <Button type="button" variant="outline" size="sm" onClick={() => thumbnailUploadRef.current?.click()} disabled={isUploading === 'thumbnail'}>
+                                      <FontAwesomeIcon icon={isUploading === 'thumbnail' ? faSpinner : faUpload} className={cn(isUploading === 'thumbnail' && 'animate-spin')}/>
+                                      <span className="ml-2 hidden sm:inline">Upload</span>
+                                  </Button>
+                                  <Button type="button" variant="outline" size="sm" onClick={handleChooseThumbnail}>
+                                      <FontAwesomeIcon icon={faImages} />
+                                      <span className="ml-2 hidden sm:inline">Library</span>
                                   </Button>
                                 </div>
-                              <FormMessage />
+                                <FormMessage />
                               </FormItem>
                           )}
                           />
@@ -265,8 +362,20 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onCho
                                   <FormControl>
                                       <Input placeholder="https://example.com/full-image.jpg" {...field} />
                                   </FormControl>
-                                   <Button type="button" variant="outline" size="icon" onClick={handleChooseSource}>
+                                  <input 
+                                      type="file" 
+                                      ref={sourceUploadRef} 
+                                      className="hidden" 
+                                      onChange={(e) => onFileSelect(e, 'source')}
+                                      accept="image/*,video/*"
+                                  />
+                                  <Button type="button" variant="outline" size="sm" onClick={() => sourceUploadRef.current?.click()} disabled={isUploading === 'source'}>
+                                      <FontAwesomeIcon icon={isUploading === 'source' ? faSpinner : faUpload} className={cn(isUploading === 'source' && 'animate-spin')}/>
+                                      <span className="ml-2 hidden sm:inline">Upload</span>
+                                  </Button>
+                                   <Button type="button" variant="outline" size="sm" onClick={handleChooseSource}>
                                     <FontAwesomeIcon icon={faImages} />
+                                    <span className="ml-2 hidden sm:inline">Library</span>
                                   </Button>
                                 </div>
                                 <FormMessage />
@@ -283,9 +392,9 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onCho
                                         <Input
                                             type="number"
                                             {...fieldProps}
+                                            value={fieldProps.value ?? ''}
                                             onChange={event => {
                                                 const value = event.target.value;
-                                                // Allow empty string for clearing, otherwise convert to number
                                                 onChange(value === '' ? undefined : Number(value));
                                             }}
                                             />
