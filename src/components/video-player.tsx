@@ -35,9 +35,6 @@ const VideoPlayer = ({
   const videoRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    // This effect should only re-run if the device type (mobile/desktop) or the main source URL changes.
-    // Other props are passed during initialization but don't need to trigger re-initialization.
-
     if (isMobile) {
       if (videoRef.current && !playerRef.current) {
         const videoSourceUrl = source.sources[0]?.src;
@@ -50,7 +47,7 @@ const VideoPlayer = ({
           autoplay: autoplay,
           loop: loop,
           muted: muted,
-          playsinline: true, // Important for iOS
+          playsinline: true,
           height: '100%',
           width: '100%',
           controls: controls,
@@ -72,12 +69,11 @@ const VideoPlayer = ({
 
     } else { // Desktop Plyr implementation
       const wrapper = wrapperRef.current;
-      if (!wrapper || wrapper.querySelector('video')) return; // Prevent re-init if video exists
+      if (!wrapper || wrapper.querySelector('video')) return;
 
       const videoElement = document.createElement('video');
       videoElement.playsInline = true;
       videoElement.controls = controls;
-      videoElement.poster = poster || '';
       wrapper.appendChild(videoElement);
       
       const useThumbnails = !isMobile && !!previewThumbnailsSrc;
@@ -124,6 +120,19 @@ const VideoPlayer = ({
           plyrPlayer.source = source;
       }
       
+      // Forcefully set the poster after initialization to ensure it's displayed.
+      if (poster) {
+        plyrPlayer.once('ready', () => {
+          (plyrPlayer.elements.poster as HTMLElement).style.backgroundImage = `url(${poster})`;
+        });
+        // Also update it if the source changes
+        plyrPlayer.on('sourcechange', () => {
+            if (plyrPlayer.elements.poster) {
+                (plyrPlayer.elements.poster as HTMLElement).style.backgroundImage = `url(${poster})`;
+            }
+        });
+      }
+      
       if (onReady) {
         plyrPlayer.on('ready', onReady);
       }
@@ -134,7 +143,6 @@ const VideoPlayer = ({
           playerRef.current = null;
         }
         if (wrapper) {
-            // Clean up the container to avoid lingering elements on re-render
             wrapper.innerHTML = '';
         }
       };
