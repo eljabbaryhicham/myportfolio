@@ -9,17 +9,6 @@ import { v2 as cloudinary } from 'cloudinary';
 import { collection, addDoc } from 'firebase/firestore';
 import { initializeFirebase } from '@/firebase';
 
-// --- IMPORTANT ---
-// The credentials below are hardcoded to ensure functionality.
-// For a production environment, you MUST move these to a secure
-// environment variable management system (e.g., Vercel Environment Variables, Google Secret Manager).
-cloudinary.config({
-  cloud_name: 'da1srnoer',
-  api_key: '776638649259813',
-  api_secret: 'kzvIhKcsX6V3xNcPdQjq4ZEcbus',
-  secure: true
-});
-
 const UploadMediaFromUrlInputSchema = z.object({
   mediaUrl: z.string().url(),
 });
@@ -58,6 +47,17 @@ const uploadMediaFromUrlFlow = ai.defineFlow(
     outputSchema: UploadMediaFromUrlOutputSchema,
   },
   async (input) => {
+    // --- IMPORTANT ---
+    // The credentials below are hardcoded to ensure functionality.
+    // For a production environment, you MUST move these to a secure
+    // environment variable management system (e.g., Vercel Environment Variables, Google Secret Manager).
+    cloudinary.config({
+      cloud_name: 'da1srnoer',
+      api_key: '776638649259813',
+      api_secret: 'kzvIhKcsX6V3xNcPdQjq4ZEcbus',
+      secure: true
+    });
+    
     try {
       console.log(`Uploading from URL: ${input.mediaUrl}`);
 
