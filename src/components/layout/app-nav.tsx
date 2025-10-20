@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from "next/link";
@@ -47,7 +48,7 @@ export function AppNav() {
       <Link
         href={item.href}
         className={cn(
-          "group relative flex items-center justify-center rounded-md transition-all duration-300 hover:scale-110 aspect-square",
+          "group relative flex items-center justify-center rounded-full transition-all duration-300 hover:scale-110 aspect-square",
           "p-2 text-white", 
           isActive
             ? isAdminButton
@@ -57,7 +58,7 @@ export function AppNav() {
               ? "bg-green-500/80 hover:bg-green-500"
               : "text-foreground/70 glass-effect",
            isActive && isAdminButton && "animate-green-glow",
-           isMobile ? "h-full" : "h-10 w-10" // On mobile, height is 100% of parent, on desktop fixed size
+           isMobile ? "h-12 w-12" : "h-10 w-10" // On mobile, height is 100% of parent, on desktop fixed size
         )}
       >
         <FontAwesomeIcon icon={item.icon} className={cn("transition-transform duration-300 h-5 w-5")} />
@@ -96,10 +97,10 @@ export function AppNav() {
           "flex h-full flex-row items-center justify-between px-4 rounded-lg border border-border/50 glass-effect"
           )}>
           <nav className="flex flex-1 justify-around items-center h-full gap-2">
-            {regularItems.map(item => <div key={item.href} className="h-full py-4">{renderNavItem(item)}</div>)}
+            {regularItems.map(item => <div key={item.href}>{renderNavItem(item)}</div>)}
           </nav>
           {user && adminItem && (
-            <div className="flex-shrink-0 h-full py-4">
+            <div className="flex-shrink-0">
                 {renderNavItem(adminItem)}
             </div>
           )}
