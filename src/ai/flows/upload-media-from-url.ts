@@ -3,7 +3,6 @@
 /**
  * @fileOverview A Genkit flow for uploading media from a URL to Cloudinary and saving to Firestore.
  */
-import 'dotenv/config';
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
 import { v2 as cloudinary } from 'cloudinary';
