@@ -1,0 +1,28 @@
+{
+  "node": {
+    "40bbaa12daba056ab82b15f9adb9e27efbb30b66e0": {
+      "workers": {
+        "app/work/page": {
+          "moduleId": "[project]/.next-internal/server/app/work/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/ai/flows/send-contact-email.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/src/ai/flows/upload-media-from-url.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": true
+        }
+      },
+      "layer": {
+        "app/work/page": "action-browser"
+      }
+    },
+    "40cffd89c05c0b9e9618588cc3c35766ee675e20ac": {
+      "workers": {
+        "app/work/page": {
+          "moduleId": "[project]/.next-internal/server/app/work/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/ai/flows/send-contact-email.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/src/ai/flows/upload-media-from-url.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": true
+        }
+      },
+      "layer": {
+        "app/work/page": "action-browser"
+      }
+    }
+  },
+  "edge": {},
+  "encryptionKey": "2JY0uEzqM4SYsqqCAKDVHLec/ythTv6V06U6NVTuvN8="
+}

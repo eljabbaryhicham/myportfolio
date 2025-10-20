@@ -1,0 +1,16 @@
+{
+  "node": {
+    "40bbaa12daba056ab82b15f9adb9e27efbb30b66e0": {
+      "workers": {
+        "app/contact/page": {
+          "moduleId": "[project]/.next-internal/server/app/contact/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/ai/flows/send-contact-email.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": false
+        }
+      },
+      "layer": {
+        "app/contact/page": "action-browser"
+      }
+    }
+  },
+  "edge": {}
+}

@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": [],
+  "sections": [
+    {"offset": {"line": 12, "column": 0}, "map": {"version":3,"sources":["file:///home/user/studio/src/components/preloader.tsx"],"sourcesContent":["'use client';\n\nimport Lottie from 'lottie-react';\nimport animationData from '@/lib/preloader-animation.json';\n\nconst Preloader = () => {\n  return (\n    <div className=\"flex items-center justify-center w-full h-full\">\n      <div className=\"w-1/4 h-1/4\">\n        <Lottie animationData={animationData} loop={true} />\n      </div>\n    </div>\n  );\n};\n\nexport default Preloader;\n"],"names":[],"mappings":";;;;AAEA;AACA;AAHA;;;;AAKA,MAAM,YAAY;IAChB,qBACE,6LAAC;QAAI,WAAU;kBACb,cAAA,6LAAC;YAAI,WAAU;sBACb,cAAA,6LAAC,2JAAA,CAAA,UAAM;gBAAC,eAAe,4GAAA,CAAA,UAAa;gBAAE,MAAM;;;;;;;;;;;;;;;;AAIpD;KARM;uCAUS","debugId":null}},
+    {"offset": {"line": 59, "column": 0}, "map": {"version":3,"sources":["file:///home/user/studio/src/app/contact/page.tsx"],"sourcesContent":["'use client';\n\nimport dynamic from 'next/dynamic'\nimport Preloader from '@/components/preloader'\n\nconst ContactPage = dynamic(() => import('@/features/contact/components/ContactPage'), {\n  loading: () => (\n    <div className=\"flex h-full w-full items-center justify-center\">\n      <Preloader />\n    </div>\n  ),\n  ssr: false,\n})\n\nexport default ContactPage\n"],"names":[],"mappings":";;;;AAEA;AACA;;AAHA;;;;AAKA,MAAM,cAAc,CAAA,GAAA,kKAAA,CAAA,UAAO,AAAD,OAAE;;;;;;IAC1B,SAAS,kBACP,6LAAC;YAAI,WAAU;sBACb,cAAA,6LAAC,kIAAA,CAAA,UAAS;;;;;;;;;;IAGd,KAAK;;;uCAGQ","debugId":null}}]
+}
