@@ -194,19 +194,20 @@ function AdminPage() {
           <Separator className="bg-white/10 mb-8" />
 
           <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col min-h-0">
-            <div className="w-full flex justify-center">
+            <div className="w-full flex justify-between items-center">
+              <div className="flex-grow"></div>
               <TabsList className="flex-wrap h-auto justify-center">
-                <div className="flex gap-2">
-                  <TabsTrigger value="home" className="glass-effect data-[state=active]:bg-destructive">Home</TabsTrigger>
-                  <TabsTrigger value="projects" className="glass-effect data-[state=active]:bg-destructive">Projects</TabsTrigger>
-                  <TabsTrigger value="about" className="glass-effect data-[state=active]:bg-destructive">About & Clients</TabsTrigger>
-                  <TabsTrigger value="contact" className="glass-effect data-[state=active]:bg-destructive">Contact</TabsTrigger>
-                </div>
-                <div className="flex gap-2 ml-4">
+                <TabsTrigger value="home" className="glass-effect data-[state=active]:bg-destructive">Home</TabsTrigger>
+                <TabsTrigger value="projects" className="glass-effect data-[state=active]:bg-destructive">Projects</TabsTrigger>
+                <TabsTrigger value="about" className="glass-effect data-[state=active]:bg-destructive">About & Clients</TabsTrigger>
+                <TabsTrigger value="contact" className="glass-effect data-[state=active]:bg-destructive">Contact</TabsTrigger>
+              </TabsList>
+              <div className="flex-grow flex justify-end">
+                <TabsList className="flex-wrap h-auto justify-center">
                   <TabsTrigger value="media" className="glass-effect bg-blue-900/50 text-white data-[state=active]:bg-destructive data-[state=active]:animate-glow px-4 py-2">Media</TabsTrigger>
                   {isSuperAdmin && <TabsTrigger value="admins" className="glass-effect bg-blue-900/50 text-white data-[state=active]:bg-destructive data-[state=active]:animate-glow px-4 py-2">Admins</TabsTrigger>}
-                </div>
-              </TabsList>
+                </TabsList>
+              </div>
             </div>
               <Separator className="bg-white/10 mt-4" />
               <TabsContent value="home" className="flex-1 overflow-auto mt-4">
@@ -263,3 +264,5 @@ function AdminPage() {
 }
 
 export default AdminPage;
+
+    
