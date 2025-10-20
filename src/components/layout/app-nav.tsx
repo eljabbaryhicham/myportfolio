@@ -95,7 +95,7 @@ export function AppNav() {
           "flex h-full flex-row items-center justify-between px-4 rounded-lg border border-border/50 glass-effect"
           )}>
           <nav className="flex flex-1 justify-around items-center">
-            {regularItems.map(renderNavItem)}
+            {regularItems.map(item => <div key={item.href}>{renderNavItem(item)}</div>)}
           </nav>
           {user && adminItem && (
             <div className="flex-shrink-0">
