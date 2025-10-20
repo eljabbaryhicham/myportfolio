@@ -10,6 +10,7 @@ import { collection, addDoc } from 'firebase/firestore';
 import { initializeFirebase } from '@/firebase';
 
 // Configure Cloudinary with environment variables for server-side actions
+// These are loaded from .env by the Next.js server environment.
 cloudinary.config({ 
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME, 
   api_key: process.env.CLOUDINARY_API_KEY, 
