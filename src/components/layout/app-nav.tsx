@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from "next/link";
@@ -64,7 +65,7 @@ export function AppNav() {
     );
 
     if (isMobile) {
-      return navButton;
+      return <div key={item.href}>{renderNavItem(item)}</div>;
     }
 
     return (
