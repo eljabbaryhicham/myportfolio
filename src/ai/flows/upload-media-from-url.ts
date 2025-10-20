@@ -48,14 +48,13 @@ const uploadMediaFromUrlFlow = ai.defineFlow(
   async (input) => {
     try {
       // --- IMPORTANT ---
-      // The credentials below are hardcoded to ensure functionality.
-      // For a production environment, you MUST move these to a secure
-      // environment variable management system (e.g., Vercel Environment Variables, Google Secret Manager).
+      // Credentials are now read from environment variables for security.
+      // Make sure to fill these out in your .env file.
       const cloudinary = (await import('cloudinary')).v2;
       cloudinary.config({
-        cloud_name: 'da1srnoer', 
-        api_key: '776638649259813', 
-        api_secret: 'kzvIhKcsX6V3xNcPdQjq4ZEcbus',
+        cloud_name: process.env.CLOUDINARY_CLOUD_NAME, 
+        api_key: process.env.CLOUDINARY_API_KEY, 
+        api_secret: process.env.CLOUDINARY_API_SECRET,
         secure: true
       });
       
