@@ -1,23 +1,30 @@
+
 # Firebase Studio
 
 This is a NextJS starter in Firebase Studio.
 
-## IMPORTANT: Service Account Credentials
+## IMPORTANT: Service Account Credentials for Server-Side Features
 
-For security reasons, the Firebase service account key required for server-side operations (like some Genkit flows) has been removed from the repository.
+For security reasons, the Firebase service account key, which is required for certain server-side operations (like Genkit flows that use the Firebase Admin SDK), is **not** included in this repository.
 
-To enable server-side functionality in your local development environment, you must manually add your credentials:
+To enable full server-side functionality in your local development environment, you **must** manually create and populate a `service-account.json` file.
 
-1.  **Generate a Service Account Key:**
-    *   Go to your Firebase project settings > "Service accounts".
-    *   Click "Generate new private key" and save the JSON file.
+### Steps:
 
-2.  **Populate the `service-account.json` file:**
-    *   Open the downloaded JSON file.
-    *   Copy the entire contents of the file.
-    *   Paste the contents into `docs/service-account.json` in this project, completely replacing the placeholder content.
+1.  **Generate a New Private Key:**
+    *   Navigate to your Firebase project's settings: `Project settings` > `Service accounts`.
+    *   Click the **"Generate new private key"** button. A JSON file containing your service account credentials will be downloaded.
 
-**This file is in your `.gitignore` and will not be committed to your repository.** This is for local development only. For a deployed environment, you would use a secure secret management system.
+2.  **Create the File:**
+    *   In the root of this project, navigate into the `docs` directory.
+    *   Create a new file named `service-account.json`.
+
+3.  **Add Credentials to the File:**
+    *   Open the JSON file you downloaded from Firebase.
+    *   Copy the **entire contents** of the downloaded file.
+    *   Paste the contents into the `docs/service-account.json` file you created.
+
+**This `docs/service-account.json` file is explicitly ignored by Git (via `.gitignore`) and will not be committed to your repository.** This is standard practice for keeping sensitive credentials secure and is intended for your local development setup only. For deployed environments, you should use a secure secret management system provided by your hosting provider (e.g., Cloud Run Secret Manager).
 
 To get started, take a look at src/app/page.tsx.
 # myportfolio
