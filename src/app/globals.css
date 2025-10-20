@@ -237,6 +237,6 @@
 }
 
 .animate-marquee {
-  display: flex;
-  animation: marquee 5s linear infinite;
+  animation: marquee 20s linear infinite;
+  flex-shrink: 0;
 }
