@@ -61,7 +61,7 @@ export function AppNav() {
            isMobile ? "h-full" : "h-12 w-12" // On mobile, height is 100% of parent, on desktop fixed size
         )}
       >
-        <FontAwesomeIcon icon={item.icon} className={cn("transition-transform duration-300", isMobile ? "h-[50%] w-[50%]" : "h-7 w-7")} />
+        <FontAwesomeIcon icon={item.icon} className={cn("transition-transform duration-300", isMobile ? "h-[70%] w-[70%]" : "h-7 w-7")} />
       </Link>
     );
 
