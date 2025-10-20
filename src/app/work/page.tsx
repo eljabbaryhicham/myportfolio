@@ -51,6 +51,7 @@ const PortfolioMedia = ({
   onFullscreenClick: (url: string) => void;
   onMediaLoaded: () => void;
 }) => {
+  const isMobile = useIsMobile();
 
   const videoSource = useMemo(() => {
     const youtubeRegex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
@@ -93,6 +94,23 @@ const PortfolioMedia = ({
 
 
   if (item.type === 'video' && videoSource) {
+    if (isMobile) {
+      // Use native HTML5 video player on mobile
+      return (
+        <div className="relative aspect-video bg-black flex items-center justify-center w-full">
+          <video
+            src={videoSource.sources[0].src}
+            poster={item.thumbnailUrl}
+            controls
+            playsInline
+            className="w-full h-full"
+            onLoadedData={onMediaLoaded}
+          />
+        </div>
+      );
+    }
+
+    // Use Plyr on desktop
     return (
       <div className="relative aspect-video bg-black flex items-center justify-center w-full">
         <div className="w-full h-full">
@@ -526,7 +544,7 @@ export default function WorkPage() {
             onMouseLeave={handleDialogMouseLeave}
           >
             {isDialogMediaLoading && (
-              <div className="absolute inset-0 z-20 flex items-center justify-center">
+              <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/50">
                 <Preloader />
               </div>
             )}
@@ -588,7 +606,7 @@ export default function WorkPage() {
                       
                       <ScrollArea className="flex-1 min-h-0">
                         <div className="relative flex flex-col justify-center h-full">
-                          <div className={cn("w-full my-auto transition-opacity duration-300", isDialogMediaLoading && "opacity-0")}>
+                          <div className={cn("w-full transition-opacity duration-300", isDialogMediaLoading && "opacity-0")}>
                             {isClient && (
                               <PortfolioMedia
                                 key={selectedItem.id}
@@ -618,7 +636,7 @@ export default function WorkPage() {
             </AnimatePresence>
             </motion.div>
             <DialogClose className={cn(
-                "absolute right-4 top-4 z-10 h-8 w-8 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center ring-offset-background transition-opacity focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 hover:opacity-100",
+                "absolute right-4 top-4 z-30 h-8 w-8 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center ring-offset-background transition-opacity focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 hover:opacity-100",
                 isMobile ? "opacity-70" : (isCloseButtonVisible ? "opacity-70" : "opacity-0")
             )}>
               <FontAwesomeIcon icon={faXmark} className="h-4 w-4" />
@@ -782,5 +800,3 @@ export default function WorkPage() {
     </>
   );
 }
-
-    
