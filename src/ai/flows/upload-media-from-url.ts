@@ -39,17 +39,16 @@ export type UploadMediaFromUrlOutput = z.infer<typeof UploadMediaFromUrlOutputSc
 export async function uploadMediaFromUrl(
   input: UploadMediaFromUrlInput
 ): Promise<UploadMediaFromUrlOutput> {
-    const requiredEnvVars = [
+    const requiredEnvVars: (keyof NodeJS.ProcessEnv)[] = [
         'NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME',
         'CLOUDINARY_API_KEY',
         'CLOUDINARY_API_SECRET'
     ];
 
     for (const envVar of requiredEnvVars) {
-        if (!process.env[envVar]) {
-            const errorMessage = `Server configuration error: The ${envVar} environment variable is not set.`;
+        if (!process.env[envVar] || process.env[envVar]?.startsWith('YOUR_')) {
+            const errorMessage = `Server configuration error: The ${envVar} environment variable is not set correctly. Please add it to your .env file.`;
             console.error(errorMessage);
-            // Return a structured error to the client
             return { success: false, message: errorMessage };
         }
     }
