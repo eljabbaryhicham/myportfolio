@@ -69,7 +69,7 @@ const uploadMediaFromUrlFlow = ai.defineFlow(
       console.log('Cloudinary upload successful:', uploadResult);
 
       // 2. Initialize Firebase Admin SDK and save metadata to Firestore
-      const serverApp = initializeServerApp();
+      const serverApp = await initializeServerApp();
       const firestore = getAdminFirestore(serverApp);
       const filename = input.mediaUrl.substring(input.mediaUrl.lastIndexOf('/') + 1);
 
