@@ -388,13 +388,15 @@ export default function MediaAdmin(props: MediaAdminProps) {
 
     if (previewFile.resource_type === 'video') {
       return (
-        <div className="relative w-full max-w-4xl aspect-video">
-            <VideoPlayer
-              source={{
-                type: 'video',
-                sources: [{ src: previewFile.url, type: 'video/mp4' }],
-              }}
-            />
+        <div className="w-full max-w-4xl h-auto">
+            <div className="relative aspect-video w-full">
+                <VideoPlayer
+                source={{
+                    type: 'video',
+                    sources: [{ src: previewFile.url, type: 'video/mp4' }],
+                }}
+                />
+            </div>
         </div>
       );
     }
@@ -410,11 +412,11 @@ export default function MediaAdmin(props: MediaAdminProps) {
       <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'images' | 'videos')} className="flex-1 flex flex-col min-h-0">
           <div className='px-4 pt-4'>
             <TabsList>
-                <TabsTrigger value="images" className="py-2 px-4 text-base">
+                <TabsTrigger value="images" className="py-2 px-4 text-base glass-effect data-[state=active]:bg-destructive">
                     <FontAwesomeIcon icon={faFileImage} className="mr-2" />
                     Images
                 </TabsTrigger>
-                <TabsTrigger value="videos" className="py-2 px-4 text-base">
+                <TabsTrigger value="videos" className="py-2 px-4 text-base glass-effect data-[state=active]:bg-destructive">
                     <FontAwesomeIcon icon={faFilm} className="mr-2" />
                     Videos
                 </TabsTrigger>
