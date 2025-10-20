@@ -151,11 +151,14 @@ function AdminPage() {
   
   const handlePortfolioSheetOpenChange = (isOpen: boolean) => {
     setIsPortfolioSheetOpen(isOpen);
-    if (!isOpen && fromMediaLibrary) {
-        // If form is closed without saving when coming from media library,
-        // reopen the media library dialog.
-        setIsLibraryOpen(true);
-        setFromMediaLibrary(false); // Reset the flag
+    if (!isOpen) {
+      // If form is closed, always clear the selection config
+      setLibrarySelectionConfig(null);
+      if (fromMediaLibrary) {
+          // If form was opened from media library, reopen it on cancel
+          setIsLibraryOpen(true);
+          setFromMediaLibrary(false); // Reset the flag
+      }
     }
   };
 
@@ -202,9 +205,9 @@ function AdminPage() {
             </div>
           </div>
 
-          <Separator className="bg-white/10 mb-8" />
+          <Separator className="bg-white/10" />
 
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col min-h-0">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col min-h-0 mt-8">
             <div className="w-full flex flex-wrap justify-center items-center gap-4 md:gap-0">
               <TabsList className="flex-wrap h-auto justify-center">
                 <TabsTrigger value="home" className="glass-effect data-[state=active]:bg-destructive">Home</TabsTrigger>
@@ -258,7 +261,13 @@ function AdminPage() {
       <MediaAdmin 
         isDialog={true}
         isOpen={isLibraryOpen}
-        onOpenChange={setIsLibraryOpen}
+        onOpenChange={(isOpen) => {
+            setIsLibraryOpen(isOpen);
+            if (!isOpen) {
+                // If library is closed, clear selection mode
+                setLibrarySelectionConfig(null);
+            }
+        }}
         onMediaSelect={librarySelectionConfig ? librarySelectionConfig.onSelect : handleOpenPortfolioFormWithMedia}
         isSelectionMode={!!librarySelectionConfig}
         onSelectionComplete={() => {
@@ -274,11 +283,5 @@ function AdminPage() {
 }
 
 export default AdminPage;
-
-    
-
-    
-
-    
 
     

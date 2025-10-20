@@ -743,7 +743,12 @@ export default function WorkPage() {
         <>
           <PortfolioItemFormSheet 
             isOpen={isFormSheetOpen}
-            setIsOpen={setIsFormSheetOpen}
+            setIsOpen={(isOpen) => {
+                setIsFormSheetOpen(isOpen);
+                if (!isOpen) {
+                    setLibrarySelectionConfig(null);
+                }
+            }}
             item={selectedItemForEdit}
             onSubmit={handlePortfolioFormSubmit}
             onChooseFromLibrary={handleOpenLibraryForSelection}
@@ -752,7 +757,12 @@ export default function WorkPage() {
           <MediaAdmin 
             isDialog={true}
             isOpen={isLibraryOpen}
-            onOpenChange={setIsLibraryOpen}
+            onOpenChange={(isOpen) => {
+                setIsLibraryOpen(isOpen);
+                if (!isOpen) {
+                    setLibrarySelectionConfig(null);
+                }
+            }}
             onMediaSelect={(url, type, filename) => {
               if (librarySelectionConfig?.onSelect) {
                 librarySelectionConfig.onSelect(url, type, filename);
@@ -772,12 +782,5 @@ export default function WorkPage() {
     </>
   );
 }
-
-    
-
-    
-
-
-
 
     
