@@ -1,4 +1,3 @@
-
 "use client";
 
 import Link from "next/link";
@@ -99,7 +98,7 @@ export function AppNav() {
         <div className={cn(
           "flex h-full flex-row items-center justify-between px-4 rounded-lg border border-border/50 glass-effect"
           )}>
-          <nav className="flex flex-1 justify-center items-center gap-4">
+          <nav className="flex flex-1 justify-center items-center gap-6">
             {regularItems.map(renderNavItem)}
           </nav>
           {user && adminItem && (
@@ -125,7 +124,7 @@ export function AppNav() {
         <Link href="/" className="hidden md:flex items-center justify-center text-primary w-8 mt-4">
           <Logo src={logoUrl} />
         </Link>
-        <nav className="flex flex-row md:flex-col items-center justify-around md:justify-center w-full md:w-auto md:gap-8">
+        <nav className="flex flex-row md:flex-col items-center justify-around md:justify-center w-full md:w-auto md:gap-10">
            {regularItems.map(renderNavItem)}
         </nav>
         <div className="flex flex-col items-center gap-4">
