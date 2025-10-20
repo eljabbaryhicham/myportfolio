@@ -65,7 +65,7 @@ export function AppNav() {
               <FontAwesomeIcon icon={item.icon} className="h-7 w-7 transition-transform duration-300" />
             </Link>
           </TooltipTrigger>
-          <TooltipContent side={isMobile ? "top" : "left"} className="bg-card text-card-foreground">
+          <TooltipContent side={isMobile ? "top" : "right"} className="bg-card text-card-foreground">
             <p>{item.label}</p>
           </TooltipContent>
         </Tooltip>
