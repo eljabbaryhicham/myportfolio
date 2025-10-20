@@ -106,7 +106,7 @@ export default function AboutPage() {
                                 Contact Us
                             </Link>
                         </Button>
-                        <Button asChild variant="grey">
+                        <Button asChild variant="success">
                              <Link href="/work">
                                 Explore Our Works
                                 <FontAwesomeIcon icon={faArrowRight} className="ml-2" />
