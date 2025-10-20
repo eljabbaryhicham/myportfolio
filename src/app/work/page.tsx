@@ -474,15 +474,18 @@ export default function WorkPage() {
                 details.
               </p>
             </div>
-            <div className="flex justify-center gap-2 mb-4">
-              <Button variant={filter === 'all' ? 'destructive' : 'outline'} onClick={() => setFilter('all')}>All</Button>
+            <div className="flex flex-wrap justify-center gap-2 mb-4">
+              <Button variant={filter === 'all' ? 'destructive' : 'outline'} onClick={() => setFilter('all')}>
+                <span className="sm:hidden">All</span>
+                <span className="hidden sm:inline">All Projects</span>
+              </Button>
               <Button variant={filter === 'image' ? 'destructive' : 'outline'} onClick={() => setFilter('image')}>
-                <FontAwesomeIcon icon={faPalette} className="mr-2 h-4 w-4" />
-                Graphics
+                <FontAwesomeIcon icon={faPalette} className="sm:mr-2 h-4 w-4" />
+                <span className="hidden sm:inline">Graphics</span>
               </Button>
               <Button variant={filter === 'video' ? 'destructive' : 'outline'} onClick={() => setFilter('video')}>
-                <FontAwesomeIcon icon={faFilm} className="mr-2 h-4 w-4" />
-                Animation
+                <FontAwesomeIcon icon={faFilm} className="sm:mr-2 h-4 w-4" />
+                <span className="hidden sm:inline">Animation</span>
               </Button>
             </div>
           </div>
@@ -505,7 +508,7 @@ export default function WorkPage() {
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
                     transition={{ duration: 0.3 }}
-                    className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"
+                    className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"
                   >
                     {filteredItems.slice(0, visibleItems).map(item => (
                       <PortfolioGridItem 
