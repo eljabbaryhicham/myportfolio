@@ -58,7 +58,7 @@ export function AppNav() {
               ? "bg-green-500/80 hover:bg-green-500"
               : "text-foreground/70 glass-effect",
            isActive && isAdminButton && "animate-green-glow",
-           isMobile ? "h-12 w-12" : "h-10 w-10" // On mobile, height is 100% of parent, on desktop fixed size
+           isMobile ? "h-12 w-12" : "h-10 w-10"
         )}
       >
         <FontAwesomeIcon icon={item.icon} className={cn("transition-transform duration-300 h-[50%] w-[50%]")} />
@@ -96,7 +96,7 @@ export function AppNav() {
         <div className={cn(
           "flex h-full flex-row items-center justify-between px-4 rounded-lg border border-border/50 glass-effect"
           )}>
-          <nav className="flex flex-1 justify-around items-center h-full gap-2">
+          <nav className="flex flex-1 justify-around items-center gap-2">
             {regularItems.map(item => <div key={item.href}>{renderNavItem(item)}</div>)}
           </nav>
           {user && adminItem && (
