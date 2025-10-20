@@ -1,4 +1,3 @@
-
 "use client";
 
 import Link from "next/link";
@@ -49,7 +48,7 @@ export function AppNav() {
         href={item.href}
         className={cn(
           "group relative flex items-center justify-center rounded-md transition-all duration-300 hover:scale-110 aspect-square",
-          "h-full p-2 text-white", // Use h-full to fill vertical space, p-2 for padding
+          "p-2 text-white", 
           isActive
             ? isAdminButton
               ? "bg-green-500 scale-110"
@@ -58,10 +57,10 @@ export function AppNav() {
               ? "bg-green-500/80 hover:bg-green-500"
               : "text-foreground/70 glass-effect",
            isActive && isAdminButton && "animate-green-glow",
-           isMobile ? "h-full" : "h-12 w-12" // On mobile, height is 100% of parent, on desktop fixed size
+           isMobile ? "h-full" : "h-10 w-10" // On mobile, height is 100% of parent, on desktop fixed size
         )}
       >
-        <FontAwesomeIcon icon={item.icon} className={cn("transition-transform duration-300", isMobile ? "h-[70%] w-[70%]" : "h-7 w-7")} />
+        <FontAwesomeIcon icon={item.icon} className={cn("transition-transform duration-300", isMobile ? "h-[70%] w-[70%]" : "h-5 w-5")} />
       </Link>
     );
 
