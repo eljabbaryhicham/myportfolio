@@ -47,6 +47,20 @@ const uploadMediaFromUrlFlow = ai.defineFlow(
   },
   async (input) => {
     try {
+      if (
+        !process.env.CLOUDINARY_CLOUD_NAME ||
+        !process.env.CLOUDINARY_API_KEY ||
+        !process.env.CLOUDINARY_API_SECRET
+      ) {
+        const errorMessage =
+          'Cloudinary environment variables (CLOUD_NAME, API_KEY, API_SECRET) are not set. Please add them to your .env file.';
+        console.error('Error in uploadMediaFromUrlFlow:', errorMessage);
+        return {
+          success: false,
+          message: errorMessage,
+        };
+      }
+
       // --- IMPORTANT ---
       // Credentials are now read from environment variables for security.
       // Make sure to fill these out in your .env file.
