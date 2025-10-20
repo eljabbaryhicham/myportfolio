@@ -388,12 +388,14 @@ export default function MediaAdmin(props: MediaAdminProps) {
 
     if (previewFile.resource_type === 'video') {
       return (
-        <VideoPlayer
-          source={{
-            type: 'video',
-            sources: [{ src: previewFile.url, type: 'video/mp4' }],
-          }}
-        />
+        <div className="relative w-full max-w-4xl aspect-video">
+            <VideoPlayer
+              source={{
+                type: 'video',
+                sources: [{ src: previewFile.url, type: 'video/mp4' }],
+              }}
+            />
+        </div>
       );
     }
     return null;
