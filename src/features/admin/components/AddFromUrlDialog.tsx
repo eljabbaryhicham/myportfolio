@@ -14,6 +14,7 @@ import { uploadMediaFromUrl } from '@/ai/flows/upload-media-from-url';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSpinner, faXmark } from '@fortawesome/free-solid-svg-icons';
 import { cn } from '@/lib/utils';
+import { Progress } from '@/components/ui/progress';
 
 const formSchema = z.object({
   mediaUrl: z.string().url({ message: 'Please enter a valid URL.' }),
@@ -79,23 +80,34 @@ export default function AddFromUrlDialog({ isOpen, onOpenChange, onUploadComplet
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="mediaUrl"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Media URL</FormLabel>
-                  <FormControl>
-                    <Input placeholder="https://..." {...field} disabled={isSubmitting} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <DialogFooter>
-              <Button type="submit" disabled={isSubmitting}>
+            <fieldset disabled={isSubmitting}>
+              <FormField
+                control={form.control}
+                name="mediaUrl"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Media URL</FormLabel>
+                    <FormControl>
+                      <Input placeholder="https://..." {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </fieldset>
+
+            {isSubmitting && (
+                <div className="space-y-2 pt-4 text-center">
+                    <p className="text-sm text-muted-foreground">Please wait, adding to library...</p>
+                    <Progress value={undefined} className="h-2 animate-pulse" />
+                </div>
+            )}
+
+            <DialogFooter className="pt-4">
+               <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isSubmitting}>Cancel</Button>
+               <Button type="submit" disabled={isSubmitting}>
                 {isSubmitting && <FontAwesomeIcon icon={faSpinner} className="mr-2 h-4 w-4 animate-spin" />}
-                {isSubmitting ? 'Adding to Library...' : 'Add to Library'}
+                {isSubmitting ? 'Adding...' : 'Add to Library'}
               </Button>
             </DialogFooter>
           </form>
