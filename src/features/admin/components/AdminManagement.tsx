@@ -22,7 +22,7 @@ import { useMemo, useState } from 'react';
 import { deleteDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { Separator } from '@/components/ui/separator';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
-import { Checkbox } from '@/components/ui/checkbox';
+import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 
 interface AdminUser {
@@ -75,13 +75,13 @@ function PermissionsDialog({ user, isOpen, onOpenChange, onSave }: { user: Admin
                 </DialogHeader>
                 <div className="grid grid-cols-2 gap-4 py-4">
                     {permissionItems.map(({ key, label }) => (
-                         <div className="flex items-center space-x-2" key={key}>
-                            <Checkbox
+                         <div className="flex items-center justify-between rounded-lg border p-3 shadow-sm glass-effect" key={key}>
+                            <Label htmlFor={`${key}-${user.id}`} className='text-sm font-medium leading-none'>{label}</Label>
+                            <Switch
                                 id={`${key}-${user.id}`}
                                 checked={permissions[key] ?? true}
                                 onCheckedChange={(checked) => handlePermissionChange(key, !!checked)}
                             />
-                            <Label htmlFor={`${key}-${user.id}`} className='text-sm font-medium leading-none'>{label}</Label>
                         </div>
                     ))}
                 </div>
