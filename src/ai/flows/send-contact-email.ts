@@ -16,8 +16,8 @@ import { ContactFormInput, ContactFormInputSchema } from '@/features/contact/dat
 const TO_EMAIL = 'eljabbaryhicham@gmail.com';
 const FROM_EMAIL = 'onboarding@resend.dev'; // Resend requires this for free tier
 
-// Initialize Resend with the provided API key.
-const resend = new Resend('re_duZiJJ5B_J3Eo6HxGoJS5eiYPravSefmr');
+// Initialize Resend with the API key from environment variables.
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 /**
  * A server-side function to send the contact form data via email.
@@ -28,6 +28,10 @@ const resend = new Resend('re_duZiJJ5B_J3Eo6HxGoJS5eiYPravSefmr');
 export async function sendContactEmail(
   input: ContactFormInput
 ): Promise<{ success: boolean; message: string }> {
+  if (!process.env.RESEND_API_KEY) {
+    console.error('Resend API key is not configured.');
+    return { success: false, message: 'The server is not configured to send emails.' };
+  }
   return await sendContactEmailFlow(input);
 }
 
