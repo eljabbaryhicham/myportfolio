@@ -48,7 +48,8 @@ export function AppNav() {
       <Link
         href={item.href}
         className={cn(
-          "group relative flex h-full items-center justify-center rounded-full transition-all duration-300 hover:scale-110 aspect-square",
+          "group relative flex items-center justify-center rounded-full transition-all duration-300 hover:scale-110 aspect-square",
+          "h-12 w-12 md:h-10 md:w-10",
           "text-white", 
           isActive
             ? isAdminButton
@@ -66,7 +67,7 @@ export function AppNav() {
 
     if (isMobile) {
       return (
-        <div className="h-full flex items-center justify-center p-1">
+        <div className="h-full flex items-center justify-center">
             {navButton}
         </div>
       );
@@ -98,8 +99,8 @@ export function AppNav() {
         <div className={cn(
           "flex h-[7vh] min-h-[60px] flex-row items-center justify-between rounded-lg border border-border/50 glass-effect"
           )}>
-          <nav className="flex h-full flex-1 justify-around items-center gap-1 p-1">
-            {regularItems.map(item => <div key={item.href} className="flex h-full items-center justify-center p-1">{renderNavItem(item)}</div>)}
+          <nav className="flex h-full flex-1 justify-around items-center p-1">
+            {regularItems.map(item => <div key={item.href} className="flex h-full items-center justify-center">{renderNavItem(item)}</div>)}
           </nav>
           {user && adminItem && (
             <div className="h-full flex-shrink-0 p-1">
