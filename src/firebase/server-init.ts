@@ -27,9 +27,9 @@ export async function initializeServerApp(): Promise<admin.app.App> {
     // Read the file contents.
     const serviceAccountString = await fs.readFile(serviceAccountPath, 'utf-8');
     
-    // Check if the file is empty or just has placeholder content.
-    if (!serviceAccountString || serviceAccountString.trim().length < 10) {
-        throw new Error('The service account file at "docs/service-account.json" is empty or invalid. Please paste your Firebase service account key into it.');
+    // Check if the file is empty or still contains the placeholder key.
+    if (!serviceAccountString || serviceAccountString.includes('PASTE_YOUR_PRIVATE_KEY_HERE')) {
+        throw new Error('The service account file at "docs/service-account.json" is a placeholder. Please see the instructions in README.md to add your Firebase service account key.');
     }
 
     const serviceAccount = JSON.parse(serviceAccountString);
