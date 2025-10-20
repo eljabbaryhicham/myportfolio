@@ -24,7 +24,7 @@ type FormValues = z.infer<typeof formSchema>;
 interface AddFromUrlDialogProps {
   isOpen: boolean;
   onOpenChange: (isOpen: boolean) => void;
-  onUploadComplete: (mediaId: string) => void;
+  onUploadComplete: (mediaId: string, resourceType: 'image' | 'video') => void;
 }
 
 export default function AddFromUrlDialog({ isOpen, onOpenChange, onUploadComplete }: AddFromUrlDialogProps) {
@@ -45,7 +45,8 @@ export default function AddFromUrlDialog({ isOpen, onOpenChange, onUploadComplet
           title: 'Upload Successful',
           description: result.message,
         });
-        onUploadComplete(result.mediaId);
+        // Assuming the flow can return the resource_type
+        onUploadComplete(result.mediaId, result.resource_type || 'image');
         onOpenChange(false);
         form.reset();
       } else {
@@ -69,7 +70,7 @@ export default function AddFromUrlDialog({ isOpen, onOpenChange, onUploadComplet
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="glass-effect">
+      <DialogContent className="glass-effect w-[80vw] max-w-[50vw]">
         <DialogHeader>
           <DialogTitle>Add Media from URL</DialogTitle>
           <DialogDescription>

@@ -335,10 +335,9 @@ export default function MediaAdmin(props: MediaAdminProps) {
     }
   };
   
-  const handleUrlUploadComplete = (mediaId: string) => {
-    if (props.isDialog === false && props.onUploadComplete) {
-      // The type isn't known here, so we might need a way to get it from the upload flow
-      props.onUploadComplete(mediaId, 'image'); // Default to image for now
+  const handleUrlUploadComplete = (mediaId: string, resourceType: 'image' | 'video') => {
+    if (!props.isDialog && props.onUploadComplete) {
+      props.onUploadComplete(mediaId, resourceType);
     }
   };
 
@@ -507,28 +506,28 @@ export default function MediaAdmin(props: MediaAdminProps) {
         </div>
         <Separator className="bg-white/10" />
         <div className="border rounded-lg p-6 glass-effect">
-            <div 
-                {...getRootProps()} 
-                className={cn(
-                    'border-2 border-dashed rounded-lg p-6 text-center transition-colors relative', 
-                    isDragActive && canUpload ? 'border-primary bg-primary/10' : 'border-border hover:border-primary/50', 
-                    (!canUpload || isUploading) && 'opacity-50'
-                )}
-            >
-                <input {...getInputProps()} disabled={!canUpload || isUploading} />
-                <div className="flex flex-col items-center justify-center gap-2 text-muted-foreground">
-                    <FontAwesomeIcon icon={faCloudUploadAlt} className="h-8 w-8" />
-                    {isUploading ? (
-                        <p className="text-sm">Uploading...</p>
-                    ) : !canUpload ? (
-                        <p className="text-sm text-destructive-foreground/70">You do not have permission to upload.</p>
-                    ) : (
-                       <p className="text-sm">Drag & drop files, or <span className="text-primary font-semibold">click to browse</span></p>
+            <div className="flex items-center gap-4">
+                <div 
+                    {...getRootProps()} 
+                    className={cn(
+                        'flex-1 border-2 border-dashed rounded-lg p-6 text-center transition-colors relative cursor-pointer', 
+                        isDragActive && canUpload ? 'border-primary bg-primary/10' : 'border-border hover:border-primary/50', 
+                        (!canUpload || isUploading) && 'opacity-50 cursor-not-allowed'
                     )}
+                >
+                    <input {...getInputProps()} disabled={!canUpload || isUploading} />
+                    <div className="flex flex-col items-center justify-center gap-2 text-muted-foreground">
+                        <FontAwesomeIcon icon={faCloudUploadAlt} className="h-8 w-8" />
+                        {isUploading ? (
+                            <p className="text-sm">Uploading...</p>
+                        ) : !canUpload ? (
+                            <p className="text-sm text-destructive-foreground/70">You do not have permission to upload.</p>
+                        ) : (
+                           <p className="text-sm">Drag & drop files, or <span className="text-primary font-semibold">click to browse</span></p>
+                        )}
+                    </div>
                 </div>
-            </div>
-            <div className="mt-4 flex items-center gap-4">
-                 <Button onClick={() => setIsAddFromUrlOpen(true)} variant="outline" size="sm" className="w-full" disabled={!canUpload || isUploading}>
+                <Button onClick={() => setIsAddFromUrlOpen(true)} variant="outline" size="sm" className="h-full px-4" disabled={!canUpload || isUploading}>
                     <FontAwesomeIcon icon={faLink} className="mr-2" />
                     Add from URL
                 </Button>

@@ -27,6 +27,7 @@ const UploadMediaFromUrlOutputSchema = z.object({
   success: z.boolean(),
   message: z.string(),
   mediaId: z.string().optional(),
+  resource_type: z.enum(['image', 'video']).optional(),
 });
 export type UploadMediaFromUrlOutput = z.infer<typeof UploadMediaFromUrlOutputSchema>;
 
@@ -98,6 +99,7 @@ const uploadMediaFromUrlFlow = ai.defineFlow(
         success: true,
         message: 'Media successfully added from URL.',
         mediaId: docRef.id,
+        resource_type: uploadResult.resource_type === 'video' ? 'video' : 'image',
       };
     } catch (error: any) {
       console.error('Error in uploadMediaFromUrlFlow:', error);
