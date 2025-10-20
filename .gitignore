@@ -40,5 +40,4 @@ yarn-error.log*
 next-env.d.ts
 
 # genkit
-.genkit/
-.genkit-cache.json
+.genkit/cache
