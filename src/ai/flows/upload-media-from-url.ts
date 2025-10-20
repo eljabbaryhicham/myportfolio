@@ -82,14 +82,15 @@ const uploadMediaFromUrlFlow = ai.defineFlow(
       console.log('Cloudinary upload successful:', uploadResult);
 
       let finalUrl = uploadResult.secure_url;
-      // Apply automatic optimization for images
+      // Apply automatic optimization for images using the official SDK method
       if (uploadResult.resource_type === 'image') {
-        const urlParts = finalUrl.split('/upload/');
-        if (urlParts.length === 2) {
-            const transformations = 'f_auto,q_auto';
-            finalUrl = `${urlParts[0]}/upload/${transformations}/${urlParts[1]}`;
-        }
+          finalUrl = cloudinary.url(uploadResult.public_id, {
+              fetch_format: 'auto',
+              quality: 'auto',
+              secure: true,
+          });
       }
+
 
       // 2. Initialize Firebase Admin SDK and save metadata to Firestore
       const serverApp = await initializeServerApp();
@@ -98,7 +99,7 @@ const uploadMediaFromUrlFlow = ai.defineFlow(
 
       const mediaData = {
         public_id: uploadResult.public_id,
-        url: finalUrl, // Use the potentially modified URL
+        url: finalUrl, // Use the generated URL
         resource_type: uploadResult.resource_type,
         created_at: uploadResult.created_at,
         filename: filename || uploadResult.public_id, // Use filename from URL or fallback to public_id
