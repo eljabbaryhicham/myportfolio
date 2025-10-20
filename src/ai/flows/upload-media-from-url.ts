@@ -84,9 +84,10 @@ const uploadMediaFromUrlFlow = ai.defineFlow(
       let finalUrl = uploadResult.secure_url;
       // Apply automatic optimization for images
       if (uploadResult.resource_type === 'image') {
-        const parts = finalUrl.split('/upload/');
-        if (parts.length === 2) {
-          finalUrl = `${parts[0]}/upload/f_auto,q_auto/${parts[1]}`;
+        const urlParts = finalUrl.split('/upload/');
+        if (urlParts.length === 2) {
+            const transformations = 'f_auto,q_auto';
+            finalUrl = `${urlParts[0]}/upload/${transformations}/${urlParts[1]}`;
         }
       }
 
