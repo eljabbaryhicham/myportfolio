@@ -208,10 +208,10 @@ export default function MediaAdmin(props: MediaAdminProps) {
     // For a production environment, you MUST move these to a secure
     // environment variable management system (e.g., .env.local).
     const cloudName = 'da1srnoer';
-    // --- IMPORTANT: REPLACE 'your_upload_preset' WITH YOUR ACTUAL UPLOAD PRESET NAME ---
-    const uploadPreset = 'your_upload_preset';
+    // This is an unsigned upload preset. You can create your own in your Cloudinary settings.
+    const uploadPreset = 'your_unsigned_upload_preset';
     
-    if (!cloudName || !uploadPreset || uploadPreset === 'your_upload_preset') {
+    if (!cloudName || !uploadPreset || uploadPreset === 'your_unsigned_upload_preset') {
       toast({
         variant: 'destructive',
         title: 'Configuration Error',
