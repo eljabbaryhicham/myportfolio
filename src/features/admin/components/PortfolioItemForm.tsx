@@ -185,13 +185,14 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onCho
             const data = JSON.parse(xhr.responseText);
             
             // Use the same SDK method for generating optimized URLs
-            const cloudinaryCore = new (await import('cloudinary-core')).Cloudinary({
+            const cloudinary = (await import('cloudinary-core')).v2;
+             cloudinary.config({
                 cloud_name: cloudName,
             });
 
             let finalUrl = data.secure_url;
             if (data.resource_type === 'image') {
-                finalUrl = cloudinaryCore.url(data.public_id, {
+                finalUrl = cloudinary.url(data.public_id, {
                     fetch_format: 'auto',
                     quality: 'auto',
                     secure: true,
