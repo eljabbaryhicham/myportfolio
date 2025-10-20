@@ -196,12 +196,16 @@ function AdminPage() {
           <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col min-h-0">
             <div className="w-full flex justify-center">
               <TabsList className="flex-wrap h-auto justify-center">
+                <div className="flex gap-2">
                   <TabsTrigger value="home" className="glass-effect data-[state=active]:bg-destructive">Home</TabsTrigger>
                   <TabsTrigger value="projects" className="glass-effect data-[state=active]:bg-destructive">Projects</TabsTrigger>
                   <TabsTrigger value="about" className="glass-effect data-[state=active]:bg-destructive">About & Clients</TabsTrigger>
                   <TabsTrigger value="contact" className="glass-effect data-[state=active]:bg-destructive">Contact</TabsTrigger>
-                  <TabsTrigger value="media" className="bg-blue-900/50 text-white data-[state=active]:bg-destructive data-[state=active]:animate-glow">Media</TabsTrigger>
-                  {isSuperAdmin && <TabsTrigger value="admins" className="bg-blue-900/50 text-white data-[state=active]:bg-destructive data-[state=active]:animate-glow">Admins</TabsTrigger>}
+                </div>
+                <div className="flex gap-2 ml-4">
+                  <TabsTrigger value="media" className="bg-blue-900 text-white data-[state=active]:bg-destructive data-[state=active]:animate-glow px-4 py-2">Media</TabsTrigger>
+                  {isSuperAdmin && <TabsTrigger value="admins" className="bg-blue-900 text-white data-[state=active]:bg-destructive data-[state=active]:animate-glow px-4 py-2">Admins</TabsTrigger>}
+                </div>
               </TabsList>
             </div>
               <Separator className="bg-white/10 mt-4" />
@@ -261,6 +265,9 @@ function AdminPage() {
 export default AdminPage;
 
     
+
+    
+
 
     
 
