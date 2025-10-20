@@ -147,9 +147,14 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onCho
     };
 
     const handleChooseSource = () => {
-        onChooseFromLibrary((url, type) => {
+        onChooseFromLibrary((url, type, filename) => {
             form.setValue('sourceUrl', url, { shouldValidate: true });
             form.setValue('type', type, { shouldValidate: true });
+             // If it's a new item, set the title from the filename
+            if (!item?.id) {
+                const title = filename.split('.').slice(0, -1).join('.');
+                form.setValue('title', title, { shouldValidate: true });
+            }
         });
     };
 
@@ -212,6 +217,12 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onCho
             } else if (field === 'source') {
               form.setValue('sourceUrl', data.secure_url, { shouldValidate: true });
               form.setValue('type', resourceType, { shouldValidate: true });
+              
+              // If it's a new item, set the title from the filename
+              if (!item?.id) {
+                const title = file.name.split('.').slice(0, -1).join('.');
+                form.setValue('title', title, { shouldValidate: true });
+              }
             }
         } else {
              const errorData = JSON.parse(xhr.responseText);
@@ -226,7 +237,7 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onCho
 
       xhr.send(formData);
 
-    }, [toast, firestore, form]);
+    }, [toast, firestore, form, item]);
 
     const onFileSelect = (e: React.ChangeEvent<HTMLInputElement>, field: 'thumbnail' | 'source') => {
         const file = e.target.files?.[0];
@@ -455,3 +466,5 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onCho
         </Dialog>
     )
 }
+
+    
