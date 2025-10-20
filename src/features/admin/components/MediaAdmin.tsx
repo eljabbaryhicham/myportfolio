@@ -420,7 +420,7 @@ export default function MediaAdmin(props: MediaAdminProps) {
            <DialogDescription>Upload and manage your images and videos.</DialogDescription>
       </DialogHeader>
       <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'images' | 'videos')} className="flex-1 flex flex-col min-h-0">
-          <div className='px-4 pt-4 flex justify-between items-center'>
+          <div className='px-4 pt-4'>
             <TabsList>
                 <TabsTrigger value="images" className="py-2 px-4 text-base glass-effect data-[state=active]:bg-destructive">
                     <FontAwesomeIcon icon={faFileImage} className="mr-2" />
@@ -431,10 +431,6 @@ export default function MediaAdmin(props: MediaAdminProps) {
                     Videos
                 </TabsTrigger>
             </TabsList>
-            <Button onClick={() => setIsAddFromUrlOpen(true)} variant="outline" size="sm" disabled={!canUpload || isUploading}>
-                <FontAwesomeIcon icon={faLink} className="mr-2" />
-                Add from URL
-            </Button>
           </div>
           
           <ScrollArea className="flex-1">
@@ -503,10 +499,6 @@ export default function MediaAdmin(props: MediaAdminProps) {
                 <p className="text-muted-foreground mt-1 text-sm">Upload and manage your images and videos.</p>
             </div>
             <div className="flex items-center gap-2">
-                 <Button onClick={() => setIsAddFromUrlOpen(true)} variant="outline" size="sm" disabled={!canUpload || isUploading}>
-                    <FontAwesomeIcon icon={faLink} className="mr-2" />
-                    Add from URL
-                </Button>
                 <Button onClick={props.onLibraryOpenRequest} variant="outline" size="sm">
                     <FontAwesomeIcon icon={faFolderOpen} className="mr-2" />
                     Browse Full Library
@@ -515,13 +507,32 @@ export default function MediaAdmin(props: MediaAdminProps) {
         </div>
         <Separator className="bg-white/10" />
         <div className="border rounded-lg p-6 glass-effect">
-          <div {...getRootProps()} className={cn('border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors', isDragActive && canUpload ? 'border-primary bg-primary/10' : 'border-border hover:border-primary/50', (!canUpload || isUploading) && 'cursor-not-allowed opacity-50')}>
-              <input {...getInputProps()} />
-              <div className="flex flex-col items-center gap-2 text-muted-foreground">
-                  <FontAwesomeIcon icon={faCloudUploadAlt} className="h-8 w-8" />
-                  {isUploading ? (<p className="text-sm">Uploading...</p>) : !canUpload ? (<p className="text-sm text-destructive-foreground/70">You do not have permission to upload.</p>) : isDragActive ? (<p className="text-sm">Drop files here...</p>) : (<p className="text-sm">Drag & drop files, or click to select</p>)}
-              </div>
-          </div>
+            <div 
+                {...getRootProps()} 
+                className={cn(
+                    'border-2 border-dashed rounded-lg p-6 text-center transition-colors relative', 
+                    isDragActive && canUpload ? 'border-primary bg-primary/10' : 'border-border hover:border-primary/50', 
+                    (!canUpload || isUploading) && 'opacity-50'
+                )}
+            >
+                <input {...getInputProps()} disabled={!canUpload || isUploading} />
+                <div className="flex flex-col items-center justify-center gap-2 text-muted-foreground">
+                    <FontAwesomeIcon icon={faCloudUploadAlt} className="h-8 w-8" />
+                    {isUploading ? (
+                        <p className="text-sm">Uploading...</p>
+                    ) : !canUpload ? (
+                        <p className="text-sm text-destructive-foreground/70">You do not have permission to upload.</p>
+                    ) : (
+                       <p className="text-sm">Drag & drop files, or <span className="text-primary font-semibold">click to browse</span></p>
+                    )}
+                </div>
+            </div>
+            <div className="mt-4 flex items-center gap-4">
+                 <Button onClick={() => setIsAddFromUrlOpen(true)} variant="outline" size="sm" className="w-full" disabled={!canUpload || isUploading}>
+                    <FontAwesomeIcon icon={faLink} className="mr-2" />
+                    Add from URL
+                </Button>
+            </div>
           {isUploading && (
               <div className="mt-4">
                   <Progress value={uploadProgress} className="w-full" />
