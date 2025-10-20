@@ -85,7 +85,7 @@ export default function AddFromUrlDialog({ isOpen, onOpenChange, onUploadComplet
                 <FormItem>
                   <FormLabel>Media URL</FormLabel>
                   <FormControl>
-                    <Input placeholder="https://..." {...field} />
+                    <Input placeholder="https://..." {...field} disabled={isSubmitting} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -94,7 +94,7 @@ export default function AddFromUrlDialog({ isOpen, onOpenChange, onUploadComplet
             <DialogFooter>
               <Button type="submit" disabled={isSubmitting}>
                 {isSubmitting && <FontAwesomeIcon icon={faSpinner} className="mr-2 h-4 w-4 animate-spin" />}
-                Add to Library
+                {isSubmitting ? 'Adding to Library...' : 'Add to Library'}
               </Button>
             </DialogFooter>
           </form>
