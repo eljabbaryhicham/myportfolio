@@ -58,15 +58,19 @@ export function AppNav() {
               ? "bg-green-500/80 hover:bg-green-500"
               : "text-foreground/70 glass-effect",
            isActive && isAdminButton && "animate-green-glow",
-           isMobile ? "h-12 w-12" : "h-10 w-10"
+           isMobile ? "h-full" : "h-10 w-10"
         )}
       >
-        <FontAwesomeIcon icon={item.icon} className={cn("transition-transform duration-300 h-[50%] w-[50%]")} />
+        <FontAwesomeIcon icon={item.icon} className={cn("transition-transform duration-300", isMobile ? "h-[50%] w-[50%]" : "h-[70%] w-[70%]")} />
       </Link>
     );
 
     if (isMobile) {
-      return navButton;
+      return (
+        <div className="h-full flex items-center justify-center">
+            {navButton}
+        </div>
+      );
     }
 
     return (
@@ -96,11 +100,11 @@ export function AppNav() {
         <div className={cn(
           "flex h-full flex-row items-center justify-between px-4 rounded-lg border border-border/50 glass-effect"
           )}>
-          <nav className="flex flex-1 justify-around items-center gap-2">
-            {regularItems.map(item => <div key={item.href}>{renderNavItem(item)}</div>)}
+          <nav className="flex h-full flex-1 justify-around items-center gap-2">
+            {regularItems.map(item => <div key={item.href} className="h-full">{renderNavItem(item)}</div>)}
           </nav>
           {user && adminItem && (
-            <div className="flex-shrink-0">
+            <div className="h-full flex-shrink-0">
                 {renderNavItem(adminItem)}
             </div>
           )}
