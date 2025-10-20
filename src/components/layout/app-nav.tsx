@@ -38,9 +38,6 @@ export function AppNav() {
   const regularItems = navItems.filter(item => item.label !== 'Admin');
   const adminItem = navItems.find(item => item.label === 'Admin');
   
-  const visibleNavItems = navItems.filter(item => item.public || (!item.public && user));
-
-
   const renderNavItem = (item: (typeof navItems)[0]) => {
     const isActive = item.href === "/" ? pathname === item.href : pathname.startsWith(item.href);
     const isAdminButton = item.label === 'Admin';
@@ -91,11 +88,6 @@ export function AppNav() {
     );
   };
   
-  const finalNavItems = [...regularItems];
-  if (adminItem && visibleNavItems.includes(adminItem)) {
-    finalNavItems.push(adminItem);
-  }
-
 
   if (isMobile) {
     return (
@@ -110,7 +102,13 @@ export function AppNav() {
           "flex h-full flex-row items-center justify-between px-4 rounded-lg border border-border/50 glass-effect"
           )}>
           <nav className="flex flex-row items-center justify-around w-full">
-            {finalNavItems.map(renderNavItem)}
+            {regularItems.map(renderNavItem)}
+            {user && adminItem && (
+                <>
+                    <div className="w-4"></div>
+                    {renderNavItem(adminItem)}
+                </>
+            )}
           </nav>
         </div>
       </motion.div>
@@ -131,9 +129,12 @@ export function AppNav() {
           <Logo src={logoUrl} />
         </Link>
         <nav className="flex flex-row md:flex-col items-center justify-around md:justify-center w-full md:w-auto md:gap-8">
-           {finalNavItems.map(renderNavItem)}
+           {regularItems.map(renderNavItem)}
         </nav>
-        <div className="hidden md:flex flex-col items-center gap-4">
+        <div className="flex flex-col items-center gap-4">
+          {user && adminItem && (
+            renderNavItem(adminItem)
+          )}
           <div className="h-8 w-8 hidden md:block"></div>
         </div>
       </div>
