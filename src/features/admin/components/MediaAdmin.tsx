@@ -20,6 +20,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import VideoPlayer from '@/components/video-player';
 import { Separator } from '@/components/ui/separator';
 import AddFromUrlDialog from './AddFromUrlDialog';
+import type { AppUser } from '@/firebase/auth/use-user';
 
 
 // Type for the media stored in Firestore
@@ -180,9 +181,10 @@ export default function MediaAdmin(props: MediaAdminProps) {
   
   const newlyUploadedId = props.isDialog ? props.newlyUploadedId : null;
 
-  const isSuperAdmin = user?.email === 'eljabbaryhicham@example.com';
-  const canUpload = isSuperAdmin || (user?.permissions?.canUploadMedia ?? true);
-  const canDelete = isSuperAdmin || (user?.permissions?.canDeleteMedia ?? true);
+  const typedUser = user as AppUser | null;
+  const isSuperAdmin = typedUser?.email === 'eljabbaryhicham@example.com';
+  const canUpload = isSuperAdmin || (typedUser?.permissions?.canUploadMedia ?? true);
+  const canDelete = isSuperAdmin || (typedUser?.permissions?.canDeleteMedia ?? true);
 
 
   // Fetch media assets from Firestore
@@ -554,3 +556,5 @@ export default function MediaAdmin(props: MediaAdminProps) {
     </>
   );
 }
+
+    

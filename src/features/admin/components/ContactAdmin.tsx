@@ -21,6 +21,7 @@ import { doc } from 'firebase/firestore';
 import { useEffect } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import Preloader from '@/components/preloader';
+import type { AppUser } from '@/firebase/auth/use-user';
 
 const formSchema = z.object({
   avatarUrl: z.string().url().optional().or(z.literal('')),
@@ -58,8 +59,10 @@ export default function ContactAdmin() {
   const { toast } = useToast();
   const firestore = useFirestore();
   const { user } = useUser();
-  const isSuperAdmin = user?.email === 'eljabbaryhicham@example.com';
-  const canEditContact = isSuperAdmin || (user?.permissions?.canEditContact ?? true);
+
+  const typedUser = user as AppUser | null;
+  const isSuperAdmin = typedUser?.email === 'eljabbaryhicham@example.com';
+  const canEditContact = isSuperAdmin || (typedUser?.permissions?.canEditContact ?? true);
 
   const contactDocRef = useMemoFirebase(
     () => (firestore ? doc(firestore, 'contact', 'details') : null),
@@ -304,3 +307,5 @@ export default function ContactAdmin() {
     </div>
   );
 }
+
+    

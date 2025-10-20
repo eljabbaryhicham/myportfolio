@@ -24,6 +24,7 @@ import { Separator } from '@/components/ui/separator';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
+import type { AppUser } from '@/firebase/auth/use-user';
 
 interface AdminUser {
     id: string;
@@ -104,7 +105,9 @@ export default function AdminManagement() {
     [firestore]
   );
   const { data: users, isLoading } = useCollection<AdminUser>(usersQuery);
-  const isSuperAdmin = currentUser?.email === 'eljabbaryhicham@example.com';
+  
+  const typedUser = currentUser as AppUser | null;
+  const isSuperAdmin = typedUser?.email === 'eljabbaryhicham@example.com';
   
   const [selectedUser, setSelectedUser] = useState<AdminUser | null>(null);
   const [isPermissionsDialogOpen, setIsPermissionsDialogOpen] = useState(false);
@@ -258,3 +261,5 @@ export default function AdminManagement() {
     </>
   );
 }
+
+    

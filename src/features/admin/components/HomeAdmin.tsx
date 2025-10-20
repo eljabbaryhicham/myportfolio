@@ -27,6 +27,7 @@ import type { PortfolioItem } from '@/features/portfolio/data/portfolio-data';
 import { useEffect } from 'react';
 import Preloader from '@/components/preloader';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import type { AppUser } from '@/firebase/auth/use-user';
 
 interface HomePageSettings {
     featuredProjectId: string;
@@ -43,8 +44,9 @@ export default function HomeAdmin() {
   const firestore = useFirestore();
   const { user } = useUser();
 
-  const isSuperAdmin = user?.email === 'eljabbaryhicham@example.com';
-  const canEditHome = isSuperAdmin || (user?.permissions?.canEditHome ?? true);
+  const typedUser = user as AppUser | null;
+  const isSuperAdmin = typedUser?.email === 'eljabbaryhicham@example.com';
+  const canEditHome = isSuperAdmin || (typedUser?.permissions?.canEditHome ?? true);
 
   const settingsDocRef = useMemoFirebase(
     () => (firestore ? doc(firestore, 'homepage', 'settings') : null),

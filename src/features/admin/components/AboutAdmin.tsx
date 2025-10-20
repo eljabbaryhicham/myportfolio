@@ -34,6 +34,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
+import type { AppUser } from '@/firebase/auth/use-user';
 
 const formSchema = z.object({
   title: z.string().min(2, { message: 'Title must be at least 2 characters.' }),
@@ -51,8 +52,9 @@ export default function AboutAdmin() {
   const firestore = useFirestore();
   const { user } = useUser();
   
-  const isSuperAdmin = user?.email === 'eljabbaryhicham@example.com';
-  const canEditAbout = isSuperAdmin || (user?.permissions?.canEditAbout ?? true);
+  const typedUser = user as AppUser | null;
+  const isSuperAdmin = typedUser?.email === 'eljabbaryhicham@example.com';
+  const canEditAbout = isSuperAdmin || (typedUser?.permissions?.canEditAbout ?? true);
 
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isLibraryOpen, setIsLibraryOpen] = useState(false);
@@ -258,3 +260,5 @@ export default function AboutAdmin() {
     </>
   );
 }
+
+    

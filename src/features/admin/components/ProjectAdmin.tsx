@@ -29,6 +29,7 @@ import { cn } from '@/lib/utils';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlusCircle, faEllipsisH, faCloudUploadAlt, faGripVertical } from '@fortawesome/free-solid-svg-icons';
 import Preloader from '@/components/preloader';
+import type { AppUser } from '@/firebase/auth/use-user';
 
 interface ProjectAdminProps {
   setSelectedItem: (item: PortfolioItem | null) => void;
@@ -42,8 +43,9 @@ function ProjectAdmin({ setSelectedItem, setIsSheetOpen, handleFormSubmit }: Pro
   const { user } = useUser();
   const { toast } = useToast();
   
-  const isSuperAdmin = user?.email === 'eljabbaryhicham@example.com';
-  const canEditProjects = isSuperAdmin || (user?.permissions?.canEditProjects ?? true);
+  const typedUser = user as AppUser | null;
+  const isSuperAdmin = typedUser?.email === 'eljabbaryhicham@example.com';
+  const canEditProjects = isSuperAdmin || (typedUser?.permissions?.canEditProjects ?? true);
 
   const projectsCollection = useMemoFirebase(() => firestore ? collection(firestore, 'projects') : null, [firestore]);
   const { data: items, isLoading } = useCollection<PortfolioItem>(projectsCollection);
@@ -293,3 +295,5 @@ function ProjectAdmin({ setSelectedItem, setIsSheetOpen, handleFormSubmit }: Pro
 }
 
 export default ProjectAdmin;
+
+    

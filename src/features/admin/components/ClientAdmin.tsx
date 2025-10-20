@@ -34,6 +34,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import MediaAdmin from './MediaAdmin';
+import type { AppUser } from '@/firebase/auth/use-user';
 
 interface Client {
   id: string;
@@ -142,8 +143,9 @@ export default function ClientAdmin() {
   const { user } = useUser();
   const { toast } = useToast();
 
-  const isSuperAdmin = user?.email === 'eljabbaryhicham@example.com';
-  const canEdit = isSuperAdmin || (user?.permissions?.canEditAbout ?? true); 
+  const typedUser = user as AppUser | null;
+  const isSuperAdmin = typedUser?.email === 'eljabbaryhicham@example.com';
+  const canEdit = isSuperAdmin || (typedUser?.permissions?.canEditAbout ?? true); 
 
   const clientsQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'clients'), orderBy('order')) : null, [firestore]);
   const { data: clients, isLoading } = useCollection<Client>(clientsQuery);

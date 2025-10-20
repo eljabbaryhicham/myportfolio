@@ -4,6 +4,7 @@
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { useAuth, useUser } from '@/firebase';
+import type { AppUser } from '@/firebase/auth/use-user';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import { signOut } from 'firebase/auth';
@@ -44,12 +45,13 @@ function AdminPage() {
   const [newlyUploadedId, setNewlyUploadedId] = useState<string | null>(null);
   const [dialogActiveTab, setDialogActiveTab] = useState<'images' | 'videos'>('images');
 
-  const isSuperAdmin = user?.email === 'eljabbaryhicham@example.com';
+  const typedUser = user as AppUser | null;
+  const isSuperAdmin = typedUser?.email === 'eljabbaryhicham@example.com';
   
-  const canEditHome = isSuperAdmin || (user?.permissions?.canEditHome ?? true);
-  const canEditProjects = isSuperAdmin || (user?.permissions?.canEditProjects ?? true);
-  const canEditAbout = isSuperAdmin || (user?.permissions?.canEditAbout ?? true);
-  const canEditContact = isSuperAdmin || (user?.permissions?.canEditContact ?? true);
+  const canEditHome = isSuperAdmin || (typedUser?.permissions?.canEditHome ?? true);
+  const canEditProjects = isSuperAdmin || (typedUser?.permissions?.canEditProjects ?? true);
+  const canEditAbout = isSuperAdmin || (typedUser?.permissions?.canEditAbout ?? true);
+  const canEditContact = isSuperAdmin || (typedUser?.permissions?.canEditContact ?? true);
   
   useEffect(() => {
     const savedTab = localStorage.getItem('adminActiveTab');
@@ -194,7 +196,7 @@ function AdminPage() {
             <div className="text-center md:text-left">
               <h1 className="text-2xl md:text-4xl font-bold tracking-tight">Admin Panel</h1>
               <p className="mt-2 text-md md:text-lg text-foreground/70 break-all">
-                Welcome, {user.username || user.email?.split('@')[0]}!
+                Welcome, {typedUser?.username || typedUser?.email?.split('@')[0]}!
               </p>
             </div>
             <div className="flex items-center gap-2 md:gap-4 flex-wrap justify-center">
