@@ -12,6 +12,8 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faHouse, faImage, faCircleInfo, faEnvelope, faShieldHalved } from "@fortawesome/free-solid-svg-icons";
 import Logo from "../logo";
 import { doc } from "firebase/firestore";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+
 
 const navItems = [
   { href: "/", label: "Home", icon: faHouse, public: true },
@@ -42,49 +44,32 @@ export function AppNav() {
     const isActive = item.href === "/" ? pathname === item.href : pathname.startsWith(item.href);
     const isAdminButton = item.label === 'Admin';
 
-    if (isAdminButton) {
-      return (
-         <Link
-          key={item.label}
-          href={item.href}
-          className={cn(
-            "group relative flex items-center justify-center rounded-md transition-all duration-300 hover:scale-110",
-            "h-12 w-12 text-white",
-            isActive
-              ? "bg-green-500 scale-110 animate-green-glow"
-              : "bg-green-500/80 hover:bg-green-500",
-          )}
-        >
-          <FontAwesomeIcon icon={item.icon} className="h-7 w-7 transition-transform duration-300" />
-          <span className={cn(
-              "absolute whitespace-nowrap rounded-md bg-card px-3 py-1.5 text-sm font-medium text-card-foreground opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none",
-              isMobile ? "bottom-full mb-2" : "left-full ml-4"
-          )}>
-            {item.label}
-          </span>
-        </Link>
-      )
-    }
-
     return (
-      <Link
-        key={item.label}
-        href={item.href}
-        className={cn(
-          "group relative flex h-10 w-10 items-center justify-center rounded-md transition-all duration-300 hover:scale-110",
-          isActive
-            ? "bg-destructive text-destructive-foreground scale-110 animate-glow"
-            : "text-foreground/70 glass-effect",
-        )}
-      >
-        <FontAwesomeIcon icon={item.icon} className="h-6 w-6 transition-transform duration-300" />
-        <span className={cn(
-            "absolute whitespace-nowrap rounded-md bg-card px-3 py-1.5 text-sm font-medium text-card-foreground opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none",
-            isMobile ? "bottom-full mb-2" : "left-full ml-4"
-        )}>
-          {item.label}
-        </span>
-      </Link>
+      <TooltipProvider delayDuration={0}>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Link
+              href={item.href}
+              className={cn(
+                "group relative flex items-center justify-center rounded-md transition-all duration-300 hover:scale-110",
+                "h-12 w-12 text-white",
+                isActive
+                  ? isAdminButton
+                    ? "bg-green-500 scale-110 animate-green-glow"
+                    : "bg-destructive text-destructive-foreground scale-110 animate-glow"
+                  : isAdminButton
+                    ? "bg-green-500/80 hover:bg-green-500"
+                    : "text-foreground/70 glass-effect",
+              )}
+            >
+              <FontAwesomeIcon icon={item.icon} className="h-7 w-7 transition-transform duration-300" />
+            </Link>
+          </TooltipTrigger>
+          <TooltipContent side={isMobile ? "top" : "left"} className="bg-card text-card-foreground">
+            <p>{item.label}</p>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
     );
   };
   
