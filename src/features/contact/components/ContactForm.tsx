@@ -178,5 +178,3 @@ export default function ContactForm({ onSuccess, defaultMessage = '' }: ContactF
     </div>
   );
 }
-
-    
