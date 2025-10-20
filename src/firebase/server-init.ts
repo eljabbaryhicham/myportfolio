@@ -19,9 +19,9 @@ let serverApp: admin.app.App | null = null;
  * - FIREBASE_PRIVATE_KEY
  * - FIREBASE_DATABASE_URL
  *
- * @returns {admin.app.App} The initialized Firebase Admin App instance.
+ * @returns {Promise<admin.app.App>} A promise that resolves to the initialized Firebase Admin App instance.
  */
-export function initializeServerApp(): admin.app.App {
+export async function initializeServerApp(): Promise<admin.app.App> {
   if (serverApp) {
     return serverApp;
   }
