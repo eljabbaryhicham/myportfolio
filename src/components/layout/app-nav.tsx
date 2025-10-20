@@ -101,10 +101,10 @@ export function AppNav() {
           "flex h-full flex-row items-center justify-between px-4 rounded-lg border border-border/50 glass-effect"
           )}>
           <nav className="flex h-full flex-1 justify-around items-center gap-2">
-            {regularItems.map(item => <div key={item.href} className="flex h-full items-center justify-center">{renderNavItem(item)}</div>)}
+            {regularItems.map(item => <div key={item.href} className="flex h-full items-center justify-center p-1">{renderNavItem(item)}</div>)}
           </nav>
           {user && adminItem && (
-            <div className="h-full flex-shrink-0">
+            <div className="h-full flex-shrink-0 p-1">
                 {renderNavItem(adminItem)}
             </div>
           )}
