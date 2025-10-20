@@ -200,7 +200,7 @@ function AdminPage() {
                   <TabsTrigger value="projects">Projects</TabsTrigger>
                   <TabsTrigger value="about">About & Clients</TabsTrigger>
                   <TabsTrigger value="contact">Contact</TabsTrigger>
-                  <TabsTrigger value="media" className="bg-secondary text-secondary-foreground data-[state=active]:bg-destructive data-[state=active]:text-destructive-foreground">Media</TabsTrigger>
+                  <TabsTrigger value="media" className="bg-green-500/20 text-white data-[state=active]:bg-green-500/80 data-[state=active]:animate-green-glow">Media</TabsTrigger>
                   {isSuperAdmin && <TabsTrigger value="admins" className="bg-green-500/20 text-white data-[state=active]:bg-green-500/80 data-[state=active]:animate-green-glow">Admins</TabsTrigger>}
               </TabsList>
             </div>
@@ -259,3 +259,5 @@ function AdminPage() {
 }
 
 export default AdminPage;
+
+    
