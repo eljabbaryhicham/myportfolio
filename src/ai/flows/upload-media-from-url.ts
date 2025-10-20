@@ -8,12 +8,18 @@ import { z } from 'genkit';
 import { v2 as cloudinary } from 'cloudinary';
 import { collection, addDoc } from 'firebase/firestore';
 import { initializeFirebase } from '@/firebase';
+import dotenv from 'dotenv';
+import path from 'path';
+
+// Explicitly load environment variables from the root .env file
+dotenv.config({ path: path.resolve(process.cwd(), '.env') });
+
 
 // Configure Cloudinary with environment variables for server-side actions
 // These are loaded from .env by the Next.js server environment.
-cloudinary.config({ 
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME, 
-  api_key: process.env.CLOUDINARY_API_KEY, 
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
   api_secret: process.env.CLOUDINARY_API_SECRET,
   secure: true
 });
@@ -53,7 +59,7 @@ export async function uploadMediaFromUrl(
             return { success: false, message: errorMessage };
         }
     }
-    
+
     // If all checks pass, proceed with the flow
     return await uploadMediaFromUrlFlow(input);
 }
@@ -91,9 +97,9 @@ const uploadMediaFromUrlFlow = ai.defineFlow(
         created_at: uploadResult.created_at,
         filename: filename || uploadResult.public_id, // Use filename from URL or fallback to public_id
       };
-      
+
       const docRef = await addDoc(collection(firestore, 'media'), mediaData);
-      
+
       console.log('Firestore document written with ID:', docRef.id);
 
       return {
@@ -104,7 +110,7 @@ const uploadMediaFromUrlFlow = ai.defineFlow(
       };
     } catch (error: any) {
       console.error('Error in uploadMediaFromUrlFlow:', error);
-      
+
       // Determine if it's a Cloudinary error or another type
       let errorMessage = 'An unexpected error occurred.';
       if (error.http_code && error.message) {
@@ -113,7 +119,7 @@ const uploadMediaFromUrlFlow = ai.defineFlow(
       } else if (error.message) {
         errorMessage = error.message;
       }
-      
+
       return {
         success: false,
         message: errorMessage,
