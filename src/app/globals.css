@@ -113,6 +113,12 @@
     background-size: cover !important;
   }
 
+  .plyr.plyr--poster-visible .plyr__video-wrapper .plyr__poster {
+    display: block !important;
+    opacity: 1 !important;
+    z-index: 2 !important;
+  }
+
   .plyr__video-wrapper .plyr__poster {
     background-size: cover !important;
   }

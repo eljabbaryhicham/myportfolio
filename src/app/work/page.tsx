@@ -610,7 +610,7 @@ export default function WorkPage() {
                                   onClick={() => setDetailsModalOpen(true)}
                                 >
                                   <FontAwesomeIcon icon={faUpDown} className="mr-2" />
-                                  Show Details
+                                  Show Project Details
                                 </Button>
                             )}
                             <Button

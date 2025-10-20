@@ -123,18 +123,32 @@ const VideoPlayer = ({
       // Forcefully set the poster after initialization to ensure it's displayed.
       if (poster) {
         plyrPlayer.once('ready', () => {
-          (plyrPlayer.elements.poster as HTMLElement).style.backgroundImage = `url(${poster})`;
+          const posterElement = plyrPlayer.elements.poster as HTMLElement;
+          if (posterElement) {
+            posterElement.style.backgroundImage = `url(${poster})`;
+            // Keep the poster visible until play is pressed
+            plyrPlayer.elements.container.classList.add('plyr--poster-visible');
+          }
+          if (onReady) {
+            onReady();
+          }
         });
+
+        // Hide poster on play
+        plyrPlayer.on('play', () => {
+          plyrPlayer.elements.container.classList.remove('plyr--poster-visible');
+        });
+        
         // Also update it if the source changes
         plyrPlayer.on('sourcechange', () => {
-            if (plyrPlayer.elements.poster) {
-                (plyrPlayer.elements.poster as HTMLElement).style.backgroundImage = `url(${poster})`;
+            const posterElement = plyrPlayer.elements.poster as HTMLElement;
+            if (posterElement) {
+                posterElement.style.backgroundImage = `url(${poster})`;
+                plyrPlayer.elements.container.classList.add('plyr--poster-visible');
             }
         });
-      }
-      
-      if (onReady) {
-        plyrPlayer.on('ready', onReady);
+      } else if (onReady) {
+        plyrPlayer.once('ready', onReady);
       }
 
       return () => {
