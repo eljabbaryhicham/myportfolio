@@ -54,11 +54,11 @@ export function AppNav() {
           isActive
             ? isAdminButton
               ? "bg-green-500"
-              : "bg-destructive text-destructive-foreground animate-glow"
+              : "bg-destructive text-destructive-foreground shadow-[0_0_15px_hsl(var(--primary)/0.8),_0_0_20px_hsl(var(--primary)/0.6)]"
             : isAdminButton
               ? "bg-green-500/80 hover:bg-green-500"
               : "text-foreground/70 glass-effect",
-           isActive && isAdminButton && "animate-green-glow",
+           isActive && isAdminButton && "shadow-[0_0_15px_#22c55e80,_0_0_20px_#22c55e60]",
         )}
       >
         <FontAwesomeIcon icon={item.icon} className={cn("transition-transform duration-300 h-[50%] w-[50%]")} />

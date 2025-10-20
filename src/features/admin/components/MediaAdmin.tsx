@@ -205,13 +205,13 @@ export default function MediaAdmin(props: MediaAdminProps) {
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
     // --- IMPORTANT ---
     // The credentials below are hardcoded to ensure functionality.
-    // For a production environment, you MUST move these to a secure
-    // environment variable management system (e.g., .env.local).
     const cloudName = 'da1srnoer';
     // This is an unsigned upload preset. You can create your own in your Cloudinary settings.
-    const uploadPreset = 'your_unsigned_upload_preset';
+    // For this to work, you MUST create an "unsigned" upload preset in your Cloudinary
+    // account settings and name it 'belofted' or change the name here.
+    const uploadPreset = 'belofted';
     
-    if (!cloudName || !uploadPreset || uploadPreset === 'your_unsigned_upload_preset') {
+    if (!cloudName || !uploadPreset) {
       toast({
         variant: 'destructive',
         title: 'Configuration Error',
