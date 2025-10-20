@@ -147,6 +147,9 @@
   .blob-3 {
     animation: blob-anim-3 12s infinite;
   }
+  .blob-4 {
+    animation: blob-anim-4 20s infinite;
+  }
 }
 
 @keyframes blob-anim-1 {
@@ -191,6 +194,21 @@
   }
   75% {
     transform: translate(5vw, -20vh) scale(1);
+  }
+}
+
+@keyframes blob-anim-4 {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+  }
+  25% {
+    transform: translate(-10vw, 20vh) scale(1.05);
+  }
+  50% {
+    transform: translate(15vw, 10vh) scale(0.95);
+  }
+  75% {
+    transform: translate(0vw, -25vh) scale(1);
   }
 }
 
