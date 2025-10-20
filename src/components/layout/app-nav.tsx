@@ -91,7 +91,7 @@ export function AppNav() {
   if (isMobile) {
     return (
       <motion.div
-        className="w-full flex-shrink-0 px-2 pt-0 md:p-4"
+        className="w-full flex-shrink-0 p-2 md:p-4"
         initial={{ y: '100%' }}
         animate={{ y: 0 }}
         transition={{ type: 'spring', stiffness: 80, damping: 15 }}
@@ -114,13 +114,13 @@ export function AppNav() {
 
   return (
     <motion.aside
-      className="w-full md:w-28 flex-shrink-0 p-0 md:p-4 mt-2 md:mt-0 h-auto md:h-auto"
+      className="w-full md:w-auto flex-shrink-0 p-0 md:p-2"
       initial={{ x: '100%' }}
       animate={{ x: 0 }}
       transition={{ type: 'spring', stiffness: 80, damping: 20 }}
     >
       <div className={cn(
-        "flex h-full flex-row md:flex-col items-center justify-between rounded-lg border border-border/50 px-4 py-2 md:p-4 glass-effect"
+        "flex h-full flex-row md:flex-col items-center justify-between rounded-lg border border-border/50 px-2 py-2 md:p-4 glass-effect"
         )}>
         <Link href="/" className="hidden md:flex items-center justify-center text-primary w-8 mt-4">
           <Logo src={logoUrl} />
