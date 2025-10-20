@@ -48,8 +48,8 @@ export function AppNav() {
       <Link
         href={item.href}
         className={cn(
-          "group relative flex items-center justify-center rounded-md transition-all duration-300 hover:scale-110",
-          "h-12 w-12 text-white",
+          "group relative flex items-center justify-center rounded-md transition-all duration-300 hover:scale-110 aspect-square",
+          "h-full p-2 text-white", // Use h-full to fill vertical space, p-2 for padding
           isActive
             ? isAdminButton
               ? "bg-green-500 scale-110"
@@ -57,10 +57,11 @@ export function AppNav() {
             : isAdminButton
               ? "bg-green-500/80 hover:bg-green-500"
               : "text-foreground/70 glass-effect",
-           isActive && isAdminButton && "animate-green-glow"
+           isActive && isAdminButton && "animate-green-glow",
+           isMobile ? "h-full" : "h-12 w-12" // On mobile, height is 100% of parent, on desktop fixed size
         )}
       >
-        <FontAwesomeIcon icon={item.icon} className="h-7 w-7 transition-transform duration-300" />
+        <FontAwesomeIcon icon={item.icon} className={cn("transition-transform duration-300", isMobile ? "h-[50%] w-[50%]" : "h-7 w-7")} />
       </Link>
     );
 
@@ -95,11 +96,11 @@ export function AppNav() {
         <div className={cn(
           "flex h-full flex-row items-center justify-between px-4 rounded-lg border border-border/50 glass-effect"
           )}>
-          <nav className="flex flex-1 justify-around items-center">
-            {regularItems.map(item => <div key={item.href}>{renderNavItem(item)}</div>)}
+          <nav className="flex flex-1 justify-around items-center h-full gap-2">
+            {regularItems.map(item => <div key={item.href} className="h-full py-2">{renderNavItem(item)}</div>)}
           </nav>
           {user && adminItem && (
-            <div className="flex-shrink-0">
+            <div className="flex-shrink-0 h-full py-2">
                 {renderNavItem(adminItem)}
             </div>
           )}
