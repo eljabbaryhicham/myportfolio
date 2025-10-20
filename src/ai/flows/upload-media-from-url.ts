@@ -45,7 +45,7 @@ const uploadMediaFromUrlFlow = ai.defineFlow(
     inputSchema: UploadMediaFromUrlInputSchema,
     outputSchema: UploadMediaFromUrlOutputSchema,
   },
-  async (input) => {
+  async (input): Promise<UploadMediaFromUrlOutput> => {
     try {
       if (
         !process.env.CLOUDINARY_CLOUD_NAME ||
@@ -58,6 +58,8 @@ const uploadMediaFromUrlFlow = ai.defineFlow(
         return {
           success: false,
           message: errorMessage,
+          mediaId: undefined,
+          resource_type: undefined,
         };
       }
 
@@ -130,6 +132,8 @@ const uploadMediaFromUrlFlow = ai.defineFlow(
       return {
         success: false,
         message: errorMessage,
+        mediaId: undefined,
+        resource_type: undefined,
       };
     }
   }

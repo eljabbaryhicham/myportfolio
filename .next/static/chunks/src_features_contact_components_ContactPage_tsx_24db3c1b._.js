@@ -6,8 +6,8 @@ var { g: global, __dirname } = __turbopack_context__;
 {
 __turbopack_context__.v((parentImport) => {
     return Promise.all([
-  "static/chunks/src_f778201e._.js",
-  "static/chunks/node_modules_b4144745._.js",
+  "static/chunks/src_3902bf5a._.js",
+  "static/chunks/node_modules_9b475dca._.js",
   "static/chunks/src_features_contact_components_ContactPage_tsx_f23c4f7b._.js"
 ].map((chunk) => __turbopack_context__.l(chunk))).then(() => {
         return parentImport("[project]/src/features/contact/components/ContactPage.tsx [app-client] (ecmascript, next/dynamic entry)");
