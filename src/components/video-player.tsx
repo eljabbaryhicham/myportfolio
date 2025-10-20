@@ -80,6 +80,14 @@ const VideoPlayer = ({
       wrapper.appendChild(videoElement);
       
       const useThumbnails = !isMobile && !!previewThumbnailsSrc;
+      
+      if (useThumbnails) {
+          const script = document.createElement('script');
+          script.src = 'https://cdn.rawgit.com/pwamp/vtt.js/master/vtt.min.js';
+          script.async = true;
+          document.body.appendChild(script);
+      }
+
 
       const options: Options = {
           autoplay: autoplay || false,
