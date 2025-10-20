@@ -48,12 +48,12 @@ export function AppNav() {
       <Link
         href={item.href}
         className={cn(
-          "group relative flex items-center justify-center rounded-full transition-all duration-300 hover:scale-110",
-          "p-2 text-white aspect-square", 
+          "group relative flex items-center justify-center rounded-full transition-all duration-300 hover:scale-110 aspect-square",
+          "text-white", 
           isActive
             ? isAdminButton
-              ? "bg-green-500 scale-110"
-              : "bg-destructive text-destructive-foreground scale-110 animate-glow"
+              ? "bg-green-500"
+              : "bg-destructive text-destructive-foreground animate-glow"
             : isAdminButton
               ? "bg-green-500/80 hover:bg-green-500"
               : "text-foreground/70 glass-effect",
@@ -98,10 +98,10 @@ export function AppNav() {
         transition={{ type: 'spring', stiffness: 80, damping: 15 }}
       >
         <div className={cn(
-          "flex h-full flex-row items-center justify-between px-4 rounded-lg border border-border/50 glass-effect"
+          "flex h-full flex-row items-center justify-between px-2 rounded-lg border border-border/50 glass-effect"
           )}>
-          <nav className="flex h-full flex-1 justify-around items-center gap-2">
-            {regularItems.map(item => <div key={item.href} className="flex h-full items-center justify-center p-1">{renderNavItem(item)}</div>)}
+          <nav className="flex h-full flex-1 justify-around items-center gap-1 p-1">
+            {regularItems.map(item => <div key={item.href} className="flex h-full items-center justify-center">{renderNavItem(item)}</div>)}
           </nav>
           {user && adminItem && (
             <div className="h-full flex-shrink-0 p-1">
