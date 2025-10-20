@@ -47,7 +47,7 @@ export async function uploadMediaFromUrl(
 
     for (const envVar of requiredEnvVars) {
         if (!process.env[envVar] || process.env[envVar]?.startsWith('YOUR_')) {
-            const errorMessage = `Server configuration error: The ${envVar} environment variable is not set correctly. Please add it to your .env.local file.`;
+            const errorMessage = `Server configuration error: The ${envVar} environment variable is not set correctly. Please add it to your .env file.`;
             console.error(errorMessage);
             return { success: false, message: errorMessage };
         }
