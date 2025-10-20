@@ -6,48 +6,43 @@ import admin from 'firebase-admin';
 // IMPORTANT: This file is for server-side use only.
 // It uses the Firebase Admin SDK and should never be exposed to the client.
 
-// A cache to ensure we don't re-initialize the app on every server-side call.
-let serverApp: admin.app.App | null = null;
-
 /**
- * Initializes the Firebase Admin SDK for server-side operations.
+ * Initializes the Firebase Admin SDK for server-side operations if not already initialized.
  * It is idempotent and will only initialize the app once.
  *
  * It requires environment variables to be set up:
  * - FIREBASE_PROJECT_ID
  * - FIREBASE_CLIENT_EMAIL
  * - FIREBASE_PRIVATE_KEY
- * - FIREBASE_DATABASE_URL
  *
  * @returns {Promise<admin.app.App>} A promise that resolves to the initialized Firebase Admin App instance.
  */
 export async function initializeServerApp(): Promise<admin.app.App> {
-  if (serverApp) {
-    return serverApp;
+  // Use the SDK's built-in check to prevent re-initialization
+  if (admin.apps.length > 0) {
+    return admin.app();
   }
 
   const projectId = process.env.FIREBASE_PROJECT_ID;
   const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
-  // Replace the literal '\n' characters with actual newlines
+  // Replace the literal '\\n' characters with actual newlines
   const privateKey = process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n');
-  const databaseURL = process.env.FIREBASE_DATABASE_URL;
 
-  if (!projectId || !clientEmail || !privateKey || !databaseURL) {
-    throw new Error('One or more required Firebase Admin environment variables are not set.');
+  if (!projectId || !clientEmail || !privateKey) {
+    throw new Error('Required Firebase Admin environment variables (PROJECT_ID, CLIENT_EMAIL, PRIVATE_KEY) are not set.');
   }
 
   try {
-    serverApp = admin.initializeApp({
+    const app = admin.initializeApp({
       credential: admin.credential.cert({
         projectId,
         clientEmail,
         privateKey,
       }),
-      databaseURL,
     });
 
     console.log("Firebase Admin SDK initialized successfully.");
-    return serverApp;
+    return app;
 
   } catch (error) {
     console.error("Failed to initialize Firebase Admin SDK.", error);
