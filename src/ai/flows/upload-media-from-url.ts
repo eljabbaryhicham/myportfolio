@@ -5,8 +5,8 @@
  */
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
-import { collection, addDoc } from 'firebase/firestore';
-import { initializeFirebase } from '@/firebase';
+import { getFirestore as getAdminFirestore } from 'firebase-admin/firestore';
+import { initializeServerApp } from '@/firebase/server-init';
 
 const UploadMediaFromUrlInputSchema = z.object({
   mediaUrl: z.string().url(),
@@ -68,8 +68,9 @@ const uploadMediaFromUrlFlow = ai.defineFlow(
 
       console.log('Cloudinary upload successful:', uploadResult);
 
-      // 2. Save metadata to Firestore
-      const { firestore } = initializeFirebase();
+      // 2. Initialize Firebase Admin SDK and save metadata to Firestore
+      const serverApp = initializeServerApp();
+      const firestore = getAdminFirestore(serverApp);
       const filename = input.mediaUrl.substring(input.mediaUrl.lastIndexOf('/') + 1);
 
       const mediaData = {
@@ -80,7 +81,7 @@ const uploadMediaFromUrlFlow = ai.defineFlow(
         filename: filename || uploadResult.public_id, // Use filename from URL or fallback to public_id
       };
 
-      const docRef = await addDoc(collection(firestore, 'media'), mediaData);
+      const docRef = await firestore.collection('media').add(mediaData);
 
       console.log('Firestore document written with ID:', docRef.id);
 
