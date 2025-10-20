@@ -1,9 +1,10 @@
+
 'use client';
 
 import React, { useEffect, useRef } from 'react';
 import Plyr, { Options, SourceInfo } from 'plyr';
 import 'plyr-react/plyr.css';
-import { useIsMobile } from '@/hooks/use-is-mobile';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface VideoPlayerProps {
   source: SourceInfo;
