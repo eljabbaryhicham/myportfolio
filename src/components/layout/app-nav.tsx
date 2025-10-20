@@ -45,7 +45,7 @@ export function AppNav() {
     const isAdminButton = item.label === 'Admin';
 
     return (
-      <TooltipProvider delayDuration={0}>
+      <TooltipProvider key={item.href} delayDuration={0}>
         <Tooltip>
           <TooltipTrigger asChild>
             <Link
@@ -65,7 +65,7 @@ export function AppNav() {
               <FontAwesomeIcon icon={item.icon} className="h-7 w-7 transition-transform duration-300" />
             </Link>
           </TooltipTrigger>
-          <TooltipContent side={isMobile ? "top" : "right"} className="bg-card text-card-foreground">
+          <TooltipContent side={isMobile ? "top" : "right"} className="glass-effect text-foreground rounded-md">
             <p>{item.label}</p>
           </TooltipContent>
         </Tooltip>
