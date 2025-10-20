@@ -3,7 +3,6 @@
 /**
  * @fileOverview A Genkit flow for uploading media from a URL to Cloudinary and saving to Firestore.
  */
-import 'dotenv/config';
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
 import { v2 as cloudinary } from 'cloudinary';
@@ -33,7 +32,7 @@ export type UploadMediaFromUrlOutput = z.infer<typeof UploadMediaFromUrlOutputSc
 
 /**
  * A server-side function to handle the upload process.
- * This is a wrapper around the Genkit flow.
+ * This is a wrapper around the Genkit flow that includes environment variable validation.
  * @param input The media URL.
  * @returns A promise that resolves with the result of the upload.
  */
@@ -50,10 +49,12 @@ export async function uploadMediaFromUrl(
         if (!process.env[envVar]) {
             const errorMessage = `Server configuration error: The ${envVar} environment variable is not set.`;
             console.error(errorMessage);
+            // Return a structured error to the client
             return { success: false, message: errorMessage };
         }
     }
     
+    // If all checks pass, proceed with the flow
     return await uploadMediaFromUrlFlow(input);
 }
 
