@@ -19,8 +19,8 @@ export function ConditionalLayout({ children }: { children: React.ReactNode }) {
           exit={{ opacity: 0 }}
           transition={{ duration: 0.5 }}
         >
-          <main className="h-full w-full glass-effect rounded-lg border border-border/50">
-            <div className="h-full w-full">
+          <main className="h-full w-full glass-effect rounded-lg border border-border/50 overflow-hidden">
+            <div className="h-full w-full overflow-auto">
               {children}
             </div>
           </main>
@@ -38,8 +38,8 @@ export function ConditionalLayout({ children }: { children: React.ReactNode }) {
         exit={{ opacity: 0 }}
         transition={{ duration: 0.5 }}
       >
-        <main className="flex-1 w-full h-[80%] md:h-full glass-effect rounded-lg border border-border/50 flex flex-col">
-          <div className="h-full w-full">
+        <main className="flex-1 w-full h-[80%] md:h-full glass-effect rounded-lg border border-border/50 flex flex-col overflow-hidden">
+          <div className="h-full w-full overflow-auto">
             {children}
           </div>
         </main>
