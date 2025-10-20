@@ -200,8 +200,8 @@ function AdminPage() {
                   <TabsTrigger value="projects" className="glass-effect data-[state=active]:bg-destructive">Projects</TabsTrigger>
                   <TabsTrigger value="about" className="glass-effect data-[state=active]:bg-destructive">About & Clients</TabsTrigger>
                   <TabsTrigger value="contact" className="glass-effect data-[state=active]:bg-destructive">Contact</TabsTrigger>
-                  <TabsTrigger value="media" className="bg-blue-900 text-white data-[state=active]:bg-green-500/80 data-[state=active]:animate-green-glow">Media</TabsTrigger>
-                  {isSuperAdmin && <TabsTrigger value="admins" className="bg-blue-900 text-white data-[state=active]:bg-green-500/80 data-[state=active]:animate-green-glow">Admins</TabsTrigger>}
+                  <TabsTrigger value="media" className="bg-blue-900 text-white data-[state=active]:bg-destructive data-[state=active]:animate-glow">Media</TabsTrigger>
+                  {isSuperAdmin && <TabsTrigger value="admins" className="bg-blue-900 text-white data-[state=active]:bg-destructive data-[state=active]:animate-glow">Admins</TabsTrigger>}
               </TabsList>
             </div>
               <Separator className="bg-white/10 mt-4" />
@@ -261,5 +261,8 @@ function AdminPage() {
 export default AdminPage;
 
     
+
+    
+
 
     
