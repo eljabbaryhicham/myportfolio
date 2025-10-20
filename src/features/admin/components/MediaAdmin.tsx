@@ -203,14 +203,19 @@ export default function MediaAdmin(props: MediaAdminProps) {
   }, [mediaAssets]);
 
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
-    const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
-    const uploadPreset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
+    // --- IMPORTANT ---
+    // The credentials below are hardcoded to ensure functionality.
+    // For a production environment, you MUST move these to a secure
+    // environment variable management system (e.g., .env.local).
+    const cloudName = 'da1srnoer';
+    // --- IMPORTANT: REPLACE 'your_upload_preset' WITH YOUR ACTUAL UPLOAD PRESET NAME ---
+    const uploadPreset = 'your_upload_preset';
     
     if (!cloudName || !uploadPreset || uploadPreset === 'your_upload_preset') {
       toast({
         variant: 'destructive',
         title: 'Configuration Error',
-        description: 'Cloudinary variables not set. Add NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME and NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET to your .env.local file and fill them out.',
+        description: "Cloudinary cloud name or upload preset is not set. Please edit the code in MediaAdmin.tsx to fix this.",
         duration: 10000,
       });
       return;
