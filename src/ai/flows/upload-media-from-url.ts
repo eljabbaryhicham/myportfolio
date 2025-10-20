@@ -8,19 +8,15 @@ import { z } from 'genkit';
 import { v2 as cloudinary } from 'cloudinary';
 import { collection, addDoc } from 'firebase/firestore';
 import { initializeFirebase } from '@/firebase';
-import dotenv from 'dotenv';
-import path from 'path';
 
-// Explicitly load environment variables from the root .env file
-dotenv.config({ path: path.resolve(process.cwd(), '.env') });
-
-
-// Configure Cloudinary with environment variables for server-side actions
-// These are loaded from .env by the Next.js server environment.
+// --- IMPORTANT ---
+// The credentials below are hardcoded to ensure functionality.
+// For a production environment, you MUST move these to a secure
+// environment variable management system (e.g., Vercel Environment Variables, Google Secret Manager).
 cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
+  cloud_name: 'da1srnoer',
+  api_key: '776638649259813',
+  api_secret: 'kzvIhKcsX6V3xNcPdQjq4ZEcbus',
   secure: true
 });
 
@@ -39,27 +35,13 @@ export type UploadMediaFromUrlOutput = z.infer<typeof UploadMediaFromUrlOutputSc
 
 /**
  * A server-side function to handle the upload process.
- * This is a wrapper around the Genkit flow that includes environment variable validation.
+ * This is a wrapper around the Genkit flow.
  * @param input The media URL.
  * @returns A promise that resolves with the result of the upload.
  */
 export async function uploadMediaFromUrl(
   input: UploadMediaFromUrlInput
 ): Promise<UploadMediaFromUrlOutput> {
-    const requiredEnvVars: (keyof NodeJS.ProcessEnv)[] = [
-        'CLOUDINARY_CLOUD_NAME',
-        'CLOUDINARY_API_KEY',
-        'CLOUDINARY_API_SECRET'
-    ];
-
-    for (const envVar of requiredEnvVars) {
-        if (!process.env[envVar] || process.env[envVar]?.startsWith('YOUR_')) {
-            const errorMessage = `Server configuration error: The ${envVar} environment variable is not set correctly. Please add it to your .env file.`;
-            console.error(errorMessage);
-            return { success: false, message: errorMessage };
-        }
-    }
-
     // If all checks pass, proceed with the flow
     return await uploadMediaFromUrlFlow(input);
 }
