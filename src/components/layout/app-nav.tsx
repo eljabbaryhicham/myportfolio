@@ -48,7 +48,7 @@ export function AppNav() {
       <Link
         href={item.href}
         className={cn(
-          "group relative flex items-center justify-center rounded-full transition-all duration-300 hover:scale-110 aspect-square",
+          "group relative flex h-full items-center justify-center rounded-full transition-all duration-300 hover:scale-110 aspect-square",
           "text-white", 
           isActive
             ? isAdminButton
@@ -58,7 +58,7 @@ export function AppNav() {
               ? "bg-green-500/80 hover:bg-green-500"
               : "text-foreground/70 glass-effect",
            isActive && isAdminButton && "animate-green-glow",
-           isMobile ? "h-full" : "h-9 w-9"
+           isMobile ? "" : "h-9 w-9"
         )}
       >
         <FontAwesomeIcon icon={item.icon} className={cn("transition-transform duration-300 h-[50%] w-[50%]")} />
@@ -91,8 +91,7 @@ export function AppNav() {
   if (isMobile) {
     return (
       <motion.div
-        className="fixed bottom-0 left-0 right-0 z-50"
-        style={{ margin: '2%', height: '7vh' }}
+        className="fixed bottom-0 left-0 right-0 z-50 m-[2%] h-[10vh] min-h-[60px] max-h-[90px]"
         initial={{ y: '100%' }}
         animate={{ y: 0 }}
         transition={{ type: 'spring', stiffness: 80, damping: 15 }}
