@@ -77,6 +77,7 @@ const VideoPlayer = ({
       const videoElement = document.createElement('video');
       videoElement.playsInline = true;
       videoElement.controls = controls;
+      videoElement.poster = poster || '';
       wrapper.appendChild(videoElement);
       
       const useThumbnails = !isMobile && !!previewThumbnailsSrc;
@@ -122,10 +123,7 @@ const VideoPlayer = ({
       if(source) {
           plyrPlayer.source = source;
       }
-      if(poster) {
-          videoElement.poster = poster;
-      }
-
+      
       if (onReady) {
         plyrPlayer.on('ready', onReady);
       }
@@ -142,7 +140,7 @@ const VideoPlayer = ({
       };
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isMobile, source?.sources[0]?.src, previewThumbnailsSrc]);
+  }, [isMobile, source?.sources[0]?.src, previewThumbnailsSrc, poster]);
   
   if (isMobile) {
     return <div ref={videoRef} className="w-full h-full object-contain" />;
