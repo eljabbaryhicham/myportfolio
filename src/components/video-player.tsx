@@ -1,7 +1,7 @@
 
 'use client';
 
-import React, { useEffect, useRef } from 'react';
+import React, 'useEffect', useRef } from 'react';
 import Plyr, { Options, SourceInfo } from 'plyr';
 import 'plyr-react/plyr.css';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -82,10 +82,14 @@ const VideoPlayer = ({
       const useThumbnails = !isMobile && !!previewThumbnailsSrc;
       
       if (useThumbnails) {
-          const script = document.createElement('script');
-          script.src = 'https://cdn.rawgit.com/pwamp/vtt.js/master/vtt.min.js';
-          script.async = true;
-          document.body.appendChild(script);
+          const scriptId = 'vtt-js-script';
+          if (!document.getElementById(scriptId)) {
+            const script = document.createElement('script');
+            script.id = scriptId;
+            script.src = 'https://cdn.rawgit.com/pwamp/vtt.js/master/vtt.min.js';
+            script.async = true;
+            document.body.appendChild(script);
+          }
       }
 
 
@@ -150,7 +154,7 @@ const VideoPlayer = ({
       };
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isMobile, source?.sources[0]?.src]);
+  }, [isMobile, source?.sources[0]?.src, previewThumbnailsSrc]);
   
   if (isMobile) {
     return <div ref={videoRef} className="w-full h-full object-contain" />;

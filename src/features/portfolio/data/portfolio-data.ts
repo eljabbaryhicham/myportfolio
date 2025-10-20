@@ -30,7 +30,7 @@ export const defaultPortfolioItems: PortfolioItem[] = [
         { src: 'https://cdn.plyr.io/static/demo/View_From_A_Blue_Moon_Trailer-720p.mp4', size: 720 },
         { src: 'https://cdn.plyr.io/static/demo/View_From_A_Blue_Moon_Trailer-576p.mp4', size: 576 },
     ],
-    previewThumbnailsSrc: 'https://cdn.plyr.io/static/demo/thumbs/100p.vtt',
+    previewThumbnailsSrc: 'https://cdn.plyr.io/static/demo/View_From_A_Blue_Moon_Trailer-Thumb.jpg',
     featured: true,
     details: `This project was created using a combination of Adobe After Effects and Cinema 4D. The goal was to create a visceral experience through motion. 
 
@@ -81,7 +81,7 @@ The process involved several stages, including a video compilation of the digita
         { src: 'https://cdn.plyr.io/static/demo/View_From_A_Blue_Moon_Trailer-720p.mp4', size: 720 },
         { src: 'https://cdn.plyr.io/static/demo/View_From_A_Blue_Moon_Trailer-576p.mp4', size: 576 },
     ],
-    previewThumbnailsSrc: 'https://cdn.plyr.io/static/demo/thumbs/100p.vtt',
+    previewThumbnailsSrc: 'https://cdn.plyr.io/static/demo/View_From_A_Blue_Moon_Trailer-Thumb.jpg',
     featured: false,
     order: 3,
   },
@@ -140,7 +140,7 @@ The process involved several stages, including a video compilation of the digita
         { src: 'https://cdn.plyr.io/static/demo/View_From_A_Blue_Moon_Trailer-720p.mp4', size: 720 },
         { src: 'https://cdn.plyr.io/static/demo/View_From_A_Blue_Moon_Trailer-576p.mp4', size: 576 },
     ],
-    previewThumbnailsSrc: 'https://cdn.plyr.io/static/demo/thumbs/100p.vtt',
+    previewThumbnailsSrc: 'https://cdn.plyr.io/static/demo/View_From_A_Blue_Moon_Trailer-Thumb.jpg',
     featured: false,
     order: 8,
   },
@@ -176,7 +176,7 @@ The process involved several stages, including a video compilation of the digita
     sources: [
         { src: 'https://cdn.plyr.io/static/demo/View_From_A_Blue_Moon_Trailer-576p.mp4', size: 576 },
     ],
-    previewThumbnailsSrc: 'https://cdn.plyr.io/static/demo/thumbs/100p.vtt',
+    previewThumbnailsSrc: 'https://cdn.plyr.io/static/demo/View_From_A_Blue_Moon_Trailer-Thumb.jpg',
     featured: false,
     order: 11,
   },
@@ -201,7 +201,7 @@ The process involved several stages, including a video compilation of the digita
     sources: [
       { src: 'https://cdn.plyr.io/static/demo/View_From_A_Blue_Moon_Trailer-720p.mp4', size: 720 },
     ],
-    previewThumbnailsSrc: 'https://cdn.plyr.io/static/demo/thumbs/100p.vtt',
+    previewThumbnailsSrc: 'https://cdn.plyr.io/static/demo/View_From_A_Blue_Moon_Trailer-Thumb.jpg',
     featured: true,
     order: 13,
   },
@@ -226,7 +226,7 @@ The process involved several stages, including a video compilation of the digita
     sources: [
       { src: 'https://cdn.plyr.io/static/demo/View_From_A_Blue_Moon_Trailer-576p.mp4', size: 576 },
     ],
-    previewThumbnailsSrc: 'https://cdn.plyr.io/static/demo/thumbs/100p.vtt',
+    previewThumbnailsSrc: 'https://cdn.plyr.io/static/demo/View_From_A_Blue_Moon_Trailer-Thumb.jpg',
     featured: false,
     order: 15,
   },
@@ -251,7 +251,7 @@ The process involved several stages, including a video compilation of the digita
     sources: [
       { src: 'https://cdn.plyr.io/static/demo/View_From_A_Blue_Moon_Trailer-720p.mp4', size: 720 },
     ],
-    previewThumbnailsSrc: 'https://cdn.plyr.io/static/demo/thumbs/100p.vtt',
+    previewThumbnailsSrc: 'https://cdn.plyr.io/static/demo/View_From_A_Blue_Moon_Trailer-Thumb.jpg',
     featured: false,
     order: 17,
   },
@@ -276,7 +276,7 @@ The process involved several stages, including a video compilation of the digita
     sources: [
       { src: 'https://cdn.plyr.io/static/demo/View_From_A_Blue_Moon_Trailer-576p.mp4', size: 576 },
     ],
-    previewThumbnailsSrc: 'https://cdn.plyr.io/static/demo/thumbs/100p.vtt',
+    previewThumbnailsSrc: 'https://cdn.plyr.io/static/demo/View_From_A_Blue_Moon_Trailer-Thumb.jpg',
     featured: false,
     order: 19,
   },
@@ -301,7 +301,7 @@ The process involved several stages, including a video compilation of the digita
     sources: [
       { src: 'https://cdn.plyr.io/static/demo/View_From_A_Blue_Moon_Trailer-1080p.mp4', size: 1080 },
     ],
-    previewThumbnailsSrc: 'https://cdn.plyr.io/static/demo/thumbs/100p.vtt',
+    previewThumbnailsSrc: 'https://cdn.plyr.io/static/demo/View_From_A_Blue_Moon_Trailer-Thumb.jpg',
     featured: false,
     order: 21,
   }
