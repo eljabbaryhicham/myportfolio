@@ -116,10 +116,10 @@ export default function AboutPage() {
                 </div>
                 
                 {clients && clients.length > 0 ? (
-                  <div className="group relative w-full overflow-hidden">
-                    <div className="flex animate-marquee group-hover:[animation-play-state:paused]">
+                  <div className="group relative w-full overflow-hidden whitespace-nowrap">
+                    <div className="inline-block animate-marquee group-hover:[animation-play-state:paused]">
                       {[...clients, ...clients].map((client, index) => (
-                        <div key={`${client.id}-${index}`} className="flex-shrink-0 mx-4 w-36">
+                        <div key={`${client.id}-${index}`} className="inline-flex flex-shrink-0 mx-4 w-36">
                             <div className="group/item flex flex-col items-center justify-center gap-2 cursor-pointer p-4">
                                 <div className="relative w-[150px] h-[40px]">
                                 <MemoizedImage

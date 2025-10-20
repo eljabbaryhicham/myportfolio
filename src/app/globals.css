@@ -232,10 +232,10 @@
     transform: translateX(0);
   }
   to {
-    transform: translateX(-50%);
+    transform: translateX(-100%);
   }
 }
 
 .animate-marquee {
-  animation: marquee 5s linear infinite;
+  animation: marquee 10s linear infinite;
 }
