@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useCallback, useState, useEffect, useMemo } from 'react';
@@ -8,7 +9,7 @@ import { useToast } from '@/hooks/use-toast';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import Image from 'next/image';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCloudUploadAlt, faCopy, faTrash, faFilm, faFileImage, faImages, faXmark, faPlus, faCheck, faEye, faFolderOpen } from '@fortawesome/free-solid-svg-icons';
+import { faCloudUploadAlt, faCopy, faTrash, faFilm, faFileImage, faImages, faXmark, faPlus, faCheck, faEye, faFolderOpen, faLink } from '@fortawesome/free-solid-svg-icons';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose, DialogDescription } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
@@ -18,6 +19,7 @@ import { collection, doc, query, orderBy, DocumentReference } from 'firebase/fir
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import VideoPlayer from '@/components/video-player';
 import { Separator } from '@/components/ui/separator';
+import AddFromUrlDialog from './AddFromUrlDialog';
 
 
 // Type for the media stored in Firestore
@@ -171,6 +173,7 @@ export default function MediaAdmin(props: MediaAdminProps) {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadingFileName, setUploadingFileName] = useState('');
   const [previewFile, setPreviewFile] = useState<MediaAsset | null>(null);
+  const [isAddFromUrlOpen, setIsAddFromUrlOpen] = useState(false);
 
   const activeTab = props.isDialog ? props.activeTab : 'images';
   const setActiveTab = props.isDialog ? props.setActiveTab : () => {};
@@ -331,6 +334,13 @@ export default function MediaAdmin(props: MediaAdminProps) {
         props.onMediaSelect(url, type, filename);
     }
   };
+  
+  const handleUrlUploadComplete = (mediaId: string) => {
+    if (props.isDialog === false && props.onUploadComplete) {
+      // The type isn't known here, so we might need a way to get it from the upload flow
+      props.onUploadComplete(mediaId, 'image'); // Default to image for now
+    }
+  };
 
 
   const renderLibrary = (assets: MediaAsset[], type: 'image' | 'video') => {
@@ -410,7 +420,7 @@ export default function MediaAdmin(props: MediaAdminProps) {
            <DialogDescription>Upload and manage your images and videos.</DialogDescription>
       </DialogHeader>
       <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'images' | 'videos')} className="flex-1 flex flex-col min-h-0">
-          <div className='px-4 pt-4'>
+          <div className='px-4 pt-4 flex justify-between items-center'>
             <TabsList>
                 <TabsTrigger value="images" className="py-2 px-4 text-base glass-effect data-[state=active]:bg-destructive">
                     <FontAwesomeIcon icon={faFileImage} className="mr-2" />
@@ -421,6 +431,10 @@ export default function MediaAdmin(props: MediaAdminProps) {
                     Videos
                 </TabsTrigger>
             </TabsList>
+            <Button onClick={() => setIsAddFromUrlOpen(true)} variant="outline" size="sm" disabled={!canUpload || isUploading}>
+                <FontAwesomeIcon icon={faLink} className="mr-2" />
+                Add from URL
+            </Button>
           </div>
           
           <ScrollArea className="flex-1">
@@ -471,6 +485,11 @@ export default function MediaAdmin(props: MediaAdminProps) {
               </DialogContent>
           </Dialog>
           {previewDialog}
+           <AddFromUrlDialog
+            isOpen={isAddFromUrlOpen}
+            onOpenChange={setIsAddFromUrlOpen}
+            onUploadComplete={handleUrlUploadComplete}
+          />
         </>
       );
   }
@@ -483,10 +502,16 @@ export default function MediaAdmin(props: MediaAdminProps) {
                 <h2 className="text-xl font-bold">Media Library</h2>
                 <p className="text-muted-foreground mt-1 text-sm">Upload and manage your images and videos.</p>
             </div>
-            <Button onClick={props.onLibraryOpenRequest} variant="outline" size="sm">
-                <FontAwesomeIcon icon={faFolderOpen} className="mr-2" />
-                Browse Full Library
-            </Button>
+            <div className="flex items-center gap-2">
+                 <Button onClick={() => setIsAddFromUrlOpen(true)} variant="outline" size="sm" disabled={!canUpload || isUploading}>
+                    <FontAwesomeIcon icon={faLink} className="mr-2" />
+                    Add from URL
+                </Button>
+                <Button onClick={props.onLibraryOpenRequest} variant="outline" size="sm">
+                    <FontAwesomeIcon icon={faFolderOpen} className="mr-2" />
+                    Browse Full Library
+                </Button>
+            </div>
         </div>
         <Separator className="bg-white/10" />
         <div className="border rounded-lg p-6 glass-effect">
@@ -508,6 +533,11 @@ export default function MediaAdmin(props: MediaAdminProps) {
         </div>
       </div>
       {previewDialog}
+      <AddFromUrlDialog
+        isOpen={isAddFromUrlOpen}
+        onOpenChange={setIsAddFromUrlOpen}
+        onUploadComplete={handleUrlUploadComplete}
+      />
     </>
   );
 }
