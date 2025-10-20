@@ -49,7 +49,7 @@ export function AppNav() {
         href={item.href}
         className={cn(
           "group relative flex items-center justify-center rounded-full transition-all duration-300 hover:scale-110",
-          "p-2 text-white", 
+          "p-2 text-white aspect-square", 
           isActive
             ? isAdminButton
               ? "bg-green-500 scale-110"
@@ -58,16 +58,16 @@ export function AppNav() {
               ? "bg-green-500/80 hover:bg-green-500"
               : "text-foreground/70 glass-effect",
            isActive && isAdminButton && "animate-green-glow",
-           isMobile ? "h-full aspect-square" : "h-9 w-9"
+           isMobile ? "h-full" : "h-9 w-9"
         )}
       >
-        <FontAwesomeIcon icon={item.icon} className={cn("transition-transform duration-300", isMobile ? "h-[50%] w-[50%]" : "h-[70%] w-[70%]")} />
+        <FontAwesomeIcon icon={item.icon} className={cn("transition-transform duration-300 h-[50%] w-[50%]")} />
       </Link>
     );
 
     if (isMobile) {
       return (
-        <div className="h-full flex items-center justify-center">
+        <div className="h-full flex items-center justify-center p-1">
             {navButton}
         </div>
       );
