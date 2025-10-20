@@ -33,6 +33,22 @@ interface AboutPageContent {
 
 const MemoizedImage = memo(Image);
 
+const ClientLogo = ({ client }: { client: Client }) => (
+    <div className="inline-flex flex-shrink-0 mx-4 w-36">
+        <div className="group/item flex flex-col items-center justify-center gap-2 cursor-pointer p-4">
+            <div className="relative w-[150px] h-[40px]">
+                <MemoizedImage
+                    src={client.logoUrl}
+                    alt={`${client.name} logo`}
+                    fill
+                    className="object-contain w-full h-10 grayscale brightness-0 invert transition-all duration-300 group-hover/item:filter-none"
+                />
+            </div>
+            <p className="text-sm text-white whitespace-nowrap transition-colors duration-300 group-hover/item:text-primary">{client.name}</p>
+        </div>
+    </div>
+);
+
 export default function AboutPage() {
   const firestore = useFirestore();
 
@@ -117,22 +133,9 @@ export default function AboutPage() {
                 
                 {clients && clients.length > 0 ? (
                   <div className="group relative w-full overflow-hidden whitespace-nowrap">
-                    <div className="inline-block animate-marquee group-hover:[animation-play-state:paused]">
-                      {[...clients, ...clients].map((client, index) => (
-                        <div key={`${client.id}-${index}`} className="inline-flex flex-shrink-0 mx-4 w-36">
-                            <div className="group/item flex flex-col items-center justify-center gap-2 cursor-pointer p-4">
-                                <div className="relative w-[150px] h-[40px]">
-                                <MemoizedImage
-                                    src={client.logoUrl}
-                                    alt={`${client.name} logo`}
-                                    fill
-                                    className="object-contain w-full h-10 grayscale brightness-0 invert transition-all duration-300 group-hover/item:filter-none"
-                                />
-                                </div>
-                                <p className="text-sm text-white whitespace-nowrap transition-colors duration-300 group-hover/item:text-primary">{client.name}</p>
-                            </div>
-                        </div>
-                      ))}
+                    <div className="animate-marquee group-hover:[animation-play-state:paused]">
+                      {clients.map((client) => <ClientLogo key={client.id} client={client} />)}
+                      {clients.map((client) => <ClientLogo key={`${client.id}-2`} client={client} />)}
                     </div>
                   </div>
                 ) : (
