@@ -5,7 +5,6 @@
  */
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
-import { v2 as cloudinary } from 'cloudinary';
 import { collection, addDoc } from 'firebase/firestore';
 import { initializeFirebase } from '@/firebase';
 
@@ -51,6 +50,7 @@ const uploadMediaFromUrlFlow = ai.defineFlow(
     // The credentials below are hardcoded to ensure functionality.
     // For a production environment, you MUST move these to a secure
     // environment variable management system (e.g., Vercel Environment Variables, Google Secret Manager).
+    const cloudinary = (await import('cloudinary')).v2;
     cloudinary.config({
       cloud_name: 'da1srnoer',
       api_key: '776638649259813',
