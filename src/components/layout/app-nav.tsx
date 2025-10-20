@@ -45,7 +45,6 @@ export function AppNav() {
 
     const navButton = (
       <Link
-        key={item.href}
         href={item.href}
         className={cn(
           "group relative flex items-center justify-center rounded-md transition-all duration-300 hover:scale-110",
@@ -69,7 +68,7 @@ export function AppNav() {
     }
 
     return (
-      <TooltipProvider>
+      <TooltipProvider key={item.href}>
         <Tooltip>
           <TooltipTrigger asChild>
             {navButton}
