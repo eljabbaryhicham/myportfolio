@@ -9,7 +9,7 @@ import { useToast } from '@/hooks/use-toast';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import Image from 'next/image';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCloudUploadAlt, faCopy, faTrash, faFilm, faFileImage, faImages, faXmark, faPlus, faCheck, faEye, faFolderOpen, faLink } from '@fortawesome/free-solid-svg-icons';
+import { faCloudUploadAlt, faCopy, faTrash, faFilm, faFileImage, faImages, faXmark, faPlus, faEye, faFolderOpen, faLink } from '@fortawesome/free-solid-svg-icons';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose, DialogDescription } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
@@ -88,7 +88,7 @@ const MediaFileCard = ({
         )}>
            {isSelectionMode ? (
               <div className="text-white text-center">
-                <FontAwesomeIcon icon={faCheck} className="h-8 w-8 mb-2" />
+                <FontAwesomeIcon icon={faImages} className="h-8 w-8 mb-2" />
                 <p className="font-bold">Select</p>
               </div>
             ) : (
@@ -210,7 +210,7 @@ export default function MediaAdmin(props: MediaAdminProps) {
       toast({
         variant: 'destructive',
         title: 'Configuration Error',
-        description: 'Cloudinary variables not set. Add NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME and NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET to your Vercel project settings.',
+        description: 'Cloudinary variables not set. Add NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME and NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET to your .env.local file and fill them out.',
         duration: 10000,
       });
       return;
