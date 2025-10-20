@@ -65,7 +65,7 @@ export function AppNav() {
     );
 
     if (isMobile) {
-      return <div key={item.href}>{renderNavItem(item)}</div>;
+      return navButton;
     }
 
     return (
