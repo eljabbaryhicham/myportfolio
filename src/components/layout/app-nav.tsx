@@ -98,7 +98,7 @@ export function AppNav() {
         <div className={cn(
           "flex h-full flex-row items-center justify-between px-4 rounded-lg border border-border/50 glass-effect"
           )}>
-          <nav className="flex flex-1 justify-center items-center gap-6">
+          <nav className="flex flex-1 justify-around items-center">
             {regularItems.map(renderNavItem)}
           </nav>
           {user && adminItem && (
