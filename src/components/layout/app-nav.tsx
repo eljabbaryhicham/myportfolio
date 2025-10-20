@@ -91,7 +91,7 @@ export function AppNav() {
   if (isMobile) {
     return (
       <motion.div
-        className="w-full flex-shrink-0 px-4 pb-4"
+        className="w-full flex-shrink-0 p-4"
         initial={{ y: '100%' }}
         animate={{ y: 0 }}
         transition={{ type: 'spring', stiffness: 80, damping: 15 }}
