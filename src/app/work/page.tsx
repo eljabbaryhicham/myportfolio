@@ -51,7 +51,6 @@ const PortfolioMedia = ({
   onFullscreenClick: (url: string) => void;
   onMediaLoaded: () => void;
 }) => {
-  const isMobile = useIsMobile();
 
   const videoSource = useMemo(() => {
     const youtubeRegex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
@@ -94,23 +93,6 @@ const PortfolioMedia = ({
 
 
   if (item.type === 'video' && videoSource) {
-    if (isMobile) {
-      // Use native HTML5 video player on mobile
-      return (
-        <div className="relative aspect-video bg-black flex items-center justify-center w-full">
-          <video
-            src={videoSource.sources[0].src}
-            poster={item.thumbnailUrl}
-            controls
-            playsInline
-            className="w-full h-full"
-            onLoadedData={onMediaLoaded}
-          />
-        </div>
-      );
-    }
-
-    // Use Plyr on desktop
     return (
       <div className="relative aspect-video bg-black flex items-center justify-center w-full">
         <div className="w-full h-full">

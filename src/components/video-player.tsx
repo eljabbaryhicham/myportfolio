@@ -32,10 +32,15 @@ const VideoPlayer = ({
   const isMobile = useIsMobile();
 
   useEffect(() => {
+    if (isMobile) {
+        if(onReady) onReady();
+        return;
+    }
+
     const wrapper = wrapperRef.current;
     if (!wrapper) return;
 
-    // Create the video element manually
+    // Create the video element manually for Plyr
     const videoElement = document.createElement('video');
     videoElement.playsInline = true;
     videoElement.controls = controls;
@@ -95,26 +100,37 @@ const VideoPlayer = ({
         player.on('ready', onReady);
     }
 
-
     // The cleanup function is critical
     return () => {
       if (playerRef.current) {
-        // Destroy the player instance. Plyr handles the removal
-        // of the video element and its own UI.
         playerRef.current.destroy();
         playerRef.current = null;
       }
-      // Ensure the wrapper is clean for the next render.
       if (wrapper) {
         wrapper.innerHTML = '';
       }
     };
-    // We only want this effect to run once on mount, and clean up on unmount.
-    // The source update is handled internally by Plyr after initialization.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [source, isMobile]); // Re-run if the source or mobile status changes
+  }, [source, isMobile, autoplay, controls, loop, muted, onReady, poster, previewThumbnailsSrc]);
 
-  // This div is the stable container that React will manage.
+
+  if (isMobile) {
+    const videoSourceUrl = source.sources[0]?.src;
+    return (
+        <video
+            src={videoSourceUrl}
+            poster={poster}
+            controls
+            playsInline
+            autoPlay={autoplay}
+            loop={loop}
+            muted={muted}
+            className="w-full h-full"
+            onLoadedData={onReady}
+        />
+    );
+  }
+
+  // This div is the stable container that React will manage for Plyr.
   return <div ref={wrapperRef} className="plyr-react plyr" />;
 };
 
