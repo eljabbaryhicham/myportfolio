@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useCallback, useState, useEffect, useMemo } from 'react';
@@ -18,6 +17,7 @@ import { useCollection, useFirestore, useMemoFirebase, addDocumentNonBlocking, d
 import { collection, doc, query, orderBy, DocumentReference } from 'firebase/firestore';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import VideoPlayer from '@/components/video-player';
+import { Separator } from '@/components/ui/separator';
 
 
 // Type for the media stored in Firestore
@@ -91,13 +91,13 @@ const MediaFileCard = ({
               </div>
             ) : (
               <div className="flex flex-wrap items-center justify-center gap-1 md:gap-2">
-                <Button size="icon" variant="ghost" onClick={() => onPreview(file)} title="Preview" className="h-8 w-8 md:h-10 md:w-10">
+                <Button size="icon" variant="ghost" onClick={() => onPreview(file)} title="Preview" className="h-8 w-8 md:h-10 md:w-10 text-white glass-effect">
                   <FontAwesomeIcon icon={faEye} />
                 </Button>
-                <Button size="icon" variant="default" onClick={() => onMediaSelect(file.url, file.resource_type === 'video' ? 'video' : 'image', file.filename)} title="Create Project" className="h-8 w-8 md:h-10 md:w-10">
+                <Button size="icon" variant="default" onClick={() => onMediaSelect(file.url, file.resource_type === 'video' ? 'video' : 'image', file.filename)} title="Create Project" className="h-8 w-8 md:h-10 md:w-10 glass-effect">
                   <FontAwesomeIcon icon={faPlus} />
                 </Button>
-                <Button size="icon" variant="secondary" onClick={() => onCopy(file.url)} title="Copy URL" className="h-8 w-8 md:h-10 md:w-10">
+                <Button size="icon" variant="secondary" onClick={() => onCopy(file.url)} title="Copy URL" className="h-8 w-8 md:h-10 md:w-10 glass-effect">
                   <FontAwesomeIcon icon={faCopy} />
                 </Button>
                 {canDelete && (
@@ -486,6 +486,7 @@ export default function MediaAdmin(props: MediaAdminProps) {
                 Browse Full Library
             </Button>
         </div>
+        <Separator className="bg-white/10" />
         <div className="border rounded-lg p-6 glass-effect">
           <div {...getRootProps()} className={cn('border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors', isDragActive && canUpload ? 'border-primary bg-primary/10' : 'border-border hover:border-primary/50', (!canUpload || isUploading) && 'cursor-not-allowed opacity-50')}>
               <input {...getInputProps()} />

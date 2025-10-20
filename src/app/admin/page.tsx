@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -50,6 +49,17 @@ function AdminPage() {
   const canEditProjects = isSuperAdmin || (user?.permissions?.canEditProjects ?? true);
   const canEditAbout = isSuperAdmin || (user?.permissions?.canEditAbout ?? true);
   const canEditContact = isSuperAdmin || (user?.permissions?.canEditContact ?? true);
+  
+  useEffect(() => {
+    const savedTab = localStorage.getItem('adminActiveTab');
+    if (savedTab) {
+      setActiveTab(savedTab);
+    }
+  }, []);
+  
+  useEffect(() => {
+    localStorage.setItem('adminActiveTab', activeTab);
+  }, [activeTab]);
   
   useEffect(() => {
     if (isUserLoading) {
