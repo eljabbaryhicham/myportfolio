@@ -110,7 +110,7 @@
   }
 
   .plyr__poster {
-    background-size: 100% 100% !important;
+    background-size: cover !important;
   }
 
   .plyr.plyr--poster-visible .plyr__video-wrapper .plyr__poster {
@@ -120,7 +120,7 @@
   }
 
   .plyr__video-wrapper .plyr__poster {
-    background-size: 100% 100% !important;
+    background-size: cover !important;
   }
   
   .plyr, .plyr__video-wrapper, .plyr__video-embed {
