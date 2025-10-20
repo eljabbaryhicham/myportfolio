@@ -132,7 +132,12 @@ export default function ContactPage() {
                 <Preloader />
               </div>
             ) : contactInfo ? (
-              <div className="flex flex-col-reverse md:flex-row gap-2 items-start justify-center">
+              <motion.div
+                className="flex flex-col-reverse md:flex-row gap-2 items-start justify-center"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+              >
                 <div className="w-full md:w-1/2">
                   <Card className="glass-effect p-6 flex flex-col h-full">
                     <CardContent className="flex flex-col items-center text-center p-0">
@@ -269,7 +274,7 @@ export default function ContactPage() {
                     </CardContent>
                   </Card>
                 </div>
-              </div>
+              </motion.div>
             ) : (
                 <div className="text-center py-12 text-muted-foreground">
                     <p>Contact information is not available at the moment.</p>
