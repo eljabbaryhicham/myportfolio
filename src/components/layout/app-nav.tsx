@@ -37,6 +37,35 @@ export function AppNav() {
 
   const visibleNavItems = navItems.filter(item => item.public || (!item.public && user));
 
+  const renderNavItem = (item: (typeof navItems)[0]) => {
+    const isActive = item.href === "/" ? pathname === item.href : pathname.startsWith(item.href);
+    const isAdminButton = item.label === 'Admin';
+
+    return (
+      <Link
+        key={item.label}
+        href={item.href}
+        className={cn(
+          "group relative flex items-center justify-center rounded-md transition-all duration-300 hover:scale-110",
+          isActive
+            ? "bg-destructive text-destructive-foreground scale-110 animate-glow"
+            : "text-foreground/70 glass-effect",
+          isAdminButton
+            ? "h-12 w-12 bg-green-500/80 text-white hover:bg-green-500 animate-glow"
+            : "h-10 w-10"
+        )}
+      >
+        <FontAwesomeIcon icon={item.icon} className={cn("transition-transform duration-300", isAdminButton ? "h-7 w-7" : "h-6 w-6")} />
+        <span className={cn(
+            "absolute whitespace-nowrap rounded-md bg-card px-3 py-1.5 text-sm font-medium text-card-foreground opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none",
+            isMobile ? "bottom-full mb-2" : "left-full ml-4"
+        )}>
+          {item.label}
+        </span>
+      </Link>
+    );
+  };
+
   if (isMobile) {
     return (
       <motion.div
@@ -50,29 +79,7 @@ export function AppNav() {
           "flex h-full flex-row items-center justify-between px-4 rounded-lg border border-border/50 glass-effect"
           )}>
           <nav className="flex flex-row items-center justify-around w-full">
-            {visibleNavItems.map((item) => {
-              const isActive =
-                item.href === "/"
-                  ? pathname === item.href
-                  : pathname.startsWith(item.href);
-              return (
-                <Link
-                  key={item.label}
-                  href={item.href}
-                  className={cn(
-                    "group relative flex h-10 w-10 items-center justify-center rounded-md transition-all duration-300 hover:scale-110",
-                    isActive
-                      ? "bg-destructive text-destructive-foreground scale-110 animate-glow"
-                      : "text-foreground/70 glass-effect"
-                  )}
-                >
-                  <FontAwesomeIcon icon={item.icon} className="h-6 w-6" />
-                  <span className="absolute bottom-full mb-2 hidden whitespace-nowrap rounded-md bg-card px-3 py-1.5 text-sm font-medium text-card-foreground group-hover:flex">
-                    {item.label}
-                  </span>
-                </Link>
-              );
-            })}
+            {visibleNavItems.map(renderNavItem)}
           </nav>
         </div>
       </motion.div>
@@ -93,29 +100,7 @@ export function AppNav() {
           <Logo src={logoUrl} />
         </Link>
         <nav className="flex flex-row md:flex-col items-center justify-around md:justify-center w-full md:w-auto md:gap-8">
-          {visibleNavItems.map((item) => {
-            const isActive =
-              item.href === "/"
-                ? pathname === item.href
-                : pathname.startsWith(item.href);
-            return (
-              <Link
-                key={item.label}
-                href={item.href}
-                className={cn(
-                  "group relative flex h-10 w-10 items-center justify-center rounded-md transition-all duration-300 hover:scale-110",
-                  isActive
-                    ? "bg-destructive text-destructive-foreground scale-110 animate-glow"
-                    : "text-foreground/70 glass-effect"
-                )}
-              >
-                <FontAwesomeIcon icon={item.icon} className="h-6 w-6" />
-                <span className="absolute bottom-full mb-2 md:left-full md:bottom-auto md:mb-0 md:ml-4 hidden whitespace-nowrap rounded-md bg-card px-3 py-1.5 text-sm font-medium text-card-foreground group-hover:flex">
-                  {item.label}
-                </span>
-              </Link>
-            );
-          })}
+          {visibleNavItems.map(renderNavItem)}
         </nav>
         <div className="hidden md:flex flex-col items-center gap-4">
           <div className="h-8 w-8 hidden md:block"></div>
