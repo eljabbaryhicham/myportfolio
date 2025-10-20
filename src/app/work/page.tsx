@@ -192,15 +192,15 @@ const PortfolioGridItem = ({ item, onClick, onEditClick, isAdmin }: { item: Port
           onLoad={() => setIsLoaded(true)}
         />
         <div className={cn(
-          "absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-4",
+          "absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-2 md:p-4",
           !isLoaded && "opacity-100 bg-none" // Show overlay content while loading
         )}>
           {isLoaded ? (
             <>
-              <h3 className="font-bold text-white text-lg">
+              <h3 className="font-bold text-white text-base md:text-lg">
                 {item.title}
               </h3>
-              <p className="text-white/80 text-sm line-clamp-2">
+              <p className="text-white/80 text-xs md:text-sm line-clamp-2">
                 {item.description}
               </p>
             </>
@@ -505,7 +505,7 @@ export default function WorkPage() {
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
                     transition={{ duration: 0.3 }}
-                    className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 md:gap-4"
+                    className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 md:gap-4"
                   >
                     {filteredItems.slice(0, visibleItems).map(item => (
                       <PortfolioGridItem 
