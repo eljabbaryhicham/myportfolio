@@ -205,7 +205,7 @@ function ProjectAdmin({ setSelectedItem, setIsSheetOpen, handleFormSubmit }: Pro
                     Seed Projects
                 </Button>
                 )}
-                <Button onClick={handleAddItem} size="sm">
+                <Button onClick={handleAddItem} size="sm" disabled={!canEditProjects}>
                 <FontAwesomeIcon icon={faPlusCircle} className="mr-2 h-4 w-4" />
                 Add New
                 </Button>
@@ -295,3 +295,5 @@ function ProjectAdmin({ setSelectedItem, setIsSheetOpen, handleFormSubmit }: Pro
 }
 
 export default ProjectAdmin;
+
+    
