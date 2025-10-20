@@ -3,7 +3,7 @@
 import React, { useEffect, useRef } from 'react';
 import Plyr, { Options, SourceInfo } from 'plyr';
 import 'plyr-react/plyr.css';
-import { useIsMobile } from '@/hooks/use-mobile';
+import { useIsMobile } from '@/hooks/use-is-mobile';
 
 interface VideoPlayerProps {
   source: SourceInfo;
@@ -29,11 +29,12 @@ const VideoPlayer = ({
   const wrapperRef = useRef<HTMLDivElement>(null);
   const playerRef = useRef<Plyr | null>(null);
   const isMobile = useIsMobile();
+  const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
     if (isMobile) {
-        if(onReady) onReady();
-        return;
+      if (onReady) onReady();
+      return;
     }
 
     const wrapper = wrapperRef.current;
@@ -58,7 +59,7 @@ const VideoPlayer = ({
     const options: Options = {
       settings: ['quality', 'speed', 'loop'],
       quality: {
-        default: isMobile ? 576 : 1080,
+        default: 576,
         options: [4320, 2160, 1440, 1080, 720, 576, 480, 360, 240],
       },
       previewThumbnails: {
@@ -110,23 +111,39 @@ const VideoPlayer = ({
       }
     };
   }, [source, isMobile, autoplay, controls, loop, muted, onReady, poster, previewThumbnailsSrc]);
+  
+  useEffect(() => {
+    if (isMobile && videoRef.current && onReady) {
+      // Simulate onReady for native player
+      const videoElement = videoRef.current;
+      const handleCanPlay = () => {
+        onReady();
+        videoElement.removeEventListener('canplay', handleCanPlay);
+      };
+      videoElement.addEventListener('canplay', handleCanPlay);
+      
+      return () => {
+        videoElement.removeEventListener('canplay', handleCanPlay);
+      }
+    }
+  }, [isMobile, onReady]);
 
 
   if (isMobile) {
     const videoSourceUrl = source.sources[0]?.src;
     return (
         <video
+            ref={videoRef}
             src={videoSourceUrl}
             poster={poster}
-            controls
-            playsInline
             autoPlay={autoplay}
             loop={loop}
             muted={muted}
-            className="w-full h-full"
-            onLoadedData={onReady}
+            controls={controls}
+            playsInline={true}
+            className="w-full h-full object-contain"
         />
-    );
+    )
   }
 
   // This div is the stable container that React will manage for Plyr.
