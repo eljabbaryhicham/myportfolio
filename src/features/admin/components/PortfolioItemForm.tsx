@@ -133,6 +133,7 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onCho
         onSubmit({
           id: item?.id || '', // id will be handled by parent
           ...values,
+          thumbnailHint: values.thumbnailHint || '',
         });
     };
 
@@ -456,3 +457,5 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onCho
         </Dialog>
     )
 }
+
+    
