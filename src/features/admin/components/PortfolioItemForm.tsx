@@ -159,18 +159,8 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onCho
     };
 
     const handleUpload = useCallback(async (file: File, field: 'thumbnail' | 'source') => {
-      const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
-      const uploadPreset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
-      
-      if (!cloudName || !uploadPreset || uploadPreset === 'your_upload_preset') {
-          toast({
-              variant: 'destructive',
-              title: 'Configuration Error',
-              description: 'Cloudinary environment variables are not set.',
-              duration: 8000,
-          });
-          return;
-      }
+      const cloudName = 'da1srnoer';
+      const uploadPreset = 'belofted';
       
       setUploadingField(field);
       setUploadProgress(0);
