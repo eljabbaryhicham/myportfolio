@@ -91,7 +91,7 @@ export function AppNav() {
   if (isMobile) {
     return (
       <motion.div
-        className="w-full flex-shrink-0 p-2 md:p-4"
+        className="w-full flex-shrink-0 p-4"
         initial={{ y: '100%' }}
         animate={{ y: 0 }}
         transition={{ type: 'spring', stiffness: 80, damping: 15 }}
@@ -99,11 +99,11 @@ export function AppNav() {
         <div className={cn(
           "flex h-[7vh] min-h-[60px] flex-row items-center justify-between rounded-lg border border-border/50 glass-effect"
           )}>
-          <nav className="flex h-full flex-1 justify-around items-center p-1">
+          <nav className="flex h-full flex-1 justify-around items-center">
             {regularItems.map(item => <div key={item.href} className="flex h-full items-center justify-center">{renderNavItem(item)}</div>)}
           </nav>
           {user && adminItem && (
-            <div className="h-full flex-shrink-0 p-1">
+            <div className="h-full flex-shrink-0">
                 {renderNavItem(adminItem)}
             </div>
           )}
