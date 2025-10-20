@@ -183,21 +183,7 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onCho
         setUploadingField(null);
         if (xhr.status === 200) {
             const data = JSON.parse(xhr.responseText);
-            
-            // Use the same SDK method for generating optimized URLs
-            const cloudinary = (await import('cloudinary-core')).v2;
-             cloudinary.config({
-                cloud_name: cloudName,
-            });
-
-            let finalUrl = data.secure_url;
-            if (data.resource_type === 'image') {
-                finalUrl = cloudinary.url(data.public_id, {
-                    fetch_format: 'auto',
-                    quality: 'auto',
-                    secure: true,
-                });
-            }
+            const finalUrl = data.secure_url;
             
             if (firestore) {
                 addDocumentNonBlocking(collection(firestore, 'media'), {
@@ -209,7 +195,7 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onCho
                 });
             }
             
-            toast({ title: 'Upload successful', description: `${file.name} has been uploaded and optimized.` });
+            toast({ title: 'Upload successful', description: `${file.name} has been uploaded.` });
             
             const resourceType = data.resource_type === 'video' ? 'video' : 'image';
 
@@ -223,7 +209,6 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onCho
               form.setValue('sourceUrl', finalUrl, { shouldValidate: true });
               form.setValue('type', resourceType, { shouldValidate: true });
               
-              // If it's a new item, set the title from the filename
               if (!item?.id) {
                 const title = file.name.split('.').slice(0, -1).join('.');
                 form.setValue('title', title, { shouldValidate: true });
@@ -471,5 +456,3 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onCho
         </Dialog>
     )
 }
-
-    
