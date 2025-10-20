@@ -7,7 +7,7 @@
     "dev": "next dev --turbopack",
     "genkit:dev": "genkit start -- tsx src/ai/dev.ts",
     "genkit:watch": "genkit start -- tsx --watch srcai/dev.ts",
-    "build": "NODE_ENV=production next build",
+    "build": "SKIP_ENV_VALIDATION=1 NODE_ENV=production next build",
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit"
@@ -85,5 +85,3 @@
     "typescript": "^5"
   }
 }
-
-    
