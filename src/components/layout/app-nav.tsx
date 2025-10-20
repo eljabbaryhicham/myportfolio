@@ -11,7 +11,6 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faHouse, faImage, faCircleInfo, faEnvelope, faShieldHalved } from "@fortawesome/free-solid-svg-icons";
 import Logo from "../logo";
 import { doc } from "firebase/firestore";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 
 const navItems = [
@@ -43,8 +42,9 @@ export function AppNav() {
     const isActive = item.href === "/" ? pathname === item.href : pathname.startsWith(item.href);
     const isAdminButton = item.label === 'Admin';
 
-    const linkButton = (
+    return (
       <Link
+        key={item.href}
         href={item.href}
         className={cn(
           "group relative flex items-center justify-center rounded-md transition-all duration-300 hover:scale-110",
@@ -61,27 +61,6 @@ export function AppNav() {
       >
         <FontAwesomeIcon icon={item.icon} className="h-7 w-7 transition-transform duration-300" />
       </Link>
-    );
-
-    if (isMobile) {
-      return (
-        <React.Fragment key={item.href}>
-          {linkButton}
-        </React.Fragment>
-      );
-    }
-    
-    return (
-      <TooltipProvider key={item.href} delayDuration={0}>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            {linkButton}
-          </TooltipTrigger>
-          <TooltipContent side="right" className="glass-effect text-foreground rounded-md">
-            <p>{item.label}</p>
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
     );
   };
   
