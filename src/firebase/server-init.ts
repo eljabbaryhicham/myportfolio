@@ -1,4 +1,6 @@
 
+'use server';
+
 import admin from 'firebase-admin';
 
 // IMPORTANT: This file is for server-side use only.
@@ -10,11 +12,13 @@ let serverApp: admin.app.App | null = null;
 /**
  * Initializes the Firebase Admin SDK for server-side operations.
  * It is idempotent and will only initialize the app once.
- * 
+ *
  * It requires environment variables to be set up:
- * - FIREBASE_SERVICE_ACCOUNT: The JSON content of your service account key.
- * - FIREBASE_DATABASE_URL: The URL of your Firebase/Firestore database.
- * 
+ * - FIREBASE_PROJECT_ID
+ * - FIREBASE_CLIENT_EMAIL
+ * - FIREBASE_PRIVATE_KEY
+ * - FIREBASE_DATABASE_URL
+ *
  * @returns {admin.app.App} The initialized Firebase Admin App instance.
  */
 export function initializeServerApp(): admin.app.App {
@@ -22,33 +26,31 @@ export function initializeServerApp(): admin.app.App {
     return serverApp;
   }
 
-  const serviceAccountEnv = process.env.FIREBASE_SERVICE_ACCOUNT;
-  const databaseURLEnv = process.env.FIREBASE_DATABASE_URL;
+  const projectId = process.env.FIREBASE_PROJECT_ID;
+  const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
+  // Replace the literal '\n' characters with actual newlines
+  const privateKey = process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n');
+  const databaseURL = process.env.FIREBASE_DATABASE_URL;
 
-  if (!serviceAccountEnv) {
-    throw new Error(
-      'FIREBASE_SERVICE_ACCOUNT environment variable is not set. Please provide your service account JSON.'
-    );
-  }
-  if (!databaseURLEnv) {
-    throw new Error(
-      'FIREBASE_DATABASE_URL environment variable is not set. Please provide your database URL.'
-    );
+  if (!projectId || !clientEmail || !privateKey || !databaseURL) {
+    throw new Error('One or more required Firebase Admin environment variables are not set.');
   }
 
   try {
-    const serviceAccount = JSON.parse(serviceAccountEnv);
-
     serverApp = admin.initializeApp({
-      credential: admin.credential.cert(serviceAccount),
-      databaseURL: databaseURLEnv,
+      credential: admin.credential.cert({
+        projectId,
+        clientEmail,
+        privateKey,
+      }),
+      databaseURL,
     });
-    
+
     console.log("Firebase Admin SDK initialized successfully.");
     return serverApp;
 
   } catch (error) {
-    console.error("Failed to parse FIREBASE_SERVICE_ACCOUNT or initialize Firebase Admin SDK.", error);
+    console.error("Failed to initialize Firebase Admin SDK.", error);
     throw new Error("Firebase Admin SDK initialization failed.");
   }
 }
