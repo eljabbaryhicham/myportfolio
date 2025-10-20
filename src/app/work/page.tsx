@@ -22,7 +22,7 @@ import { useCollection, useFirestore, useMemoFirebase, useUser, setDocumentNonBl
 import { collection, query, orderBy, doc } from 'firebase/firestore';
 import { PortfolioItem } from '@/features/portfolio/data/portfolio-data';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faUpDown, faXmark, faExpand, faPalette, faFilm, faArrowLeft, faArrowRight, faPencilAlt } from '@fortawesome/free-solid-svg-icons';
+import { faUpDown, faXmark, faExpand, faPalette, faFilm, faArrowLeft, faArrowRight, faPencilAlt, faEnvelope } from '@fortawesome/free-solid-svg-icons';
 import { Separator } from '@/components/ui/separator';
 import Preloader from '@/components/preloader';
 import { useIsExtraWide } from '@/hooks/use-is-extra-wide';
@@ -32,6 +32,7 @@ import MediaAdmin from '@/features/admin/components/MediaAdmin';
 import { useToast } from '@/hooks/use-toast';
 import { motion, AnimatePresence, PanInfo } from 'framer-motion';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
+import ContactForm from '@/features/contact/components/ContactForm';
 
 
 const VideoPlayer = dynamic(() => import('@/components/video-player'), {
@@ -245,6 +246,7 @@ export default function WorkPage() {
   const [isFormSheetOpen, setIsFormSheetOpen] = useState(false);
   const [visibleItems, setVisibleItems] = useState(12);
   const [detailsModalOpen, setDetailsModalOpen] = useState(false);
+  const [isContactFormOpen, setIsContactFormOpen] = useState(false);
   const [filter, setFilter] = useState<'all' | 'image' | 'video'>('all');
   const [fullscreenImageUrl, setFullscreenImageUrl] = useState<string | null>(null);
   const [isClient, setIsClient] = useState(false);
@@ -601,17 +603,24 @@ export default function WorkPage() {
                             )}
                           </div>
                             
-                          {selectedItem.details && (
-                            <div className="p-4 md:p-6 text-center flex-shrink-0">
-                              <Button
-                                variant="default"
-                                onClick={() => setDetailsModalOpen(true)}
-                              >
-                                <FontAwesomeIcon icon={faUpDown} className="mr-2" />
-                                Show Details
-                              </Button>
-                            </div>
-                          )}
+                          <div className="p-4 md:p-6 text-center flex flex-wrap justify-center gap-4 flex-shrink-0">
+                            {selectedItem.details && (
+                                <Button
+                                  variant="default"
+                                  onClick={() => setDetailsModalOpen(true)}
+                                >
+                                  <FontAwesomeIcon icon={faUpDown} className="mr-2" />
+                                  Show Details
+                                </Button>
+                            )}
+                            <Button
+                              variant="secondary"
+                              onClick={() => setIsContactFormOpen(true)}
+                            >
+                              <FontAwesomeIcon icon={faEnvelope} className="mr-2" />
+                              Contact Us
+                            </Button>
+                          </div>
                         </div>
                       </ScrollArea>
                     </div>
@@ -711,6 +720,22 @@ export default function WorkPage() {
             )}
         </DialogContent>
       </Dialog>
+      
+      {/* Contact Form Dialog */}
+      <Dialog open={isContactFormOpen} onOpenChange={setIsContactFormOpen}>
+        <DialogContent className="w-[90vw] max-w-xl glass-effect">
+            <DialogHeader>
+              <DialogTitle>Contact Us</DialogTitle>
+              <DialogDescription>
+                Have a question about &quot;{selectedItem?.title}&quot;? Fill out the form below.
+              </DialogDescription>
+            </DialogHeader>
+            <ContactForm
+                onSuccess={() => setIsContactFormOpen(false)}
+                defaultMessage={selectedItem ? `I'm interested in your project: "${selectedItem.title}".` : ''}
+            />
+        </DialogContent>
+      </Dialog>
 
       {/* Fullscreen Image Dialog */}
       <Dialog open={!!fullscreenImageUrl} onOpenChange={(open) => !open && setFullscreenImageUrl(null)}>
@@ -784,3 +809,5 @@ export default function WorkPage() {
     </>
   );
 }
+
+    

@@ -1,20 +1,6 @@
 
 'use client';
 
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm } from 'react-hook-form';
-import * as z from 'zod';
-import { Button } from '@/components/ui/button';
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormMessage,
-} from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Card, CardContent } from '@/components/ui/card';
 import Link from 'next/link';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -22,36 +8,29 @@ import { useDoc, useFirestore, useMemoFirebase } from '@/firebase';
 import { doc } from 'firebase/firestore';
 import { Separator } from '@/components/ui/separator';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEnvelope, faCheckCircle } from '@fortawesome/free-solid-svg-icons';
+import { faEnvelope } from '@fortawesome/free-solid-svg-icons';
 import { Icon } from '@/components/icon';
 import { faLinkedin, faBehance, faInstagram, faFacebook, faTwitter, faWhatsapp } from '@fortawesome/free-brands-svg-icons';
 import { cn } from '@/lib/utils';
 import Preloader from '@/components/preloader';
-import { sendContactEmail } from '@/ai/flows/send-contact-email';
-import { useState } from 'react';
-import { ContactFormInputSchema, type ContactFormInput } from '@/features/contact/data/contact-form-types';
 import { motion } from 'framer-motion';
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import ContactForm from './ContactForm';
 
-const contactInfoSchema = z.object({
-  avatarUrl: z.string().optional(),
-  name: z.string().optional(),
-  title: z.string().optional(),
-  email: z.string().email().optional(),
-  whatsApp: z.string().optional(),
-  behanceUrl: z.string().url().optional(),
-  linkedinUrl: z.string().url().optional(),
-  fiverrUrl: z.string().url().optional(),
-  instagramUrl: z.string().url().optional(),
-  facebookUrl: z.string().url().optional(),
-  twitterUrl: z.string().url().optional(),
-});
-
-type ContactInfo = z.infer<typeof contactInfoSchema>;
-
-const formSchema = ContactFormInputSchema;
-
-type ContactFormValues = z.infer<typeof formSchema>;
-
+interface ContactInfo {
+  avatarUrl?: string;
+  name?: string;
+  title?: string;
+  email?: string;
+  whatsApp?: string;
+  behanceUrl?: string;
+  linkedinUrl?: string;
+  fiverrUrl?: string;
+  instagramUrl?: string;
+  facebookUrl?: string;
+  twitterUrl?: string;
+}
 
 const FiverrIcon = (props: React.SVGProps<SVGSVGElement>) => (
     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="currentColor" {...props}>
@@ -61,41 +40,12 @@ const FiverrIcon = (props: React.SVGProps<SVGSVGElement>) => (
 
 export default function ContactPage() {
   const firestore = useFirestore();
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isSent, setIsSent] = useState(false);
 
   const contactDocRef = useMemoFirebase(
     () => firestore ? doc(firestore, 'contact', 'details') : null,
     [firestore]
   );
   const { data: contactInfo, isLoading } = useDoc<ContactInfo>(contactDocRef);
-
-  const form = useForm<ContactFormValues>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      name: '',
-      email: '',
-      message: '',
-    },
-  });
-
-  const handleSubmit = async (values: ContactFormValues) => {
-    setIsSubmitting(true);
-    
-    try {
-      const result = await sendContactEmail(values);
-      if (result.success) {
-        setIsSent(true);
-        form.reset();
-      } else {
-        console.error("Failed to send message:", result.message);
-      }
-    } catch (error) {
-      console.error('Failed to send contact email:', error);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
 
   const contactLinks = contactInfo ? [
     { icon: faEnvelope, label: 'Email', value: contactInfo.email, href: `mailto:${contactInfo.email}`, color: 'hover:text-blue-300' },
@@ -188,89 +138,7 @@ export default function ContactPage() {
                 <div className="w-full md:w-1/2">
                   <Card className="glass-effect p-6 sm:p-8 h-full flex flex-col justify-center">
                     <CardContent className="p-0 flex flex-col items-center">
-                      {isSent ? (
-                        <div className="text-center flex flex-col items-center justify-center h-full min-h-[350px]">
-                           <motion.div
-                            initial={{ scale: 0.5, opacity: 0 }}
-                            animate={{ scale: 1, opacity: 1 }}
-                            transition={{ type: 'spring', stiffness: 260, damping: 20 }}
-                           >
-                            <FontAwesomeIcon icon={faCheckCircle} className="w-16 h-16 text-green-400 mb-4" />
-                           </motion.div>
-                          <h3 className="text-xl font-bold">Message Sent!</h3>
-                          <p className="text-foreground/80 mt-2 max-w-sm">
-                            Thank you for reaching out. We will get back to you shortly.
-                          </p>
-                          <Button onClick={() => setIsSent(false)} className="mt-6">
-                            Send Another Message
-                          </Button>
-                          {contactInfo?.whatsApp && (
-                            <Button asChild className="bg-gradient-to-r from-green-500 to-emerald-600 mt-4">
-                                <Link href={`https://wa.me/${contactInfo.whatsApp.replace(/\\D/g, '')}`} target="_blank" rel="noopener noreferrer">
-                                    <FontAwesomeIcon icon={faWhatsapp} className="mr-2 h-5 w-5" />
-                                    Chat on WhatsApp
-                                </Link>
-                            </Button>
-                          )}
-                        </div>
-                      ) : (
-                        <div className='w-full'>
-                            <div className="flex flex-col items-center mb-8">
-                                <p className="font-handwriting text-2xl text-white transform -rotate-6">send a message we are always avalaible</p>
-                                <svg className="w-12 h-12 md:w-20 md:h-20 text-white" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                  <path d="M50 10 C51 30, 51 50, 50 70" stroke="currentColor" strokeWidth="2" strokeLinecap="round" fill="none"/>
-                                  <path d="M45 65 L50 75 L55 65" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
-                                </svg>
-                            </div>
-                            <Form {...form}>
-                            <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8 w-full">
-                                <FormField
-                                control={form.control}
-                                name="name"
-                                render={({ field }) => (
-                                    <FormItem>
-                                    <FormControl>
-                                        <Input placeholder="Name" {...field} className="text-center bg-transparent border-0 border-b border-foreground/30 rounded-none focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-primary transition-colors placeholder:text-foreground/80" />
-                                    </FormControl>
-                                    <FormMessage />
-                                    </FormItem>
-                                )}
-                                />
-                                <FormField
-                                control={form.control}
-                                name="email"
-                                render={({ field }) => (
-                                    <FormItem>
-                                    <FormControl>
-                                        <Input type="email" placeholder="Email" {...field} className="text-center bg-transparent border-0 border-b border-foreground/30 rounded-none focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-primary transition-colors placeholder:text-foreground/80" />
-                                    </FormControl>
-                                    <FormMessage />
-                                    </FormItem>
-                                )}
-                                />
-                                <FormField
-                                control={form.control}
-                                name="message"
-                                render={({ field }) => (
-                                    <FormItem>
-                                    <FormControl>
-                                        <Textarea
-                                        placeholder="Message"
-                                        className="text-center bg-transparent border-0 border-b border-foreground/30 rounded-none focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-primary transition-colors min-h-[100px] placeholder:text-foreground/80"
-                                        {...field}
-                                        />
-                                    </FormControl>
-                                    <FormMessage />
-                                    </FormItem>
-                                )}
-                                />
-                                <Button type="submit" size="lg" className="w-full glass-effect" disabled={isSubmitting}>
-                                {isSubmitting ? 'Sending...' : 'Send Message'}
-                                </Button>
-                            </form>
-                            </Form>
-                        </div>
-                      )}
+                        <ContactForm />
                     </CardContent>
                   </Card>
                 </div>
@@ -307,4 +175,4 @@ export default function ContactPage() {
   );
 }
 
-  
+    
