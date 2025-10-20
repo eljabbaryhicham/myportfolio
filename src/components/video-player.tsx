@@ -1,7 +1,7 @@
 
 'use client';
 
-import React, 'useEffect', useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import Plyr, { Options, SourceInfo } from 'plyr';
 import 'plyr-react/plyr.css';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -81,18 +81,6 @@ const VideoPlayer = ({
       
       const useThumbnails = !isMobile && !!previewThumbnailsSrc;
       
-      if (useThumbnails) {
-          const scriptId = 'vtt-js-script';
-          if (!document.getElementById(scriptId)) {
-            const script = document.createElement('script');
-            script.id = scriptId;
-            script.src = 'https://cdn.rawgit.com/pwamp/vtt.js/master/vtt.min.js';
-            script.async = true;
-            document.body.appendChild(script);
-          }
-      }
-
-
       const options: Options = {
           autoplay: autoplay || false,
           loop: { active: loop || false },
