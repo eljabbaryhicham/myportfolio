@@ -44,28 +44,40 @@ export function AppNav() {
     const isActive = item.href === "/" ? pathname === item.href : pathname.startsWith(item.href);
     const isAdminButton = item.label === 'Admin';
 
+    const linkButton = (
+      <Link
+        href={item.href}
+        className={cn(
+          "group relative flex items-center justify-center rounded-md transition-all duration-300 hover:scale-110",
+          "h-12 w-12 text-white",
+          isActive
+            ? isAdminButton
+              ? "bg-green-500 scale-110 animate-green-glow"
+              : "bg-destructive text-destructive-foreground scale-110 animate-glow"
+            : isAdminButton
+              ? "bg-green-500/80 hover:bg-green-500"
+              : "text-foreground/70 glass-effect",
+        )}
+      >
+        <FontAwesomeIcon icon={item.icon} className="h-7 w-7 transition-transform duration-300" />
+      </Link>
+    );
+
+    if (isMobile) {
+      return (
+        <React.Fragment key={item.href}>
+          {linkButton}
+        </React.Fragment>
+      );
+    }
+    
     return (
       <TooltipProvider key={item.href} delayDuration={0}>
         <Tooltip>
           <TooltipTrigger asChild>
-            <Link
-              href={item.href}
-              className={cn(
-                "group relative flex items-center justify-center rounded-md transition-all duration-300 hover:scale-110",
-                "h-12 w-12 text-white",
-                isActive
-                  ? isAdminButton
-                    ? "bg-green-500 scale-110 animate-green-glow"
-                    : "bg-destructive text-destructive-foreground scale-110 animate-glow"
-                  : isAdminButton
-                    ? "bg-green-500/80 hover:bg-green-500"
-                    : "text-foreground/70 glass-effect",
-              )}
-            >
-              <FontAwesomeIcon icon={item.icon} className="h-7 w-7 transition-transform duration-300" />
-            </Link>
+            {linkButton}
           </TooltipTrigger>
-          <TooltipContent side={isMobile ? "top" : "right"} className="glass-effect text-foreground rounded-md">
+          <TooltipContent side="right" className="glass-effect text-foreground rounded-md">
             <p>{item.label}</p>
           </TooltipContent>
         </Tooltip>
