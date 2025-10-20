@@ -48,7 +48,7 @@ export function AppNav() {
       <Link
         href={item.href}
         className={cn(
-          "group relative flex items-center justify-center rounded-full transition-all duration-300 hover:scale-110 aspect-square",
+          "group relative flex items-center justify-center rounded-full transition-all duration-300 hover:scale-110",
           "p-2 text-white", 
           isActive
             ? isAdminButton
@@ -58,7 +58,7 @@ export function AppNav() {
               ? "bg-green-500/80 hover:bg-green-500"
               : "text-foreground/70 glass-effect",
            isActive && isAdminButton && "animate-green-glow",
-           isMobile ? "h-full" : "h-10 w-10"
+           isMobile ? "h-full aspect-square" : "h-9 w-9"
         )}
       >
         <FontAwesomeIcon icon={item.icon} className={cn("transition-transform duration-300", isMobile ? "h-[50%] w-[50%]" : "h-[70%] w-[70%]")} />
@@ -92,7 +92,7 @@ export function AppNav() {
     return (
       <motion.div
         className="fixed bottom-0 left-0 right-0 z-50"
-        style={{ margin: '2%', height: '8vh' }}
+        style={{ margin: '2%', height: '7vh' }}
         initial={{ y: '100%' }}
         animate={{ y: 0 }}
         transition={{ type: 'spring', stiffness: 80, damping: 15 }}
@@ -101,7 +101,7 @@ export function AppNav() {
           "flex h-full flex-row items-center justify-between px-4 rounded-lg border border-border/50 glass-effect"
           )}>
           <nav className="flex h-full flex-1 justify-around items-center gap-2">
-            {regularItems.map(item => <div key={item.href} className="h-full">{renderNavItem(item)}</div>)}
+            {regularItems.map(item => <div key={item.href} className="flex h-full items-center justify-center">{renderNavItem(item)}</div>)}
           </nav>
           {user && adminItem && (
             <div className="h-full flex-shrink-0">
