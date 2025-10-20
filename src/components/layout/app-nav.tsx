@@ -51,7 +51,7 @@ export function AppNav() {
             ? "bg-destructive text-destructive-foreground scale-110 animate-glow"
             : "text-foreground/70 glass-effect",
           isAdminButton
-            ? "h-12 w-12 bg-green-500/80 text-white hover:bg-green-500 animate-glow"
+            ? "h-12 w-12 bg-green-500/80 text-white hover:bg-green-500 animate-green-glow"
             : "h-10 w-10"
         )}
       >

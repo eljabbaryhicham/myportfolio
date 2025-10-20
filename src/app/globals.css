@@ -227,6 +227,19 @@
   animation: glow 1.5s ease-in-out infinite;
 }
 
+@keyframes green-glow {
+  0%, 100% {
+    box-shadow: 0 0 5px hsla(142, 71%, 45%, 0), 0 0 10px hsla(142, 71%, 45%, 0);
+  }
+  50% {
+    box-shadow: 0 0 15px hsla(142, 71%, 45%, 0.8), 0 0 20px hsla(142, 71%, 45%, 0.6);
+  }
+}
+
+.animate-green-glow {
+  animation: green-glow 1.5s ease-in-out infinite;
+}
+
 @keyframes marquee {
   from {
     transform: translateX(0);
