@@ -7,7 +7,7 @@ export interface PortfolioItem {
   title: string;
   description: string;
   thumbnailUrl: string;
-  thumbnailHint: string;
+  thumbnailHint?: string;
   sourceUrl?: string; // For images or single-source videos (e.g. YouTube/Vimeo)
   sources?: { src: string; size: number }[]; // For self-hosted videos with multiple qualities
   featured?: boolean;
