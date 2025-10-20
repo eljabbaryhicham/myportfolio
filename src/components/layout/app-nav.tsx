@@ -52,11 +52,12 @@ export function AppNav() {
           "h-12 w-12 text-white",
           isActive
             ? isAdminButton
-              ? "bg-green-500 scale-110 animate-green-glow"
+              ? "bg-green-500 scale-110"
               : "bg-destructive text-destructive-foreground scale-110 animate-glow"
             : isAdminButton
               ? "bg-green-500/80 hover:bg-green-500"
               : "text-foreground/70 glass-effect",
+           isActive && isAdminButton && "animate-green-glow"
         )}
       >
         <FontAwesomeIcon icon={item.icon} className="h-7 w-7 transition-transform duration-300" />
@@ -98,15 +99,14 @@ export function AppNav() {
         <div className={cn(
           "flex h-full flex-row items-center justify-between px-4 rounded-lg border border-border/50 glass-effect"
           )}>
-          <nav className="flex flex-row items-center justify-around w-full">
+          <nav className="flex flex-1 justify-center items-center gap-4">
             {regularItems.map(renderNavItem)}
-            {user && adminItem && (
-                <>
-                    <div className="w-4"></div>
-                    {renderNavItem(adminItem)}
-                </>
-            )}
           </nav>
+          {user && adminItem && (
+            <div className="flex-shrink-0">
+                {renderNavItem(adminItem)}
+            </div>
+          )}
         </div>
       </motion.div>
     );
