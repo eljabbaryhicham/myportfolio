@@ -295,5 +295,3 @@ function ProjectAdmin({ setSelectedItem, setIsSheetOpen, handleFormSubmit }: Pro
 }
 
 export default ProjectAdmin;
-
-    
