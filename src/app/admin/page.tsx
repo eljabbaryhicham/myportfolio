@@ -196,10 +196,10 @@ function AdminPage() {
           <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col min-h-0">
             <div className="w-full flex justify-center">
               <TabsList className="flex-wrap h-auto justify-center">
-                  <TabsTrigger value="home">Home</TabsTrigger>
-                  <TabsTrigger value="projects">Projects</TabsTrigger>
-                  <TabsTrigger value="about">About & Clients</TabsTrigger>
-                  <TabsTrigger value="contact">Contact</TabsTrigger>
+                  <TabsTrigger value="home" className="glass-effect data-[state=active]:bg-destructive">Home</TabsTrigger>
+                  <TabsTrigger value="projects" className="glass-effect data-[state=active]:bg-destructive">Projects</TabsTrigger>
+                  <TabsTrigger value="about" className="glass-effect data-[state=active]:bg-destructive">About & Clients</TabsTrigger>
+                  <TabsTrigger value="contact" className="glass-effect data-[state=active]:bg-destructive">Contact</TabsTrigger>
                   <TabsTrigger value="media" className="bg-blue-900 text-white data-[state=active]:bg-green-500/80 data-[state=active]:animate-green-glow">Media</TabsTrigger>
                   {isSuperAdmin && <TabsTrigger value="admins" className="bg-blue-900 text-white data-[state=active]:bg-green-500/80 data-[state=active]:animate-green-glow">Admins</TabsTrigger>}
               </TabsList>
