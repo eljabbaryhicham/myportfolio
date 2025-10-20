@@ -618,7 +618,7 @@ export default function WorkPage() {
                               onClick={() => setIsContactFormOpen(true)}
                             >
                               <FontAwesomeIcon icon={faEnvelope} className="mr-2" />
-                              Contact Us
+                              Contact
                             </Button>
                           </div>
                         </div>
@@ -732,8 +732,18 @@ export default function WorkPage() {
             </DialogHeader>
             <ContactForm
                 onSuccess={() => setIsContactFormOpen(false)}
-                defaultMessage={selectedItem ? `I'm interested in your project: "${selectedItem.title}".` : ''}
+                defaultMessage={selectedItem ? `I'm contacting you about discuss a similar project of "${selectedItem.title}"` : ''}
             />
+            <DialogClose className={cn(
+                "absolute right-4 top-4 h-8 w-8",
+                "flex items-center justify-center rounded-full transition-opacity",
+                "bg-destructive text-destructive-foreground opacity-70 hover:opacity-100",
+                "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+                "disabled:pointer-events-none"
+            )}>
+                <FontAwesomeIcon icon={faXmark} className="h-4 w-4" />
+                <span className="sr-only">Close</span>
+            </DialogClose>
         </DialogContent>
       </Dialog>
 
