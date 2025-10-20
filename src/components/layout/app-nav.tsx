@@ -37,8 +37,7 @@ export function AppNav() {
 
   const logoUrl = contactInfo?.logoUrl || "https://i.imgur.com/N9c8oEJ.png";
 
-  const regularItems = navItems.filter(item => item.label !== 'Admin');
-  const adminItem = navItems.find(item => item.label === 'Admin');
+  const accessibleNavItems = navItems.filter(item => item.public || user);
   
   const renderNavItem = (item: (typeof navItems)[0]) => {
     const isActive = item.href === "/" ? pathname === item.href : pathname.startsWith(item.href);
@@ -100,13 +99,8 @@ export function AppNav() {
           "flex h-[7vh] min-h-[60px] flex-row items-center justify-between rounded-lg border border-border/50 glass-effect"
           )}>
           <nav className="flex h-full flex-1 justify-around items-center">
-            {regularItems.map(item => <div key={item.href} className="flex h-full items-center justify-center">{renderNavItem(item)}</div>)}
+            {accessibleNavItems.map(item => <div key={item.href} className="flex h-full items-center justify-center">{renderNavItem(item)}</div>)}
           </nav>
-          {user && adminItem && (
-            <div className="h-full flex-shrink-0">
-                {renderNavItem(adminItem)}
-            </div>
-          )}
         </div>
       </motion.div>
     );
@@ -126,12 +120,9 @@ export function AppNav() {
           <Logo src={logoUrl} />
         </Link>
         <nav className="flex flex-row md:flex-col items-center justify-around md:justify-center w-full md:w-auto md:gap-10">
-           {regularItems.map(renderNavItem)}
+           {accessibleNavItems.map(renderNavItem)}
         </nav>
         <div className="flex flex-col items-center gap-4">
-          {user && adminItem && (
-            renderNavItem(adminItem)
-          )}
           <div className="h-8 w-8 hidden md:block"></div>
         </div>
       </div>
