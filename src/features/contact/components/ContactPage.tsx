@@ -127,12 +127,11 @@ export default function ContactPage() {
       <ScrollArea className="flex-1">
         <div className="p-[5%] pt-4">
           <div className="container mx-auto px-0">
-            {isLoading && (
+            {isLoading ? (
               <div className="flex justify-center items-center h-64">
                 <Preloader />
               </div>
-            )}
-            {contactInfo && (
+            ) : contactInfo ? (
               <div className="flex flex-col-reverse md:flex-row gap-2 items-start justify-center">
                 <div className="w-full md:w-1/2">
                   <Card className="glass-effect p-6 flex flex-col h-full">
@@ -271,6 +270,10 @@ export default function ContactPage() {
                   </Card>
                 </div>
               </div>
+            ) : (
+                <div className="text-center py-12 text-muted-foreground">
+                    <p>Contact information is not available at the moment.</p>
+                </div>
             )}
             {contactInfo && (
               <div className="flex items-center justify-center gap-4 mt-8">
@@ -298,3 +301,5 @@ export default function ContactPage() {
     </div>
   );
 }
+
+  
