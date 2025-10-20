@@ -476,16 +476,15 @@ export default function WorkPage() {
             </div>
             <div className="flex flex-wrap justify-center gap-2 mb-4">
               <Button variant={filter === 'all' ? 'destructive' : 'outline'} onClick={() => setFilter('all')}>
-                <span className="sm:hidden">All</span>
-                <span className="hidden sm:inline">All Projects</span>
+                All Projects
               </Button>
               <Button variant={filter === 'image' ? 'destructive' : 'outline'} onClick={() => setFilter('image')}>
-                <FontAwesomeIcon icon={faPalette} className="sm:mr-2 h-4 w-4" />
-                <span className="hidden sm:inline">Graphics</span>
+                <FontAwesomeIcon icon={faPalette} className="mr-2 h-4 w-4" />
+                Graphics
               </Button>
               <Button variant={filter === 'video' ? 'destructive' : 'outline'} onClick={() => setFilter('video')}>
-                <FontAwesomeIcon icon={faFilm} className="sm:mr-2 h-4 w-4" />
-                <span className="hidden sm:inline">Animation</span>
+                <FontAwesomeIcon icon={faFilm} className="mr-2 h-4 w-4" />
+                Animation
               </Button>
             </div>
           </div>
