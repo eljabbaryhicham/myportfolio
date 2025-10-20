@@ -9,9 +9,9 @@ import { v2 as cloudinary } from 'cloudinary';
 import { collection, addDoc } from 'firebase/firestore';
 import { initializeFirebase } from '@/firebase';
 
-// Configure Cloudinary with environment variables
+// Configure Cloudinary with environment variables for server-side actions
 cloudinary.config({ 
-  cloud_name: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME, 
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME, 
   api_key: process.env.CLOUDINARY_API_KEY, 
   api_secret: process.env.CLOUDINARY_API_SECRET,
   secure: true
@@ -40,14 +40,14 @@ export async function uploadMediaFromUrl(
   input: UploadMediaFromUrlInput
 ): Promise<UploadMediaFromUrlOutput> {
     const requiredEnvVars: (keyof NodeJS.ProcessEnv)[] = [
-        'NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME',
+        'CLOUDINARY_CLOUD_NAME',
         'CLOUDINARY_API_KEY',
         'CLOUDINARY_API_SECRET'
     ];
 
     for (const envVar of requiredEnvVars) {
         if (!process.env[envVar] || process.env[envVar]?.startsWith('YOUR_')) {
-            const errorMessage = `Server configuration error: The ${envVar} environment variable is not set correctly. Please add it to your .env.local file.`;
+            const errorMessage = `Server configuration error: The ${envVar} environment variable is not set correctly. Please add it to your .env file.`;
             console.error(errorMessage);
             return { success: false, message: errorMessage };
         }
