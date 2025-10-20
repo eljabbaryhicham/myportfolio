@@ -87,7 +87,7 @@
 
 @layer components {
   .glass-effect {
-    @apply relative overflow-hidden;
+    @apply relative;
     background-color: rgb(255 255 255 / 5%);
     backdrop-filter: blur(12px);
   }
