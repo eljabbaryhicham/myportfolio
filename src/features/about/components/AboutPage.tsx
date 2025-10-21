@@ -97,12 +97,12 @@ export default function AboutPage() {
             <>
               {aboutContent && (
                 <motion.div 
-                  className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 items-center w-full max-w-4xl mx-auto mb-12 md:mb-16"
+                  className="flex flex-col md:flex-row gap-8 md:gap-12 items-center w-full max-w-4xl mx-auto mb-12 md:mb-16"
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5 }}
                 >
-                  <div className="text-center md:text-left">
+                  <div className="text-center md:text-left md:w-1/2">
                     <div className="w-48 mx-auto md:mx-0 mb-4">
                         <Logo src={logoUrl} />
                     </div>
@@ -123,7 +123,7 @@ export default function AboutPage() {
                         </Button>
                     </div>
                   </div>
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-2 gap-4 md:w-1/2">
                     {services.map((service, index) => (
                         <motion.div 
                             key={service.title}
