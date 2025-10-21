@@ -136,9 +136,6 @@
     border-top-color: hsl(var(--primary));
   }
 
-  .xgplayer-mobile .xgplayer-controls {
-    display: none !important;
-  }
 }
 
 @layer utilities {
