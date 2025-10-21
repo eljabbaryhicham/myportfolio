@@ -1,30 +1,82 @@
 
+'use client';
+
 import type { Metadata } from 'next';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import { cn } from '@/lib/utils';
 import { FirebaseClientProvider } from '@/firebase/client-provider';
 import { LayoutProvider } from '@/components/layout/layout-provider';
+import { usePathname } from 'next/navigation';
+import { useDoc, useFirestore, useMemoFirebase } from '@/firebase';
+import { doc } from 'firebase/firestore';
+import type { PortfolioItem } from '@/features/portfolio/data/portfolio-data';
 
-export const metadata: Metadata = {
-  title: 'Liquid Folio',
-  description: 'A portfolio showcasing creative work with a liquid glass aesthetic.',
-};
+
+interface HomePageSettings {
+    featuredProjectId: string;
+}
+
+function HomeBackgroundVideo() {
+    const pathname = usePathname();
+    const isHomePage = pathname === '/';
+    const firestore = useFirestore();
+
+    const settingsDocRef = useMemoFirebase(
+      () => (firestore ? doc(firestore, 'homepage', 'settings') : null),
+      [firestore]
+    );
+    const { data: homeSettings, isLoading: isLoadingSettings } = useDoc<HomePageSettings>(settingsDocRef);
+    
+    const featuredProjectRef = useMemoFirebase(
+        () => (firestore && homeSettings?.featuredProjectId ? doc(firestore, 'projects', homeSettings.featuredProjectId) : null),
+        [firestore, homeSettings]
+    );
+    const { data: featuredProject, isLoading: isLoadingProject } = useDoc<PortfolioItem>(featuredProjectRef);
+
+    if (!isHomePage) {
+        return null;
+    }
+
+    return (
+        <div className="absolute inset-0 -z-10 w-full h-full">
+            { (isLoadingSettings || isLoadingProject) ? <div className="absolute inset-0 z-20 flex items-center justify-center bg-background" /> :
+             featuredProject && (
+                 <div className="w-full h-full bg-black">
+                    <video
+                        key={featuredProject.id}
+                        src={featuredProject.sourceUrl}
+                        autoPlay
+                        loop
+                        muted
+                        playsInline
+                        className="w-full h-full object-cover blur-md"
+                    />
+                </div>
+            )}
+            <div className="absolute inset-0 bg-black/70"></div>
+        </div>
+    );
+}
 
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const pathname = usePathname();
+  const isHomePage = pathname === '/';
+  
   return (
     <html lang="en" className="dark h-full" suppressHydrationWarning>
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
         <link href="https://fonts.googleapis.com/css2?family=Bungee&family=Quicksand:wght@400;500;700&family=Dancing+Script:wght@700&display=swap" rel="stylesheet" />
+        <title>Liquid Folio</title>
       </head>
       <body className={cn('font-body antialiased text-center')} suppressHydrationWarning>
-        <div className="fixed inset-0 -z-10 overflow-hidden" style={{ filter: 'url(#metaballs)' }}>
+        <div className="fixed inset-0 -z-20 overflow-hidden" style={{ filter: 'url(#metaballs)' }}>
           <div className="absolute w-[60rem] h-[60rem] bg-primary/30 rounded-full blur-3xl opacity-40 top-1/4 left-1/4 blob-1"></div>
           <div className="absolute w-[50rem] h-[50rem] bg-primary/30 rounded-full blur-3xl opacity-40 bottom-1/4 right-1/4 blob-2"></div>
           <div className="absolute w-[40rem] h-[40rem] bg-primary/30 rounded-full blur-3xl opacity-40 top-1/2 left-1/2 blob-3"></div>
@@ -41,6 +93,7 @@ export default function RootLayout({
         </svg>
 
         <FirebaseClientProvider>
+          {isHomePage && <HomeBackgroundVideo />}
           <LayoutProvider>
             {children}
           </LayoutProvider>
