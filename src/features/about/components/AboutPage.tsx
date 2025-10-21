@@ -1,4 +1,3 @@
-
 'use client';
 
 import { memo, useState, useEffect, useRef, useMemo } from 'react';
@@ -17,6 +16,7 @@ import { BrainCircuit, Mic, Clapperboard, Share2, Code } from 'lucide-react';
 import useEmblaCarousel from 'embla-carousel-react'
 import Autoplay from 'embla-carousel-autoplay'
 import { motion } from 'framer-motion';
+import { cn } from '@/lib/utils';
 
 
 interface Client {
@@ -166,12 +166,16 @@ export default function AboutPage() {
                     </div>
                     <div className="md:w-1/2 flex flex-col justify-center">
                        <h2 className="text-2xl md:text-3xl font-headline tracking-tight mb-6 text-center">What We Do?</h2>
-                       <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
+                       <div className="grid grid-cols-2 md:grid-cols-2 gap-4">
                         {services.map((service) => {
+                            const isWebDesign = service.title === "Web Design & Development";
                             return (
                                 <div 
                                     key={service.title}
-                                    className="glass-effect p-4 rounded-lg flex flex-col items-center justify-center text-center"
+                                    className={cn(
+                                      "glass-effect p-4 rounded-lg flex flex-col items-center justify-center text-center",
+                                      isWebDesign && "md:col-span-2"
+                                    )}
                                 >
                                     <service.icon className="w-8 h-8 md:w-10 md:h-10 text-primary mb-3" />
                                     <p className="text-xs md:text-sm font-semibold">{service.title}</p>
