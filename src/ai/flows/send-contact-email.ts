@@ -31,7 +31,7 @@ export async function sendContactEmail(
   }
 
   try {
-    const resend = new Resend(apiKey);
+    const resend = new Resend(); // Initialize without the key
 
     const { data, error } = await resend.emails.send({
       from: `Contact Form <${FROM_EMAIL}>`,
@@ -63,6 +63,10 @@ export async function sendContactEmail(
           </table>
         </body>
       `,
+    }, {
+      headers: {
+        Authorization: `Bearer ${apiKey}`, // Send the API key in the header
+      },
     });
 
     if (error) {
