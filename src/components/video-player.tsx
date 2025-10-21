@@ -4,7 +4,7 @@
 import React, { useEffect, useRef } from 'react';
 import Plyr, { Options, SourceInfo } from 'plyr';
 import 'plyr-react/plyr.css';
-import { useIsMobile } from '@/hooks/use-is-mobile';
+import { useIsMobile } from '@/hooks/use-mobile';
 import Player from 'xgplayer';
 import 'xgplayer/dist/index.min.css';
 
