@@ -144,34 +144,34 @@ export default function AboutPage() {
                     className="flex flex-col md:flex-row gap-8 md:gap-12 items-center"
                   >
                     <div className="md:w-1/2 text-center">
-                      <div className="w-32 mx-auto mb-4">
-                          <Logo src={logoUrl} />
-                      </div>
-                      <h2 className="text-2xl md:text-3xl font-headline tracking-tight mb-4">{aboutContent?.title}</h2>
-                      <p className="text-foreground/70 leading-relaxed mb-6 text-center text-justify">{aboutContent?.content}</p>
-                      <div className="hidden sm:flex flex-col sm:flex-row gap-4 justify-center">
-                          <Button asChild>
-                              <Link href="/contact">
-                                  <FontAwesomeIcon icon={faEnvelope} className="mr-2" />
-                                  Contact Us
-                              </Link>
-                          </Button>
-                          <Button asChild variant="success">
-                               <Link href="/work">
-                                  Explore Our Works
-                                  <FontAwesomeIcon icon={faArrowRight} className="ml-2" />
-                              </Link>
-                          </Button>
-                      </div>
+                        <div className="w-32 mx-auto mb-4">
+                            <Logo src={logoUrl} />
+                        </div>
+                        <h2 className="text-2xl md:text-3xl font-headline tracking-tight mb-4">{aboutContent?.title}</h2>
+                        <p className="text-foreground/70 leading-relaxed mb-6 text-center text-justify">{aboutContent?.content}</p>
+                        <div className="hidden sm:flex flex-col sm:flex-row gap-4 justify-center">
+                            <Button asChild>
+                                <Link href="/contact">
+                                    <FontAwesomeIcon icon={faEnvelope} className="mr-2" />
+                                    Contact Us
+                                </Link>
+                            </Button>
+                            <Button asChild variant="success">
+                                 <Link href="/work">
+                                    Explore Our Works
+                                    <FontAwesomeIcon icon={faArrowRight} className="ml-2" />
+                                </Link>
+                            </Button>
+                        </div>
                     </div>
                     <div className="md:w-1/2 flex flex-col justify-center">
                        <h2 className="text-2xl md:text-3xl font-headline tracking-tight mb-6 text-center">What We Do?</h2>
-                       <div className="flex flex-wrap gap-4">
-                        {services.map((service, index) => {
+                       <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
+                        {services.map((service) => {
                             return (
                                 <div 
                                     key={service.title}
-                                    className="glass-effect p-4 rounded-lg flex flex-col flex-grow items-center justify-center text-center aspect-square"
+                                    className="glass-effect p-4 rounded-lg flex flex-col items-center justify-center text-center"
                                 >
                                     <service.icon className="w-8 h-8 md:w-10 md:h-10 text-primary mb-3" />
                                     <p className="text-xs md:text-sm font-semibold">{service.title}</p>
