@@ -1,7 +1,7 @@
 
 'use client';
 
-import { memo } from 'react';
+import { memo, useCallback } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import Image from 'next/image';
@@ -15,6 +15,8 @@ import Link from 'next/link';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEnvelope, faArrowRight } from '@fortawesome/free-solid-svg-icons';
 import { BrainCircuit, Mic, Clapperboard, Share2 } from 'lucide-react';
+import useEmblaCarousel from 'embla-carousel-react'
+import Autoplay from 'embla-carousel-autoplay'
 
 
 interface Client {
@@ -42,14 +44,16 @@ const services = [
 const MemoizedImage = memo(Image);
 
 const ClientLogo = ({ client }: { client: Client }) => (
-    <div className="group relative mx-8 flex-shrink-0">
-        <MemoizedImage
-            src={client.logoUrl}
-            alt={`${client.name} logo`}
-            width={128}
-            height={40}
-            className="object-contain h-10 w-32 grayscale brightness-0 invert transition-all duration-300 group-hover:grayscale-0 group-hover:brightness-100 group-hover:invert-0"
-        />
+    <div className="relative mx-8 flex-shrink-0 basis-1/5 group">
+        <Link href={client.logoUrl} target='_blank'>
+            <MemoizedImage
+                src={client.logoUrl}
+                alt={`${client.name} logo`}
+                width={128}
+                height={40}
+                className="object-contain h-10 w-32 grayscale brightness-0 invert transition-all duration-300 group-hover:grayscale-0 group-hover:brightness-100 group-hover:invert-0"
+            />
+        </Link>
     </div>
 );
 
@@ -70,6 +74,14 @@ export default function AboutPage() {
   
   const isLoading = isLoadingClients || isLoadingContent;
   const logoUrl = aboutContent?.logoUrl || "https://i.imgur.com/N9c8oEJ.png";
+
+  const [emblaRef] = useEmblaCarousel({ loop: true, align: 'start' }, [
+      Autoplay({
+          delay: 3000,
+          stopOnInteraction: false,
+          stopOnMouseEnter: true,
+      })
+  ])
 
   return (
     <div className="h-full w-full flex flex-col">
@@ -143,18 +155,17 @@ export default function AboutPage() {
                   </div>
                   
                   {clients && clients.length > 0 ? (
-                      <div className="w-full inline-flex flex-nowrap overflow-hidden [mask-image:_linear-gradient(to_right,transparent_0,_black_128px,_black_calc(100%-200px),transparent_100%)]">
-                        <div className="flex items-center justify-center md:justify-start [&_li]:mx-8 [&_img]:max-w-none animate-marquee hover:[animation-play-state:paused]">
+                    <div className="overflow-hidden" ref={emblaRef}>
+                        <div className="flex">
                             {clients.map((client) => (
                                 <ClientLogo key={client.id} client={client} />
                             ))}
-                        </div>
-                        <div className="flex items-center justify-center md:justify-start [&_li]:mx-8 [&_img]:max-w-none animate-marquee hover:[animation-play-state:paused]" aria-hidden="true">
+                            {/* Duplicate for infinite loop */}
                             {clients.map((client) => (
                                 <ClientLogo key={`${client.id}-clone`} client={client} />
                             ))}
                         </div>
-                      </div>
+                    </div>
                   ) : (
                     <div className="p-1 h-full flex items-center justify-center text-muted-foreground col-span-full">
                         No clients to display.
@@ -175,4 +186,3 @@ export default function AboutPage() {
     </div>
   );
 }
-
