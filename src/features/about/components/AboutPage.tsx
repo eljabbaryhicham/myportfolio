@@ -140,15 +140,15 @@ export default function AboutPage() {
                     </div>
                   </motion.div>
 
-                <div>
+                <div className="w-full overflow-hidden">
                   <div className="text-center mb-8">
                     <h2 className="text-2xl font-headline tracking-tight">Our Clients</h2>
                     <Separator className="bg-white/10 max-w-xs mx-auto mt-2" />
                   </div>
                   
                   {clients && clients.length > 0 ? (
-                    <div className="relative w-full overflow-hidden">
-                      <div className="flex w-full overflow-x-auto pb-4 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                    <div className="overflow-x-auto pb-4 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                      <div className="flex flex-nowrap">
                           {clients.map((client) => <ClientLogo key={client.id} client={client} />)}
                       </div>
                     </div>
