@@ -43,17 +43,17 @@ const services = [
 const MemoizedImage = memo(Image);
 
 const ClientLogo = ({ client }: { client: Client }) => (
-    <div className="inline-flex flex-shrink-0 mx-4 w-36">
-        <div className="group/item flex flex-col items-center justify-center gap-2 cursor-pointer p-4">
-            <div className="relative w-[150px] h-[40px]">
+    <div className="inline-flex flex-shrink-0 items-center justify-center mx-2 sm:mx-4 w-24 sm:w-28 md:w-32">
+        <div className="group/item flex flex-col items-center justify-center gap-2 cursor-pointer p-2">
+            <div className="relative w-full h-10">
                 <MemoizedImage
                     src={client.logoUrl}
                     alt={`${client.name} logo`}
                     fill
-                    className="object-contain w-full h-10 grayscale brightness-0 invert transition-all duration-300 group-hover/item:filter-none"
+                    className="object-contain grayscale brightness-0 invert transition-all duration-300 group-hover/item:filter-none"
                 />
             </div>
-            <p className="text-sm text-white whitespace-nowrap transition-colors duration-300 group-hover/item:text-primary">{client.name}</p>
+            <p className="text-xs sm:text-sm text-white whitespace-nowrap transition-colors duration-300 group-hover/item:text-primary">{client.name}</p>
         </div>
     </div>
 );
@@ -147,7 +147,7 @@ export default function AboutPage() {
                 </div>
                 
                 {clients && clients.length > 0 ? (
-                  <div className="group relative w-full overflow-x-hidden whitespace-nowrap">
+                  <div className="group relative w-full overflow-hidden whitespace-nowrap">
                     <div className="flex">
                       <div className="animate-marquee group-hover:[animation-play-state:paused]">
                           <div className="flex">
