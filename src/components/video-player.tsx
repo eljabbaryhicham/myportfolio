@@ -4,7 +4,7 @@
 import React, { useEffect, useRef } from 'react';
 import Plyr, { Options, SourceInfo } from 'plyr';
 import 'plyr-react/plyr.css';
-import { useIsMobile } from '@/hooks/use-mobile';
+import { useIsMobile } from '@/hooks/use-is-mobile';
 import Player from 'xgplayer';
 import 'xgplayer/dist/index.min.css';
 
@@ -50,10 +50,11 @@ const VideoPlayer = ({
           playsinline: true,
           height: '100%',
           width: '100%',
-          controls: controls,
-          controlBar: {
-            inactive: 0,
-          }
+          controls: {
+            mode: 'normal', // Ensure controls are on by default
+          },
+          inactive: 3000, // Hide controls after 3 seconds of inactivity
+          ignores: [], // Process all events
         });
 
         playerRef.current = xgPlayer;

@@ -136,14 +136,14 @@
     border-top-color: hsl(var(--primary));
   }
 
-  /* Force immediate hide/show for xgplayer controls */
   .xgplayer-inactive .xgplayer-controls {
     opacity: 0 !important;
     visibility: hidden !important;
-    transition: opacity 0s, visibility 0s !important;
+    transition: opacity 0.2s, visibility 0.2s !important;
   }
+
   .xgplayer-controls {
-    transition: opacity 0s, visibility 0s !important;
+    transition: opacity 0.2s, visibility 0.2s !important;
   }
 }
 
@@ -287,3 +287,4 @@
   animation: marquee 20s linear infinite;
   flex-shrink: 0;
 }
+
