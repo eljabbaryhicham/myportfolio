@@ -42,7 +42,7 @@ const services = [
 const MemoizedImage = memo(Image);
 
 const ClientLogo = ({ client }: { client: Client }) => (
-    <div className="group flex-shrink-0 mx-8 w-32 flex items-center justify-center">
+    <div className="group flex-shrink-0 mx-8 w-32 flex items-center justify-center pointer-events-none">
         <MemoizedImage
             src={client.logoUrl}
             alt={`${client.name} logo`}
@@ -143,8 +143,8 @@ export default function AboutPage() {
                   </div>
                   
                   {clients && clients.length > 0 ? (
-                    <div className="relative w-[80vw] mx-auto overflow-hidden py-4">
-                      <div className="flex animate-marquee whitespace-nowrap hover:[animation-play-state:paused]">
+                    <div className="w-[80vw] mx-auto overflow-hidden group">
+                      <div className="flex animate-marquee group-hover:[animation-play-state:paused] whitespace-nowrap">
                         {[...clients, ...clients].map((client, index) => (
                           <ClientLogo key={`${client.id}-${index}-1`} client={client} />
                         ))}
