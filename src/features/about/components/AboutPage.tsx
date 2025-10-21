@@ -42,7 +42,7 @@ const services = [
 const MemoizedImage = memo(Image);
 
 const ClientLogo = ({ client }: { client: Client }) => (
-    <div className="flex-shrink-0 items-center justify-center mx-2 sm:mx-4 w-24 sm:w-28 md:w-32">
+    <div className="flex items-center justify-center mx-4 my-2 w-32">
         <div className="group/item flex flex-col items-center justify-center gap-2 cursor-pointer p-2">
             <div className="relative w-full h-10">
                 <MemoizedImage
@@ -140,17 +140,15 @@ export default function AboutPage() {
                     </div>
                   </motion.div>
 
-                <div className="w-full overflow-hidden">
+                <div>
                   <div className="text-center mb-8">
                     <h2 className="text-2xl font-headline tracking-tight">Our Clients</h2>
                     <Separator className="bg-white/10 max-w-xs mx-auto mt-2" />
                   </div>
                   
                   {clients && clients.length > 0 ? (
-                    <div className="overflow-x-auto pb-4 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-                      <div className="flex flex-nowrap">
-                          {clients.map((client) => <ClientLogo key={client.id} client={client} />)}
-                      </div>
+                    <div className="flex flex-wrap justify-center items-center">
+                        {clients.map((client) => <ClientLogo key={client.id} client={client} />)}
                     </div>
                   ) : (
                     <div className="p-1 h-full flex items-center justify-center text-muted-foreground col-span-full">
