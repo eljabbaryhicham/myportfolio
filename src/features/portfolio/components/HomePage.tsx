@@ -49,7 +49,6 @@ export default function HomePageContent({ featuredProject, isLoading }: HomePage
                 <video
                     key={featuredVideoProject.id}
                     src={featuredVideoProject.sourceUrl}
-                    poster={featuredVideoProject.thumbnailUrl}
                     autoPlay
                     loop
                     muted
