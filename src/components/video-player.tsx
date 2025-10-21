@@ -40,9 +40,17 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ source, poster, onReady }) =>
 
     // --- 2. Transform Cloudinary URL to HLS ---
     if (isCloudinary && !isHls && source.sources[0].provider !== 'youtube' && source.sources[0].provider !== 'vimeo') {
-        const parts = videoSrc.split('/upload/');
-        if (parts.length === 2) {
-            videoSrc = `${parts[0]}/upload/f_hls/${parts[1].replace(/\.[^/.]+$/, "")}/master.m3u8`;
+        const uploadMarker = '/upload/';
+        const uploadIndex = videoSrc.indexOf(uploadMarker);
+        
+        if (uploadIndex !== -1) {
+            const baseUrl = videoSrc.substring(0, uploadIndex);
+            let publicId = videoSrc.substring(uploadIndex + uploadMarker.length);
+            // The part after /upload/ can contain versioning (e.g., v1234567), we need to preserve it
+            // So we take everything after /upload/ and construct the new URL
+            // Correctly remove file extension if it exists
+            publicId = publicId.replace(/\.[^/.]+$/, "");
+            videoSrc = `${baseUrl}/upload/f_hls/${publicId}.m3u8`;
             isHls = true;
         }
     }
@@ -72,7 +80,10 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ source, poster, onReady }) =>
         hls.attachMedia(videoElement);
 
         hls.on(Hls.Events.MANIFEST_PARSED, () => {
-          initPlyr(); // Initialize Plyr AFTER manifest is parsed
+          initPlyr({
+            // You can add Plyr options here that are specific to HLS
+             captions: { active: true, update: true, language: 'en' },
+          }); 
         });
         hls.on(Hls.Events.ERROR, (event, data) => {
           if (data.fatal) {
@@ -102,7 +113,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ source, poster, onReady }) =>
         hlsRef.current = null;
       }
     };
-  }, [source, onReady]); 
+  }, [source, poster, onReady]); 
 
   return (
     <div className="w-full h-full bg-black plyr__video-embed">
