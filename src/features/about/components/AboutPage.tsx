@@ -166,11 +166,11 @@ export default function AboutPage() {
                     </div>
                     <div className="md:w-1/2">
                        <h2 className="text-2xl md:text-3xl font-headline tracking-tight mb-6 text-center">What We Do?</h2>
-                       <div className="flex flex-wrap gap-4 justify-center">
+                       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                         {services.map((service) => (
                             <div 
                                 key={service.title}
-                                className="glass-effect p-4 rounded-lg flex flex-col items-center justify-center text-center aspect-square flex-grow-0 basis-full sm:basis-[calc(50%-0.5rem)] md:basis-[calc(33.33%-1rem)]"
+                                className="glass-effect p-4 rounded-lg flex flex-col items-center justify-center text-center aspect-square"
                             >
                                 <service.icon className="w-8 h-8 md:w-10 md:h-10 text-primary mb-3" />
                                 <p className="text-xs md:text-sm font-semibold">{service.title}</p>
