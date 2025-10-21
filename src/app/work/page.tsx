@@ -1,4 +1,3 @@
-
 'use client';
 
 import Image from 'next/image';
@@ -658,12 +657,25 @@ export default function WorkPage() {
                             video: ({node, ...props}) => {
                               if (!isClient || !props.src) return null;
                               
+                              let videoSrc = props.src;
+                              let type = 'video/mp4';
+                               if(videoSrc.includes('res.cloudinary.com')){
+                                  const uploadMarker = '/upload/';
+                                  const uploadIndex = videoSrc.indexOf(uploadMarker);
+                                  if (uploadIndex !== -1) {
+                                      const publicIdWithTransformations = videoSrc.substring(uploadIndex + uploadMarker.length);
+                                      const publicId = publicIdWithTransformations.split('/').slice(1).join('/');
+                                      videoSrc = `https://res.cloudinary.com/da1srnoer/video/upload/f_hls/${publicId.replace(/\.[^/.]+$/, "")}/master.m3u8`;
+                                      type = 'application/x-mpegURL';
+                                  }
+                              }
+                              
                               const videoJsOptions = {
                                   autoplay: false,
                                   controls: true,
                                   responsive: true,
                                   fluid: true,
-                                  sources: [{ src: props.src, type: 'video/mp4' }],
+                                  sources: [{ src: videoSrc, type: type }],
                                   poster: selectedItem.thumbnailUrl
                               };
 
