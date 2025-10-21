@@ -55,33 +55,13 @@ const PortfolioMedia = ({
 }) => {
 
   const videoSource = useMemo(() => {
-    const youtubeRegex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
-    const vimeoRegex = /(?:https?:\/\/)?(?:www\.)?vimeo\.com\/(?:channels\/(?:\w+\/)?|groups\/(?:[^\/]*)\/videos\/|album\/(?:\d+)\/video\/|)(\d+)/;
+    if (item.type !== 'video') return null;
 
-    let sources: {src: string, type?: string, provider?: 'youtube' | 'vimeo', size?: number}[] = [];
+    let sources: { src: string }[] = [];
     if (item.sourceUrl) {
-      const youtubeMatch = item.sourceUrl.match(youtubeRegex);
-      if (youtubeMatch?.[1]) {
-        return {
-          type: 'video' as const,
-          sources: [{ src: youtubeMatch[1], provider: 'youtube' as const }],
-        };
-      }
-
-      const vimeoMatch = item.sourceUrl.match(vimeoRegex);
-      if (vimeoMatch?.[1]) {
-        return {
-          type: 'video' as const,
-          sources: [{ src: vimeoMatch[1], provider: 'vimeo' as const }],
-        };
-      }
-      sources.push({ src: item.sourceUrl, type: 'video/mp4' });
+      sources.push({ src: item.sourceUrl });
     } else if (item.sources) {
-      sources = item.sources.map(s => ({
-        src: s.src,
-        type: 'video/mp4',
-        size: s.size,
-      }));
+      sources = item.sources.map(s => ({ src: s.src }));
     }
 
     if (sources.length > 0) {
@@ -101,7 +81,6 @@ const PortfolioMedia = ({
           <VideoPlayer
             source={videoSource}
             poster={item.thumbnailUrl}
-            previewThumbnailsSrc={item.previewThumbnailsSrc}
             onReady={onMediaLoaded}
           />
         </div>
@@ -137,7 +116,7 @@ const PortfolioMedia = ({
     onMediaLoaded();
   }, [item, onMediaLoaded]);
 
-  return <div className="relative aspect-video bg-black flex justify-center items-center group w-full"></div>;
+  return <div className="relative aspect-video bg-black flex justify-center items-center group w-full"><p className="text-white">Media not available</p></div>;
 };
 PortfolioMedia.displayName = 'PortfolioMedia';
 
@@ -676,37 +655,13 @@ export default function WorkPage() {
                               const { src } = props;
                               if (!isClient || !src) return null;
                               
-                              const youtubeRegex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
-                              const vimeoRegex = /(?:https?:\/\/)?(?:www\.)?vimeo\.com\/(?:channels\/(?:\w+\/)?|groups\/(?:[^\/]*)\/videos\/|album\/(?:\d+)\/video\/|)(\d+)/;
-                              
-                              let videoSource: { type: 'video'; sources: { src: string; provider: 'youtube' | 'vimeo' }[] } | { type: 'video'; sources: { src: string; type: string }[] } | null = null;
-                              const youtubeMatch = src.match(youtubeRegex);
-                              if (youtubeMatch && youtubeMatch[1]) {
-                                videoSource = {
-                                  type: 'video',
-                                  sources: [{ src: youtubeMatch[1], provider: 'youtube' }],
-                                };
-                              } else {
-                                const vimeoMatch = src.match(vimeoRegex);
-                                if (vimeoMatch && vimeoMatch[1]) {
-                                  videoSource = {
-                                    type: 'video',
-                                    sources: [{ src: vimeoMatch[1], provider: 'vimeo' }],
-                                  };
-                                } else {
-                                  videoSource = {
-                                    type: 'video',
-                                    sources: [{ src, type: 'video/mp4' }],
-                                  };
-                                }
-                              }
+                              const videoSource = { type: 'video' as const, sources: [{ src: src }]};
 
                               return (
                                 <div className="w-full rounded-lg overflow-hidden my-4">
                                   <VideoPlayer
                                     source={videoSource}
                                     poster={selectedItem.thumbnailUrl}
-                                    previewThumbnailsSrc={selectedItem.previewThumbnailsSrc}
                                   />
                                 </div>
                               );

@@ -10,11 +10,12 @@ import { cn } from "@/lib/utils";
 import Preloader from "@/components/preloader";
 import { defaultPortfolioItems } from "../data/portfolio-data";
 import { useMemo } from "react";
-import VideoPlayer from "@/components/video-player";
-import type { SourceInfo } from "plyr";
+import dynamic from 'next/dynamic';
 import Logo from "@/components/logo";
 import { useDoc, useFirestore, useMemoFirebase } from "@/firebase";
 import { doc } from "firebase/firestore";
+
+const VideoPlayer = dynamic(() => import('@/components/video-player'), { ssr: false });
 
 interface HomePageContentProps {
     featuredProject: PortfolioItem | null;
@@ -38,15 +39,15 @@ export default function HomePageContent({ featuredProject, isLoading }: HomePage
     const project = featuredProject || defaultPortfolioItems.find(item => item.featured && item.type === 'video');
     if (!project) return null;
 
-    let sourceInfo: SourceInfo;
+    let sourceInfo;
     if (project.sources && project.sources.length > 0) {
       sourceInfo = {
-        type: 'video',
-        sources: project.sources.map(s => ({ src: s.src, type: 'video/mp4', size: s.size })),
+        type: 'video' as const,
+        sources: project.sources.map(s => ({ src: s.src })),
       };
     } else if (project.sourceUrl) {
       sourceInfo = {
-        type: 'video',
+        type: 'video' as const,
         sources: [{ src: project.sourceUrl }],
       };
     } else {
