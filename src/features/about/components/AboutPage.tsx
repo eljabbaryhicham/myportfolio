@@ -70,7 +70,12 @@ export default function AboutPage() {
   const { data: aboutContent, isLoading: isLoadingContent } = useDoc<AboutPageContent>(aboutContentRef);
 
   const [emblaRef] = useEmblaCarousel({ loop: true, align: 'start' }, [
-    Autoplay({ playOnInit: true, delay: 0, stopOnInteraction: true, stopOnMouseEnter: true }),
+    Autoplay({
+      playOnInit: true,
+      delay: 30, // A small delay is needed to kickstart the animation
+      stopOnInteraction: false, // Allows autoplay to resume after drag/interaction
+      stopOnMouseEnter: true,   // Pauses autoplay on hover
+    }),
   ]);
   
   const isLoading = isLoadingClients || isLoadingContent;
