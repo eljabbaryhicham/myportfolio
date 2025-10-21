@@ -224,8 +224,6 @@ export default function WorkPage() {
   }, []);
 
   useEffect(() => {
-    if (!isClient || isLoading) return;
-
     const calculateVisibleItems = () => {
       if (isMobile) {
         setVisibleItems(6);
@@ -233,28 +231,22 @@ export default function WorkPage() {
       }
       if (gridRef.current) {
         const gridStyle = window.getComputedStyle(gridRef.current);
-        const gridWidth = gridRef.current.offsetWidth;
-        const columnGap = parseInt(gridStyle.getPropertyValue('gap'), 10) || 16;
-        
-        // Use a sample item to determine width, or a sensible fallback
-        const firstItem = gridRef.current.children[0] as HTMLElement;
-        if (firstItem) {
-            const itemWidth = firstItem.offsetWidth;
-            const columns = Math.max(1, Math.floor((gridWidth + columnGap) / (itemWidth + columnGap)));
-            const rows = 2;
-            setVisibleItems(columns * rows);
-        } else {
-            // Fallback if there are no items rendered yet
-            setVisibleItems(12);
-        }
+        const columnCount = gridStyle.getPropertyValue('grid-template-columns').split(' ').length;
+        const rows = 2; // Number of initial rows to show
+        setVisibleItems(columnCount * rows);
+      } else {
+        // Fallback for server-side rendering or if ref is not ready
+        setVisibleItems(12);
       }
     };
     
+    // Initial calculation
     calculateVisibleItems();
     
+    // Recalculate on resize
     window.addEventListener('resize', calculateVisibleItems);
     return () => window.removeEventListener('resize', calculateVisibleItems);
-  }, [isClient, isLoading, isMobile, filter, portfolioItems]);
+  }, [isMobile, filter, portfolioItems]); // Rerun when these change
 
 
   // Effect to set selected item based on URL
@@ -799,5 +791,7 @@ export default function WorkPage() {
     </>
   );
 }
+
+    
 
     
