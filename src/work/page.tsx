@@ -1,3 +1,4 @@
+
 'use client';
 
 import Image from 'next/image';
@@ -11,7 +12,6 @@ import {
 } from '@/components/ui/dialog';
 import { useState, memo, useEffect, useMemo, useRef } from 'react';
 import { cn } from '@/lib/utils';
-import dynamic from 'next/dynamic';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import ReactMarkdown from 'react-markdown';
@@ -33,13 +33,6 @@ import { motion, AnimatePresence, PanInfo } from 'framer-motion';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import ContactForm from '@/features/contact/components/ContactForm';
 import type { AppUser } from '@/firebase/auth/use-user';
-import type Player from 'video.js/dist/types/player';
-
-
-const VideoPlayer = dynamic(() => import('@/components/video-player'), {
-  ssr: false,
-  loading: () => <div className="aspect-video w-full flex items-center justify-center bg-black"><Preloader /></div>,
-});
 
 
 const MemoizedImage = memo(Image);
@@ -54,43 +47,14 @@ const PortfolioMedia = ({
   onMediaLoaded: () => void;
 }) => {
 
-  const videoJsOptions = useMemo(() => {
-    if (item.type !== 'video' || !item.sourceUrl) return null;
-    
-    // Check if it's a Cloudinary URL and transform it for HLS
-    let videoSrc = item.sourceUrl;
-    let type = 'video/mp4';
-    if(videoSrc.includes('res.cloudinary.com')){
-        const uploadMarker = '/upload/';
-        const uploadIndex = videoSrc.indexOf(uploadMarker);
-        if (uploadIndex !== -1) {
-            const publicIdWithTransformations = videoSrc.substring(uploadIndex + uploadMarker.length);
-            // Remove any existing transformations to get the base public ID
-            const publicId = publicIdWithTransformations.split('/').slice(1).join('/');
-            videoSrc = `https://res.cloudinary.com/da1srnoer/video/upload/f_hls/${publicId.replace(/\.[^/.]+$/, "")}/master.m3u8`;
-            type = 'application/x-mpegURL';
-        }
-    }
+  useEffect(() => {
+    onMediaLoaded();
+  }, [item, onMediaLoaded]);
 
-
-    return {
-      autoplay: true,
-      controls: true,
-      responsive: true,
-      fluid: true,
-      sources: [{
-        src: videoSrc,
-        type: type,
-      }],
-      poster: item.thumbnailUrl
-    };
-  }, [item]);
-
-
-  if (item.type === 'video' && videoJsOptions) {
+  if (item.type === 'video' && item.sourceUrl) {
     return (
       <div className="relative aspect-video bg-black flex items-center justify-center w-full">
-        <VideoPlayer options={videoJsOptions} onReady={(player: Player) => onMediaLoaded()} />
+        <video key={item.id} src={item.sourceUrl} poster={item.thumbnailUrl} controls autoPlay className="w-full h-full" />
       </div>
     );
   }
@@ -117,11 +81,6 @@ const PortfolioMedia = ({
       </div>
     );
   }
-
-  // Fallback for when media is not ready or type is wrong, this should ideally not be hit
-  useEffect(() => {
-    onMediaLoaded();
-  }, [item, onMediaLoaded]);
 
   return <div className="relative aspect-video bg-black flex justify-center items-center group w-full"></div>;
 };
@@ -656,32 +615,9 @@ export default function WorkPage() {
                             img: ({node, ...props}) => <img className="w-full rounded-lg" {...props} />,
                             video: ({node, ...props}) => {
                               if (!isClient || !props.src) return null;
-                              
-                              let videoSrc = props.src;
-                              let type = 'video/mp4';
-                               if(videoSrc.includes('res.cloudinary.com')){
-                                  const uploadMarker = '/upload/';
-                                  const uploadIndex = videoSrc.indexOf(uploadMarker);
-                                  if (uploadIndex !== -1) {
-                                      const publicIdWithTransformations = videoSrc.substring(uploadIndex + uploadMarker.length);
-                                      const publicId = publicIdWithTransformations.split('/').slice(1).join('/');
-                                      videoSrc = `https://res.cloudinary.com/da1srnoer/video/upload/f_hls/${publicId.replace(/\.[^/.]+$/, "")}/master.m3u8`;
-                                      type = 'application/x-mpegURL';
-                                  }
-                              }
-                              
-                              const videoJsOptions = {
-                                  autoplay: false,
-                                  controls: true,
-                                  responsive: true,
-                                  fluid: true,
-                                  sources: [{ src: videoSrc, type: type }],
-                                  poster: selectedItem.thumbnailUrl
-                              };
-
                               return (
                                 <div className="w-full rounded-lg overflow-hidden my-4">
-                                  <VideoPlayer options={videoJsOptions} />
+                                  <video key={props.src} src={props.src} poster={selectedItem.thumbnailUrl} controls className="w-full h-full" />
                                 </div>
                               );
                             }

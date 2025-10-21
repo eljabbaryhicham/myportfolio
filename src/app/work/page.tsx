@@ -34,13 +34,6 @@ import { motion, AnimatePresence, PanInfo } from 'framer-motion';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import ContactForm from '@/features/contact/components/ContactForm';
 import type { AppUser } from '@/firebase/auth/use-user';
-import type Player from 'video.js/dist/types/player';
-
-
-const VideoPlayer = dynamic(() => import('@/components/video-player'), {
-  ssr: false,
-  loading: () => <div className="aspect-video w-full flex items-center justify-center bg-black"><Preloader /></div>,
-});
 
 
 const MemoizedImage = memo(Image);
@@ -55,30 +48,15 @@ const PortfolioMedia = ({
   onMediaLoaded: () => void;
 }) => {
 
-  const videoJsOptions = useMemo(() => {
-    if (item.type !== 'video' || !item.sourceUrl) return null;
-    
-    let videoSrc = item.sourceUrl;
-    let type = 'video/mp4';
-
-    return {
-      autoplay: true,
-      controls: true,
-      responsive: true,
-      fluid: true,
-      sources: [{
-        src: videoSrc,
-        type: type,
-      }],
-      poster: item.thumbnailUrl
-    };
-  }, [item]);
+  useEffect(() => {
+    onMediaLoaded();
+  }, [item, onMediaLoaded]);
 
 
-  if (item.type === 'video' && videoJsOptions) {
+  if (item.type === 'video' && item.sourceUrl) {
     return (
       <div className="relative aspect-video bg-black flex items-center justify-center w-full">
-        <VideoPlayer options={videoJsOptions} onReady={(player: Player) => onMediaLoaded()} />
+         <video key={item.id} src={item.sourceUrl} poster={item.thumbnailUrl} controls autoPlay className="w-full h-full" />
       </div>
     );
   }
@@ -105,11 +83,6 @@ const PortfolioMedia = ({
       </div>
     );
   }
-
-  // Fallback for when media is not ready or type is wrong, this should ideally not be hit
-  useEffect(() => {
-    onMediaLoaded();
-  }, [item, onMediaLoaded]);
 
   return <div className="relative aspect-video bg-black flex justify-center items-center group w-full"></div>;
 };
@@ -644,22 +617,9 @@ export default function WorkPage() {
                             img: ({node, ...props}) => <img className="w-full rounded-lg" {...props} />,
                             video: ({node, ...props}) => {
                               if (!isClient || !props.src) return null;
-                              
-                              let videoSrc = props.src;
-                              let type = 'video/mp4';
-                              
-                              const videoJsOptions = {
-                                  autoplay: false,
-                                  controls: true,
-                                  responsive: true,
-                                  fluid: true,
-                                  sources: [{ src: videoSrc, type: type }],
-                                  poster: selectedItem.thumbnailUrl
-                              };
-
                               return (
                                 <div className="w-full rounded-lg overflow-hidden my-4">
-                                  <VideoPlayer options={videoJsOptions} />
+                                  <video key={props.src} src={props.src} poster={selectedItem.thumbnailUrl} controls className="w-full h-full" />
                                 </div>
                               );
                             }

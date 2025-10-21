@@ -17,15 +17,9 @@ import Preloader from '@/components/preloader';
 import { useCollection, useFirestore, useMemoFirebase, addDocumentNonBlocking, deleteDocumentNonBlocking, useUser } from '@/firebase';
 import { collection, doc, query, orderBy, DocumentReference } from 'firebase/firestore';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import dynamic from 'next/dynamic';
 import { Separator } from '@/components/ui/separator';
 import AddFromUrlDialog from './AddFromUrlDialog';
 import type { AppUser } from '@/firebase/auth/use-user';
-
-const VideoPlayer = dynamic(() => import('@/components/video-player'), {
-  ssr: false,
-  loading: () => <div className="aspect-video w-full flex items-center justify-center bg-black"><Preloader /></div>,
-});
 
 
 // Type for the media stored in Firestore
@@ -408,19 +402,9 @@ export default function MediaAdmin(props: MediaAdminProps) {
     }
 
     if (previewFile.resource_type === 'video') {
-       const videoJsOptions = {
-          autoplay: true,
-          controls: true,
-          responsive: true,
-          fluid: true,
-          sources: [{
-            src: previewFile.url,
-            type: 'video/mp4'
-          }]
-       };
       return (
         <div className="w-full h-full flex items-center justify-center">
-            <VideoPlayer options={videoJsOptions} />
+          <video key={previewFile.id} src={previewFile.url} controls autoPlay className="w-full h-full" />
         </div>
       );
     }

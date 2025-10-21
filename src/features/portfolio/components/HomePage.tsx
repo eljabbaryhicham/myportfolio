@@ -10,13 +10,9 @@ import { cn } from "@/lib/utils";
 import Preloader from "@/components/preloader";
 import { defaultPortfolioItems } from "../data/portfolio-data";
 import { useMemo } from "react";
-import dynamic from 'next/dynamic';
 import Logo from "@/components/logo";
 import { useDoc, useFirestore, useMemoFirebase } from "@/firebase";
 import { doc } from "firebase/firestore";
-import type Player from 'video.js/dist/types/player';
-
-const VideoPlayer = dynamic(() => import('@/components/video-player'), { ssr: false });
 
 interface HomePageContentProps {
     featuredProject: PortfolioItem | null;
@@ -35,28 +31,10 @@ export default function HomePageContent({ featuredProject, isLoading }: HomePage
     [firestore]
   );
   const { data: contactInfo, isLoading: isLoadingContact } = useDoc<ContactInfo>(contactDocRef);
-
-  const videoJsOptions = useMemo(() => {
-    const project = featuredProject || defaultPortfolioItems.find(item => item.featured && item.type === 'video');
-    if (!project || !project.sourceUrl) return null;
-
-    let videoSrc = project.sourceUrl;
-    let type = 'video/mp4';
-    
-    return {
-      autoplay: true,
-      controls: false,
-      loop: true,
-      muted: true,
-      fluid: true,
-      sources: [{
-        src: videoSrc,
-        type: type,
-      }]
-    };
-  }, [featuredProject]);
   
   const logoUrl = contactInfo?.logoUrl || "https://i.imgur.com/N9c8oEJ.png";
+
+  const featuredVideoProject = featuredProject || defaultPortfolioItems.find(item => item.featured && item.type === 'video');
 
   return (
     <div className="relative h-full w-full flex flex-col items-center justify-center gap-8 p-4 overflow-hidden">
@@ -66,8 +44,19 @@ export default function HomePageContent({ featuredProject, isLoading }: HomePage
           </div>
       )}
       <div className={cn("absolute inset-0 z-0 transition-opacity duration-1000", (isLoading || isLoadingContact) && "opacity-0")}>
-        {videoJsOptions && (
-          <VideoPlayer options={videoJsOptions} />
+        {featuredVideoProject && (
+             <div className="w-full h-full bg-black">
+                <video
+                    key={featuredVideoProject.id}
+                    src={featuredVideoProject.sourceUrl}
+                    poster={featuredVideoProject.thumbnailUrl}
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                    className="w-full h-full object-cover"
+                />
+            </div>
         )}
         <div className="absolute inset-0 bg-black/50"></div>
       </div>
