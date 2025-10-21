@@ -146,13 +146,12 @@ export default function AboutPage() {
                   </div>
                   
                   {clients && clients.length > 0 ? (
-                    <div className="group w-full overflow-hidden whitespace-nowrap">
-                        <div className="inline-block animate-marquee group-hover:[animation-play-state:paused]">
+                    <div className="relative w-full">
+                      <div className="flex w-full overflow-x-auto pb-4 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                        <div className="flex flex-nowrap items-center">
                             {clients.map((client) => <ClientLogo key={client.id} client={client} />)}
                         </div>
-                        <div className="inline-block animate-marquee group-hover:[animation-play-state:paused]" aria-hidden="true">
-                            {clients.map((client) => <ClientLogo key={`${client.id}-2`} client={client} />)}
-                        </div>
+                      </div>
                     </div>
                   ) : (
                     <div className="p-1 h-full flex items-center justify-center text-muted-foreground col-span-full">
