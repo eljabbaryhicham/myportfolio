@@ -85,7 +85,7 @@ const sendContactEmailFlow = ai.defineFlow(
 
       if (error) {
         console.error('Error sending email:', error);
-        return { success: false, message: 'Failed to send email.' };
+        return { success: false, message: `Failed to send email: ${error.message}` };
       }
       
       return { success: true, message: 'Message Sent! Thanks for reaching out. We\'ll get back to you soon.' };
