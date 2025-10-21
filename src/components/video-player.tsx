@@ -4,7 +4,7 @@
 import React, { useEffect, useRef } from 'react';
 import Plyr, { Options, SourceInfo } from 'plyr';
 import 'plyr-react/plyr.css';
-import { useIsMobile } from '@/hooks/use-mobile';
+import Hls from 'hls.js';
 
 interface VideoPlayerProps {
   source: SourceInfo;
@@ -29,100 +29,79 @@ const VideoPlayer = ({
 }: VideoPlayerProps) => {
   const wrapperRef = useRef<HTMLDivElement>(null);
   const playerRef = useRef<Plyr | null>(null);
-  const isMobile = useIsMobile();
 
   useEffect(() => {
     const wrapper = wrapperRef.current;
-    if (!wrapper || wrapper.querySelector('video')) return;
+    if (!wrapper || !source || wrapper.querySelector('video')) return;
 
     const videoElement = document.createElement('video');
     videoElement.playsInline = true;
-    videoElement.controls = controls;
+    videoElement.controls = false; // Let Plyr handle controls
+    videoElement.poster = poster;
     wrapper.appendChild(videoElement);
-    
-    const useThumbnails = !isMobile && !!previewThumbnailsSrc;
-    
+
     const options: Options = {
-        autoplay: autoplay || false,
-        loop: { active: loop || false },
-        muted: muted || false,
-        settings: ['quality', 'speed', 'loop'],
-        quality: {
-          default: 480,
-          options: [4320, 2160, 1440, 1080, 720, 576, 480, 360, 240],
-        },
-        previewThumbnails: {
-          enabled: useThumbnails,
-          src: useThumbnails ? previewThumbnailsSrc! : '',
-        },
-        fullscreen: {
-            enabled: true,
-            fallback: true,
-            iosNative: true,
-        },
-        controls: controls
-          ? [
-              'play-large',
-              'play',
-              'progress',
-              'current-time',
-              'mute',
-              'volume',
-              'captions',
-              'settings',
-              'pip',
-              'airplay',
-              'fullscreen',
-            ]
-          : [],
+      autoplay: autoplay || false,
+      loop: { active: loop || false },
+      muted: muted || false,
+      settings: ['quality', 'speed', 'loop'],
+      quality: {
+        default: 720,
+        options: [4320, 2160, 1440, 1080, 720, 576, 480, 360, 240],
+      },
+      previewThumbnails: {
+        enabled: !!previewThumbnailsSrc,
+        src: previewThumbnailsSrc || '',
+      },
+      fullscreen: {
+        enabled: true,
+        fallback: true,
+        iosNative: true,
+      },
+      controls: controls
+        ? [
+            'play-large', 'play', 'progress', 'current-time',
+            'mute', 'volume', 'captions', 'settings', 'pip',
+            'airplay', 'fullscreen',
+          ]
+        : [],
     };
     
     const plyrPlayer = new Plyr(videoElement, options);
     playerRef.current = plyrPlayer;
-    
-    if(source) {
-        plyrPlayer.source = source;
+
+    const firstSource = source.sources[0];
+    if (firstSource && firstSource.src) {
+        const isM3u8 = firstSource.src.endsWith('.m3u8');
+
+        if (isM3u8 && Hls.isSupported()) {
+            const hls = new Hls();
+            hls.loadSource(firstSource.src);
+            hls.attachMedia(videoElement);
+            // @ts-ignore
+            window.hls = hls; 
+        } else {
+            // For non-HLS or unsupported browsers, let Plyr handle it.
+            // Plyr can handle native HLS on Safari.
+            plyrPlayer.source = source;
+        }
     }
     
-    if (poster) {
-      plyrPlayer.once('ready', () => {
-        const posterElement = plyrPlayer.elements.poster as HTMLElement;
-        if (posterElement) {
-          posterElement.style.backgroundImage = `url(${poster})`;
-          plyrPlayer.elements.container.classList.add('plyr--poster-visible');
-        }
-        if (onReady) {
-          onReady();
-        }
-      });
-
-      plyrPlayer.on('play', () => {
-        plyrPlayer.elements.container.classList.remove('plyr--poster-visible');
-      });
-      
-      plyrPlayer.on('sourcechange', () => {
-          const posterElement = plyrPlayer.elements.poster as HTMLElement;
-          if (posterElement) {
-              posterElement.style.backgroundImage = `url(${poster})`;
-              plyrPlayer.elements.container.classList.add('plyr--poster-visible');
-          }
-      });
-    } else if (onReady) {
-      plyrPlayer.once('ready', onReady);
+    if (onReady) {
+        plyrPlayer.once('ready', onReady);
     }
-
+    
     return () => {
       if (playerRef.current) {
         playerRef.current.destroy();
         playerRef.current = null;
       }
       if (wrapper) {
-          wrapper.innerHTML = '';
+        wrapper.innerHTML = '';
       }
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [source, previewThumbnailsSrc, poster, autoplay, loop, muted, controls, isMobile]);
-  
+  }, [source, poster, previewThumbnailsSrc, autoplay, loop, muted, controls, onReady]);
+
   return <div ref={wrapperRef} className="plyr-react plyr" />;
 };
 
