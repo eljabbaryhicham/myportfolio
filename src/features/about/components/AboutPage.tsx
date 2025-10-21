@@ -42,13 +42,13 @@ const services = [
 const MemoizedImage = memo(Image);
 
 const ClientLogo = ({ client }: { client: Client }) => (
-    <div className="group relative mx-8 w-32 flex-shrink-0">
+    <div className="group relative mx-8 flex-shrink-0">
         <MemoizedImage
             src={client.logoUrl}
             alt={`${client.name} logo`}
             width={128}
             height={40}
-            className="object-contain h-10 w-full grayscale brightness-0 invert transition-all duration-300 group-hover:grayscale-0 group-hover:brightness-100 group-hover:invert-0"
+            className="object-contain h-10 w-32 grayscale brightness-0 invert transition-all duration-300 group-hover:grayscale-0 group-hover:brightness-100 group-hover:invert-0"
         />
     </div>
 );
@@ -143,11 +143,15 @@ export default function AboutPage() {
                   </div>
                   
                   {clients && clients.length > 0 ? (
-                      <div className="relative w-full overflow-hidden">
-                        <div className="absolute inset-0 z-10 bg-gradient-to-r from-background via-transparent to-background" />
-                        <div className="flex w-max animate-marquee hover:[animation-play-state:paused]">
-                            {[...clients, ...clients].map((client, index) => (
-                                <ClientLogo key={`${client.id}-${index}`} client={client} />
+                      <div className="w-full inline-flex flex-nowrap overflow-hidden [mask-image:_linear-gradient(to_right,transparent_0,_black_128px,_black_calc(100%-200px),transparent_100%)]">
+                        <div className="flex items-center justify-center md:justify-start [&_li]:mx-8 [&_img]:max-w-none animate-marquee hover:[animation-play-state:paused]">
+                            {clients.map((client) => (
+                                <ClientLogo key={client.id} client={client} />
+                            ))}
+                        </div>
+                        <div className="flex items-center justify-center md:justify-start [&_li]:mx-8 [&_img]:max-w-none animate-marquee hover:[animation-play-state:paused]" aria-hidden="true">
+                            {clients.map((client) => (
+                                <ClientLogo key={`${client.id}-clone`} client={client} />
                             ))}
                         </div>
                       </div>
@@ -171,3 +175,4 @@ export default function AboutPage() {
     </div>
   );
 }
+
