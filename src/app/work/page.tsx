@@ -22,7 +22,7 @@ import { useCollection, useFirestore, useMemoFirebase, useUser, setDocumentNonBl
 import { collection, query, orderBy, doc } from 'firebase/firestore';
 import { PortfolioItem } from '@/features/portfolio/data/portfolio-data';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faUpDown, faXmark, faExpand, faPalette, faFilm, faArrowLeft, faArrowRight, faPencilAlt, faEnvelope, faPlus } from '@fortawesome/free-solid-svg-icons';
+import { faUpDown, faXmark, faExpand, faPalette, faFilm, faArrowLeft, faArrowRight, faPencilAlt, faEnvelope } from '@fortawesome/free-solid-svg-icons';
 import { Separator } from '@/components/ui/separator';
 import Preloader from '@/components/preloader';
 import { useIsExtraWide } from '@/hooks/use-is-extra-wide';
@@ -509,9 +509,9 @@ export default function WorkPage() {
                             <Button
                             onClick={showMoreItems}
                             variant="outline"
-                            className="w-3/4 h-3/4 text-lg"
+                            className="w-3/4 h-3/4 text-lg group"
                             >
-                                <FontAwesomeIcon icon={faPlus} className="mr-2" />
+                                <FontAwesomeIcon icon={faArrowRight} className="mr-2 transition-transform group-hover:translate-x-1" />
                                 Show More
                             </Button>
                         </div>
