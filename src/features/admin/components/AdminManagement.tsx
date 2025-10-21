@@ -69,7 +69,7 @@ function PermissionsDialog({ user, isOpen, onOpenChange, onSave }: { user: Admin
         <Dialog open={isOpen} onOpenChange={onOpenChange}>
             <DialogContent className="w-[80vw] max-w-2xl glass-effect">
                 <DialogHeader>
-                    <DialogTitle>Edit Permissions for {user.username}</DialogTitle>
+                    <DialogTitle className="font-headline">Edit Permissions for {user.username}</DialogTitle>
                     <DialogDescription>
                         Control what this admin user can and cannot do.
                     </DialogDescription>
@@ -148,7 +148,7 @@ export default function AdminManagement() {
     <>
       <div className="flex-1 flex flex-col h-full min-h-0">
         <div className="mb-6">
-          <h2 className="text-xl font-bold">Admin Management</h2>
+          <h2 className="text-xl font-headline">Admin Management</h2>
           <p className="text-muted-foreground">View and manage administrator accounts and permissions.</p>
         </div>
         
@@ -261,5 +261,3 @@ export default function AdminManagement() {
     </>
   );
 }
-
-    

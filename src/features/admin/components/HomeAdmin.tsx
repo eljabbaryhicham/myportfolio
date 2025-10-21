@@ -102,7 +102,7 @@ export default function HomeAdmin() {
   return (
     <div className="flex-1 flex flex-col h-full">
         <div className="mb-6">
-            <h2 className="text-xl font-bold">Home Page Settings</h2>
+            <h2 className="text-xl font-headline">Home Page Settings</h2>
             <p className="text-muted-foreground">
                 Choose the video to feature on your homepage.
             </p>
@@ -149,5 +149,3 @@ export default function HomeAdmin() {
     </div>
   );
 }
-
-    

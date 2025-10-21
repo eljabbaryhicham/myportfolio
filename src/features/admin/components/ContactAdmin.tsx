@@ -126,7 +126,7 @@ export default function ContactAdmin() {
   return (
     <div className="flex-1 flex flex-col h-full">
       <div className="mb-6">
-          <h2 className="text-xl font-bold">Contact Page &amp; Site Settings</h2>
+          <h2 className="text-xl font-headline">Contact Page &amp; Site Settings</h2>
           <p className="text-muted-foreground">
               Update the information displayed on your public contact page and other site-wide settings.
           </p>
@@ -307,5 +307,3 @@ export default function ContactAdmin() {
     </div>
   );
 }
-
-    

@@ -132,7 +132,7 @@ export default function AboutAdmin() {
           <div className="flex flex-col min-h-0">
               <div className="mb-6 flex-shrink-0 flex items-start justify-between">
                   <div>
-                      <h2 className="text-xl font-bold">Client Management</h2>
+                      <h2 className="text-xl font-headline">Client Management</h2>
                       <p className="text-muted-foreground">Manage the clients displayed on your "About Us" page.</p>
                   </div>
                   <DialogTrigger asChild>
@@ -146,7 +146,7 @@ export default function AboutAdmin() {
           </div>
           <DialogContent className="w-[80vw] max-w-[80vw] h-[90vh] flex flex-col glass-effect p-0 rounded-lg">
               <DialogHeader className="p-6 pb-0">
-                <DialogTitle>Edit About Page Content</DialogTitle>
+                <DialogTitle className="font-headline">Edit About Page Content</DialogTitle>
                 <DialogDescription>
                   Update the content displayed on your public "About Us" page.
                   {!canEditAbout && <span className="text-destructive font-bold block mt-2"> (Read-only)</span>}
@@ -260,5 +260,3 @@ export default function AboutAdmin() {
     </>
   );
 }
-
-    

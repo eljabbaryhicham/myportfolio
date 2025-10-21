@@ -244,7 +244,7 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onCho
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
             <DialogContent className="w-[80vw] max-w-[80vw] h-[90vh] flex flex-col glass-effect p-0 rounded-lg">
                 <DialogHeader className="p-6 pb-0">
-                    <DialogTitle>{item ? 'Edit' : 'Add'} Portfolio Item</DialogTitle>
+                    <DialogTitle className="font-headline">{item ? 'Edit' : 'Add'} Portfolio Item</DialogTitle>
                     <DialogDescription>
                         {item ? 'Update the details of your portfolio item.' : 'Add a new item to your portfolio.'}
                         {!canEdit && <span className="text-destructive font-bold block mt-2"> (Read-only)</span>}
@@ -457,5 +457,3 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onCho
         </Dialog>
     )
 }
-    
-    

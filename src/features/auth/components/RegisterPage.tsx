@@ -109,7 +109,7 @@ export default function RegisterPage() {
     <div className="flex h-full w-full items-center justify-center p-4">
       <Card className="w-full md:w-1/2 glass-effect">
         <CardHeader>
-            <CardTitle className="text-2xl">Create Admin Account</CardTitle>
+            <CardTitle className="text-2xl font-headline">Create Admin Account</CardTitle>
             <CardDescription>
                 Enter your details and the secret code to register.
             </CardDescription>

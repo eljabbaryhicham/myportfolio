@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { useMemo, useState, useEffect, useRef } from 'react';
@@ -193,7 +192,7 @@ function ProjectAdmin({ setSelectedItem, setIsSheetOpen, handleFormSubmit }: Pro
     <div className="flex-1 flex flex-col h-full">
         <div className="flex items-start justify-between mb-6">
             <div className="text-left">
-                <h2 className="text-xl font-bold">Portfolio Projects</h2>
+                <h2 className="text-xl font-headline">Portfolio Projects</h2>
                 <p className="text-muted-foreground">
                 Add, edit, and reorder the projects in your portfolio.
                 </p>
@@ -295,5 +294,3 @@ function ProjectAdmin({ setSelectedItem, setIsSheetOpen, handleFormSubmit }: Pro
 }
 
 export default ProjectAdmin;
-
-    

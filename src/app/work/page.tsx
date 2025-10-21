@@ -401,7 +401,7 @@ export default function WorkPage() {
         <div className="p-[5%] pb-4">
           <div className="container mx-auto px-0">
             <div className="mb-8 text-center">
-              <h1 className="text-3xl md:text-4xl font-bold tracking-tight">Our Work</h1>
+              <h1 className="text-3xl md:text-4xl font-headline tracking-tight">Our Work</h1>
               <p className="mt-2 max-w-2xl mx-auto text-base md:text-lg text-foreground/70">
                 Browse our collection of projects. Click on any item to view
                 details.
@@ -511,7 +511,7 @@ export default function WorkPage() {
                     <div className="flex flex-col flex-1 min-h-0 h-full">
                       <DialogHeader className="p-4 md:p-6 flex-shrink-0 relative">
                         <div className="text-center">
-                          <DialogTitle className="text-xl md:text-2xl">
+                          <DialogTitle className="text-xl md:text-2xl font-headline">
                             {selectedItem.title}
                           </DialogTitle>
                           <DialogDescription className="text-sm md:text-base text-center text-foreground/70 mt-2 md:mt-4 whitespace-pre-wrap max-w-2xl mx-auto">
@@ -603,7 +603,7 @@ export default function WorkPage() {
             {selectedItem && (
                 <>
                 <DialogHeader className="p-4 md:p-6 pb-0">
-                    <DialogTitle>{selectedItem.title} - Details</DialogTitle>
+                    <DialogTitle className="font-headline">{selectedItem.title} - Details</DialogTitle>
                 </DialogHeader>
                 <ScrollArea className="flex-1">
                     <div className="prose dark:prose-invert max-w-none space-y-4 text-sm text-foreground/80 whitespace-pre-wrap p-4 md:p-6">
@@ -649,7 +649,7 @@ export default function WorkPage() {
       <Dialog open={isContactFormOpen} onOpenChange={setIsContactFormOpen}>
         <DialogContent className="w-[90vw] max-w-xl glass-effect">
             <DialogHeader>
-              <DialogTitle>Contact Us</DialogTitle>
+              <DialogTitle className="font-headline">Contact Us</DialogTitle>
               <DialogDescription>
                 Have a question about &quot;{selectedItem?.title}&quot;? Fill out the form below.
               </DialogDescription>

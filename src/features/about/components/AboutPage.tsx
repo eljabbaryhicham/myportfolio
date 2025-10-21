@@ -72,7 +72,7 @@ export default function AboutPage() {
       <div className="p-[5%] pb-4">
         <div className="container mx-auto px-0">
             <div className="mb-8 text-center">
-              <h1 className="text-3xl md:text-4xl font-bold tracking-tight">About Us</h1>
+              <h1 className="text-3xl md:text-4xl font-headline tracking-tight">About Us</h1>
               <p className="mt-2 max-w-2xl mx-auto text-base md:text-lg text-foreground/70">
                 Learn more about our mission and the brands we've worked with.
               </p>
@@ -97,7 +97,7 @@ export default function AboutPage() {
                     <div className="w-48 mx-auto md:mx-0 mb-4">
                         <Logo src={logoUrl} />
                     </div>
-                    <h2 className="text-2xl md:text-3xl font-bold tracking-tight mb-4">{aboutContent.title}</h2>
+                    <h2 className="text-2xl md:text-3xl font-headline tracking-tight mb-4">{aboutContent.title}</h2>
                     <p className="text-foreground/70 leading-relaxed mb-6">{aboutContent.content}</p>
                     <div className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
                         <Button asChild>
@@ -127,7 +127,7 @@ export default function AboutPage() {
 
               <div className="w-full max-w-4xl mx-auto">
                 <div className="text-center mb-8">
-                  <h2 className="text-2xl font-bold tracking-tight">Our Clients</h2>
+                  <h2 className="text-2xl font-headline tracking-tight">Our Clients</h2>
                   <Separator className="bg-white/10 max-w-xs mx-auto mt-2" />
                 </div>
                 

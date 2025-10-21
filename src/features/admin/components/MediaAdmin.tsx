@@ -414,7 +414,7 @@ export default function MediaAdmin(props: MediaAdminProps) {
   const commonDialogContent = (
     <>
       <DialogHeader className="p-4 border-b text-center">
-          <DialogTitle>{props.isDialog && props.isSelectionMode ? "Choose Media" : "Media Library"}</DialogTitle>
+          <DialogTitle className="font-headline">{props.isDialog && props.isSelectionMode ? "Choose Media" : "Media Library"}</DialogTitle>
            <DialogDescription>Upload and manage your images and videos.</DialogDescription>
       </DialogHeader>
       <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'images' | 'videos')} className="flex-1 flex flex-col min-h-0">
@@ -457,7 +457,7 @@ export default function MediaAdmin(props: MediaAdminProps) {
     <Dialog open={!!previewFile} onOpenChange={(isOpen) => !isOpen && setPreviewFile(null)}>
       <DialogContent className="w-[80vw] max-w-[80vw] h-[90vh] glass-effect p-0 flex flex-col items-center justify-center bg-black/80 border-0">
         <DialogHeader className="absolute top-4 left-4 z-10">
-          <DialogTitle className="text-white/80">{previewFile?.filename}</DialogTitle>
+          <DialogTitle className="text-white/80 font-headline">{previewFile?.filename}</DialogTitle>
         </DialogHeader>
         {renderPreviewContent()}
         <DialogClose className={cn(
@@ -493,7 +493,7 @@ export default function MediaAdmin(props: MediaAdminProps) {
       <div className="flex-1 flex flex-col h-full gap-6">
         <div className="flex items-start justify-between">
             <div className="text-left">
-                <h2 className="text-xl font-bold">Media Library</h2>
+                <h2 className="text-xl font-headline">Media Library</h2>
                 <p className="text-muted-foreground mt-1 text-sm">Upload and manage your images and videos.</p>
             </div>
             <div className="flex items-center gap-2">

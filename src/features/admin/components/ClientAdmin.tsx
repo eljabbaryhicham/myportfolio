@@ -443,7 +443,7 @@ export default function ClientAdmin() {
         <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
           <DialogContent className="w-[80vw] max-w-lg glass-effect">
             <DialogHeader>
-              <DialogTitle>{selectedClient?.id ? 'Edit Client' : 'Add New Client'}</DialogTitle>
+              <DialogTitle className="font-headline">{selectedClient?.id ? 'Edit Client' : 'Add New Client'}</DialogTitle>
               <DialogDescription>
                 Enter the details for the client.
                 {!canEdit && <span className="text-destructive font-bold block mt-2"> (Read-only)</span>}
@@ -485,5 +485,3 @@ export default function ClientAdmin() {
     </>
   );
 }
-
-    

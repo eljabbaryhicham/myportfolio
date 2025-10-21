@@ -66,7 +66,7 @@ export default function ContactPage() {
       <div className="p-[5%] pb-4">
         <div className="container mx-auto px-0">
           <div className="mb-8 text-center">
-            <h1 className="text-3xl md:text-4xl font-bold tracking-tight">Contact Us</h1>
+            <h1 className="text-3xl md:text-4xl font-headline tracking-tight">Contact Us</h1>
             <p className="mt-2 max-w-2xl mx-auto text-base md:text-lg text-foreground/70">
               Let&apos;s get in touch! Fill out the form below to send me a message.
             </p>
@@ -95,7 +95,7 @@ export default function ContactPage() {
                         <AvatarImage src={contactInfo.avatarUrl} alt={contactInfo.name} />
                         <AvatarFallback>{contactInfo.name?.substring(0, 2)}</AvatarFallback>
                       </Avatar>
-                      <h3 className="text-xl font-bold">{contactInfo.name}</h3>
+                      <h3 className="text-xl font-headline">{contactInfo.name}</h3>
                       <p className="text-foreground/70">{contactInfo.title}</p>
                       
                       <Separator className="my-4 bg-white/20" />
@@ -174,5 +174,3 @@ export default function ContactPage() {
     </div>
   );
 }
-
-    

@@ -194,7 +194,7 @@ function AdminPage() {
         <div className="container mx-auto px-0 flex flex-col h-full min-h-0">
           <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4 text-center">
             <div className="text-center md:text-left">
-              <h1 className="text-2xl md:text-4xl font-bold tracking-tight">Admin Panel</h1>
+              <h1 className="text-2xl md:text-4xl font-headline tracking-tight">Admin Panel</h1>
               <p className="mt-2 text-md md:text-lg text-foreground/70 break-all">
                 Welcome, {typedUser?.username || typedUser?.email?.split('@')[0]}!
               </p>
@@ -285,6 +285,3 @@ function AdminPage() {
 }
 
 export default AdminPage;
-
-    
-    
