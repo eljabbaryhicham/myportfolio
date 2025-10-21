@@ -97,8 +97,7 @@ export default function AboutPage() {
               </div>
             ) : (
               <div className="space-y-12 md:space-y-24">
-                {aboutContent && (
-                  <motion.div 
+                <motion.div 
                     className="flex flex-col md:flex-row gap-8 md:gap-12 items-center"
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -108,8 +107,8 @@ export default function AboutPage() {
                       <div className="w-48 mx-auto md:mx-0 mb-4">
                           <Logo src={logoUrl} />
                       </div>
-                      <h2 className="text-2xl md:text-3xl font-headline tracking-tight mb-4">{aboutContent.title}</h2>
-                      <p className="text-foreground/70 leading-relaxed mb-6">{aboutContent.content}</p>
+                      <h2 className="text-2xl md:text-3xl font-headline tracking-tight mb-4">{aboutContent?.title}</h2>
+                      <p className="text-foreground/70 leading-relaxed mb-6">{aboutContent?.content}</p>
                       <div className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
                           <Button asChild>
                               <Link href="/contact">
@@ -140,7 +139,6 @@ export default function AboutPage() {
                       ))}
                     </div>
                   </motion.div>
-                )}
 
                 <div>
                   <div className="text-center mb-8">
