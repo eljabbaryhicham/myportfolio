@@ -590,9 +590,10 @@ export default function WorkPage() {
                             <Button
                               variant="secondary"
                               onClick={() => setIsContactFormOpen(true)}
+                              className="flex flex-col h-auto py-2 px-4 leading-tight text-center"
                             >
-                              <FontAwesomeIcon icon={faEnvelope} className="mr-2" />
-                              Contact
+                              <span>ASK ME</span>
+                              <span className="text-xs font-normal">about this project</span>
                             </Button>
                           </div>
                         </div>
