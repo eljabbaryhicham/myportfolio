@@ -1,4 +1,3 @@
-
 'use client';
 
 import { memo } from 'react';
@@ -77,7 +76,7 @@ export default function AboutPage() {
 
   return (
     <div className="h-full w-full flex flex-col">
-      <div className="p-[5%] pb-4">
+      <div className="p-[5%] pb-4 flex-shrink-0">
         <div className="container mx-auto px-0">
             <div className="mb-8 text-center">
               <h1 className="text-3xl md:text-4xl font-headline tracking-tight">About Us</h1>
@@ -87,8 +86,8 @@ export default function AboutPage() {
             </div>
         </div>
       </div>
-      <Separator className="bg-white/10" />
-      <ScrollArea className="flex-1">
+      <Separator className="bg-white/10 flex-shrink-0" />
+      <ScrollArea className="flex-1 min-h-0">
         <div className="p-[5%] pt-4">
           <div className="container mx-auto px-0">
             {isLoading ? (
