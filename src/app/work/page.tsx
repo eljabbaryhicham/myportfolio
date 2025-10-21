@@ -192,7 +192,8 @@ export default function WorkPage() {
   const [selectedItem, setSelectedItem] = useState<PortfolioItem | null>(null);
   const [selectedItemForEdit, setSelectedItemForEdit] = useState<PortfolioItem | null>(null);
   const [isFormSheetOpen, setIsFormSheetOpen] = useState(false);
-  const [visibleItems, setVisibleItems] = useState(12);
+  const [visibleItemsCount, setVisibleItemsCount] = useState(12);
+  const [initialLoadCount, setInitialLoadCount] = useState(12);
   const [detailsModalOpen, setDetailsModalOpen] = useState(false);
   const [isContactFormOpen, setIsContactFormOpen] = useState(false);
   const [filter, setFilter] = useState<'all' | 'image' | 'video'>('all');
@@ -221,36 +222,44 @@ export default function WorkPage() {
     setIsClient(true);
   }, []);
   
-  const calculateVisibleItems = useCallback(() => {
+  const calculateAndSetItems = useCallback(() => {
     if (isMobile) {
-      return 6;
+      setInitialLoadCount(6);
+      setVisibleItemsCount(6);
+      return;
     }
     if (gridRef.current) {
       const grid = gridRef.current;
       const gridStyle = window.getComputedStyle(grid);
       const columnCount = gridStyle.getPropertyValue('grid-template-columns').split(' ').length;
       
-      const cardHeightWithGap = 250; // Approximate height of a card + gap
-      const gridHeight = window.innerHeight * 0.8; // Use 80% of viewport height
+      const cardHeightWithGap = 250; 
+      const gridHeight = window.innerHeight * 0.8; 
       const rowCount = Math.max(1, Math.floor(gridHeight / cardHeightWithGap));
       
-      return Math.max(1, rowCount * columnCount);
+      const calculatedCount = Math.max(1, rowCount * columnCount);
+      setInitialLoadCount(calculatedCount);
+      setVisibleItemsCount(calculatedCount);
+    } else {
+      setInitialLoadCount(12);
+      setVisibleItemsCount(12);
     }
-    return 12; // Fallback for desktop
   }, [isMobile]);
 
   useEffect(() => {
     function handleResize() {
-      setVisibleItems(calculateVisibleItems());
+      calculateAndSetItems();
     }
     
-    // Set initial items
     handleResize();
 
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
-  }, [calculateVisibleItems]);
+  }, [calculateAndSetItems]);
 
+  const showMoreItems = () => {
+    setVisibleItemsCount(prev => prev + initialLoadCount);
+  };
 
   // Effect to set selected item based on URL
   useEffect(() => {
@@ -269,13 +278,12 @@ export default function WorkPage() {
     } else {
       params.delete('id');
     }
-    // Using { scroll: false } prevents the page from scrolling to the top
     router.push(`${pathname}?${params.toString()}`, { scroll: false });
   };
 
   const handleItemClick = (item: PortfolioItem) => {
     setIsDialogMediaLoading(true);
-    setDirection(null); // Reset direction for first open
+    setDirection(null); 
     setSelectedItem(item);
     updateUrl(slugify(item.title));
   };
@@ -284,10 +292,6 @@ export default function WorkPage() {
     if (!portfolioItems || portfolioItems.length === 0) return 0;
     return Math.min(...portfolioItems.map(i => i.order || 0));
   }, [portfolioItems]);
-
-  const showMoreItems = () => {
-    setVisibleItems(prevVisibleItems => prevVisibleItems + calculateVisibleItems());
-  };
 
   const handleOpenChange = (open: boolean) => {
     if (!open) {
@@ -444,8 +448,10 @@ export default function WorkPage() {
     },
   };
   
-  const itemsToShow = filteredItems.slice(0, visibleItems);
-  const showMoreButtonNeeded = filteredItems.length > visibleItems;
+  const showMoreButtonNeeded = filteredItems.length > visibleItemsCount;
+  const itemsToShowCount = showMoreButtonNeeded ? visibleItemsCount - 1 : visibleItemsCount;
+  const itemsToShow = filteredItems.slice(0, itemsToShowCount);
+
 
   return (
     <>
@@ -514,7 +520,7 @@ export default function WorkPage() {
                           <FontAwesomeIcon icon={faArrowDown} className="h-10 w-10 text-white/70 mb-4 transition-transform duration-300 group-hover:translate-y-1" />
                           <h3 className="font-bold text-white text-lg">Show More</h3>
                           <p className="text-white/60 text-sm">
-                            {filteredItems.length - visibleItems} more projects
+                            {filteredItems.length - itemsToShow.length} more projects
                           </p>
                         </div>
                       </motion.div>
@@ -801,4 +807,5 @@ export default function WorkPage() {
     
 
     
+
 
