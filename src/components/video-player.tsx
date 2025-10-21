@@ -40,20 +40,21 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ source, poster, onReady }) =>
 
     // --- 2. Transform Cloudinary URL to HLS ---
     if (isCloudinary && !isHls && source.sources[0].provider !== 'youtube' && source.sources[0].provider !== 'vimeo') {
-        const uploadMarker = '/upload/';
-        const uploadIndex = videoSrc.indexOf(uploadMarker);
+      const uploadMarker = '/upload/';
+      const uploadIndex = videoSrc.indexOf(uploadMarker);
+
+      if (uploadIndex !== -1) {
+        const baseUrl = videoSrc.substring(0, uploadIndex + uploadMarker.length);
+        const publicIdAndTransformations = videoSrc.substring(uploadIndex + uploadMarker.length);
         
-        if (uploadIndex !== -1) {
-            const baseUrl = videoSrc.substring(0, uploadIndex);
-            let publicId = videoSrc.substring(uploadIndex + uploadMarker.length);
-            // The part after /upload/ can contain versioning (e.g., v1234567), we need to preserve it
-            // So we take everything after /upload/ and construct the new URL
-            // Correctly remove file extension if it exists
-            publicId = publicId.replace(/\.[^/.]+$/, "");
-            videoSrc = `${baseUrl}/upload/f_hls/${publicId}.m3u8`;
-            isHls = true;
-        }
+        // Correctly form the HLS URL by inserting f_hls
+        const hlsUrl = `${baseUrl}f_hls/${publicIdAndTransformations.replace(/\.[^/.]+$/, "")}/master.m3u8`;
+
+        videoSrc = hlsUrl;
+        isHls = true;
+      }
     }
+
 
     // Function to initialize Plyr
     const initPlyr = (options: Plyr.Options = {}) => {
@@ -81,7 +82,6 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ source, poster, onReady }) =>
 
         hls.on(Hls.Events.MANIFEST_PARSED, () => {
           initPlyr({
-            // You can add Plyr options here that are specific to HLS
              captions: { active: true, update: true, language: 'en' },
           }); 
         });
@@ -113,7 +113,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ source, poster, onReady }) =>
         hlsRef.current = null;
       }
     };
-  }, [source, poster, onReady]); 
+  }, [source, onReady]); 
 
   return (
     <div className="w-full h-full bg-black plyr__video-embed">
