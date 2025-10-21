@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useCallback, useState, useEffect, useMemo } from 'react';
@@ -407,26 +408,14 @@ export default function MediaAdmin(props: MediaAdminProps) {
     }
 
     if (previewFile.resource_type === 'video') {
-       let videoSrc = previewFile.url;
-       let type = 'video/mp4';
-       if(videoSrc.includes('res.cloudinary.com')){
-           const uploadMarker = '/upload/';
-           const uploadIndex = videoSrc.indexOf(uploadMarker);
-           if (uploadIndex !== -1) {
-               const publicIdWithTransformations = videoSrc.substring(uploadIndex + uploadMarker.length);
-               const publicId = publicIdWithTransformations.split('/').slice(1).join('/');
-               videoSrc = `https://res.cloudinary.com/da1srnoer/video/upload/f_hls/${publicId.replace(/\.[^/.]+$/, "")}/master.m3u8`;
-               type = 'application/x-mpegURL';
-           }
-       }
        const videoJsOptions = {
           autoplay: true,
           controls: true,
           responsive: true,
           fluid: true,
           sources: [{
-            src: videoSrc,
-            type: type
+            src: previewFile.url,
+            type: 'video/mp4'
           }]
        };
       return (

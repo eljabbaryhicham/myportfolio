@@ -1,3 +1,4 @@
+
 'use client';
 
 import Image from 'next/image';
@@ -57,21 +58,8 @@ const PortfolioMedia = ({
   const videoJsOptions = useMemo(() => {
     if (item.type !== 'video' || !item.sourceUrl) return null;
     
-    // Check if it's a Cloudinary URL and transform it for HLS
     let videoSrc = item.sourceUrl;
     let type = 'video/mp4';
-    if(videoSrc.includes('res.cloudinary.com')){
-        const uploadMarker = '/upload/';
-        const uploadIndex = videoSrc.indexOf(uploadMarker);
-        if (uploadIndex !== -1) {
-            const publicIdWithTransformations = videoSrc.substring(uploadIndex + uploadMarker.length);
-            // Remove any existing transformations to get the base public ID
-            const publicId = publicIdWithTransformations.split('/').slice(1).join('/');
-            videoSrc = `https://res.cloudinary.com/da1srnoer/video/upload/f_hls/${publicId.replace(/\.[^/.]+$/, "")}/master.m3u8`;
-            type = 'application/x-mpegURL';
-        }
-    }
-
 
     return {
       autoplay: true,
@@ -659,16 +647,6 @@ export default function WorkPage() {
                               
                               let videoSrc = props.src;
                               let type = 'video/mp4';
-                               if(videoSrc.includes('res.cloudinary.com')){
-                                  const uploadMarker = '/upload/';
-                                  const uploadIndex = videoSrc.indexOf(uploadMarker);
-                                  if (uploadIndex !== -1) {
-                                      const publicIdWithTransformations = videoSrc.substring(uploadIndex + uploadMarker.length);
-                                      const publicId = publicIdWithTransformations.split('/').slice(1).join('/');
-                                      videoSrc = `https://res.cloudinary.com/da1srnoer/video/upload/f_hls/${publicId.replace(/\.[^/.]+$/, "")}/master.m3u8`;
-                                      type = 'application/x-mpegURL';
-                                  }
-                              }
                               
                               const videoJsOptions = {
                                   autoplay: false,

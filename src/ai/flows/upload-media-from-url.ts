@@ -73,34 +73,16 @@ const uploadMediaFromUrlFlow = ai.defineFlow(
       
       console.log(`Uploading from URL: ${input.mediaUrl}`);
 
-      // 1. Upload to Cloudinary. For videos, we also request an eager HLS transformation.
+      // 1. Upload to Cloudinary.
       const uploadResult = await cloudinary.uploader.upload(input.mediaUrl, {
         resource_type: 'auto', // Let Cloudinary detect the resource type
-        eager_async: true,
-        eager: [
-          // For videos, create an HLS variant.
-          // This creates the .m3u8 manifest we will use.
-          { format: 'm3u8', streaming_profile: 'full_hd' }
-        ]
       });
 
       console.log('Cloudinary upload successful:', uploadResult);
 
       let finalUrl = uploadResult.secure_url;
       
-      // If it's a video, we want the HLS manifest URL.
-      if (uploadResult.resource_type === 'video' && uploadResult.eager) {
-        // Find the m3u8 URL from the eager transformations.
-        const hlsResult = uploadResult.eager.find(
-          (e: any) => e.format === 'm3u8'
-        );
-        if (hlsResult && hlsResult.secure_url) {
-            finalUrl = hlsResult.secure_url;
-            console.log(`Using HLS manifest URL: ${finalUrl}`);
-        } else {
-            console.warn(`HLS manifest not found in eager transformations for ${uploadResult.public_id}. Falling back to original mp4.`);
-        }
-      } else if (uploadResult.resource_type === 'image') {
+      if (uploadResult.resource_type === 'image') {
           // Apply automatic optimization for images
           finalUrl = cloudinary.url(uploadResult.public_id, {
               fetch_format: 'auto',
@@ -129,7 +111,7 @@ const uploadMediaFromUrlFlow = ai.defineFlow(
 
       return {
         success: true,
-        message: 'Media successfully added. HLS stream is being prepared for video.',
+        message: 'Media successfully added.',
         mediaId: docRef.id,
         resource_type: uploadResult.resource_type === 'video' ? 'video' : uploadResult.resource_type === 'raw' ? 'raw' : 'image',
       };

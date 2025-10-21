@@ -1,3 +1,4 @@
+
 'use client';
 
 import Link from "next/link";
@@ -41,16 +42,6 @@ export default function HomePageContent({ featuredProject, isLoading }: HomePage
 
     let videoSrc = project.sourceUrl;
     let type = 'video/mp4';
-    if(videoSrc.includes('res.cloudinary.com')){
-        const uploadMarker = '/upload/';
-        const uploadIndex = videoSrc.indexOf(uploadMarker);
-        if (uploadIndex !== -1) {
-            const publicIdWithTransformations = videoSrc.substring(uploadIndex + uploadMarker.length);
-            const publicId = publicIdWithTransformations.split('/').slice(1).join('/');
-            videoSrc = `https://res.cloudinary.com/da1srnoer/video/upload/f_hls/${publicId.replace(/\.[^/.]+$/, "")}/master.m3u8`;
-            type = 'application/x-mpegURL';
-        }
-    }
     
     return {
       autoplay: true,
