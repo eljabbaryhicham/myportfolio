@@ -42,18 +42,14 @@ const services = [
 const MemoizedImage = memo(Image);
 
 const ClientLogo = ({ client }: { client: Client }) => (
-    <div className="flex items-center justify-center mx-4 my-2 w-32">
-        <div className="group/item flex flex-col items-center justify-center gap-2 cursor-pointer p-2">
-            <div className="relative w-full h-10">
-                <MemoizedImage
-                    src={client.logoUrl}
-                    alt={`${client.name} logo`}
-                    fill
-                    className="object-contain grayscale brightness-0 invert transition-all duration-300 group-hover/item:filter-none"
-                />
-            </div>
-            <p className="text-xs sm:text-sm text-white whitespace-nowrap transition-colors duration-300 group-hover/item:text-primary">{client.name}</p>
-        </div>
+    <div className="flex-shrink-0 mx-8 w-32 flex items-center justify-center">
+        <MemoizedImage
+            src={client.logoUrl}
+            alt={`${client.name} logo`}
+            width={128}
+            height={40}
+            className="object-contain h-10 w-full grayscale brightness-0 invert"
+        />
     </div>
 );
 
@@ -147,8 +143,12 @@ export default function AboutPage() {
                   </div>
                   
                   {clients && clients.length > 0 ? (
-                    <div className="flex flex-wrap justify-center items-center">
-                        {clients.map((client) => <ClientLogo key={client.id} client={client} />)}
+                    <div className="relative w-[80vw] mx-auto overflow-hidden py-4">
+                      <div className="flex animate-marquee whitespace-nowrap">
+                        {[...clients, ...clients].map((client, index) => (
+                          <ClientLogo key={`${client.id}-${index}`} client={client} />
+                        ))}
+                      </div>
                     </div>
                   ) : (
                     <div className="p-1 h-full flex items-center justify-center text-muted-foreground col-span-full">
