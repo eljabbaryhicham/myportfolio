@@ -10,6 +10,8 @@ import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
 import { Resend } from 'resend';
 import { ContactFormInput, ContactFormInputSchema } from '@/features/contact/data/contact-form-types';
+import * as dotenv from 'dotenv';
+dotenv.config();
 
 
 // Set the recipient email address.
@@ -26,11 +28,12 @@ const FROM_EMAIL = 'onboarding@resend.dev'; // Resend requires this for free tie
 export async function sendContactEmail(
   input: ContactFormInput
 ): Promise<{ success: boolean; message: string }> {
-  if (!process.env.RESEND_API_KEY) {
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) {
     console.error('Resend API key is not configured.');
     return { success: false, message: 'The server is not configured to send emails.' };
   }
-  return await sendContactEmailFlow(input);
+  return await sendContactEmailFlow({ ...input, apiKey });
 }
 
 /**
@@ -39,7 +42,9 @@ export async function sendContactEmail(
 const sendContactEmailFlow = ai.defineFlow(
   {
     name: 'sendContactEmailFlow',
-    inputSchema: ContactFormInputSchema,
+    inputSchema: ContactFormInputSchema.extend({
+      apiKey: z.string().describe('The Resend API key.'),
+    }),
     outputSchema: z.object({
       success: z.boolean(),
       message: z.string(),
@@ -48,8 +53,8 @@ const sendContactEmailFlow = ai.defineFlow(
   async (input) => {
     
     try {
-      // Initialize Resend with the API key from environment variables.
-      const resend = new Resend(process.env.RESEND_API_KEY);
+      // Initialize Resend with the API key from the input.
+      const resend = new Resend(input.apiKey);
 
       const { data, error } = await resend.emails.send({
         from: `Contact Form <${FROM_EMAIL}>`,
@@ -90,8 +95,12 @@ const sendContactEmailFlow = ai.defineFlow(
       
       return { success: true, message: 'Message Sent! Thanks for reaching out. We\'ll get back to you soon.' };
 
-    } catch (e) {
+    } catch (e: any) {
       console.error('An unexpected error occurred in sendContactEmailFlow:', e);
+      // Check if it's an API key issue from Resend's client
+      if (e.message && e.message.toLowerCase().includes('api key')) {
+          return { success: false, message: `Failed to send email: ${e.message}`};
+      }
       return { success: false, message: 'An unexpected error occurred.' };
     }
   }
