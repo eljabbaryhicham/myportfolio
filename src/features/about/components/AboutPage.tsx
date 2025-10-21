@@ -1,7 +1,7 @@
 
 'use client';
 
-import { memo, useState } from 'react';
+import { memo, useState, useEffect, useRef } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import Image from 'next/image';
@@ -41,11 +41,9 @@ const services = [
 
 const MemoizedImage = memo(Image);
 
-const ClientLogo = ({ client, onMouseEnter, onMouseLeave }: { client: Client, onMouseEnter: () => void, onMouseLeave: () => void }) => (
+const ClientLogo = ({ client }: { client: Client }) => (
     <div 
       className="relative mx-8 flex-shrink-0 basis-1/5 group cursor-pointer"
-      onMouseEnter={onMouseEnter}
-      onMouseLeave={onMouseLeave}
     >
         <MemoizedImage
             src={client.logoUrl}
@@ -76,9 +74,28 @@ export default function AboutPage() {
   const isLoading = isLoadingClients || isLoadingContent;
   const logoUrl = aboutContent?.logoUrl || "https://i.imgur.com/N9c8oEJ.png";
   
+  const marqueeRef = useRef<HTMLDivElement>(null);
+  const [dragConstraints, setDragConstraints] = useState({ right: 0, left: 0 });
+
+  useEffect(() => {
+    if (marqueeRef.current) {
+        const containerWidth = marqueeRef.current.offsetWidth;
+        const contentWidth = marqueeRef.current.scrollWidth;
+        const isContentWider = contentWidth > containerWidth;
+
+        if (isContentWider) {
+            // Since we have two sets of logos, we only need to constrain by half the scroll width
+            const leftConstraint = -(contentWidth / 2);
+            setDragConstraints({ right: 0, left: leftConstraint });
+        } else {
+            setDragConstraints({ right: 0, left: 0 });
+        }
+    }
+  }, [clients]);
+
   const marqueeVariants = {
     animate: {
-      x: [0, -1080],
+      x: [0, - (marqueeRef.current?.scrollWidth ?? 0) / 2],
       transition: {
         x: {
           repeat: Infinity,
@@ -163,18 +180,23 @@ export default function AboutPage() {
                   </div>
                   
                   {clients && clients.length > 0 ? (
-                    <div className="relative w-full overflow-hidden h-20">
+                    <div 
+                        className="relative w-full overflow-hidden h-20"
+                        onMouseEnter={() => setIsPaused(true)}
+                        onMouseLeave={() => setIsPaused(false)}
+                    >
                       <motion.div
+                        ref={marqueeRef}
                         className="absolute flex"
                         variants={marqueeVariants}
                         animate={isPaused ? 'paused' : 'animate'}
+                        drag="x"
+                        dragConstraints={dragConstraints}
                       >
                            {[...clients, ...clients].map((client, index) => (
                               <ClientLogo 
                                 key={`${client.id}-${index}`} 
                                 client={client}
-                                onMouseEnter={() => setIsPaused(true)}
-                                onMouseLeave={() => setIsPaused(false)}
                               />
                             ))}
                       </motion.div>
