@@ -1,4 +1,3 @@
-
 'use client';
 
 import { memo } from 'react';
@@ -143,12 +142,12 @@ export default function AboutPage() {
                   </div>
                   
                   {clients && clients.length > 0 ? (
-                    <div className="w-[80vw] mx-auto overflow-hidden">
-                      <div className="flex animate-marquee hover:[animation-play-state:paused] whitespace-nowrap">
-                        {[...clients, ...clients].map((client, index) => (
-                          <ClientLogo key={`${client.id}-${index}-1`} client={client} />
-                        ))}
-                      </div>
+                    <div className="relative w-full overflow-hidden">
+                        <div className="flex animate-marquee hover:[animation-play-state:paused] whitespace-nowrap">
+                            {[...clients, ...clients].map((client, index) => (
+                                <ClientLogo key={`${client.id}-${index}`} client={client} />
+                            ))}
+                        </div>
                     </div>
                   ) : (
                     <div className="p-1 h-full flex items-center justify-center text-muted-foreground col-span-full">
