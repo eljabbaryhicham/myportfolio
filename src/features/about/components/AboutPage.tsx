@@ -13,7 +13,7 @@ import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEnvelope, faArrowRight } from '@fortawesome/free-solid-svg-icons';
-import { BrainCircuit, Mic, Clapperboard, Share2 } from 'lucide-react';
+import { BrainCircuit, Mic, Clapperboard, Share2, Code } from 'lucide-react';
 import useEmblaCarousel from 'embla-carousel-react'
 import Autoplay from 'embla-carousel-autoplay'
 import { motion } from 'framer-motion';
@@ -38,6 +38,7 @@ const services = [
     { title: "Voiceover & Sound", icon: Mic },
     { title: "Content Creation, Animation, Video & Graphics", icon: Clapperboard },
     { title: "Social Media Management", icon: Share2 },
+    { title: "Web Design & Development", icon: Code },
 ];
 
 
@@ -143,7 +144,7 @@ export default function AboutPage() {
                     className="flex flex-col md:flex-row gap-8 md:gap-12 items-center"
                   >
                     <div className="md:w-1/2 text-center">
-                      <div className="w-48 mx-auto mb-4">
+                      <div className="w-32 mx-auto mb-4">
                           <Logo src={logoUrl} />
                       </div>
                       <h2 className="text-2xl md:text-3xl font-headline tracking-tight mb-4">{aboutContent?.title}</h2>
@@ -163,16 +164,19 @@ export default function AboutPage() {
                           </Button>
                       </div>
                     </div>
-                    <div className="grid grid-cols-2 gap-4 md:w-1/2">
-                      {services.map((service, index) => (
-                          <div 
-                              key={service.title}
-                              className="glass-effect p-4 rounded-lg flex flex-col items-center justify-center text-center"
-                          >
-                              <service.icon className="w-8 h-8 md:w-10 md:h-10 text-primary mb-3" />
-                              <p className="text-xs md:text-sm font-semibold">{service.title}</p>
-                          </div>
-                      ))}
+                    <div className="md:w-1/2">
+                       <h2 className="text-2xl md:text-3xl font-headline tracking-tight mb-6 text-center">What We Do?</h2>
+                       <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
+                        {services.map((service) => (
+                            <div 
+                                key={service.title}
+                                className="glass-effect p-4 rounded-lg flex flex-col items-center justify-center text-center aspect-square"
+                            >
+                                <service.icon className="w-8 h-8 md:w-10 md:h-10 text-primary mb-3" />
+                                <p className="text-xs md:text-sm font-semibold">{service.title}</p>
+                            </div>
+                        ))}
+                      </div>
                     </div>
                   </motion.div>
 
