@@ -140,37 +140,39 @@ export default function AboutPage() {
                 </motion.div>
               )}
 
-              <div className="w-full max-w-4xl mx-auto">
-                <div className="text-center mb-8">
-                  <h2 className="text-2xl font-headline tracking-tight">Our Clients</h2>
-                  <Separator className="bg-white/10 max-w-xs mx-auto mt-2" />
-                </div>
-                
-                {clients && clients.length > 0 ? (
-                  <div className="group relative w-full overflow-hidden whitespace-nowrap">
-                    <div className="flex">
-                      <div className="animate-marquee group-hover:[animation-play-state:paused]">
-                          <div className="flex">
-                            {clients.map((client) => <ClientLogo key={client.id} client={client} />)}
-                          </div>
-                      </div>
-                      <div className="animate-marquee group-hover:[animation-play-state:paused]" aria-hidden="true">
-                          <div className="flex">
-                            {clients.map((client) => <ClientLogo key={`${client.id}-2`} client={client} />)}
-                          </div>
-                      </div>
+              <div className="w-full max-w-full overflow-x-hidden">
+                <div className="max-w-4xl mx-auto">
+                    <div className="text-center mb-8">
+                      <h2 className="text-2xl font-headline tracking-tight">Our Clients</h2>
+                      <Separator className="bg-white/10 max-w-xs mx-auto mt-2" />
                     </div>
-                  </div>
-                ) : (
-                  <div className="p-1 h-full flex items-center justify-center text-muted-foreground col-span-full">
-                      No clients to display.
-                  </div>
-                )}
-                
-                <div className="text-center mt-8 md:mt-12">
-                  <p className="text-foreground/70">
-                    Trusted by 1000+ amazing clients worldwide
-                  </p>
+                    
+                    {clients && clients.length > 0 ? (
+                      <div className="group relative w-full overflow-hidden whitespace-nowrap">
+                        <div className="flex">
+                          <div className="animate-marquee group-hover:[animation-play-state:paused]">
+                              <div className="flex">
+                                {clients.map((client) => <ClientLogo key={client.id} client={client} />)}
+                              </div>
+                          </div>
+                          <div className="animate-marquee group-hover:[animation-play-state:paused]" aria-hidden="true">
+                              <div className="flex">
+                                {clients.map((client) => <ClientLogo key={`${client.id}-2`} client={client} />)}
+                              </div>
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="p-1 h-full flex items-center justify-center text-muted-foreground col-span-full">
+                          No clients to display.
+                      </div>
+                    )}
+                    
+                    <div className="text-center mt-8 md:mt-12">
+                      <p className="text-foreground/70">
+                        Trusted by 1000+ amazing clients worldwide
+                      </p>
+                    </div>
                 </div>
               </div>
             </>
