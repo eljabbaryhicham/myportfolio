@@ -210,8 +210,6 @@ export default function WorkPage() {
   const [direction, setDirection] = useState<'next' | 'prev' | null>(null);
   const [isDialogMediaLoading, setIsDialogMediaLoading] = useState(true);
 
-  const gridRef = useRef<HTMLDivElement>(null);
-
   const filteredItems = useMemo(() => {
     if (!portfolioItems) return [];
     if (filter === 'all') return portfolioItems;
@@ -223,29 +221,13 @@ export default function WorkPage() {
   }, []);
 
   useEffect(() => {
-    const calculateVisibleItems = () => {
-      if (isMobile) {
-        setVisibleItems(6);
-        return;
-      }
-      if (gridRef.current) {
-        const gridStyle = window.getComputedStyle(gridRef.current);
-        const columnCount = gridStyle.getPropertyValue('grid-template-columns').split(' ').length;
-        const rows = 2; // Number of initial rows to show
-        setVisibleItems(columnCount * rows);
-      } else {
-        // Fallback for server-side rendering or if ref is not ready
-        setVisibleItems(12);
-      }
-    };
-    
-    // Initial calculation
-    calculateVisibleItems();
-    
-    // Recalculate on resize
-    window.addEventListener('resize', calculateVisibleItems);
-    return () => window.removeEventListener('resize', calculateVisibleItems);
-  }, [isMobile]); // Rerun only when mobile state changes
+    // Set initial visible items based on screen size
+    if (isMobile) {
+      setVisibleItems(6);
+    } else {
+      setVisibleItems(12);
+    }
+  }, [isMobile]);
 
 
   // Effect to set selected item based on URL
@@ -481,7 +463,6 @@ export default function WorkPage() {
                 <AnimatePresence mode="wait">
                   <motion.div
                     key={filter}
-                    ref={gridRef}
                     variants={containerVariants}
                     initial="hidden"
                     animate="visible"
