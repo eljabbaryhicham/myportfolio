@@ -33,6 +33,7 @@ import { useToast } from '@/hooks/use-toast';
 import { motion, AnimatePresence, PanInfo } from 'framer-motion';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import ContactForm from '@/features/contact/components/ContactForm';
+import type { AppUser } from '@/firebase/auth/use-user';
 
 
 const VideoPlayer = dynamic(() => import('@/components/video-player'), {
@@ -227,8 +228,9 @@ export default function WorkPage() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  const isSuperAdmin = user?.email === 'eljabbaryhicham@example.com';
-  const canEditProjects = isSuperAdmin || (user?.permissions?.canEditProjects ?? true);
+  const typedUser = user as AppUser | null;
+  const isSuperAdmin = typedUser?.email === 'eljabbaryhicham@example.com';
+  const canEditProjects = isSuperAdmin || (typedUser?.permissions?.canEditProjects ?? true);
 
   const projectsQuery = useMemoFirebase(
     () =>
