@@ -155,7 +155,7 @@ export default function AboutPage() {
                   </div>
                   
                   {duplicatedClients && duplicatedClients.length > 0 ? (
-                    <div className="overflow-hidden" ref={emblaRef}>
+                    <div className="w-[80vw] mx-auto overflow-hidden" ref={emblaRef}>
                       <div className="flex">
                         {duplicatedClients.map((client, index) => (
                           <div key={`${client.id}-${index}`} className="flex-shrink-0 flex-grow-0 basis-1/2 md:basis-1/3 lg:basis-1/5">
