@@ -53,7 +53,7 @@ const VideoPlayer = ({
           controls: {
             mode: 'normal',
           },
-          inactive: 3000, // Hide controls after 3 seconds of inactivity
+          inactive: 0, // Hide controls immediately when not interacting
         });
 
         playerRef.current = xgPlayer;
