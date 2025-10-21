@@ -139,7 +139,7 @@
   .xgplayer-inactive .xgplayer-controls {
     opacity: 0 !important;
     visibility: hidden !important;
-    transition: opacity 0.2s, visibility 0.2s !important;
+    transition: none !important;
   }
 
   .xgplayer-controls {

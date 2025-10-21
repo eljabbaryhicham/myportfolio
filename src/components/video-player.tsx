@@ -51,10 +51,9 @@ const VideoPlayer = ({
           height: '100%',
           width: '100%',
           controls: {
-            mode: 'normal', // Ensure controls are on by default
+            mode: 'normal',
           },
           inactive: 3000, // Hide controls after 3 seconds of inactivity
-          ignores: [], // Process all events
         });
 
         playerRef.current = xgPlayer;
