@@ -1,4 +1,3 @@
-
 'use server';
 /**
  * @fileOverview A server-side function for sending a contact form email using Resend.
