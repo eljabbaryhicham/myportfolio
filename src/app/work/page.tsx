@@ -395,6 +395,24 @@ export default function WorkPage() {
     }),
   };
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1,
+      },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: {
+      y: 0,
+      opacity: 1,
+    },
+  };
+
   return (
     <>
       <div className="h-full w-full flex flex-col">
@@ -436,23 +454,24 @@ export default function WorkPage() {
                 <AnimatePresence mode="wait">
                   <motion.div
                     key={filter}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.3 }}
+                    variants={containerVariants}
+                    initial="hidden"
+                    animate="visible"
                     className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5 gap-4"
                   >
                     {filteredItems.slice(0, visibleItems).map(item => (
-                      <PortfolioGridItem 
-                        key={item.id}
-                        item={item}
-                        onClick={() => handleItemClick(item)}
-                        onEditClick={() => handleEditItem(item)}
-                        isAdmin={!!user}
-                      />
+                      <motion.div key={item.id} variants={itemVariants}>
+                        <PortfolioGridItem 
+                          item={item}
+                          onClick={() => handleItemClick(item)}
+                          onEditClick={() => handleEditItem(item)}
+                          isAdmin={!!user}
+                        />
+                      </motion.div>
                     ))}
                     {filteredItems.length > 0 && visibleItems < filteredItems.length && (
-                      <div
+                      <motion.div
+                        variants={itemVariants}
                         className="group relative cursor-pointer overflow-hidden rounded-md transition-all duration-300 hover:scale-[1.02] aspect-square p-[2px] rounded-lg glass-effect"
                         onClick={showMoreItems}
                       >
@@ -463,7 +482,7 @@ export default function WorkPage() {
                             {filteredItems.length - visibleItems} more projects
                           </p>
                         </div>
-                      </div>
+                      </motion.div>
                     )}
                   </motion.div>
                 </AnimatePresence>
