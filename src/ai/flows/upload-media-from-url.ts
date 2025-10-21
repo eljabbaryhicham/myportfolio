@@ -63,9 +63,6 @@ const uploadMediaFromUrlFlow = ai.defineFlow(
         };
       }
 
-      // --- IMPORTANT ---
-      // Credentials are now read from environment variables for security.
-      // Make sure to fill these out in your .env file.
       const cloudinary = (await import('cloudinary')).v2;
       cloudinary.config({
         cloud_name: process.env.CLOUDINARY_CLOUD_NAME, 
@@ -76,23 +73,40 @@ const uploadMediaFromUrlFlow = ai.defineFlow(
       
       console.log(`Uploading from URL: ${input.mediaUrl}`);
 
-      // 1. Upload to Cloudinary from the URL
+      // 1. Upload to Cloudinary, identifying resource type and applying transformations
       const uploadResult = await cloudinary.uploader.upload(input.mediaUrl, {
-        resource_type: 'auto', // Automatically detect if it's an image or video
+        resource_type: 'auto', // Let Cloudinary detect the resource type
+        eager_async: true,     // Perform transformations in the background
+        eager: [
+          // For videos, create an adaptive bitrate streaming profile
+          { if: "resource_type:video",
+            streaming_profile: "full_hd", format: "m3u8" },
+        ]
       });
 
       console.log('Cloudinary upload successful:', uploadResult);
 
       let finalUrl = uploadResult.secure_url;
-      // Apply automatic optimization for images using the official SDK method
-      if (uploadResult.resource_type === 'image') {
+      // For videos, we need to find the HLS (.m3u8) manifest URL from the eager transformations
+      if (uploadResult.resource_type === 'video') {
+          // Cloudinary creates eager transformations. Find the HLS manifest URL.
+          const hlsUrl = cloudinary.url(uploadResult.public_id, {
+            resource_type: 'video',
+            format: 'm3u8',
+            streaming_profile: 'full_hd'
+          });
+          finalUrl = hlsUrl;
+          console.log(`Generated HLS manifest URL: ${finalUrl}`);
+
+      } else if (uploadResult.resource_type === 'image') {
+          // Apply automatic optimization for images
           finalUrl = cloudinary.url(uploadResult.public_id, {
               fetch_format: 'auto',
               quality: 'auto',
               secure: true,
           });
+          console.log(`Generated optimized image URL: ${finalUrl}`);
       }
-
 
       // 2. Initialize Firebase Admin SDK and save metadata to Firestore
       const serverApp = await initializeServerApp();
@@ -101,10 +115,10 @@ const uploadMediaFromUrlFlow = ai.defineFlow(
 
       const mediaData = {
         public_id: uploadResult.public_id,
-        url: finalUrl, // Use the generated URL
+        url: finalUrl, // Use the generated HLS or optimized image URL
         resource_type: uploadResult.resource_type,
         created_at: uploadResult.created_at,
-        filename: filename || uploadResult.public_id, // Use filename from URL or fallback to public_id
+        filename: filename || uploadResult.public_id,
       };
 
       const docRef = await firestore.collection('media').add(mediaData);
@@ -113,17 +127,15 @@ const uploadMediaFromUrlFlow = ai.defineFlow(
 
       return {
         success: true,
-        message: 'Media successfully added from URL and optimized.',
+        message: 'Media successfully added. Streaming profiles are being generated for video.',
         mediaId: docRef.id,
         resource_type: uploadResult.resource_type === 'video' ? 'video' : uploadResult.resource_type === 'raw' ? 'raw' : 'image',
       };
     } catch (error: any) {
       console.error('Error in uploadMediaFromUrlFlow:', error);
 
-      // Determine if it's a Cloudinary error or another type
       let errorMessage = 'An unexpected error occurred.';
       if (error.http_code && error.message) {
-        // This looks like a Cloudinary API error
         errorMessage = `Cloudinary error: ${error.message}`;
       } else if (error.message) {
         errorMessage = error.message;
