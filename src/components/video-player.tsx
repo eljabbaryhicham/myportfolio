@@ -29,6 +29,7 @@ const VideoPlayer = ({
 }: VideoPlayerProps) => {
   const wrapperRef = useRef<HTMLDivElement>(null);
   const playerRef = useRef<Plyr | null>(null);
+  const hlsRef = useRef<Hls | null>(null);
 
   useEffect(() => {
     const wrapper = wrapperRef.current;
@@ -67,40 +68,41 @@ const VideoPlayer = ({
         : [],
     };
     
-    const plyrPlayer = new Plyr(videoElement, options);
-    playerRef.current = plyrPlayer;
+    playerRef.current = new Plyr(videoElement, options);
 
     const firstSource = source.sources[0];
     if (firstSource && firstSource.src) {
-        // Only use HLS for Cloudinary URLs
         if (firstSource.src.includes('res.cloudinary.com') && Hls.isSupported()) {
             const hls = new Hls();
+            hlsRef.current = hls;
             
-            // Correctly transform the URL to get the HLS manifest
-            // e.g., https://res.cloudinary.com/.../upload/v123/video.mp4
-            // becomes https://res.cloudinary.com/.../upload/f_auto,q_auto/v123/video.m3u8
             const hlsUrl = firstSource.src
-                .replace(/\.mp4$/, '.m3u8')
-                .replace('/upload/', '/upload/f_auto,q_auto/');
-
+                .replace('/upload/', '/upload/f_auto,q_auto/')
+                .replace(/\.(mp4|mov|webm)$/, '.m3u8');
+                
             hls.loadSource(hlsUrl);
             hls.attachMedia(videoElement);
-            // @ts-ignore
-            window.hls = hls;
         } else {
-            plyrPlayer.source = source;
+            playerRef.current.source = source;
         }
     }
     
-    if (onReady) {
-        plyrPlayer.once('ready', onReady);
+    if (onReady && playerRef.current) {
+        playerRef.current.once('ready', onReady);
     }
     
     return () => {
+      // Destroy HLS instance first
+      if (hlsRef.current) {
+        hlsRef.current.destroy();
+        hlsRef.current = null;
+      }
+      // Then destroy Plyr instance
       if (playerRef.current) {
         playerRef.current.destroy();
         playerRef.current = null;
       }
+      // Finally, clean up the DOM
       if (wrapper) {
         wrapper.innerHTML = '';
       }
