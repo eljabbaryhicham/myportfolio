@@ -1,14 +1,14 @@
 
 'use client';
 
-import { memo, useCallback, useRef } from 'react';
+import { memo, useState } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import Image from 'next/image';
 import { useCollection, useDoc, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection, query, orderBy, doc } from 'firebase/firestore';
 import Preloader from '@/components/preloader';
-import { motion } from 'framer-motion';
+import { motion, useAnimation } from 'framer-motion';
 import Logo from '@/components/logo';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
@@ -41,22 +41,25 @@ const services = [
 
 const MemoizedImage = memo(Image);
 
-const ClientLogo = ({ client }: { client: Client }) => (
-    <div className="relative mx-8 flex-shrink-0 basis-1/5 group">
-        <div className="cursor-pointer">
-            <MemoizedImage
-                src={client.logoUrl}
-                alt={`${client.name} logo`}
-                width={128}
-                height={40}
-                className="object-contain h-10 w-32 grayscale brightness-0 invert transition-all duration-300 group-hover:grayscale-0 group-hover:brightness-100 group-hover:invert-0"
-            />
-        </div>
+const ClientLogo = ({ client, onMouseEnter, onMouseLeave }: { client: Client, onMouseEnter: () => void, onMouseLeave: () => void }) => (
+    <div 
+      className="relative mx-8 flex-shrink-0 basis-1/5 group cursor-pointer"
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
+    >
+        <MemoizedImage
+            src={client.logoUrl}
+            alt={`${client.name} logo`}
+            width={128}
+            height={40}
+            className="object-contain h-10 w-32 grayscale brightness-0 invert transition-all duration-300 group-hover:grayscale-0 group-hover:brightness-100 group-hover:invert-0"
+        />
     </div>
 );
 
 export default function AboutPage() {
   const firestore = useFirestore();
+  const [isPaused, setIsPaused] = useState(false);
 
   const clientsQuery = useMemoFirebase(
     () => firestore ? query(collection(firestore, 'clients'), orderBy('order')) : null,
@@ -164,11 +167,15 @@ export default function AboutPage() {
                       <motion.div
                         className="absolute flex"
                         variants={marqueeVariants}
-                        animate="animate"
-                        whileHover={{'animationPlayState': 'paused'}}
+                        animate={isPaused ? 'paused' : 'animate'}
                       >
                            {[...clients, ...clients].map((client, index) => (
-                              <ClientLogo key={`${client.id}-${index}`} client={client} />
+                              <ClientLogo 
+                                key={`${client.id}-${index}`} 
+                                client={client}
+                                onMouseEnter={() => setIsPaused(true)}
+                                onMouseLeave={() => setIsPaused(false)}
+                              />
                             ))}
                       </motion.div>
                     </div>
