@@ -1,4 +1,3 @@
-
 'use client';
 
 import Image from 'next/image';
@@ -22,7 +21,7 @@ import { useCollection, useFirestore, useMemoFirebase, useUser, setDocumentNonBl
 import { collection, query, orderBy, doc } from 'firebase/firestore';
 import { PortfolioItem } from '@/features/portfolio/data/portfolio-data';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faUpDown, faXmark, faExpand, faPalette, faFilm, faArrowLeft, faArrowRight, faPencilAlt, faEnvelope, faPlus } from '@fortawesome/free-solid-svg-icons';
+import { faUpDown, faXmark, faExpand, faPalette, faFilm, faArrowLeft, faArrowRight, faPencilAlt, faEnvelope, faPlus, faArrowDown } from '@fortawesome/free-solid-svg-icons';
 import { Separator } from '@/components/ui/separator';
 import Preloader from '@/components/preloader';
 import { useIsExtraWide } from '@/hooks/use-is-extra-wide';
@@ -246,7 +245,7 @@ export default function WorkPage() {
     // Recalculate on resize
     window.addEventListener('resize', calculateVisibleItems);
     return () => window.removeEventListener('resize', calculateVisibleItems);
-  }, [isMobile, filter, portfolioItems]); // Rerun when these change
+  }, [isMobile]); // Rerun only when mobile state changes
 
 
   // Effect to set selected item based on URL
@@ -505,7 +504,7 @@ export default function WorkPage() {
                         onClick={showMoreItems}
                       >
                         <div className="w-full h-full bg-black/20 rounded-md flex flex-col items-center justify-center text-center p-4 transition-colors duration-300 group-hover:bg-black/40">
-                          <FontAwesomeIcon icon={faArrowRight} className="h-10 w-10 text-white/70 mb-4 transition-transform duration-300 group-hover:translate-x-2" />
+                          <FontAwesomeIcon icon={faArrowDown} className="h-10 w-10 text-white/70 mb-4 transition-transform duration-300 group-hover:translate-y-1" />
                           <h3 className="font-bold text-white text-lg">Show More</h3>
                           <p className="text-white/60 text-sm">
                             {filteredItems.length - visibleItems} more projects
