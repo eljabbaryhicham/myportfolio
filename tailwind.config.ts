@@ -12,8 +12,8 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        body: ['Nunito', 'sans-serif'],
-        headline: ['Nunito', 'sans-serif'],
+        body: ['Quicksand', 'sans-serif'],
+        headline: ['Quicksand', 'sans-serif'],
         code: ['monospace'],
         handwriting: ['Dancing Script', 'cursive'],
       },
