@@ -146,7 +146,7 @@ export default function AboutPage() {
                   </div>
                   
                   {clients && clients.length > 0 ? (
-                    <div className="group relative w-full overflow-hidden whitespace-nowrap">
+                    <div className="group w-full overflow-hidden whitespace-nowrap">
                         <div className="inline-block animate-marquee group-hover:[animation-play-state:paused]">
                             {clients.map((client) => <ClientLogo key={client.id} client={client} />)}
                         </div>
