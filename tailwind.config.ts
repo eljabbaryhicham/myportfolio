@@ -13,7 +13,7 @@ export default {
     extend: {
       fontFamily: {
         body: ['Quicksand', 'sans-serif'],
-        headline: ['Quicksand', 'sans-serif'],
+        headline: ['Bungee', 'sans-serif'],
         code: ['monospace'],
         handwriting: ['Dancing Script', 'cursive'],
       },
