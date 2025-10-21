@@ -136,14 +136,8 @@
     border-top-color: hsl(var(--primary));
   }
 
-  .xgplayer-inactive .xgplayer-controls {
-    opacity: 0 !important;
-    visibility: hidden !important;
-    transition: none !important;
-  }
-
-  .xgplayer-controls {
-    transition: opacity 0.2s, visibility 0.2s !important;
+  .xgplayer-mobile .xgplayer-controls {
+    display: none !important;
   }
 }
 

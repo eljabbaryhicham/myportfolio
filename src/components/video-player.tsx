@@ -50,10 +50,8 @@ const VideoPlayer = ({
           playsinline: true,
           height: '100%',
           width: '100%',
-          controls: {
-            mode: 'normal',
-          },
-          inactive: 0, // Hide controls immediately when not interacting
+          controls: false, // Disable default controls on mobile
+          inactive: 0, 
         });
 
         playerRef.current = xgPlayer;
