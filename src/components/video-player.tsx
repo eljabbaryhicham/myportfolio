@@ -51,6 +51,9 @@ const VideoPlayer = ({
           height: '100%',
           width: '100%',
           controls: controls,
+          controlBar: {
+            inactive: 0,
+          }
         });
 
         playerRef.current = xgPlayer;
