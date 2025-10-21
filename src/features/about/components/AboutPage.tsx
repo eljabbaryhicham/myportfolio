@@ -15,6 +15,8 @@ import Link from 'next/link';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEnvelope, faArrowRight } from '@fortawesome/free-solid-svg-icons';
 import { BrainCircuit, Mic, Clapperboard, Share2 } from 'lucide-react';
+import useEmblaCarousel from 'embla-carousel-react'
+import Autoplay from 'embla-carousel-autoplay'
 
 
 interface Client {
@@ -42,7 +44,7 @@ const services = [
 const MemoizedImage = memo(Image);
 
 const ClientLogo = ({ client }: { client: Client }) => (
-    <div className="group flex-shrink-0 mx-8 w-32 flex items-center justify-center">
+    <div className="group relative mx-8 w-32 flex-shrink-0">
         <MemoizedImage
             src={client.logoUrl}
             alt={`${client.name} logo`}
@@ -67,6 +69,10 @@ export default function AboutPage() {
     [firestore]
   );
   const { data: aboutContent, isLoading: isLoadingContent } = useDoc<AboutPageContent>(aboutContentRef);
+
+  const [emblaRef] = useEmblaCarousel({ loop: true, align: 'start' }, [
+    Autoplay({ playOnInit: true, delay: 0, stopOnInteraction: true, stopOnMouseEnter: true }),
+  ]);
   
   const isLoading = isLoadingClients || isLoadingContent;
   const logoUrl = aboutContent?.logoUrl || "https://i.imgur.com/N9c8oEJ.png";
@@ -143,15 +149,13 @@ export default function AboutPage() {
                   </div>
                   
                   {clients && clients.length > 0 ? (
-                    <div className="relative w-full h-16">
-                      <div className="absolute inset-0 overflow-hidden">
-                        <div className="flex h-full items-center animate-marquee hover:[animation-play-state:paused] whitespace-nowrap">
+                      <div className="overflow-hidden" ref={emblaRef}>
+                        <div className="flex" style={{ backfaceVisibility: 'hidden' }}>
                             {[...clients, ...clients].map((client, index) => (
                                 <ClientLogo key={`${client.id}-${index}`} client={client} />
                             ))}
                         </div>
                       </div>
-                    </div>
                   ) : (
                     <div className="p-1 h-full flex items-center justify-center text-muted-foreground col-span-full">
                         No clients to display.
