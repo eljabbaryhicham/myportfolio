@@ -1,7 +1,7 @@
 
 'use client';
 
-import { memo, useCallback } from 'react';
+import { memo, useCallback, useRef } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import Image from 'next/image';
@@ -15,8 +15,6 @@ import Link from 'next/link';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEnvelope, faArrowRight } from '@fortawesome/free-solid-svg-icons';
 import { BrainCircuit, Mic, Clapperboard, Share2 } from 'lucide-react';
-import useEmblaCarousel from 'embla-carousel-react'
-import Autoplay from 'embla-carousel-autoplay'
 
 
 interface Client {
@@ -45,7 +43,7 @@ const MemoizedImage = memo(Image);
 
 const ClientLogo = ({ client }: { client: Client }) => (
     <div className="relative mx-8 flex-shrink-0 basis-1/5 group">
-        <Link href={client.logoUrl} target='_blank'>
+        <div className="cursor-pointer">
             <MemoizedImage
                 src={client.logoUrl}
                 alt={`${client.name} logo`}
@@ -53,7 +51,7 @@ const ClientLogo = ({ client }: { client: Client }) => (
                 height={40}
                 className="object-contain h-10 w-32 grayscale brightness-0 invert transition-all duration-300 group-hover:grayscale-0 group-hover:brightness-100 group-hover:invert-0"
             />
-        </Link>
+        </div>
     </div>
 );
 
@@ -74,14 +72,21 @@ export default function AboutPage() {
   
   const isLoading = isLoadingClients || isLoadingContent;
   const logoUrl = aboutContent?.logoUrl || "https://i.imgur.com/N9c8oEJ.png";
+  
+  const marqueeVariants = {
+    animate: {
+      x: [0, -1080],
+      transition: {
+        x: {
+          repeat: Infinity,
+          repeatType: "loop",
+          duration: 40,
+          ease: "linear",
+        },
+      },
+    },
+  };
 
-  const [emblaRef] = useEmblaCarousel({ loop: true, align: 'start' }, [
-      Autoplay({
-          delay: 3000,
-          stopOnInteraction: false,
-          stopOnMouseEnter: true,
-      })
-  ])
 
   return (
     <div className="h-full w-full flex flex-col">
@@ -155,16 +160,17 @@ export default function AboutPage() {
                   </div>
                   
                   {clients && clients.length > 0 ? (
-                    <div className="overflow-hidden" ref={emblaRef}>
-                        <div className="flex">
-                            {clients.map((client) => (
-                                <ClientLogo key={client.id} client={client} />
+                    <div className="relative w-full overflow-hidden h-20">
+                      <motion.div
+                        className="absolute flex"
+                        variants={marqueeVariants}
+                        animate="animate"
+                        whileHover={{'animationPlayState': 'paused'}}
+                      >
+                           {[...clients, ...clients].map((client, index) => (
+                              <ClientLogo key={`${client.id}-${index}`} client={client} />
                             ))}
-                            {/* Duplicate for infinite loop */}
-                            {clients.map((client) => (
-                                <ClientLogo key={`${client.id}-clone`} client={client} />
-                            ))}
-                        </div>
+                      </motion.div>
                     </div>
                   ) : (
                     <div className="p-1 h-full flex items-center justify-center text-muted-foreground col-span-full">
