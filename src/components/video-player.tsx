@@ -1,123 +1,68 @@
-
 'use client';
 
 import React, { useEffect, useRef } from 'react';
-import Plyr from 'plyr';
-import 'plyr/dist/plyr.css';
-import Hls from 'hls.js';
-import type { Plyr as PlyrType, PlyrSource } from 'plyr';
+import videojs from 'video.js';
+import 'video.js/dist/video-js.css';
+import type Player from 'video.js/dist/types/player';
 
 interface VideoPlayerProps {
-  source: PlyrSource | null;
-  poster?: string;
-  onReady?: () => void;
+  options: {
+    autoplay?: boolean;
+    controls?: boolean;
+    responsive?: boolean;
+    fluid?: boolean;
+    sources: {
+      src: string;
+      type: string;
+    }[];
+    poster?: string;
+  };
+  onReady?: (player: Player) => void;
 }
 
-const VideoPlayer: React.FC<VideoPlayerProps> = ({ source, poster, onReady }) => {
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const playerRef = useRef<PlyrType | null>(null);
-  const hlsRef = useRef<Hls | null>(null);
+const VideoPlayer: React.FC<VideoPlayerProps> = ({ options, onReady }) => {
+  const videoRef = useRef<HTMLDivElement>(null);
+  const playerRef = useRef<Player | null>(null);
 
   useEffect(() => {
-    const videoElement = videoRef.current;
-    if (!videoElement || !source) {
-      return;
-    }
+    // Make sure Video.js player is only initialized once
+    if (!playerRef.current && videoRef.current) {
+      const videoElement = document.createElement('video-js');
 
-    // --- 1. Cleanup previous instances ---
-    if (playerRef.current) {
-      playerRef.current.destroy();
-      playerRef.current = null;
-    }
-    if (hlsRef.current) {
-      hlsRef.current.destroy();
-      hlsRef.current = null;
-    }
-    
-    let videoSrc = source.sources[0].src;
-    let isHls = videoSrc.includes('.m3u8');
-    const isCloudinary = videoSrc.includes('res.cloudinary.com');
+      videoElement.classList.add('vjs-big-play-centered');
+      videoRef.current.appendChild(videoElement);
 
-    // --- 2. Transform Cloudinary URL to HLS ---
-    if (isCloudinary && !isHls && source.sources[0].provider !== 'youtube' && source.sources[0].provider !== 'vimeo') {
-      const uploadMarker = '/upload/';
-      const uploadIndex = videoSrc.indexOf(uploadMarker);
-
-      if (uploadIndex !== -1) {
-        const baseUrl = videoSrc.substring(0, uploadIndex + uploadMarker.length);
-        const publicIdAndTransformations = videoSrc.substring(uploadIndex + uploadMarker.length);
-        
-        // Correctly form the HLS URL by inserting f_hls
-        const hlsUrl = `${baseUrl}f_hls/${publicIdAndTransformations.replace(/\.[^/.]+$/, "")}/master.m3u8`;
-
-        videoSrc = hlsUrl;
-        isHls = true;
-      }
-    }
-
-
-    // Function to initialize Plyr
-    const initPlyr = (options: Plyr.Options = {}) => {
-      // Ensure no double initialization
-      if (playerRef.current) {
-        playerRef.current.destroy();
-      }
-      const newPlayer = new Plyr(videoElement, {
-        ...options,
-        ...(!isHls && { source: source as Plyr.SourceInfo }), // Provide full source for non-HLS
-      });
-      playerRef.current = newPlayer;
-      if (onReady) {
-        newPlayer.on('ready', onReady);
-      }
-    };
-
-    // --- 3. Setup based on source type ---
-    if (isHls) {
-      if (Hls.isSupported()) {
-        const hls = new Hls();
-        hlsRef.current = hls;
-        hls.loadSource(videoSrc);
-        hls.attachMedia(videoElement);
-
-        hls.on(Hls.Events.MANIFEST_PARSED, () => {
-          initPlyr({
-             captions: { active: true, update: true, language: 'en' },
-          }); 
-        });
-        hls.on(Hls.Events.ERROR, (event, data) => {
-          if (data.fatal) {
-            console.error('HLS.js fatal error:', data.details);
-          }
-        });
-      } else if (videoElement.canPlayType('application/vnd.apple.mpegurl')) {
-        // Native HLS support (e.g., Safari)
-        videoElement.src = videoSrc;
-        videoElement.addEventListener('loadedmetadata', () => {
-          initPlyr();
-        });
-      }
+      const player = (playerRef.current = videojs(videoElement, options, () => {
+        onReady && onReady(player);
+      }));
     } else {
-      // For standard MP4, YouTube, or Vimeo
-      initPlyr();
+      // You can update player options here if they change
+      const player = playerRef.current;
+      if (player) {
+        player.autoplay(options.autoplay || false);
+        player.src(options.sources);
+        if (options.poster) {
+            player.poster(options.poster);
+        }
+      }
     }
+  }, [options, onReady]);
 
-    // --- 4. Final Cleanup ---
+  // Dispose the Video.js player when the component unmounts
+  useEffect(() => {
+    const player = playerRef.current;
+
     return () => {
-      if (playerRef.current) {
-        playerRef.current.destroy();
+      if (player && !player.isDisposed()) {
+        player.dispose();
         playerRef.current = null;
       }
-      if (hlsRef.current) {
-        hlsRef.current.destroy();
-        hlsRef.current = null;
-      }
     };
-  }, [source, onReady]); 
+  }, []);
 
   return (
-    <div className="w-full h-full bg-black plyr__video-embed">
-        <video ref={videoRef} className="w-full h-full" poster={poster} playsInline controls />
+    <div data-vjs-player>
+      <div ref={videoRef} />
     </div>
   );
 };

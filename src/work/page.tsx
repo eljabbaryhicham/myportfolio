@@ -34,6 +34,7 @@ import { motion, AnimatePresence, PanInfo } from 'framer-motion';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import ContactForm from '@/features/contact/components/ContactForm';
 import type { AppUser } from '@/firebase/auth/use-user';
+import type Player from 'video.js/dist/types/player';
 
 
 const VideoPlayer = dynamic(() => import('@/components/video-player'), {
@@ -54,57 +55,43 @@ const PortfolioMedia = ({
   onMediaLoaded: () => void;
 }) => {
 
-  const videoSource = useMemo(() => {
-    const youtubeRegex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
-    const vimeoRegex = /(?:https?:\/\/)?(?:www\.)?vimeo\.com\/(?:channels\/(?:\w+\/)?|groups\/(?:[^\/]*)\/videos\/|album\/(?:\d+)\/video\/|)(\d+)/;
-
-    let sources: {src: string, type?: string, provider?: 'youtube' | 'vimeo', size?: number}[] = [];
-    if (item.sourceUrl) {
-      const youtubeMatch = item.sourceUrl.match(youtubeRegex);
-      if (youtubeMatch?.[1]) {
-        return {
-          type: 'video' as const,
-          sources: [{ src: youtubeMatch[1], provider: 'youtube' as const }],
-        };
-      }
-
-      const vimeoMatch = item.sourceUrl.match(vimeoRegex);
-      if (vimeoMatch?.[1]) {
-        return {
-          type: 'video' as const,
-          sources: [{ src: vimeoMatch[1], provider: 'vimeo' as const }],
-        };
-      }
-      sources.push({ src: item.sourceUrl, type: 'video/mp4' });
-    } else if (item.sources) {
-      sources = item.sources.map(s => ({
-        src: s.src,
-        type: 'video/mp4',
-        size: s.size,
-      }));
+  const videoJsOptions = useMemo(() => {
+    if (item.type !== 'video' || !item.sourceUrl) return null;
+    
+    // Check if it's a Cloudinary URL and transform it for HLS
+    let videoSrc = item.sourceUrl;
+    let type = 'video/mp4';
+    if(videoSrc.includes('res.cloudinary.com')){
+        const uploadMarker = '/upload/';
+        const uploadIndex = videoSrc.indexOf(uploadMarker);
+        if (uploadIndex !== -1) {
+            const publicIdWithTransformations = videoSrc.substring(uploadIndex + uploadMarker.length);
+            // Remove any existing transformations to get the base public ID
+            const publicId = publicIdWithTransformations.split('/').slice(1).join('/');
+            videoSrc = `https://res.cloudinary.com/da1srnoer/video/upload/f_hls/${publicId.replace(/\.[^/.]+$/, "")}/master.m3u8`;
+            type = 'application/x-mpegURL';
+        }
     }
 
-    if (sources.length > 0) {
-      return {
-        type: 'video' as const,
-        sources: sources,
-      };
-    }
-    return null;
+
+    return {
+      autoplay: true,
+      controls: true,
+      responsive: true,
+      fluid: true,
+      sources: [{
+        src: videoSrc,
+        type: type,
+      }],
+      poster: item.thumbnailUrl
+    };
   }, [item]);
 
 
-  if (item.type === 'video' && videoSource) {
+  if (item.type === 'video' && videoJsOptions) {
     return (
       <div className="relative aspect-video bg-black flex items-center justify-center w-full">
-        <div className="w-full h-full">
-          <VideoPlayer
-            source={videoSource}
-            poster={item.thumbnailUrl}
-            previewThumbnailsSrc={item.previewThumbnailsSrc}
-            onReady={onMediaLoaded}
-          />
-        </div>
+        <VideoPlayer options={videoJsOptions} onReady={(player: Player) => onMediaLoaded()} />
       </div>
     );
   }
@@ -669,41 +656,20 @@ export default function WorkPage() {
                           components={{
                             img: ({node, ...props}) => <img className="w-full rounded-lg" {...props} />,
                             video: ({node, ...props}) => {
-                              const { src } = props;
-                              if (!isClient || !src) return null;
+                              if (!isClient || !props.src) return null;
                               
-                              const youtubeRegex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
-                              const vimeoRegex = /(?:https?:\/\/)?(?:www\.)?vimeo\.com\/(?:channels\/(?:\w+\/)?|groups\/(?:[^\/]*)\/videos\/|album\/(?:\d+)\/video\/|)(\d+)/;
-                              
-                              let videoSource: { type: 'video'; sources: { src: string; provider: 'youtube' | 'vimeo' }[] } | { type: 'video'; sources: { src: string; type: string }[] } | null = null;
-                              const youtubeMatch = src.match(youtubeRegex);
-                              if (youtubeMatch && youtubeMatch[1]) {
-                                videoSource = {
-                                  type: 'video',
-                                  sources: [{ src: youtubeMatch[1], provider: 'youtube' }],
-                                };
-                              } else {
-                                const vimeoMatch = src.match(vimeoRegex);
-                                if (vimeoMatch && vimeoMatch[1]) {
-                                  videoSource = {
-                                    type: 'video',
-                                    sources: [{ src: vimeoMatch[1], provider: 'vimeo' }],
-                                  };
-                                } else {
-                                  videoSource = {
-                                    type: 'video',
-                                    sources: [{ src, type: 'video/mp4' }],
-                                  };
-                                }
-                              }
+                              const videoJsOptions = {
+                                  autoplay: false,
+                                  controls: true,
+                                  responsive: true,
+                                  fluid: true,
+                                  sources: [{ src: props.src, type: 'video/mp4' }],
+                                  poster: selectedItem.thumbnailUrl
+                              };
 
                               return (
                                 <div className="w-full rounded-lg overflow-hidden my-4">
-                                  <VideoPlayer
-                                    source={videoSource}
-                                    poster={selectedItem.thumbnailUrl}
-                                    previewThumbnailsSrc={selectedItem.previewThumbnailsSrc}
-                                  />
+                                  <VideoPlayer options={videoJsOptions} />
                                 </div>
                               );
                             }
@@ -821,5 +787,3 @@ export default function WorkPage() {
     </>
   );
 }
-
-    

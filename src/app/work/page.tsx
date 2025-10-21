@@ -34,6 +34,7 @@ import { motion, AnimatePresence, PanInfo } from 'framer-motion';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import ContactForm from '@/features/contact/components/ContactForm';
 import type { AppUser } from '@/firebase/auth/use-user';
+import type Player from 'video.js/dist/types/player';
 
 
 const VideoPlayer = dynamic(() => import('@/components/video-player'), {
@@ -54,36 +55,43 @@ const PortfolioMedia = ({
   onMediaLoaded: () => void;
 }) => {
 
-  const videoSource = useMemo(() => {
-    if (item.type !== 'video') return null;
-
-    let sources: { src: string }[] = [];
-    if (item.sourceUrl) {
-      sources.push({ src: item.sourceUrl });
-    } else if (item.sources) {
-      sources = item.sources.map(s => ({ src: s.src }));
+  const videoJsOptions = useMemo(() => {
+    if (item.type !== 'video' || !item.sourceUrl) return null;
+    
+    // Check if it's a Cloudinary URL and transform it for HLS
+    let videoSrc = item.sourceUrl;
+    let type = 'video/mp4';
+    if(videoSrc.includes('res.cloudinary.com')){
+        const uploadMarker = '/upload/';
+        const uploadIndex = videoSrc.indexOf(uploadMarker);
+        if (uploadIndex !== -1) {
+            const publicIdWithTransformations = videoSrc.substring(uploadIndex + uploadMarker.length);
+            // Remove any existing transformations to get the base public ID
+            const publicId = publicIdWithTransformations.split('/').slice(1).join('/');
+            videoSrc = `https://res.cloudinary.com/da1srnoer/video/upload/f_hls/${publicId.replace(/\.[^/.]+$/, "")}/master.m3u8`;
+            type = 'application/x-mpegURL';
+        }
     }
 
-    if (sources.length > 0) {
-      return {
-        type: 'video' as const,
-        sources: sources,
-      };
-    }
-    return null;
+
+    return {
+      autoplay: true,
+      controls: true,
+      responsive: true,
+      fluid: true,
+      sources: [{
+        src: videoSrc,
+        type: type,
+      }],
+      poster: item.thumbnailUrl
+    };
   }, [item]);
 
 
-  if (item.type === 'video' && videoSource) {
+  if (item.type === 'video' && videoJsOptions) {
     return (
       <div className="relative aspect-video bg-black flex items-center justify-center w-full">
-        <div className="w-full h-full">
-          <VideoPlayer
-            source={videoSource}
-            poster={item.thumbnailUrl}
-            onReady={onMediaLoaded}
-          />
-        </div>
+        <VideoPlayer options={videoJsOptions} onReady={(player: Player) => onMediaLoaded()} />
       </div>
     );
   }
@@ -116,7 +124,7 @@ const PortfolioMedia = ({
     onMediaLoaded();
   }, [item, onMediaLoaded]);
 
-  return <div className="relative aspect-video bg-black flex justify-center items-center group w-full"><p className="text-white">Media not available</p></div>;
+  return <div className="relative aspect-video bg-black flex justify-center items-center group w-full"></div>;
 };
 PortfolioMedia.displayName = 'PortfolioMedia';
 
@@ -483,20 +491,16 @@ export default function WorkPage() {
                         isAdmin={!!user}
                       />
                     ))}
-                    {filteredItems.length > 0 && visibleItems < filteredItems.length && (
-                        <div className="flex items-center justify-center aspect-square">
-                            <Button
-                            onClick={showMoreItems}
-                            variant="outline"
-                            className="w-3/4 h-3/4 text-sm md:text-lg group"
-                            >
-                                <FontAwesomeIcon icon={faArrowRight} className="mr-2 transition-transform group-hover:translate-x-1" />
-                                Show More
-                            </Button>
-                        </div>
-                    )}
                   </motion.div>
                 </AnimatePresence>
+              )}
+
+              {filteredItems.length > 0 && visibleItems < filteredItems.length && (
+                <div className="mt-12 text-center">
+                  <Button onClick={showMoreItems} size="lg">
+                    Show More
+                  </Button>
+                </div>
               )}
             </div>
           </div>
@@ -652,17 +656,20 @@ export default function WorkPage() {
                           components={{
                             img: ({node, ...props}) => <img className="w-full rounded-lg" {...props} />,
                             video: ({node, ...props}) => {
-                              const { src } = props;
-                              if (!isClient || !src) return null;
+                              if (!isClient || !props.src) return null;
                               
-                              const videoSource = { type: 'video' as const, sources: [{ src: src }]};
+                              const videoJsOptions = {
+                                  autoplay: false,
+                                  controls: true,
+                                  responsive: true,
+                                  fluid: true,
+                                  sources: [{ src: props.src, type: 'video/mp4' }],
+                                  poster: selectedItem.thumbnailUrl
+                              };
 
                               return (
                                 <div className="w-full rounded-lg overflow-hidden my-4">
-                                  <VideoPlayer
-                                    source={videoSource}
-                                    poster={selectedItem.thumbnailUrl}
-                                  />
+                                  <VideoPlayer options={videoJsOptions} />
                                 </div>
                               );
                             }
