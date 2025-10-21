@@ -1,7 +1,7 @@
 
 'use client';
 
-import { memo, useEffect, useRef } from 'react';
+import { memo } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import Image from 'next/image';
@@ -13,8 +13,7 @@ import Logo from '@/components/logo';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEnvelope, faArrowRight, faLightbulb, faMicrophone, faPalette, faShareNodes, faBullhorn } from '@fortawesome/free-solid-svg-icons';
-import { cn } from '@/lib/utils';
+import { faEnvelope, faArrowRight } from '@fortawesome/free-solid-svg-icons';
 import { BrainCircuit, Mic, Clapperboard, Share2 } from 'lucide-react';
 
 
@@ -97,10 +96,10 @@ export default function AboutPage() {
                 <Preloader />
               </div>
             ) : (
-              <>
+              <div className="space-y-12 md:space-y-24">
                 {aboutContent && (
                   <motion.div 
-                    className="flex flex-col md:flex-row gap-8 md:gap-12 items-center w-full max-w-4xl mx-auto mb-12 md:mb-16"
+                    className="flex flex-col md:flex-row gap-8 md:gap-12 items-center"
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5 }}
@@ -143,38 +142,36 @@ export default function AboutPage() {
                   </motion.div>
                 )}
 
-                <div className="w-full">
-                  <div className="max-w-4xl mx-auto">
-                      <div className="text-center mb-8">
-                        <h2 className="text-2xl font-headline tracking-tight">Our Clients</h2>
-                        <Separator className="bg-white/10 max-w-xs mx-auto mt-2" />
-                      </div>
-                      
-                      {clients && clients.length > 0 ? (
-                        <div className="relative w-full overflow-hidden whitespace-nowrap group">
-                          <div className="flex">
-                            <div className="animate-marquee group-hover:[animation-play-state:paused]">
-                                {clients.map((client) => <ClientLogo key={client.id} client={client} />)}
-                            </div>
-                            <div className="animate-marquee group-hover:[animation-play-state:paused]" aria-hidden="true">
-                                {clients.map((client) => <ClientLogo key={`${client.id}-2`} client={client} />)}
-                            </div>
-                          </div>
+                <div>
+                  <div className="text-center mb-8">
+                    <h2 className="text-2xl font-headline tracking-tight">Our Clients</h2>
+                    <Separator className="bg-white/10 max-w-xs mx-auto mt-2" />
+                  </div>
+                  
+                  {clients && clients.length > 0 ? (
+                    <div className="w-full overflow-hidden">
+                      <div className="group flex overflow-hidden select-none">
+                        <div className="flex-shrink-0 flex items-center justify-around whitespace-nowrap animate-marquee group-hover:[animation-play-state:paused]">
+                            {clients.map((client) => <ClientLogo key={client.id} client={client} />)}
                         </div>
-                      ) : (
-                        <div className="p-1 h-full flex items-center justify-center text-muted-foreground col-span-full">
-                            No clients to display.
+                        <div className="flex-shrink-0 flex items-center justify-around whitespace-nowrap animate-marquee group-hover:[animation-play-state:paused]" aria-hidden="true">
+                            {clients.map((client) => <ClientLogo key={`${client.id}-2`} client={client} />)}
                         </div>
-                      )}
-                      
-                      <div className="text-center mt-8 md:mt-12">
-                        <p className="text-foreground/70">
-                          Trusted by 1000+ amazing clients worldwide
-                        </p>
                       </div>
+                    </div>
+                  ) : (
+                    <div className="p-1 h-full flex items-center justify-center text-muted-foreground col-span-full">
+                        No clients to display.
+                    </div>
+                  )}
+                  
+                  <div className="text-center mt-8 md:mt-12">
+                    <p className="text-foreground/70">
+                      Trusted by 1000+ amazing clients worldwide
+                    </p>
                   </div>
                 </div>
-              </>
+              </div>
             )}
           </div>
         </div>
@@ -182,3 +179,4 @@ export default function AboutPage() {
     </div>
   );
 }
+
