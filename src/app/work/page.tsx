@@ -211,6 +211,8 @@ export default function WorkPage() {
   const [direction, setDirection] = useState<'next' | 'prev' | null>(null);
   const [isDialogMediaLoading, setIsDialogMediaLoading] = useState(true);
 
+  const gridRef = useRef<HTMLDivElement>(null);
+
   const filteredItems = useMemo(() => {
     if (!portfolioItems) return [];
     if (filter === 'all') return portfolioItems;
@@ -220,6 +222,40 @@ export default function WorkPage() {
   useEffect(() => {
     setIsClient(true);
   }, []);
+
+  useEffect(() => {
+    if (!isClient || isLoading) return;
+
+    const calculateVisibleItems = () => {
+      if (isMobile) {
+        setVisibleItems(6);
+        return;
+      }
+      if (gridRef.current) {
+        const gridStyle = window.getComputedStyle(gridRef.current);
+        const gridWidth = gridRef.current.offsetWidth;
+        const columnGap = parseInt(gridStyle.getPropertyValue('gap'), 10) || 16;
+        
+        // Use a sample item to determine width, or a sensible fallback
+        const firstItem = gridRef.current.children[0] as HTMLElement;
+        if (firstItem) {
+            const itemWidth = firstItem.offsetWidth;
+            const columns = Math.max(1, Math.floor((gridWidth + columnGap) / (itemWidth + columnGap)));
+            const rows = 2;
+            setVisibleItems(columns * rows);
+        } else {
+            // Fallback if there are no items rendered yet
+            setVisibleItems(12);
+        }
+      }
+    };
+    
+    calculateVisibleItems();
+    
+    window.addEventListener('resize', calculateVisibleItems);
+    return () => window.removeEventListener('resize', calculateVisibleItems);
+  }, [isClient, isLoading, isMobile, filter, portfolioItems]);
+
 
   // Effect to set selected item based on URL
   useEffect(() => {
@@ -454,6 +490,7 @@ export default function WorkPage() {
                 <AnimatePresence mode="wait">
                   <motion.div
                     key={filter}
+                    ref={gridRef}
                     variants={containerVariants}
                     initial="hidden"
                     animate="visible"
@@ -762,3 +799,5 @@ export default function WorkPage() {
     </>
   );
 }
+
+    
