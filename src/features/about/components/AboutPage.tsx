@@ -166,7 +166,7 @@ export default function AboutPage() {
                     </div>
                     <div className="md:w-1/2 flex flex-col justify-center">
                        <h2 className="text-2xl md:text-3xl font-headline tracking-tight mb-6 text-center">What We Do?</h2>
-                       <div className="grid grid-cols-2 md:grid-cols-2 gap-4">
+                       <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                         {services.map((service) => {
                             const isWebDesign = service.title === "Web Design & Development";
                             return (
@@ -174,7 +174,7 @@ export default function AboutPage() {
                                     key={service.title}
                                     className={cn(
                                       "glass-effect p-4 rounded-lg flex flex-col items-center justify-center text-center",
-                                      isWebDesign && "md:col-span-2"
+                                      isWebDesign && "col-span-2 md:col-span-2"
                                     )}
                                 >
                                     <service.icon className="w-8 h-8 md:w-10 md:h-10 text-primary mb-3" />
