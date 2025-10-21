@@ -1,3 +1,4 @@
+
 'use client';
 
 import Image from 'next/image';
@@ -212,11 +213,14 @@ export default function WorkPage() {
   const [direction, setDirection] = useState<'next' | 'prev' | null>(null);
   const [isDialogMediaLoading, setIsDialogMediaLoading] = useState(true);
 
+  const allItems = useMemo(() => {
+    return portfolioItems?.filter(item => item.isVisible !== false) || [];
+  }, [portfolioItems]);
+
   const filteredItems = useMemo(() => {
-    if (!portfolioItems) return [];
-    if (filter === 'all') return portfolioItems;
-    return portfolioItems.filter(item => item.type === filter);
-  }, [portfolioItems, filter]);
+    if (filter === 'all') return allItems;
+    return allItems.filter(item => item.type === filter);
+  }, [allItems, filter]);
   
   useEffect(() => {
     setIsClient(true);
@@ -807,5 +811,6 @@ export default function WorkPage() {
     
 
     
+
 
 

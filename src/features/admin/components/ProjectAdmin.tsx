@@ -18,7 +18,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { useCollection, useFirestore, useMemoFirebase, errorEmitter, FirestorePermissionError, useUser } from '@/firebase';
+import { useCollection, useFirestore, useMemoFirebase, errorEmitter, FirestorePermissionError, useUser, updateDocumentNonBlocking } from '@/firebase';
 import { useToast } from '@/hooks/use-toast';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { deleteDocumentNonBlocking } from '@/firebase/non-blocking-updates';
@@ -26,7 +26,7 @@ import { collection, doc, writeBatch } from 'firebase/firestore';
 import { defaultPortfolioItems, type PortfolioItem } from '@/features/portfolio/data/portfolio-data';
 import { cn } from '@/lib/utils';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPlusCircle, faEllipsisH, faCloudUploadAlt, faGripVertical } from '@fortawesome/free-solid-svg-icons';
+import { faPlusCircle, faEllipsisH, faCloudUploadAlt, faGripVertical, faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
 import Preloader from '@/components/preloader';
 import type { AppUser } from '@/firebase/auth/use-user';
 
@@ -110,6 +110,17 @@ function ProjectAdmin({ setSelectedItem, setIsSheetOpen, handleFormSubmit }: Pro
     toast({
       title: 'Item Deleted',
       description: 'The portfolio item has been removed.',
+    });
+  };
+
+  const handleToggleVisibility = (item: PortfolioItem) => {
+    if (!firestore || !canEditProjects) return;
+    const docRef = doc(firestore, 'projects', item.id);
+    const newVisibility = !(item.isVisible ?? true);
+    updateDocumentNonBlocking(docRef, { isVisible: newVisibility });
+    toast({
+        title: `Project ${newVisibility ? 'Visible' : 'Hidden'}`,
+        description: `"${item.title}" is now ${newVisibility ? 'visible' : 'hidden'} on the work page.`,
     });
   };
 
@@ -220,7 +231,7 @@ function ProjectAdmin({ setSelectedItem, setIsSheetOpen, handleFormSubmit }: Pro
                   <TableHead className="text-center">Title</TableHead>
                   <TableHead className="hidden md:table-cell text-center">Type</TableHead>
                   <TableHead className="hidden lg:table-cell text-center">Description</TableHead>
-                  <TableHead className="text-center w-[50px]">Actions</TableHead>
+                  <TableHead className="text-center w-[100px]">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -245,7 +256,11 @@ function ProjectAdmin({ setSelectedItem, setIsSheetOpen, handleFormSubmit }: Pro
                     onDragEnter={(e) => handleDragEnter(e, item.id)}
                     onDragEnd={handleDragEnd}
                     onDragOver={(e) => e.preventDefault()}
-                    className={cn("border-b-0 transition-all relative", canEditProjects && "cursor-grab")}
+                    className={cn(
+                        "border-b-0 transition-all relative", 
+                        canEditProjects && "cursor-grab",
+                        (item.isVisible === false) && "opacity-50 hover:opacity-80"
+                    )}
                   >
                     <TableCell className="text-center">
                       <FontAwesomeIcon icon={faGripVertical} className={cn("h-5 w-5 text-foreground/50", !canEditProjects && "opacity-20")} />
@@ -263,25 +278,30 @@ function ProjectAdmin({ setSelectedItem, setIsSheetOpen, handleFormSubmit }: Pro
                     <TableCell className="hidden md:table-cell text-center">{item.type}</TableCell>
                     <TableCell className="hidden lg:table-cell max-w-xs truncate text-center">{item.description}</TableCell>
                     <TableCell className="text-center">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon">
-                            <FontAwesomeIcon icon={faEllipsisH} />
+                      <div className="flex justify-center items-center gap-1">
+                          <Button variant="ghost" size="icon" onClick={() => handleToggleVisibility(item)} disabled={!canEditProjects} title={item.isVisible === false ? "Show Project" : "Hide Project"}>
+                            <FontAwesomeIcon icon={item.isVisible === false ? faEyeSlash : faEye} />
                           </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent className="glass-effect">
-                          <DropdownMenuItem onClick={() => handleEditItem(item)} className="justify-center">
-                            {canEditProjects ? 'Edit' : 'View'}
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            onClick={() => handleDeleteItem(item.id)}
-                            className="text-destructive justify-center"
-                            disabled={!canEditProjects}
-                          >
-                            Delete
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="icon">
+                                <FontAwesomeIcon icon={faEllipsisH} />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent className="glass-effect">
+                              <DropdownMenuItem onClick={() => handleEditItem(item)} className="justify-center">
+                                {canEditProjects ? 'Edit' : 'View'}
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                onClick={() => handleDeleteItem(item.id)}
+                                className="text-destructive justify-center"
+                                disabled={!canEditProjects}
+                              >
+                                Delete
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}

@@ -41,6 +41,7 @@ import { useToast } from '@/hooks/use-toast';
 import { addDocumentNonBlocking, useFirestore } from '@/firebase';
 import { collection } from 'firebase/firestore';
 import { Progress } from '@/components/ui/progress';
+import { Switch } from '@/components/ui/switch';
 
 
 const formSchema = z.object({
@@ -57,6 +58,7 @@ const formSchema = z.object({
   thumbnailHint: z.string().optional(),
   featured: z.boolean().optional(),
   order: z.number().optional(),
+  isVisible: z.boolean().optional(),
 });
 
 type PortfolioItemFormValues = z.infer<typeof formSchema>;
@@ -92,6 +94,7 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onCho
         featured: false,
         details: '',
         order: undefined,
+        isVisible: true,
       }
     });
   
@@ -104,6 +107,7 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onCho
             details: item.details || '',
             sourceUrl: item.sourceUrl || '',
             order: item.order ?? 0,
+            isVisible: item.isVisible ?? true,
         } : {
             title: '',
             description: '',
@@ -114,6 +118,7 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onCho
             featured: false,
             details: '',
             order: undefined, // Let parent component decide the order for new items
+            isVisible: true,
         };
         form.reset(defaultValues);
       }
@@ -134,6 +139,7 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onCho
           id: item?.id || '', // id will be handled by parent
           ...values,
           thumbnailHint: values.thumbnailHint || '',
+          isVisible: values.isVisible ?? true,
         });
     };
 
@@ -433,6 +439,28 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onCho
                                     <FormMessage />
                                 </FormItem>
                             )}
+                            />
+                            <FormField
+                                control={form.control}
+                                name="isVisible"
+                                render={({ field }) => (
+                                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4 glass-effect">
+                                        <div className="space-y-0.5">
+                                            <FormLabel className="text-base">
+                                                Visible
+                                            </FormLabel>
+                                            <FormDescription>
+                                                Make this project visible on the public work page.
+                                            </FormDescription>
+                                        </div>
+                                        <FormControl>
+                                            <Switch
+                                                checked={field.value}
+                                                onCheckedChange={field.onChange}
+                                            />
+                                        </FormControl>
+                                    </FormItem>
+                                )}
                             />
                           <div className="flex justify-end space-x-4 pt-4">
                               <Button type="button" variant="outline" onClick={() => setIsOpen(false)}>Cancel</Button>

@@ -13,6 +13,7 @@ export interface PortfolioItem {
   featured?: boolean;
   details?: string;
   order?: number;
+  isVisible?: boolean;
   previewThumbnailsSrc?: string; // For video preview thumbnails
 }
 
@@ -37,6 +38,7 @@ export const defaultPortfolioItems: PortfolioItem[] = [
 **Client:** Fictional Brand Inc.
 **Year:** 2023`,
     order: 0,
+    isVisible: true,
   },
   {
     id: 'img1',
@@ -49,6 +51,7 @@ export const defaultPortfolioItems: PortfolioItem[] = [
     featured: true,
     details: 'Created with a mix of digital painting and procedural generation techniques in Processing.',
     order: 1,
+    isVisible: true,
   },
   {
     id: 'img2',
@@ -68,6 +71,7 @@ The process involved several stages, including a video compilation of the digita
 <video src="https://cdn.plyr.io/static/demo/View_From_A_Blue_Moon_Trailer-576p.mp4" controls />
 `,
     order: 2,
+    isVisible: true,
   },
   {
     id: 'vid2',
@@ -84,6 +88,7 @@ The process involved several stages, including a video compilation of the digita
     previewThumbnailsSrc: 'https://cdn.plyr.io/static/demo/View_From_A_Blue_Moon_Trailer-Thumb.jpg',
     featured: false,
     order: 3,
+    isVisible: true,
   },
   {
     id: 'img3',
@@ -95,6 +100,7 @@ The process involved several stages, including a video compilation of the digita
     sourceUrl: 'https://picsum.photos/seed/liquid3/1600/1200',
     featured: true,
     order: 4,
+    isVisible: true,
   },
   {
     id: 'img4',
@@ -106,6 +112,7 @@ The process involved several stages, including a video compilation of the digita
     sourceUrl: 'https://picsum.photos/seed/liquid4/1200/1600',
     featured: false,
     order: 5,
+    isVisible: true,
   },
   {
     id: 'img5',
@@ -117,6 +124,7 @@ The process involved several stages, including a video compilation of the digita
     sourceUrl: 'https://picsum.photos/seed/ocean/1600/1600',
     featured: false,
     order: 6,
+    isVisible: true,
   },
   {
     id: 'img6',
@@ -128,6 +136,7 @@ The process involved several stages, including a video compilation of the digita
     sourceUrl: 'https://picsum.photos/seed/city/1600/1600',
     featured: false,
     order: 7,
+    isVisible: true,
   },
   {
     id: 'vid3',
@@ -143,6 +152,7 @@ The process involved several stages, including a video compilation of the digita
     previewThumbnailsSrc: 'https://cdn.plyr.io/static/demo/View_From_A_Blue_Moon_Trailer-Thumb.jpg',
     featured: false,
     order: 8,
+    isVisible: true,
   },
   {
     id: 'img7',
@@ -154,6 +164,7 @@ The process involved several stages, including a video compilation of the digita
     sourceUrl: 'https://picsum.photos/seed/desert/1600/1600',
     featured: false,
     order: 9,
+    isVisible: true,
   },
   {
     id: 'img8',
@@ -165,6 +176,7 @@ The process involved several stages, including a video compilation of the digita
     sourceUrl: 'https://picsum.photos/seed/mountain/1600/1600',
     featured: false,
     order: 10,
+    isVisible: true,
   },
   {
     id: 'vid4',
@@ -179,6 +191,7 @@ The process involved several stages, including a video compilation of the digita
     previewThumbnailsSrc: 'https://cdn.plyr.io/static/demo/View_From_A_Blue_Moon_Trailer-Thumb.jpg',
     featured: false,
     order: 11,
+    isVisible: true,
   },
   {
     id: 'img9',
@@ -190,6 +203,7 @@ The process involved several stages, including a video compilation of the digita
     sourceUrl: 'https://picsum.photos/seed/archi1/1600/1600',
     featured: false,
     order: 12,
+    isVisible: true,
   },
   {
     id: 'vid5',
@@ -204,6 +218,7 @@ The process involved several stages, including a video compilation of the digita
     previewThumbnailsSrc: 'https://cdn.plyr.io/static/demo/View_From_A_Blue_Moon_Trailer-Thumb.jpg',
     featured: true,
     order: 13,
+    isVisible: true,
   },
   {
     id: 'img10',
@@ -215,6 +230,7 @@ The process involved several stages, including a video compilation of the digita
     sourceUrl: 'https://picsum.photos/seed/graffiti1/1600/1600',
     featured: false,
     order: 14,
+    isVisible: true,
   },
   {
     id: 'vid6',
@@ -229,6 +245,7 @@ The process involved several stages, including a video compilation of the digita
     previewThumbnailsSrc: 'https://cdn.plyr.io/static/demo/View_From_A_Blue_Moon_Trailer-Thumb.jpg',
     featured: false,
     order: 15,
+    isVisible: true,
   },
   {
     id: 'img11',
@@ -240,6 +257,7 @@ The process involved several stages, including a video compilation of the digita
     sourceUrl: 'https://picsum.photos/seed/autumn1/1600/1600',
     featured: false,
     order: 16,
+    isVisible: true,
   },
   {
     id: 'vid7',
@@ -254,6 +272,7 @@ The process involved several stages, including a video compilation of the digita
     previewThumbnailsSrc: 'https://cdn.plyr.io/static/demo/View_From_A_Blue_Moon_Trailer-Thumb.jpg',
     featured: false,
     order: 17,
+    isVisible: true,
   },
   {
     id: 'img12',
@@ -265,6 +284,7 @@ The process involved several stages, including a video compilation of the digita
     sourceUrl: 'https://picsum.photos/seed/interior1/1600/1600',
     featured: false,
     order: 18,
+    isVisible: true,
   },
   {
     id: 'vid8',
@@ -279,6 +299,7 @@ The process involved several stages, including a video compilation of the digita
     previewThumbnailsSrc: 'https://cdn.plyr.io/static/demo/View_From_A_Blue_Moon_Trailer-Thumb.jpg',
     featured: false,
     order: 19,
+    isVisible: true,
   },
   {
     id: 'img13',
@@ -290,6 +311,7 @@ The process involved several stages, including a video compilation of the digita
     sourceUrl: 'https://picsum.photos/seed/cyberpunk1/1600/1600',
     featured: true,
     order: 20,
+    isVisible: true,
   },
    {
     id: 'vid9',
@@ -304,5 +326,6 @@ The process involved several stages, including a video compilation of the digita
     previewThumbnailsSrc: 'https://cdn.plyr.io/static/demo/View_From_A_Blue_Moon_Trailer-Thumb.jpg',
     featured: false,
     order: 21,
+    isVisible: true,
   }
 ];

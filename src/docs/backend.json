@@ -36,6 +36,10 @@
         "order": {
           "type": "number",
           "description": "The order in which the project will be displayed."
+        },
+        "isVisible": {
+          "type": "boolean",
+          "description": "Controls the visibility of the project on the public portfolio."
         }
       },
       "required": [
