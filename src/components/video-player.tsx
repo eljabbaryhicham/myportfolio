@@ -84,7 +84,7 @@ const VideoPlayer = ({
           muted: muted || false,
           settings: ['quality', 'speed', 'loop'],
           quality: {
-            default: 720,
+            default: 480,
             options: [4320, 2160, 1440, 1080, 720, 576, 480, 360, 240],
           },
           previewThumbnails: {
