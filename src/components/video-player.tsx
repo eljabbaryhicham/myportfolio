@@ -36,7 +36,7 @@ const VideoPlayer = ({
 
     const videoElement = document.createElement('video');
     videoElement.playsInline = true;
-    videoElement.controls = false; // Let Plyr handle controls
+    videoElement.controls = false; 
     videoElement.poster = poster;
     wrapper.appendChild(videoElement);
 
@@ -72,17 +72,22 @@ const VideoPlayer = ({
 
     const firstSource = source.sources[0];
     if (firstSource && firstSource.src) {
-        const isM3u8 = firstSource.src.endsWith('.m3u8');
-
-        if (isM3u8 && Hls.isSupported()) {
+        // Only use HLS for Cloudinary URLs
+        if (firstSource.src.includes('res.cloudinary.com') && Hls.isSupported()) {
             const hls = new Hls();
-            hls.loadSource(firstSource.src);
+            
+            // Correctly transform the URL to get the HLS manifest
+            // e.g., https://res.cloudinary.com/.../upload/v123/video.mp4
+            // becomes https://res.cloudinary.com/.../upload/f_auto,q_auto/v123/video.m3u8
+            const hlsUrl = firstSource.src
+                .replace(/\.mp4$/, '.m3u8')
+                .replace('/upload/', '/upload/f_auto,q_auto/');
+
+            hls.loadSource(hlsUrl);
             hls.attachMedia(videoElement);
             // @ts-ignore
-            window.hls = hls; 
+            window.hls = hls;
         } else {
-            // For non-HLS or unsupported browsers, let Plyr handle it.
-            // Plyr can handle native HLS on Safari.
             plyrPlayer.source = source;
         }
     }
