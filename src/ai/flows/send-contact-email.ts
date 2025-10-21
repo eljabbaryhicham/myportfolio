@@ -6,8 +6,6 @@
  */
 import { Resend } from 'resend';
 import { ContactFormInput } from '@/features/contact/data/contact-form-types';
-import * as dotenv from 'dotenv';
-dotenv.config();
 
 
 // Set the recipient email address.
