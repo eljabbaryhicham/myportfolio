@@ -9,7 +9,7 @@ import {
   DialogDescription,
   DialogClose,
 } from '@/components/ui/dialog';
-import { useState, memo, useEffect, useMemo, useRef } from 'react';
+import { useState, memo, useEffect, useMemo, useRef, useCallback } from 'react';
 import { cn } from '@/lib/utils';
 import dynamic from 'next/dynamic';
 import { Button } from '@/components/ui/button';
@@ -203,6 +203,7 @@ export default function WorkPage() {
   const [isCloseButtonVisible, setIsCloseButtonVisible] = useState(false);
   const inactivityTimer = useRef<NodeJS.Timeout | null>(null);
   const isMobile = useIsMobile();
+  const gridRef = useRef<HTMLDivElement>(null);
   
   const [isLibraryOpen, setIsLibraryOpen] = useState(false);
   const [librarySelectionConfig, setLibrarySelectionConfig] = useState<{ onSelect: (url: string, type: 'image' | 'video', filename: string) => void } | null>(null);
@@ -219,15 +220,36 @@ export default function WorkPage() {
   useEffect(() => {
     setIsClient(true);
   }, []);
+  
+  const calculateVisibleItems = useCallback(() => {
+    if (isMobile) {
+      return 6;
+    }
+    if (gridRef.current) {
+      const grid = gridRef.current;
+      const gridStyle = window.getComputedStyle(grid);
+      const columnCount = gridStyle.getPropertyValue('grid-template-columns').split(' ').length;
+      
+      const cardHeightWithGap = 250; // Approximate height of a card + gap
+      const gridHeight = window.innerHeight * 0.8; // Use 80% of viewport height
+      const rowCount = Math.max(1, Math.floor(gridHeight / cardHeightWithGap));
+      
+      return Math.max(1, rowCount * columnCount);
+    }
+    return 12; // Fallback for desktop
+  }, [isMobile]);
 
   useEffect(() => {
-    // Set initial visible items based on screen size
-    if (isMobile) {
-      setVisibleItems(6);
-    } else {
-      setVisibleItems(12);
+    function handleResize() {
+      setVisibleItems(calculateVisibleItems());
     }
-  }, [isMobile]);
+    
+    // Set initial items
+    handleResize();
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [calculateVisibleItems]);
 
 
   // Effect to set selected item based on URL
@@ -264,7 +286,7 @@ export default function WorkPage() {
   }, [portfolioItems]);
 
   const showMoreItems = () => {
-    setVisibleItems(prevVisibleItems => prevVisibleItems + 8);
+    setVisibleItems(prevVisibleItems => prevVisibleItems + calculateVisibleItems());
   };
 
   const handleOpenChange = (open: boolean) => {
@@ -421,6 +443,9 @@ export default function WorkPage() {
       opacity: 1,
     },
   };
+  
+  const itemsToShow = filteredItems.slice(0, visibleItems);
+  const showMoreButtonNeeded = filteredItems.length > visibleItems;
 
   return (
     <>
@@ -463,12 +488,13 @@ export default function WorkPage() {
                 <AnimatePresence mode="wait">
                   <motion.div
                     key={filter}
+                    ref={gridRef}
                     variants={containerVariants}
                     initial="hidden"
                     animate="visible"
                     className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5 gap-4"
                   >
-                    {filteredItems.slice(0, visibleItems).map(item => (
+                    {itemsToShow.map(item => (
                       <motion.div key={item.id} variants={itemVariants}>
                         <PortfolioGridItem 
                           item={item}
@@ -478,7 +504,7 @@ export default function WorkPage() {
                         />
                       </motion.div>
                     ))}
-                    {filteredItems.length > 0 && visibleItems < filteredItems.length && (
+                    {showMoreButtonNeeded && (
                       <motion.div
                         variants={itemVariants}
                         className="group relative cursor-pointer overflow-hidden rounded-md transition-all duration-300 hover:scale-[1.02] aspect-square p-[2px] rounded-lg glass-effect"
@@ -775,3 +801,4 @@ export default function WorkPage() {
     
 
     
+
