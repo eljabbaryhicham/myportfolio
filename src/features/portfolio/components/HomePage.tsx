@@ -54,7 +54,7 @@ export default function HomePageContent({ featuredProject, isLoading }: HomePage
                     loop
                     muted
                     playsInline
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-cover blur-md"
                 />
             </div>
         )}
