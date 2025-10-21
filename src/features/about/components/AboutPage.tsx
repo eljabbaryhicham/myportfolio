@@ -140,14 +140,14 @@ export default function AboutPage() {
                 >
                 <motion.div 
                     variants={itemVariants}
-                    className="flex flex-col md:flex-row gap-8 md:gap-12 items-center text-center"
+                    className="flex flex-col md:flex-row gap-8 md:gap-12 items-center"
                   >
-                    <div className="md:w-1/2">
+                    <div className="md:w-1/2 text-center">
                       <div className="w-48 mx-auto mb-4">
                           <Logo src={logoUrl} />
                       </div>
                       <h2 className="text-2xl md:text-3xl font-headline tracking-tight mb-4">{aboutContent?.title}</h2>
-                      <p className="text-foreground/70 leading-relaxed mb-6">{aboutContent?.content}</p>
+                      <p className="text-foreground/70 leading-relaxed mb-6 text-justify">{aboutContent?.content}</p>
                       <div className="hidden sm:flex flex-col sm:flex-row gap-4 justify-center">
                           <Button asChild>
                               <Link href="/contact">
