@@ -83,13 +83,13 @@ export default function ContactPage() {
               </div>
             ) : contactInfo ? (
               <motion.div
-                className="flex flex-col-reverse md:flex-row gap-2 items-start justify-center"
+                className="flex flex-col md:flex-row gap-8 items-center justify-center"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5 }}
               >
-                <div className="w-full md:w-1/2">
-                  <Card className="glass-effect p-6 flex flex-col h-full">
+                <div className="w-full md:w-1/2 flex justify-center">
+                  <Card className="glass-effect p-6 flex flex-col h-full w-full max-w-md">
                     <CardContent className="flex flex-col items-center text-center p-0">
                       <Avatar className="border-2 border-white mb-4" style={{ width: '80px', height: '80px' }}>
                         <AvatarImage src={contactInfo.avatarUrl} alt={contactInfo.name} />
@@ -135,8 +135,8 @@ export default function ContactPage() {
                     </CardContent>
                   </Card>
                 </div>
-                <div className="w-full md:w-1/2">
-                  <Card className="glass-effect p-6 sm:p-8 h-full flex flex-col justify-center">
+                <div className="w-full md:w-1/2 flex justify-center">
+                  <Card className="glass-effect p-6 sm:p-8 h-full flex flex-col justify-center w-full max-w-md">
                     <CardContent className="p-0 flex flex-col items-center">
                         <ContactForm />
                     </CardContent>

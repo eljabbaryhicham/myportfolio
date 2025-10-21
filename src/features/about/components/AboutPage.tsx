@@ -114,13 +114,13 @@ export default function AboutPage() {
                 <div 
                     className="flex flex-col md:flex-row gap-8 md:gap-12 items-center"
                   >
-                    <div className="text-center md:text-left md:w-1/2">
-                      <div className="w-48 mx-auto md:mx-0 mb-4">
+                    <div className="text-center md:w-1/2">
+                      <div className="w-48 mx-auto mb-4">
                           <Logo src={logoUrl} />
                       </div>
                       <h2 className="text-2xl md:text-3xl font-headline tracking-tight mb-4">{aboutContent?.title}</h2>
                       <p className="text-foreground/70 leading-relaxed mb-6">{aboutContent?.content}</p>
-                      <div className="hidden sm:flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
+                      <div className="hidden sm:flex flex-col sm:flex-row gap-4 justify-center">
                           <Button asChild>
                               <Link href="/contact">
                                   <FontAwesomeIcon icon={faEnvelope} className="mr-2" />
@@ -177,7 +177,7 @@ export default function AboutPage() {
                   </div>
                 </div>
 
-                <div className="sm:hidden flex flex-col sm:flex-row gap-4 justify-center md:justify-start w-full">
+                <div className="sm:hidden flex flex-col sm:flex-row gap-4 justify-center w-full">
                     <Button asChild>
                         <Link href="/contact">
                             <FontAwesomeIcon icon={faEnvelope} className="mr-2" />
