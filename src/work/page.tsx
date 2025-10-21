@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/dialog';
 import { useState, memo, useEffect, useMemo, useRef } from 'react';
 import { cn } from '@/lib/utils';
+import dynamic from 'next/dynamic';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import ReactMarkdown from 'react-markdown';
@@ -21,7 +22,7 @@ import { useCollection, useFirestore, useMemoFirebase, useUser, setDocumentNonBl
 import { collection, query, orderBy, doc } from 'firebase/firestore';
 import { PortfolioItem } from '@/features/portfolio/data/portfolio-data';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faUpDown, faXmark, faExpand, faPalette, faFilm, faArrowLeft, faArrowRight, faPencilAlt, faEnvelope } from '@fortawesome/free-solid-svg-icons';
+import { faUpDown, faXmark, faExpand, faPalette, faFilm, faArrowLeft, faArrowRight, faPencilAlt, faEnvelope, faPlus } from '@fortawesome/free-solid-svg-icons';
 import { Separator } from '@/components/ui/separator';
 import Preloader from '@/components/preloader';
 import { useIsExtraWide } from '@/hooks/use-is-extra-wide';
@@ -449,17 +450,24 @@ export default function WorkPage() {
                         isAdmin={!!user}
                       />
                     ))}
+                     {filteredItems.length > 0 && visibleItems < filteredItems.length && (
+                      <div
+                        className="group relative cursor-pointer overflow-hidden rounded-md transition-all duration-300 hover:scale-[1.02] aspect-square p-[2px] rounded-lg glass-effect"
+                        onClick={showMoreItems}
+                      >
+                        <div className="w-full h-full bg-black/20 rounded-md flex flex-col items-center justify-center text-center p-4 transition-colors duration-300 group-hover:bg-black/40">
+                          <FontAwesomeIcon icon={faPlus} className="h-10 w-10 text-white/70 mb-4 transition-transform duration-300 group-hover:scale-110" />
+                          <h3 className="font-bold text-white text-lg">Show More</h3>
+                          <p className="text-white/60 text-sm">
+                            {filteredItems.length - visibleItems} more items
+                          </p>
+                        </div>
+                      </div>
+                    )}
                   </motion.div>
                 </AnimatePresence>
               )}
 
-              {filteredItems.length > 0 && visibleItems < filteredItems.length && (
-                <div className="mt-12 text-center">
-                  <Button onClick={showMoreItems} size="lg">
-                    Show More
-                  </Button>
-                </div>
-              )}
             </div>
           </div>
         </ScrollArea>
