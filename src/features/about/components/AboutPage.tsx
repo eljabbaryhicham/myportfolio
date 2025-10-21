@@ -1,7 +1,7 @@
 
 'use client';
 
-import { memo, useState, useEffect, useRef } from 'react';
+import { memo, useState, useEffect, useRef, useMemo } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import Image from 'next/image';
@@ -81,6 +81,13 @@ export default function AboutPage() {
       stopOnMouseEnter: true,
     }),
   ])
+  
+  const duplicatedClients = useMemo(() => {
+    if (clients && clients.length > 0) {
+      return [...clients, ...clients];
+    }
+    return [];
+  }, [clients]);
 
   return (
     <div className="h-full w-full flex flex-col">
@@ -139,20 +146,6 @@ export default function AboutPage() {
                           </div>
                       ))}
                     </div>
-                    <div className="sm:hidden flex flex-col sm:flex-row gap-4 justify-center md:justify-start w-full">
-                        <Button asChild>
-                            <Link href="/contact">
-                                <FontAwesomeIcon icon={faEnvelope} className="mr-2" />
-                                Contact Us
-                            </Link>
-                        </Button>
-                        <Button asChild variant="success">
-                             <Link href="/work">
-                                Explore Our Works
-                                <FontAwesomeIcon icon={faArrowRight} className="ml-2" />
-                            </Link>
-                        </Button>
-                    </div>
                   </div>
 
                 <div>
@@ -161,11 +154,11 @@ export default function AboutPage() {
                     <Separator className="bg-white/10 max-w-xs mx-auto mt-2" />
                   </div>
                   
-                  {clients && clients.length > 0 ? (
+                  {duplicatedClients && duplicatedClients.length > 0 ? (
                     <div className="overflow-hidden" ref={emblaRef}>
                       <div className="flex">
-                        {clients.map((client) => (
-                          <div key={client.id} className="flex-shrink-0 flex-grow-0 basis-1/2 md:basis-1/3 lg:basis-1/5">
+                        {duplicatedClients.map((client, index) => (
+                          <div key={`${client.id}-${index}`} className="flex-shrink-0 flex-grow-0 basis-1/2 md:basis-1/3 lg:basis-1/5">
                             <ClientLogo client={client} />
                           </div>
                         ))}
@@ -182,6 +175,21 @@ export default function AboutPage() {
                       Trusted by 1000+ amazing clients worldwide
                     </p>
                   </div>
+                </div>
+
+                <div className="sm:hidden flex flex-col sm:flex-row gap-4 justify-center md:justify-start w-full">
+                    <Button asChild>
+                        <Link href="/contact">
+                            <FontAwesomeIcon icon={faEnvelope} className="mr-2" />
+                            Contact Us
+                        </Link>
+                    </Button>
+                    <Button asChild variant="success">
+                            <Link href="/work">
+                            Explore Our Works
+                            <FontAwesomeIcon icon={faArrowRight} className="ml-2" />
+                        </Link>
+                    </Button>
                 </div>
               </div>
             )}
