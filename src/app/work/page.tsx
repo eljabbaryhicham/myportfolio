@@ -22,7 +22,7 @@ import { useCollection, useFirestore, useMemoFirebase, useUser, setDocumentNonBl
 import { collection, query, orderBy, doc } from 'firebase/firestore';
 import { PortfolioItem } from '@/features/portfolio/data/portfolio-data';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faUpDown, faXmark, faExpand, faPalette, faFilm, faArrowLeft, faArrowRight, faPencilAlt, faEnvelope } from '@fortawesome/free-solid-svg-icons';
+import { faUpDown, faXmark, faExpand, faPalette, faFilm, faArrowLeft, faArrowRight, faPencilAlt, faEnvelope, faPlus } from '@fortawesome/free-solid-svg-icons';
 import { Separator } from '@/components/ui/separator';
 import Preloader from '@/components/preloader';
 import { useIsExtraWide } from '@/hooks/use-is-extra-wide';
@@ -504,16 +504,21 @@ export default function WorkPage() {
                         isAdmin={!!user}
                       />
                     ))}
+                    {filteredItems.length > 0 && visibleItems < filteredItems.length && (
+                        <div className="p-[2px] rounded-lg glass-effect">
+                            <button
+                            onClick={showMoreItems}
+                            className="relative flex items-center justify-center w-full aspect-square rounded-md transition-all duration-300 hover:scale-[1.02] bg-black/20 text-foreground/70 hover:text-foreground"
+                            >
+                                <div className="text-center">
+                                    <FontAwesomeIcon icon={faPlus} className="h-8 w-8 mb-2" />
+                                    <p className="font-bold">Show More</p>
+                                </div>
+                            </button>
+                        </div>
+                    )}
                   </motion.div>
                 </AnimatePresence>
-              )}
-
-              {filteredItems.length > 0 && visibleItems < filteredItems.length && (
-                <div className="mt-12 text-center">
-                  <Button onClick={showMoreItems} size="lg">
-                    Show More
-                  </Button>
-                </div>
               )}
             </div>
           </div>
