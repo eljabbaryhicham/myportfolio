@@ -1,3 +1,4 @@
+
 'use client';
 
 import { memo } from 'react';
@@ -41,7 +42,7 @@ const services = [
 const MemoizedImage = memo(Image);
 
 const ClientLogo = ({ client }: { client: Client }) => (
-    <div className="inline-flex flex-shrink-0 items-center justify-center mx-2 sm:mx-4 w-24 sm:w-28 md:w-32">
+    <div className="flex-shrink-0 items-center justify-center mx-2 sm:mx-4 w-24 sm:w-28 md:w-32">
         <div className="group/item flex flex-col items-center justify-center gap-2 cursor-pointer p-2">
             <div className="relative w-full h-10">
                 <MemoizedImage
@@ -146,11 +147,9 @@ export default function AboutPage() {
                   </div>
                   
                   {clients && clients.length > 0 ? (
-                    <div className="relative w-full">
+                    <div className="relative w-full overflow-hidden">
                       <div className="flex w-full overflow-x-auto pb-4 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-                        <div className="flex flex-nowrap items-center">
-                            {clients.map((client) => <ClientLogo key={client.id} client={client} />)}
-                        </div>
+                          {clients.map((client) => <ClientLogo key={client.id} client={client} />)}
                       </div>
                     </div>
                   ) : (
