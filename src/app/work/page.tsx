@@ -807,10 +807,3 @@ export default function WorkPage() {
     </>
   );
 }
-
-    
-
-    
-
-
-
