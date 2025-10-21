@@ -16,6 +16,7 @@ import { faEnvelope, faArrowRight } from '@fortawesome/free-solid-svg-icons';
 import { BrainCircuit, Mic, Clapperboard, Share2 } from 'lucide-react';
 import useEmblaCarousel from 'embla-carousel-react'
 import Autoplay from 'embla-carousel-autoplay'
+import { motion } from 'framer-motion';
 
 
 interface Client {
@@ -55,6 +56,27 @@ const ClientLogo = ({ client }: { client: Client }) => (
         />
     </div>
 );
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.2,
+    },
+  },
+};
+
+const itemVariants = {
+  hidden: { y: 20, opacity: 0 },
+  visible: {
+    y: 0,
+    opacity: 1,
+    transition: {
+      duration: 0.5,
+    },
+  },
+};
 
 export default function AboutPage() {
   const firestore = useFirestore();
@@ -104,17 +126,23 @@ export default function AboutPage() {
       <Separator className="bg-white/10 flex-shrink-0" />
       <ScrollArea className="flex-1 min-h-0">
         <div className="p-[5%] pt-4">
-          <div className="container mx-auto px-0">
+          <div className="container mx-auto px-0 text-center">
             {isLoading ? (
               <div className="flex justify-center items-center h-full min-h-[50vh]">
                 <Preloader />
               </div>
             ) : (
-              <div className="space-y-12 md:space-y-24">
-                <div 
-                    className="flex flex-col md:flex-row gap-8 md:gap-12 items-center"
+              <motion.div 
+                  className="space-y-12 md:space-y-24"
+                  variants={containerVariants}
+                  initial="hidden"
+                  animate="visible"
+                >
+                <motion.div 
+                    variants={itemVariants}
+                    className="flex flex-col md:flex-row gap-8 md:gap-12 items-center text-center"
                   >
-                    <div className="text-center md:w-1/2">
+                    <div className="md:w-1/2">
                       <div className="w-48 mx-auto mb-4">
                           <Logo src={logoUrl} />
                       </div>
@@ -146,9 +174,9 @@ export default function AboutPage() {
                           </div>
                       ))}
                     </div>
-                  </div>
+                  </motion.div>
 
-                <div>
+                <motion.div variants={itemVariants}>
                   <div className="text-center mb-8">
                     <h2 className="text-2xl font-headline tracking-tight">Our Clients</h2>
                     <Separator className="bg-white/10 max-w-xs mx-auto mt-2" />
@@ -175,9 +203,9 @@ export default function AboutPage() {
                       Trusted by 1000+ amazing clients worldwide
                     </p>
                   </div>
-                </div>
+                </motion.div>
 
-                <div className="sm:hidden flex flex-col sm:flex-row gap-4 justify-center w-full">
+                <motion.div variants={itemVariants} className="sm:hidden flex flex-col sm:flex-row gap-4 justify-center w-full">
                     <Button asChild>
                         <Link href="/contact">
                             <FontAwesomeIcon icon={faEnvelope} className="mr-2" />
@@ -190,8 +218,8 @@ export default function AboutPage() {
                             <FontAwesomeIcon icon={faArrowRight} className="ml-2" />
                         </Link>
                     </Button>
-                </div>
-              </div>
+                </motion.div>
+              </motion.div>
             )}
           </div>
         </div>

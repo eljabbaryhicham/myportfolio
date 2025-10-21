@@ -38,6 +38,28 @@ const FiverrIcon = (props: React.SVGProps<SVGSVGElement>) => (
     </svg>
 )
 
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.3,
+    },
+  },
+};
+
+const itemVariants = {
+  hidden: { y: 20, opacity: 0 },
+  visible: {
+    y: 0,
+    opacity: 1,
+    transition: {
+      duration: 0.5,
+    },
+  },
+};
+
+
 export default function ContactPage() {
   const firestore = useFirestore();
 
@@ -83,12 +105,12 @@ export default function ContactPage() {
               </div>
             ) : contactInfo ? (
               <motion.div
-                className="flex flex-col md:flex-row gap-8 items-center justify-center"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5 }}
+                className="flex flex-col md:flex-row gap-8 items-center justify-center text-center"
+                variants={containerVariants}
+                initial="hidden"
+                animate="visible"
               >
-                <div className="w-full md:w-1/2 flex justify-center">
+                <motion.div className="w-full md:w-1/2 flex justify-center" variants={itemVariants}>
                   <Card className="glass-effect p-6 flex flex-col h-full w-full max-w-md">
                     <CardContent className="flex flex-col items-center text-center p-0">
                       <Avatar className="border-2 border-white mb-4" style={{ width: '80px', height: '80px' }}>
@@ -134,14 +156,14 @@ export default function ContactPage() {
                       )}
                     </CardContent>
                   </Card>
-                </div>
-                <div className="w-full md:w-1/2 flex justify-center">
+                </motion.div>
+                <motion.div className="w-full md:w-1/2 flex justify-center" variants={itemVariants}>
                   <Card className="glass-effect p-6 sm:p-8 h-full flex flex-col justify-center w-full max-w-md">
                     <CardContent className="p-0 flex flex-col items-center">
                         <ContactForm />
                     </CardContent>
                   </Card>
-                </div>
+                </motion.div>
               </motion.div>
             ) : (
                 <div className="text-center py-12 text-muted-foreground">
@@ -149,7 +171,12 @@ export default function ContactPage() {
                 </div>
             )}
             {contactInfo && (
-              <div className="flex items-center justify-center gap-4 mt-8">
+              <motion.div 
+                className="flex items-center justify-center gap-4 mt-8"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.6, duration: 0.5}}
+              >
                 {socialLinks.map((social) => (
                   social.href && (
                     <Link 
@@ -166,7 +193,7 @@ export default function ContactPage() {
                     </Link>
                   )
                 ))}
-              </div>
+              </motion.div>
             )}
           </div>
         </div>
