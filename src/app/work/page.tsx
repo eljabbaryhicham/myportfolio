@@ -509,7 +509,7 @@ export default function WorkPage() {
                             <Button
                             onClick={showMoreItems}
                             variant="outline"
-                            className="w-3/4 h-3/4 text-lg group"
+                            className="w-3/4 h-3/4 text-sm md:text-lg group"
                             >
                                 <FontAwesomeIcon icon={faArrowRight} className="mr-2 transition-transform group-hover:translate-x-1" />
                                 Show More
