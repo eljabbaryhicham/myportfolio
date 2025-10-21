@@ -13,8 +13,9 @@ import Logo from '@/components/logo';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEnvelope, faArrowRight } from '@fortawesome/free-solid-svg-icons';
+import { faEnvelope, faArrowRight, faLightbulb, faMicrophone, faPalette, faShareNodes, faBullhorn } from '@fortawesome/free-solid-svg-icons';
 import { cn } from '@/lib/utils';
+import { BrainCircuit, Mic, Clapperboard, Share2 } from 'lucide-react';
 
 
 interface Client {
@@ -30,6 +31,14 @@ interface AboutPageContent {
     imageUrl: string;
     logoUrl?: string;
 }
+
+const services = [
+    { title: "Brainstorming & Scripting", icon: BrainCircuit },
+    { title: "Voiceover & Sound", icon: Mic },
+    { title: "Content Creation, Animation, Video & Graphics", icon: Clapperboard },
+    { title: "Social Media Management", icon: Share2 },
+];
+
 
 const MemoizedImage = memo(Image);
 
@@ -114,13 +123,19 @@ export default function AboutPage() {
                         </Button>
                     </div>
                   </div>
-                  <div className="relative aspect-square w-full h-full rounded-lg overflow-hidden glass-effect p-2">
-                    <MemoizedImage
-                        src={aboutContent.imageUrl}
-                        alt={aboutContent.title}
-                        fill
-                        className="object-cover rounded-md"
-                    />
+                  <div className="grid grid-cols-2 gap-4">
+                    {services.map((service, index) => (
+                        <motion.div 
+                            key={service.title}
+                            className="glass-effect p-4 rounded-lg flex flex-col items-center justify-center text-center"
+                            initial={{ opacity: 0, scale: 0.9 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            transition={{ duration: 0.3, delay: index * 0.1 }}
+                        >
+                            <service.icon className="w-8 h-8 md:w-10 md:h-10 text-primary mb-3" />
+                            <p className="text-xs md:text-sm font-semibold">{service.title}</p>
+                        </motion.div>
+                    ))}
                   </div>
                 </motion.div>
               )}
