@@ -505,16 +505,15 @@ export default function WorkPage() {
                       />
                     ))}
                     {filteredItems.length > 0 && visibleItems < filteredItems.length && (
-                        <div className="p-[2px] rounded-lg glass-effect">
-                            <button
+                        <div className="flex items-center justify-center aspect-square">
+                            <Button
                             onClick={showMoreItems}
-                            className="relative flex items-center justify-center w-full aspect-square rounded-md transition-all duration-300 hover:scale-[1.02] bg-black/20 text-foreground/70 hover:text-foreground"
+                            variant="outline"
+                            className="w-3/4 h-3/4 text-lg"
                             >
-                                <div className="text-center">
-                                    <FontAwesomeIcon icon={faPlus} className="h-8 w-8 mb-2" />
-                                    <p className="font-bold">Show More</p>
-                                </div>
-                            </button>
+                                <FontAwesomeIcon icon={faPlus} className="mr-2" />
+                                Show More
+                            </Button>
                         </div>
                     )}
                   </motion.div>
