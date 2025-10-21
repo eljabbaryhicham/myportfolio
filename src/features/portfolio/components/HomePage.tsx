@@ -58,7 +58,7 @@ export default function HomePageContent({ featuredProject, isLoading }: HomePage
                 />
             </div>
         )}
-        <div className="absolute inset-0 bg-black/50"></div>
+        <div className="absolute inset-0 bg-black/70"></div>
       </div>
       <div className={cn("relative z-10 flex flex-col items-center justify-center gap-8 transition-opacity duration-1000", (isLoading || isLoadingContact) && "opacity-0")}>
         <div className="w-full max-w-sm">
