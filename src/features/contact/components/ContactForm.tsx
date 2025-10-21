@@ -88,19 +88,18 @@ export default function ContactForm({ onSuccess, defaultMessage = '' }: ContactF
             setTimeout(onSuccess, 2000);
         }
       } else {
-        console.error("Failed to send message:", result.message);
         toast({
           variant: "destructive",
-          title: "Message Failed",
-          description: result.message || "Could not send your message. Please try again.",
+          title: "Message Failed to Send",
+          description: result.message || "An unexpected error occurred. Please try again.",
+          duration: 8000,
         });
       }
     } catch (error) {
-      console.error('Failed to send contact email:', error);
        toast({
           variant: "destructive",
           title: "An Error Occurred",
-          description: "A network error occurred. Please try again.",
+          description: "A network error occurred. Please check your connection and try again.",
         });
     } finally {
       setIsSubmitting(false);
