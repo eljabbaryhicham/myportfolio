@@ -113,7 +113,7 @@ export default function AboutPage() {
                       </div>
                       <h2 className="text-2xl md:text-3xl font-headline tracking-tight mb-4">{aboutContent?.title}</h2>
                       <p className="text-foreground/70 leading-relaxed mb-6">{aboutContent?.content}</p>
-                      <div className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
+                      <div className="hidden sm:flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
                           <Button asChild>
                               <Link href="/contact">
                                   <FontAwesomeIcon icon={faEnvelope} className="mr-2" />
@@ -138,6 +138,20 @@ export default function AboutPage() {
                               <p className="text-xs md:text-sm font-semibold">{service.title}</p>
                           </div>
                       ))}
+                    </div>
+                    <div className="sm:hidden flex flex-col sm:flex-row gap-4 justify-center md:justify-start w-full">
+                        <Button asChild>
+                            <Link href="/contact">
+                                <FontAwesomeIcon icon={faEnvelope} className="mr-2" />
+                                Contact Us
+                            </Link>
+                        </Button>
+                        <Button asChild variant="success">
+                             <Link href="/work">
+                                Explore Our Works
+                                <FontAwesomeIcon icon={faArrowRight} className="ml-2" />
+                            </Link>
+                        </Button>
                     </div>
                   </div>
 
