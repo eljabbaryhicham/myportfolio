@@ -88,7 +88,7 @@ export default function AboutPage() {
             <>
               {aboutContent && (
                 <motion.div 
-                  className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 items-center justify-items-center w-full max-w-4xl mx-auto mb-12 md:mb-16"
+                  className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 items-center w-full max-w-4xl mx-auto mb-12 md:mb-16"
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5 }}
