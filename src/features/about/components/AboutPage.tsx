@@ -143,8 +143,8 @@ export default function AboutPage() {
                   </div>
                   
                   {clients && clients.length > 0 ? (
-                    <div className="relative w-[80vw] mx-auto overflow-hidden py-4 hover:[animation-play-state:paused]">
-                      <div className="flex animate-marquee whitespace-nowrap">
+                    <div className="relative w-[80vw] mx-auto overflow-hidden py-4">
+                      <div className="flex animate-marquee whitespace-nowrap hover:[animation-play-state:paused]">
                         {[...clients, ...clients].map((client, index) => (
                           <ClientLogo key={`${client.id}-${index}-1`} client={client} />
                         ))}
