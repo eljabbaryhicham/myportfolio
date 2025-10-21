@@ -105,7 +105,7 @@ export default function ContactPage() {
               </div>
             ) : contactInfo ? (
               <motion.div
-                className="flex flex-col md:flex-row gap-8 items-center justify-center text-center"
+                className="flex flex-col md:flex-row gap-4 items-center justify-center text-center"
                 variants={containerVariants}
                 initial="hidden"
                 animate="visible"
