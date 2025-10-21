@@ -164,11 +164,15 @@ export default function AboutPage() {
                           </Button>
                       </div>
                     </div>
-                    <div className="md:w-1/2">
+                    <div className="md:w-1/2 flex flex-col justify-center">
                        <h2 className="text-2xl md:text-3xl font-headline tracking-tight mb-6 text-center">What We Do?</h2>
-                       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4">
+                       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-10 gap-4">
                         {services.map((service, index) => {
-                            const colSpan = index < 3 ? 'lg:col-span-2' : 'lg:col-span-3';
+                            let colSpan = 'lg:col-span-5'; // Default for the first row (2 items)
+                            if (index > 1 && index < 3) colSpan = 'lg:col-span-3'; // First item of the second row
+                            else if (index === 3) colSpan = 'lg:col-span-4'; // Middle item of the second row
+                            else if (index > 3) colSpan = 'lg:col-span-3'; // Last item of the second row
+
                             return (
                                 <div 
                                     key={service.title}
