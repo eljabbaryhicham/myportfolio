@@ -42,8 +42,19 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ source, poster, onReady }) =>
     if (!firstSource) return;
 
     const isHls = firstSource.src.includes('.m3u8');
+    const isYoutube = firstSource.provider === 'youtube';
+    const isVimeo = firstSource.provider === 'vimeo';
+    
+    // Function to initialize Plyr
+    const initPlyr = (options: Plyr.Options = {}) => {
+        const newPlayer = new Plyr(videoElement, options);
+        playerRef.current = newPlayer;
+        if(onReady) {
+            newPlayer.on('ready', onReady);
+        }
+    };
 
-    // --- 2. Setup for HLS streams ---
+    // --- 2. Setup based on source type ---
     if (isHls) {
       if (Hls.isSupported()) {
         const hls = new Hls();
@@ -52,34 +63,32 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ source, poster, onReady }) =>
         hls.attachMedia(videoElement);
 
         hls.on(Hls.Events.MANIFEST_PARSED, () => {
-          const plyrPlayer = new Plyr(videoElement, {
-             captions: { active: true, update: true, language: 'en' },
-          });
-          playerRef.current = plyrPlayer;
-          onReady?.();
+          initPlyr();
         });
+        hls.on(Hls.Events.ERROR, (event, data) => {
+            if (data.fatal) {
+                console.error('HLS.js fatal error:', data.details);
+            }
+        });
+
       } else if (videoElement.canPlayType('application/vnd.apple.mpegurl')) {
-        // --- 3. Native HLS support (Safari) ---
+        // Native HLS support (e.g., Safari)
         videoElement.src = firstSource.src;
         videoElement.addEventListener('loadedmetadata', () => {
-          const plyrPlayer = new Plyr(videoElement, {});
-          playerRef.current = plyrPlayer;
-          onReady?.();
+          initPlyr();
         });
       }
-    } else {
-      // --- 4. Setup for non-HLS (MP4, YouTube, Vimeo) ---
-      videoElement.removeAttribute('src'); // Clear src for Plyr to handle it
-      const plyrPlayer = new Plyr(videoElement, {
-        source: source as Plyr.SourceInfo,
-      });
-      playerRef.current = plyrPlayer;
-       playerRef.current.on('ready', () => {
-         onReady?.();
-       });
+    } else if (isYoutube || isVimeo) {
+        // For YouTube/Vimeo, Plyr handles the source directly.
+        initPlyr({ source: source as Plyr.SourceInfo });
+    }
+    else {
+      // Standard MP4 source
+      videoElement.src = firstSource.src;
+      initPlyr();
     }
 
-    // --- 5. Final Cleanup ---
+    // --- 3. Final Cleanup ---
     return () => {
       if (playerRef.current) {
         playerRef.current.destroy();
@@ -90,7 +99,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ source, poster, onReady }) =>
         hlsRef.current = null;
       }
     };
-  }, [source, onReady]);
+  }, [source, onReady]); // Rerun when the source changes
 
   return (
       <div className="w-full h-full bg-black">
