@@ -14,7 +14,6 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { sendContactEmail } from '@/ai/flows/send-contact-email';
 import { useState, useEffect } from 'react';
 import { ContactFormInputSchema, type ContactFormInput } from '@/features/contact/data/contact-form-types';
 import { motion } from 'framer-motion';
@@ -24,6 +23,7 @@ import { faWhatsapp } from '@fortawesome/free-brands-svg-icons';
 import { useDoc, useFirestore, useMemoFirebase } from '@/firebase';
 import { doc } from 'firebase/firestore';
 import Link from 'next/link';
+import { useToast } from '@/hooks/use-toast';
 
 const formSchema = ContactFormInputSchema;
 type ContactFormValues = z.infer<typeof formSchema>;
@@ -41,6 +41,7 @@ export default function ContactForm({ onSuccess, defaultMessage = '' }: ContactF
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSent, setIsSent] = useState(false);
   const firestore = useFirestore();
+  const { toast } = useToast();
 
   const contactDocRef = useMemoFirebase(
     () => (firestore ? doc(firestore, 'contact', 'details') : null),
@@ -70,19 +71,37 @@ export default function ContactForm({ onSuccess, defaultMessage = '' }: ContactF
     setIsSubmitting(true);
     
     try {
-      const result = await sendContactEmail(values);
-      if (result.success) {
+      const response = await fetch('/api/send-email', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(values),
+      });
+
+      const result = await response.json();
+
+      if (response.ok && result.success) {
         setIsSent(true);
         form.reset();
         if (onSuccess) {
-            // Give a moment for the success animation before closing.
             setTimeout(onSuccess, 2000);
         }
       } else {
         console.error("Failed to send message:", result.message);
+        toast({
+          variant: "destructive",
+          title: "Message Failed",
+          description: result.message || "Could not send your message. Please try again.",
+        });
       }
     } catch (error) {
       console.error('Failed to send contact email:', error);
+       toast({
+          variant: "destructive",
+          title: "An Error Occurred",
+          description: "A network error occurred. Please try again.",
+        });
     } finally {
       setIsSubmitting(false);
     }
