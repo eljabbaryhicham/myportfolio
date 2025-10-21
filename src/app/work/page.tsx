@@ -457,10 +457,10 @@ export default function WorkPage() {
                         onClick={showMoreItems}
                       >
                         <div className="w-full h-full bg-black/20 rounded-md flex flex-col items-center justify-center text-center p-4 transition-colors duration-300 group-hover:bg-black/40">
-                          <FontAwesomeIcon icon={faPlus} className="h-10 w-10 text-white/70 mb-4 transition-transform duration-300 group-hover:scale-110" />
+                          <FontAwesomeIcon icon={faArrowRight} className="h-10 w-10 text-white/70 mb-4 transition-transform duration-300 group-hover:translate-x-2" />
                           <h3 className="font-bold text-white text-lg">Show More</h3>
                           <p className="text-white/60 text-sm">
-                            {filteredItems.length - visibleItems} more items
+                            {filteredItems.length - visibleItems} more projects
                           </p>
                         </div>
                       </div>
