@@ -8,13 +8,14 @@ import Image from 'next/image';
 import { useCollection, useDoc, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection, query, orderBy, doc } from 'firebase/firestore';
 import Preloader from '@/components/preloader';
-import { motion, useAnimation } from 'framer-motion';
 import Logo from '@/components/logo';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEnvelope, faArrowRight } from '@fortawesome/free-solid-svg-icons';
 import { BrainCircuit, Mic, Clapperboard, Share2 } from 'lucide-react';
+import useEmblaCarousel from 'embla-carousel-react'
+import Autoplay from 'embla-carousel-autoplay'
 
 
 interface Client {
@@ -43,7 +44,7 @@ const MemoizedImage = memo(Image);
 
 const ClientLogo = ({ client }: { client: Client }) => (
     <div 
-      className="relative mx-8 flex-shrink-0 basis-1/5 group cursor-pointer"
+      className="relative mx-8 flex-shrink-0 basis-1/5 group"
     >
         <MemoizedImage
             src={client.logoUrl}
@@ -57,7 +58,6 @@ const ClientLogo = ({ client }: { client: Client }) => (
 
 export default function AboutPage() {
   const firestore = useFirestore();
-  const [isPaused, setIsPaused] = useState(false);
 
   const clientsQuery = useMemoFirebase(
     () => firestore ? query(collection(firestore, 'clients'), orderBy('order')) : null,
@@ -74,39 +74,13 @@ export default function AboutPage() {
   const isLoading = isLoadingClients || isLoadingContent;
   const logoUrl = aboutContent?.logoUrl || "https://i.imgur.com/N9c8oEJ.png";
   
-  const marqueeRef = useRef<HTMLDivElement>(null);
-  const [dragConstraints, setDragConstraints] = useState({ right: 0, left: 0 });
-
-  useEffect(() => {
-    if (marqueeRef.current) {
-        const containerWidth = marqueeRef.current.offsetWidth;
-        const contentWidth = marqueeRef.current.scrollWidth;
-        const isContentWider = contentWidth > containerWidth;
-
-        if (isContentWider) {
-            // Since we have two sets of logos, we only need to constrain by half the scroll width
-            const leftConstraint = -(contentWidth / 2);
-            setDragConstraints({ right: 0, left: leftConstraint });
-        } else {
-            setDragConstraints({ right: 0, left: 0 });
-        }
-    }
-  }, [clients]);
-
-  const marqueeVariants = {
-    animate: {
-      x: [0, - (marqueeRef.current?.scrollWidth ?? 0) / 2],
-      transition: {
-        x: {
-          repeat: Infinity,
-          repeatType: "loop",
-          duration: 40,
-          ease: "linear",
-        },
-      },
-    },
-  };
-
+  const [emblaRef] = useEmblaCarousel({ loop: true, align: 'start' }, [
+    Autoplay({
+      delay: 2000,
+      stopOnInteraction: false,
+      stopOnMouseEnter: true,
+    }),
+  ])
 
   return (
     <div className="h-full w-full flex flex-col">
@@ -130,11 +104,8 @@ export default function AboutPage() {
               </div>
             ) : (
               <div className="space-y-12 md:space-y-24">
-                <motion.div 
+                <div 
                     className="flex flex-col md:flex-row gap-8 md:gap-12 items-center"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5 }}
                   >
                     <div className="text-center md:text-left md:w-1/2">
                       <div className="w-48 mx-auto md:mx-0 mb-4">
@@ -159,19 +130,16 @@ export default function AboutPage() {
                     </div>
                     <div className="grid grid-cols-2 gap-4 md:w-1/2">
                       {services.map((service, index) => (
-                          <motion.div 
+                          <div 
                               key={service.title}
                               className="glass-effect p-4 rounded-lg flex flex-col items-center justify-center text-center"
-                              initial={{ opacity: 0, scale: 0.9 }}
-                              animate={{ opacity: 1, scale: 1 }}
-                              transition={{ duration: 0.3, delay: index * 0.1 }}
                           >
                               <service.icon className="w-8 h-8 md:w-10 md:h-10 text-primary mb-3" />
                               <p className="text-xs md:text-sm font-semibold">{service.title}</p>
-                          </motion.div>
+                          </div>
                       ))}
                     </div>
-                  </motion.div>
+                  </div>
 
                 <div>
                   <div className="text-center mb-8">
@@ -180,26 +148,14 @@ export default function AboutPage() {
                   </div>
                   
                   {clients && clients.length > 0 ? (
-                    <div 
-                        className="relative w-full overflow-hidden h-20"
-                        onMouseEnter={() => setIsPaused(true)}
-                        onMouseLeave={() => setIsPaused(false)}
-                    >
-                      <motion.div
-                        ref={marqueeRef}
-                        className="absolute flex"
-                        variants={marqueeVariants}
-                        animate={isPaused ? 'paused' : 'animate'}
-                        drag="x"
-                        dragConstraints={dragConstraints}
-                      >
-                           {[...clients, ...clients].map((client, index) => (
-                              <ClientLogo 
-                                key={`${client.id}-${index}`} 
-                                client={client}
-                              />
-                            ))}
-                      </motion.div>
+                    <div className="overflow-hidden" ref={emblaRef}>
+                      <div className="flex">
+                        {clients.map((client) => (
+                          <div key={client.id} className="flex-shrink-0 flex-grow-0 basis-1/2 md:basis-1/3 lg:basis-1/5">
+                            <ClientLogo client={client} />
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   ) : (
                     <div className="p-1 h-full flex items-center justify-center text-muted-foreground col-span-full">
