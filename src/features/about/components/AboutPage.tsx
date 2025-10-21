@@ -90,89 +90,93 @@ export default function AboutPage() {
       </div>
       <Separator className="bg-white/10" />
       <ScrollArea className="flex-1">
-        <div className="p-[5%] pt-4 flex flex-col items-center justify-center min-h-full">
-          {isLoading ? (
-            <Preloader />
-          ) : (
-            <>
-              {aboutContent && (
-                <motion.div 
-                  className="flex flex-col md:flex-row gap-8 md:gap-12 items-center w-full max-w-4xl mx-auto mb-12 md:mb-16"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5 }}
-                >
-                  <div className="text-center md:text-left md:w-1/2">
-                    <div className="w-48 mx-auto md:mx-0 mb-4">
-                        <Logo src={logoUrl} />
+        <div className="p-[5%] pt-4">
+          <div className="container mx-auto px-0">
+            {isLoading ? (
+              <div className="flex justify-center items-center h-full min-h-[50vh]">
+                <Preloader />
+              </div>
+            ) : (
+              <>
+                {aboutContent && (
+                  <motion.div 
+                    className="flex flex-col md:flex-row gap-8 md:gap-12 items-center w-full max-w-4xl mx-auto mb-12 md:mb-16"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5 }}
+                  >
+                    <div className="text-center md:text-left md:w-1/2">
+                      <div className="w-48 mx-auto md:mx-0 mb-4">
+                          <Logo src={logoUrl} />
+                      </div>
+                      <h2 className="text-2xl md:text-3xl font-headline tracking-tight mb-4">{aboutContent.title}</h2>
+                      <p className="text-foreground/70 leading-relaxed mb-6">{aboutContent.content}</p>
+                      <div className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
+                          <Button asChild>
+                              <Link href="/contact">
+                                  <FontAwesomeIcon icon={faEnvelope} className="mr-2" />
+                                  Contact Us
+                              </Link>
+                          </Button>
+                          <Button asChild variant="success">
+                               <Link href="/work">
+                                  Explore Our Works
+                                  <FontAwesomeIcon icon={faArrowRight} className="ml-2" />
+                              </Link>
+                          </Button>
+                      </div>
                     </div>
-                    <h2 className="text-2xl md:text-3xl font-headline tracking-tight mb-4">{aboutContent.title}</h2>
-                    <p className="text-foreground/70 leading-relaxed mb-6">{aboutContent.content}</p>
-                    <div className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
-                        <Button asChild>
-                            <Link href="/contact">
-                                <FontAwesomeIcon icon={faEnvelope} className="mr-2" />
-                                Contact Us
-                            </Link>
-                        </Button>
-                        <Button asChild variant="success">
-                             <Link href="/work">
-                                Explore Our Works
-                                <FontAwesomeIcon icon={faArrowRight} className="ml-2" />
-                            </Link>
-                        </Button>
+                    <div className="grid grid-cols-2 gap-4 md:w-1/2">
+                      {services.map((service, index) => (
+                          <motion.div 
+                              key={service.title}
+                              className="glass-effect p-4 rounded-lg flex flex-col items-center justify-center text-center"
+                              initial={{ opacity: 0, scale: 0.9 }}
+                              animate={{ opacity: 1, scale: 1 }}
+                              transition={{ duration: 0.3, delay: index * 0.1 }}
+                          >
+                              <service.icon className="w-8 h-8 md:w-10 md:h-10 text-primary mb-3" />
+                              <p className="text-xs md:text-sm font-semibold">{service.title}</p>
+                          </motion.div>
+                      ))}
                     </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4 md:w-1/2">
-                    {services.map((service, index) => (
-                        <motion.div 
-                            key={service.title}
-                            className="glass-effect p-4 rounded-lg flex flex-col items-center justify-center text-center"
-                            initial={{ opacity: 0, scale: 0.9 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            transition={{ duration: 0.3, delay: index * 0.1 }}
-                        >
-                            <service.icon className="w-8 h-8 md:w-10 md:h-10 text-primary mb-3" />
-                            <p className="text-xs md:text-sm font-semibold">{service.title}</p>
-                        </motion.div>
-                    ))}
-                  </div>
-                </motion.div>
-              )}
+                  </motion.div>
+                )}
 
-              <div className="w-full max-w-full overflow-x-hidden">
-                <div className="max-w-4xl mx-auto">
-                    <div className="text-center mb-8">
-                      <h2 className="text-2xl font-headline tracking-tight">Our Clients</h2>
-                      <Separator className="bg-white/10 max-w-xs mx-auto mt-2" />
-                    </div>
-                    
-                    {clients && clients.length > 0 ? (
-                      <div className="group relative w-full overflow-hidden whitespace-nowrap">
-                        <div className="flex">
-                          <div className="animate-marquee group-hover:[animation-play-state:paused]">
-                              {clients.map((client) => <ClientLogo key={client.id} client={client} />)}
-                          </div>
-                          <div className="animate-marquee group-hover:[animation-play-state:paused]" aria-hidden="true">
-                              {clients.map((client) => <ClientLogo key={`${client.id}-2`} client={client} />)}
+                <div className="w-full">
+                  <div className="max-w-4xl mx-auto">
+                      <div className="text-center mb-8">
+                        <h2 className="text-2xl font-headline tracking-tight">Our Clients</h2>
+                        <Separator className="bg-white/10 max-w-xs mx-auto mt-2" />
+                      </div>
+                      
+                      {clients && clients.length > 0 ? (
+                        <div className="relative w-full overflow-hidden whitespace-nowrap group">
+                          <div className="flex">
+                            <div className="animate-marquee group-hover:[animation-play-state:paused]">
+                                {clients.map((client) => <ClientLogo key={client.id} client={client} />)}
+                            </div>
+                            <div className="animate-marquee group-hover:[animation-play-state:paused]" aria-hidden="true">
+                                {clients.map((client) => <ClientLogo key={`${client.id}-2`} client={client} />)}
+                            </div>
                           </div>
                         </div>
+                      ) : (
+                        <div className="p-1 h-full flex items-center justify-center text-muted-foreground col-span-full">
+                            No clients to display.
+                        </div>
+                      )}
+                      
+                      <div className="text-center mt-8 md:mt-12">
+                        <p className="text-foreground/70">
+                          Trusted by 1000+ amazing clients worldwide
+                        </p>
                       </div>
-                    ) : (
-                      <div className="p-1 h-full flex items-center justify-center text-muted-foreground col-span-full">
-                          No clients to display.
-                      </div>
-                    )}
-                    
-                    <div className="text-center mt-8 md:mt-12">
-                      <p className="text-foreground/70">
-                        Trusted by 1000+ amazing clients worldwide
-                      </p>
-                    </div>
+                  </div>
                 </div>
-              </div>
-            </>
-          )}
+              </>
+            )}
+          </div>
         </div>
       </ScrollArea>
     </div>
