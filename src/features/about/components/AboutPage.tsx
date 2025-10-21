@@ -1,3 +1,4 @@
+
 'use client';
 
 import { memo } from 'react';
@@ -14,8 +15,6 @@ import Link from 'next/link';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEnvelope, faArrowRight } from '@fortawesome/free-solid-svg-icons';
 import { BrainCircuit, Mic, Clapperboard, Share2 } from 'lucide-react';
-import useEmblaCarousel from 'embla-carousel-react'
-import Autoplay from 'embla-carousel-autoplay'
 
 
 interface Client {
@@ -68,15 +67,6 @@ export default function AboutPage() {
     [firestore]
   );
   const { data: aboutContent, isLoading: isLoadingContent } = useDoc<AboutPageContent>(aboutContentRef);
-
-  const [emblaRef] = useEmblaCarousel({ loop: true, align: 'start' }, [
-    Autoplay({
-      playOnInit: true,
-      delay: 30, // A small delay is needed to kickstart the animation
-      stopOnInteraction: false, // Allows autoplay to resume after drag/interaction
-      stopOnMouseEnter: true,   // Pauses autoplay on hover
-    }),
-  ]);
   
   const isLoading = isLoadingClients || isLoadingContent;
   const logoUrl = aboutContent?.logoUrl || "https://i.imgur.com/N9c8oEJ.png";
@@ -153,8 +143,9 @@ export default function AboutPage() {
                   </div>
                   
                   {clients && clients.length > 0 ? (
-                      <div className="overflow-hidden" ref={emblaRef}>
-                        <div className="flex" style={{ backfaceVisibility: 'hidden' }}>
+                      <div className="relative w-full overflow-hidden">
+                        <div className="absolute inset-0 z-10 bg-gradient-to-r from-background via-transparent to-background" />
+                        <div className="flex w-max animate-marquee hover:[animation-play-state:paused]">
                             {[...clients, ...clients].map((client, index) => (
                                 <ClientLogo key={`${client.id}-${index}`} client={client} />
                             ))}
