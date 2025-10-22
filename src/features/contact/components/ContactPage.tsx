@@ -84,7 +84,7 @@ export default function ContactPage() {
 
 
   return (
-    <div className="w-full flex flex-col items-center justify-center min-h-screen md:h-screen">
+    <div className="w-full h-full">
       <ScrollArea className="w-full h-full">
         <div className="container mx-auto px-0 p-8 flex flex-col justify-center min-h-full">
             <div className="mb-8 text-center flex-shrink-0">
