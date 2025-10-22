@@ -250,7 +250,7 @@ export default function WorkPage() {
         const gridHeight = window.innerHeight * 0.8;
         const rowCount = Math.max(1, Math.floor(gridHeight / itemHeightWithGap));
         
-        const calculatedCount = Math.max(columnCount, rowCount * columnCount);
+        const calculatedCount = Math.max(4, columnCount, rowCount * columnCount);
         setItemsPerLoad(calculatedCount);
         setVisibleItemsCount(prev => prev === null ? calculatedCount : prev);
     }
@@ -856,5 +856,7 @@ export default function WorkPage() {
     </>
   );
 }
+
+    
 
     

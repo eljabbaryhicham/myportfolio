@@ -182,7 +182,7 @@ function AdminPage() {
 
   if (isUserLoading || !user) {
     return (
-        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-background">
+        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-transparent">
             <Preloader />
         </div>
     );
@@ -285,3 +285,5 @@ function AdminPage() {
 }
 
 export default AdminPage;
+
+    
