@@ -1,71 +1,19 @@
 
 'use client';
 
-import type { Metadata } from 'next';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import { cn } from '@/lib/utils';
 import { FirebaseClientProvider } from '@/firebase/client-provider';
 import { LayoutProvider } from '@/components/layout/layout-provider';
-import { usePathname } from 'next/navigation';
-import { useDoc, useFirestore, useMemoFirebase } from '@/firebase';
-import { doc } from 'firebase/firestore';
-import type { PortfolioItem } from '@/features/portfolio/data/portfolio-data';
 import SmoothVideo from '@/components/video-player';
 
-
-interface HomePageSettings {
-    featuredProjectId: string;
-}
-
-function HomeBackgroundVideo() {
-    const pathname = usePathname();
-    const isHomePage = pathname === '/';
-    const firestore = useFirestore();
-
-    const settingsDocRef = useMemoFirebase(
-      () => (firestore ? doc(firestore, 'homepage', 'settings') : null),
-      [firestore]
-    );
-    const { data: homeSettings, isLoading: isLoadingSettings } = useDoc<HomePageSettings>(settingsDocRef);
-    
-    const featuredProjectRef = useMemoFirebase(
-        () => (firestore && homeSettings?.featuredProjectId ? doc(firestore, 'projects', homeSettings.featuredProjectId) : null),
-        [firestore, homeSettings]
-    );
-    const { data: featuredProject, isLoading: isLoadingProject } = useDoc<PortfolioItem>(featuredProjectRef);
-
-    if (!isHomePage) {
-        return null;
-    }
-
-    return (
-        <div className="absolute inset-0 -z-10 w-full h-full">
-            { (isLoadingSettings || isLoadingProject) ? <div className="absolute inset-0 z-20 flex items-center justify-center bg-background" /> :
-             featuredProject && featuredProject.sourceUrl && (
-                 <div className="w-full h-full bg-black">
-                    <SmoothVideo
-                        key={featuredProject.id}
-                        src={featuredProject.sourceUrl}
-                        autoPlay
-                        loop
-                        muted
-                        className="w-full h-full object-cover"
-                    />
-                </div>
-            )}
-            <div className="absolute inset-0 bg-black/70"></div>
-        </div>
-    );
-}
 
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const pathname = usePathname();
-  const isHomePage = pathname === '/';
   
   return (
     <html lang="en" className="dark h-full" suppressHydrationWarning>
@@ -76,8 +24,19 @@ export default function RootLayout({
         <title>Liquid Folio</title>
       </head>
       <body className={cn('font-body antialiased text-center')} suppressHydrationWarning>
+        <div className="absolute inset-0 -z-10 w-full h-full">
+            <div className="w-full h-full bg-black">
+                <SmoothVideo
+                    src="https://res.cloudinary.com/da1srnoer/video/upload/f_auto,q_auto/v1761159959/wbmz1rkepnqeotpcx9tp.webm"
+                    autoPlay
+                    loop
+                    muted
+                    className="w-full h-full object-cover"
+                />
+            </div>
+            <div className="absolute inset-0 bg-black/70"></div>
+        </div>
         <FirebaseClientProvider>
-          {isHomePage && <HomeBackgroundVideo />}
           <LayoutProvider>
             {children}
           </LayoutProvider>
