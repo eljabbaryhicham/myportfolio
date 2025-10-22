@@ -1,9 +1,10 @@
 
 'use client';
 
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { cn } from '@/lib/utils';
 import 'shaka-player/dist/controls.css';
+import Preloader from './preloader';
 
 interface VideoPlayerProps {
   src?: string;
@@ -28,6 +29,7 @@ const VideoPlayer = ({
 }: VideoPlayerProps) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const [isBuffering, setIsBuffering] = useState(true);
 
   useEffect(() => {
     if (!videoRef.current || !containerRef.current) return;
@@ -44,6 +46,11 @@ const VideoPlayer = ({
         }
 
         player = new shaka.Player(videoRef.current);
+
+        // Add buffering event listeners
+        player.addEventListener('buffering', (e) => {
+            setIsBuffering(e.buffering);
+        });
         
         if (videoRef.current) {
             videoRef.current.volume = 0.10;
@@ -89,10 +96,8 @@ const VideoPlayer = ({
 
         try {
             if (preloadManager) {
-                // If a preload manager is provided, use it to load the content.
                 await player.load(preloadManager);
             } else if (src) {
-                // Otherwise, load from the source URL as before.
                 await player.load(src);
             }
         } catch (e) {
@@ -110,10 +115,15 @@ const VideoPlayer = ({
         player.destroy();
       }
     };
-  }, [src, controls, preloadManager]); // Add preloadManager to dependency array
+  }, [src, controls, preloadManager]);
 
   return (
-    <div ref={containerRef} className={cn("relative w-full h-full", className)}>
+    <div ref={containerRef} className={cn("relative w-full h-full bg-black", className)}>
+      {isBuffering && (
+        <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/50">
+          <Preloader />
+        </div>
+      )}
       <video
         ref={videoRef}
         poster={poster}
