@@ -166,8 +166,8 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onCho
     };
 
     const handleUpload = useCallback(async (file: File, field: 'thumbnail' | 'source') => {
-      const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || 'da1srnoer';
-      const uploadPreset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || 'belofted';
+      const cloudName = 'da1srnoer';
+      const uploadPreset = 'belofted';
       
       setUploadingField(field);
       setUploadProgress(0);
@@ -190,12 +190,14 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onCho
         setUploadingField(null);
         if (xhr.status === 200) {
             const data = JSON.parse(xhr.responseText);
-            const finalUrl = data.secure_url;
             
+            // Manually construct the optimized URL
+            const optimizedUrl = `https://res.cloudinary.com/${cloudName}/${data.resource_type}/upload/f_auto,q_auto/${data.public_id}.${data.format}`;
+
             if (firestore) {
                 addDocumentNonBlocking(collection(firestore, 'media'), {
                     public_id: data.public_id,
-                    url: finalUrl,
+                    url: optimizedUrl,
                     resource_type: data.resource_type,
                     created_at: data.created_at,
                     filename: file.name,
@@ -210,10 +212,10 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onCho
               if (resourceType !== 'image') {
                 toast({ variant: 'destructive', title: 'Invalid Thumbnail', description: 'Thumbnails must be an image file.'});
               } else {
-                form.setValue('thumbnailUrl', finalUrl, { shouldValidate: true });
+                form.setValue('thumbnailUrl', optimizedUrl, { shouldValidate: true });
               }
             } else if (field === 'source') {
-              form.setValue('sourceUrl', finalUrl, { shouldValidate: true });
+              form.setValue('sourceUrl', optimizedUrl, { shouldValidate: true });
               form.setValue('type', resourceType, { shouldValidate: true });
               
               if (!item?.id) {
@@ -485,3 +487,5 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onCho
         </Dialog>
     )
 }
+
+    
