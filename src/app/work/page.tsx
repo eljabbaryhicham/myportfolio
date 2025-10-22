@@ -226,22 +226,20 @@ export default function WorkPage() {
   
   const calculateAndSetItems = useCallback(() => {
     if (gridRef.current) {
-        // Use a default/min item width for calculation to ensure it works before items are rendered
         const itemMinWidth = 250; // Corresponds to `minmax(250px, 1fr)`
         const gridGap = 16; // Corresponds to `gap-4`
 
         const gridWidth = gridRef.current.offsetWidth;
         const columnCount = Math.max(1, Math.floor((gridWidth + gridGap) / (itemMinWidth + gridGap)));
         
-        // Item height is roughly equal to width because of aspect-square
         const itemHeightWithGap = (gridWidth / columnCount);
         
-        const gridHeight = window.innerHeight * 0.8; // Use 80% of viewport height
+        const gridHeight = window.innerHeight * 0.8;
         const rowCount = Math.max(1, Math.floor(gridHeight / itemHeightWithGap));
         
         const calculatedCount = Math.max(columnCount, rowCount * columnCount);
         setItemsPerLoad(calculatedCount);
-        setVisibleItemsCount(calculatedCount);
+        setVisibleItemsCount(prev => prev === null ? calculatedCount : prev);
     }
   }, []);
 
@@ -415,12 +413,13 @@ export default function WorkPage() {
     }
   };
   
+  const effectiveItemsCount = visibleItemsCount ? visibleItemsCount - 1 : 0;
   const itemsToShow = useMemo(() => {
       if (visibleItemsCount === null) return [];
-      return filteredItems.slice(0, visibleItemsCount);
-  }, [filteredItems, visibleItemsCount]);
+      return filteredItems.slice(0, effectiveItemsCount);
+  }, [filteredItems, effectiveItemsCount, visibleItemsCount]);
 
-  const showMoreButtonNeeded = visibleItemsCount !== null && filteredItems.length > visibleItemsCount;
+  const showMoreButtonNeeded = visibleItemsCount !== null && filteredItems.length > effectiveItemsCount;
 
   const isLoading = isPortfolioLoading || visibleItemsCount === null;
 
@@ -500,12 +499,11 @@ export default function WorkPage() {
                 initial="hidden"
                 animate={!isLoading ? 'visible' : 'hidden'}
               >
-                {isLoading && (
+                {isLoading ? (
                   <div className="col-span-full h-full min-h-[50vh] flex items-center justify-center">
                     <Preloader />
                   </div>
-                )}
-                {!isLoading && (
+                ) : (
                    <>
                     {itemsToShow.map(item => (
                       <motion.div key={item.id} variants={itemVariants}>
