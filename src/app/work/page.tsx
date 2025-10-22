@@ -186,15 +186,17 @@ export default function WorkPage() {
         : null,
     [firestore]
   );
-  const { data: portfolioItems, isLoading } = useCollection<PortfolioItem>(projectsQuery);
+  const { data: portfolioItems, isLoading: isPortfolioLoading } = useCollection<PortfolioItem>(projectsQuery);
   
   const selectedSlug = searchParams.get('id');
 
   const [selectedItem, setSelectedItem] = useState<PortfolioItem | null>(null);
   const [selectedItemForEdit, setSelectedItemForEdit] = useState<PortfolioItem | null>(null);
   const [isFormSheetOpen, setIsFormSheetOpen] = useState(false);
-  const [visibleItemsCount, setVisibleItemsCount] = useState(12);
-  const [initialLoadCount, setInitialLoadCount] = useState(12);
+  
+  const [visibleItemsCount, setVisibleItemsCount] = useState<number | null>(null);
+  const [itemsPerLoad, setItemsPerLoad] = useState<number>(12);
+
   const [detailsModalOpen, setDetailsModalOpen] = useState(false);
   const [isContactFormOpen, setIsContactFormOpen] = useState(false);
   const [filter, setFilter] = useState<'all' | 'image' | 'video'>('all');
@@ -222,47 +224,50 @@ export default function WorkPage() {
     return allItems.filter(item => item.type === filter);
   }, [allItems, filter]);
   
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
-  
   const calculateAndSetItems = useCallback(() => {
     if (isMobile) {
-      setInitialLoadCount(6);
-      setVisibleItemsCount(6);
+      const mobileCount = 6;
+      setItemsPerLoad(mobileCount);
+      setVisibleItemsCount(mobileCount);
       return;
     }
     if (gridRef.current) {
-      const grid = gridRef.current;
-      const gridStyle = window.getComputedStyle(grid);
-      const columnCount = gridStyle.getPropertyValue('grid-template-columns').split(' ').length;
-      
-      const cardHeightWithGap = 250; 
-      const gridHeight = window.innerHeight * 0.8; 
-      const rowCount = Math.max(1, Math.floor(gridHeight / cardHeightWithGap));
-      
-      const calculatedCount = Math.max(1, rowCount * columnCount);
-      setInitialLoadCount(calculatedCount);
-      setVisibleItemsCount(calculatedCount);
-    } else {
-      setInitialLoadCount(12);
-      setVisibleItemsCount(12);
+        // Use a default/min item width for calculation to ensure it works before items are rendered
+        const itemMinWidth = 250; // Corresponds to `minmax(250px, 1fr)`
+        const gridGap = 16; // Corresponds to `gap-4`
+
+        const gridWidth = gridRef.current.offsetWidth;
+        const columnCount = Math.max(1, Math.floor((gridWidth + gridGap) / (itemMinWidth + gridGap)));
+        
+        // Item height is roughly equal to width because of aspect-square
+        const itemHeightWithGap = (gridWidth / columnCount) - gridGap + gridGap;
+        
+        const gridHeight = window.innerHeight * 0.8; // Use 80% of viewport height
+        const rowCount = Math.max(1, Math.floor(gridHeight / itemHeightWithGap));
+        
+        const calculatedCount = rowCount * columnCount;
+        setItemsPerLoad(calculatedCount);
+        setVisibleItemsCount(calculatedCount);
     }
   }, [isMobile]);
 
   useEffect(() => {
-    function handleResize() {
-      calculateAndSetItems();
-    }
-    
-    handleResize();
+    // Only run this on the client
+    setIsClient(true);
+    calculateAndSetItems();
 
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    window.addEventListener('resize', calculateAndSetItems);
+    return () => window.removeEventListener('resize', calculateAndSetItems);
   }, [calculateAndSetItems]);
 
+  // When filters change, reset the visible count
+  useEffect(() => {
+    setVisibleItemsCount(prev => (prev === null ? null : itemsPerLoad));
+  }, [filter, itemsPerLoad]);
+
+
   const showMoreItems = () => {
-    setVisibleItemsCount(prev => prev + initialLoadCount);
+    setVisibleItemsCount(prev => (prev || 0) + itemsPerLoad);
   };
 
   // Effect to set selected item based on URL
@@ -415,6 +420,14 @@ export default function WorkPage() {
       handleNextProject();
     }
   };
+  
+  const itemsToShow = useMemo(() => {
+      if (visibleItemsCount === null) return [];
+      return filteredItems.slice(0, visibleItemsCount);
+  }, [filteredItems, visibleItemsCount]);
+
+  const showMoreButtonNeeded = visibleItemsCount !== null && filteredItems.length > visibleItemsCount;
+
 
   const variants = {
     enter: (direction: 'next' | 'prev' | null) => ({
@@ -439,7 +452,7 @@ export default function WorkPage() {
     visible: {
       opacity: 1,
       transition: {
-        staggerChildren: 0.1,
+        staggerChildren: 0.05,
       },
     },
   };
@@ -452,10 +465,7 @@ export default function WorkPage() {
     },
   };
   
-  const showMoreButtonNeeded = filteredItems.length > visibleItemsCount;
-  const itemsToShowCount = showMoreButtonNeeded ? visibleItemsCount - 1 : visibleItemsCount;
-  const itemsToShow = filteredItems.slice(0, itemsToShowCount);
-
+  const isLoading = isPortfolioLoading || visibleItemsCount === null;
 
   return (
     <>
@@ -489,23 +499,20 @@ export default function WorkPage() {
         <ScrollArea className="flex-1">
           <div className="p-[5%] pt-4">
             <div className="container mx-auto px-0">
-               {isLoading && (
-                <div className="flex justify-center items-center h-full min-h-[50vh]">
+              <div
+                ref={gridRef}
+                className="grid gap-4"
+                style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))' }}
+              >
+                {isLoading && (
+                  <div className="col-span-full h-full min-h-[50vh] flex items-center justify-center">
                     <Preloader />
-                </div>
-               )}
-              {!isLoading && (
-                <AnimatePresence mode="wait">
-                  <motion.div
-                    key={filter}
-                    ref={gridRef}
-                    variants={containerVariants}
-                    initial="hidden"
-                    animate="visible"
-                    className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5 gap-4"
-                  >
+                  </div>
+                )}
+                {!isLoading && (
+                   <AnimatePresence>
                     {itemsToShow.map(item => (
-                      <motion.div key={item.id} variants={itemVariants}>
+                      <motion.div key={item.id} variants={itemVariants} initial="hidden" animate="visible" exit="hidden">
                         <PortfolioGridItem 
                           item={item}
                           onClick={() => handleItemClick(item)}
@@ -517,6 +524,8 @@ export default function WorkPage() {
                     {showMoreButtonNeeded && (
                       <motion.div
                         variants={itemVariants}
+                        initial="hidden"
+                        animate="visible"
                         className="group relative cursor-pointer overflow-hidden rounded-md transition-all duration-300 hover:scale-[1.02] aspect-square p-[2px] rounded-lg glass-effect"
                         onClick={showMoreItems}
                       >
@@ -529,9 +538,9 @@ export default function WorkPage() {
                         </div>
                       </motion.div>
                     )}
-                  </motion.div>
-                </AnimatePresence>
-              )}
+                   </AnimatePresence>
+                )}
+              </div>
             </div>
           </div>
         </ScrollArea>
