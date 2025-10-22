@@ -161,7 +161,7 @@
 
   /* Hide default shaka spinner */
   .shaka-spinner {
-    @apply hidden;
+    display: none !important;
   }
 }
 
