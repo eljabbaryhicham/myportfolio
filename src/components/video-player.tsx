@@ -60,7 +60,6 @@ const VideoPlayer = ({
         if (controls) {
             ui = new shaka.ui.Overlay(player, containerRef.current, videoRef.current);
             const uiConfig: shaka.extern.UIConfiguration = {
-                showUnstarted: false,
                 seekBarColors: {
                     base: 'rgba(255, 255, 255, 0.2)',
                     buffered: 'rgba(255, 255, 255, 0.4)',
