@@ -21,7 +21,7 @@ import { Separator } from '@/components/ui/separator';
 import AddFromUrlDialog from './AddFromUrlDialog';
 import type { AppUser } from '@/firebase/auth/use-user';
 import Plyr from "plyr-react";
-import "plyr-react/dist/plyr.css";
+import "plyr-react/plyr.css";
 
 
 // Type for the media stored in Firestore
