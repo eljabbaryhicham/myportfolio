@@ -64,7 +64,7 @@ const PortfolioMedia = ({
             src={item.sourceUrl} 
             poster={item.thumbnailUrl} 
             autoPlay 
-            controls 
+            showShakaControls={true}
             preloadManager={preloadManager}
           />
       </div>
@@ -738,7 +738,7 @@ export default function WorkPage() {
                               if (!isClient || !props.src) return null;
                               return (
                                 <div className="w-full rounded-lg overflow-hidden my-4">
-                                  <DynamicVideoPlayer key={props.src} src={props.src} poster={selectedItem.thumbnailUrl} controls />
+                                  <DynamicVideoPlayer key={props.src} src={props.src} poster={selectedItem.thumbnailUrl} showShakaControls={true} />
                                 </div>
                               );
                             }
@@ -860,6 +860,7 @@ export default function WorkPage() {
     
 
     
+
 
 
 

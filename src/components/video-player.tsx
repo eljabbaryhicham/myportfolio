@@ -5,7 +5,6 @@ import React, { useRef, useEffect, useState } from 'react';
 import { cn } from '@/lib/utils';
 import 'shaka-player/dist/controls.css';
 import Preloader from './preloader';
-import { useIsMobile } from '@/hooks/use-mobile';
 
 interface VideoPlayerProps {
   src?: string;
@@ -14,7 +13,7 @@ interface VideoPlayerProps {
   autoPlay?: boolean;
   muted?: boolean;
   loop?: boolean;
-  controls?: boolean;
+  showShakaControls?: boolean;
   preloadManager?: shaka.media.PreloadManager; // Accept a preload manager
 }
 
@@ -25,13 +24,12 @@ const VideoPlayer = ({
   autoPlay = false,
   muted = false,
   loop = false,
-  controls = true,
+  showShakaControls = false,
   preloadManager,
 }: VideoPlayerProps) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [isBuffering, setIsBuffering] = useState(true);
-  const isMobile = useIsMobile();
 
   useEffect(() => {
     if (!videoRef.current || !containerRef.current) return;
@@ -48,7 +46,8 @@ const VideoPlayer = ({
             return;
         }
         
-        player = new shaka.Player(videoRef.current);
+        player = new shaka.Player();
+        await player.attach(videoRef.current);
 
         // Add buffering event listeners
         player.addEventListener('buffering', (e) => {
@@ -59,7 +58,7 @@ const VideoPlayer = ({
             videoRef.current.volume = 0.10;
         }
 
-        if (controls) {
+        if (showShakaControls) {
             ui = new shaka.ui.Overlay(player, containerRef.current, videoRef.current);
             // Reverted to default UI by removing all custom ui.configure() calls.
         }
@@ -79,7 +78,9 @@ const VideoPlayer = ({
 
         try {
             if (preloadManager) {
-                await player.load(preloadManager);
+                // The player is already attached, so we just load the asset.
+                await player.load(preloadManager.getAssetUri(), preloadManager.getStartTime());
+                // `preloadManager` is a one-shot thing, we don't want to re-use it.
             } else if (src) {
                 await player.load(src);
             }
@@ -98,7 +99,7 @@ const VideoPlayer = ({
         player.destroy();
       }
     };
-  }, [src, controls, preloadManager, isMobile]);
+  }, [src, showShakaControls, preloadManager]);
 
   return (
     <div ref={containerRef} className={cn("relative w-full h-full bg-black overflow-hidden", className)}>
