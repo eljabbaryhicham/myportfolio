@@ -499,10 +499,13 @@ export default function WorkPage() {
         <ScrollArea className="flex-1">
           <div className="p-[5%] pt-4">
             <div className="container mx-auto px-0">
-              <div
+              <motion.div
                 ref={gridRef}
                 className="grid gap-4"
                 style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))' }}
+                variants={containerVariants}
+                initial="hidden"
+                animate={!isLoading ? 'visible' : 'hidden'}
               >
                 {isLoading && (
                   <div className="col-span-full h-full min-h-[50vh] flex items-center justify-center">
@@ -510,9 +513,9 @@ export default function WorkPage() {
                   </div>
                 )}
                 {!isLoading && (
-                   <AnimatePresence>
+                   <>
                     {itemsToShow.map(item => (
-                      <motion.div key={item.id} variants={itemVariants} initial="hidden" animate="visible" exit="hidden">
+                      <motion.div key={item.id} variants={itemVariants}>
                         <PortfolioGridItem 
                           item={item}
                           onClick={() => handleItemClick(item)}
@@ -524,23 +527,25 @@ export default function WorkPage() {
                     {showMoreButtonNeeded && (
                       <motion.div
                         variants={itemVariants}
-                        initial="hidden"
-                        animate="visible"
-                        className="group relative cursor-pointer overflow-hidden rounded-md transition-all duration-300 hover:scale-[1.02] aspect-square p-[2px] rounded-lg glass-effect"
-                        onClick={showMoreItems}
+                        className="p-[2px] rounded-lg glass-effect"
                       >
-                        <div className="w-full h-full bg-black/20 rounded-md flex flex-col items-center justify-center text-center p-4 transition-colors duration-300 group-hover:bg-black/40">
-                          <FontAwesomeIcon icon={faArrowDown} className="h-10 w-10 text-white/70 mb-4 transition-transform duration-300 group-hover:translate-y-1" />
-                          <h3 className="font-bold text-white text-lg">Show More</h3>
-                          <p className="text-white/60 text-sm">
-                            {filteredItems.length - itemsToShow.length} more projects
-                          </p>
+                        <div
+                          className="group relative cursor-pointer overflow-hidden rounded-md transition-all duration-300 hover:scale-[1.02] aspect-square bg-black/20"
+                          onClick={showMoreItems}
+                        >
+                          <div className="w-full h-full rounded-md flex flex-col items-center justify-center text-center p-4 transition-colors duration-300 group-hover:bg-black/40">
+                            <FontAwesomeIcon icon={faArrowDown} className="h-10 w-10 text-white/70 mb-4 transition-transform duration-300 group-hover:translate-y-1" />
+                            <h3 className="font-bold text-white text-lg">Show More</h3>
+                            <p className="text-white/60 text-sm">
+                              {filteredItems.length - itemsToShow.length} more projects
+                            </p>
+                          </div>
                         </div>
                       </motion.div>
                     )}
-                   </AnimatePresence>
+                   </>
                 )}
-              </div>
+              </motion.div>
             </div>
           </div>
         </ScrollArea>
@@ -816,3 +821,4 @@ export default function WorkPage() {
     </>
   );
 }
+
