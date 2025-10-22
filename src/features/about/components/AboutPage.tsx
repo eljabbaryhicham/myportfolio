@@ -127,7 +127,7 @@ export default function AboutPage() {
       </div>
       <Separator className="bg-white/10 flex-shrink-0" />
       <ScrollArea className="flex-1 min-h-0">
-        <div className="p-[5%] pt-4 flex items-center justify-center min-h-full">
+        <div className="p-8 flex items-center justify-center min-h-full">
           <div className="container mx-auto px-0 text-center">
             {isLoading ? (
               <div className="flex justify-center items-center h-full min-h-[50vh]">
@@ -167,7 +167,7 @@ export default function AboutPage() {
                     </div>
                     <div className="md:w-1/2 flex flex-col justify-center">
                        <h2 className="text-2xl md:text-3xl font-headline tracking-tight mb-6 text-center">What We Do?</h2>
-                       <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                       <div className="grid grid-cols-2 md:grid-cols-2 gap-4">
                         {services.map((service) => {
                             const isProminent = service.title === "Social Media Management";
                             return (
@@ -175,7 +175,7 @@ export default function AboutPage() {
                                     key={service.title}
                                     className={cn(
                                       "glass-effect p-4 rounded-lg flex flex-col items-center justify-center text-center",
-                                      isProminent && "col-span-2 md:col-span-2"
+                                      isProminent && "col-span-2"
                                     )}
                                 >
                                     <service.icon className="w-8 h-8 md:w-10 md:h-10 text-primary mb-3" />
