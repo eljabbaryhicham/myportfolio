@@ -10,14 +10,18 @@ import SmoothVideo from '@/components/video-player';
 import { useDoc, useFirestore, useMemoFirebase } from '@/firebase';
 import { doc } from 'firebase/firestore';
 import type { PortfolioItem } from '@/features/portfolio/data/portfolio-data';
+import { usePathname } from 'next/navigation';
 
 
 interface HomePageSettings {
     websiteBackgroundVideoId?: string;
+    homePageBackgroundVideoId?: string;
 }
 
 function SiteBackground() {
     const firestore = useFirestore();
+    const pathname = usePathname();
+    const isHomePage = pathname === '/';
     
     const settingsDocRef = useMemoFirebase(
       () => (firestore ? doc(firestore, 'homepage', 'settings') : null),
@@ -25,18 +29,27 @@ function SiteBackground() {
     );
     const { data: homeSettings } = useDoc<HomePageSettings>(settingsDocRef);
     
-    const backgroundVideoRef = useMemoFirebase(
-        () => (firestore && homeSettings?.websiteBackgroundVideoId ? doc(firestore, 'projects', homeSettings.websiteBackgroundVideoId) : null),
-        [firestore, homeSettings]
+    const homeVideoRef = useMemoFirebase(
+        () => (firestore && homeSettings?.homePageBackgroundVideoId ? doc(firestore, 'projects', homeSettings.homePageBackgroundVideoId) : null),
+        [firestore, homeSettings?.homePageBackgroundVideoId]
     );
-    const { data: backgroundVideo } = useDoc<PortfolioItem>(backgroundVideoRef);
+    const { data: homeVideo } = useDoc<PortfolioItem>(homeVideoRef);
 
-    const videoSrc = backgroundVideo?.sourceUrl || "https://res.cloudinary.com/da1srnoer/video/upload/f_auto,q_auto/v1761159959/wbmz1rkepnqeotpcx9tp.webm";
+    const siteVideoRef = useMemoFirebase(
+        () => (firestore && homeSettings?.websiteBackgroundVideoId ? doc(firestore, 'projects', homeSettings.websiteBackgroundVideoId) : null),
+        [firestore, homeSettings?.websiteBackgroundVideoId]
+    );
+    const { data: siteVideo } = useDoc<PortfolioItem>(siteVideoRef);
+
+    const videoSrc = isHomePage 
+      ? (homeVideo?.sourceUrl || "https://res.cloudinary.com/da1srnoer/video/upload/f_auto,q_auto/v1761159959/wbmz1rkepnqeotpcx9tp.webm")
+      : (siteVideo?.sourceUrl || "https://res.cloudinary.com/da1srnoer/video/upload/f_auto,q_auto/v1761159959/wbmz1rkepnqeotpcx9tp.webm");
 
     return (
         <div className="absolute inset-0 -z-10 w-full h-full">
             <div className="w-full h-full bg-black">
                 <SmoothVideo
+                    key={videoSrc} // Use key to force re-render on src change
                     src={videoSrc}
                     autoPlay
                     loop
