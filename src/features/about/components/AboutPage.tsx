@@ -142,9 +142,9 @@ export default function AboutPage() {
                 >
                 <motion.div 
                     variants={itemVariants}
-                    className="flex flex-col md:flex-row gap-8 md:gap-12 items-center"
+                    className="flex flex-col md:flex-row gap-8 md:gap-12 items-stretch"
                   >
-                    <div className="md:w-1/2 text-center">
+                    <div className="md:w-1/2 text-center p-8 flex flex-col justify-center">
                         <div className="w-32 mx-auto mb-4">
                             <Logo src={logoUrl} />
                         </div>
@@ -167,15 +167,22 @@ export default function AboutPage() {
                     </div>
                     <div className="md:w-1/2 flex flex-col justify-center">
                        <h2 className="text-2xl md:text-3xl font-headline tracking-tight mb-6 text-center">What We Do?</h2>
-                       <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                        {services.map((service) => {
-                            const isProminent = service.title === "Social Media Management";
+                       <div className="grid grid-cols-6 grid-rows-2 gap-4 h-full">
+                        {services.map((service, index) => {
+                            let gridClasses = '';
+                            switch(index) {
+                                case 0: gridClasses = 'col-span-2'; break;
+                                case 1: gridClasses = 'col-span-2'; break;
+                                case 2: gridClasses = 'col-span-2'; break;
+                                case 3: gridClasses = 'col-span-3'; break;
+                                case 4: gridClasses = 'col-span-3'; break;
+                            }
                             return (
                                 <div 
                                     key={service.title}
                                     className={cn(
                                       "glass-effect p-4 rounded-lg flex flex-col items-center justify-center text-center",
-                                      isProminent && "col-span-2"
+                                      gridClasses
                                     )}
                                 >
                                     <service.icon className="w-8 h-8 md:w-10 md:h-10 text-primary mb-3" />
