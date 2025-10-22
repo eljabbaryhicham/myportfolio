@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useRef, useEffect } from 'react';
@@ -29,7 +30,9 @@ const VideoPlayer = ({
   useEffect(() => {
     if (!videoRef.current || !containerRef.current || !src) return;
 
-    // Dynamically import shaka-player only on the client side
+    let player: shaka.Player | null = null;
+    let ui: shaka.ui.Overlay | null = null;
+
     import('shaka-player/dist/shaka-player.ui').then(shaka => {
       if (!videoRef.current || !containerRef.current) return;
 
@@ -39,15 +42,28 @@ const VideoPlayer = ({
         return;
       }
 
-      const player = new shaka.Player(videoRef.current);
-      let ui: shaka.ui.Overlay | null = null;
+      player = new shaka.Player(videoRef.current);
       
       if (videoRef.current) {
-        videoRef.current.volume = 0.10; // Set default volume to 10%
+        videoRef.current.volume = 0.10;
       }
 
       if (controls) {
         ui = new shaka.ui.Overlay(player, containerRef.current, videoRef.current);
+        
+        // Configure the UI colors programmatically
+        const uiConfig: shaka.extern.UIConfiguration = {
+          seekBarColors: {
+            base: 'rgba(255, 255, 255, 0.2)', // A light, translucent base
+            buffered: 'rgba(255, 255, 255, 0.4)', // A slightly more opaque buffered color
+            played: 'hsl(var(--primary))', // Use the app's primary red color
+          },
+          volumeBarColors: {
+            base: 'rgba(255, 255, 255, 0.2)',
+            level: 'hsl(var(--primary))',
+          }
+        };
+        ui.configure(uiConfig);
       }
 
       const onError = (error: any) => {
@@ -66,13 +82,16 @@ const VideoPlayer = ({
 
       player.load(src).catch(onError);
 
-      return () => {
-        if (ui) {
-          ui.destroy();
-        }
-        player.destroy();
-      };
     });
+
+    return () => {
+      if (ui) {
+        ui.destroy();
+      }
+      if (player) {
+        player.destroy();
+      }
+    };
 
   }, [src, controls]);
 
