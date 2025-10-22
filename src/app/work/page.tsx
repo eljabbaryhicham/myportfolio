@@ -243,7 +243,7 @@ export default function WorkPage() {
         const gridHeight = window.innerHeight * 0.8;
         const rowCount = Math.max(2, Math.floor(gridHeight / itemHeightWithGap)); // Ensure at least 2 rows
         
-        const calculatedCount = Math.max(4, columnCount * rowCount);
+        const calculatedCount = Math.max(4, (columnCount * rowCount) -1);
         setItemsPerLoad(calculatedCount);
         setVisibleItemsCount(prev => prev === null ? calculatedCount : prev);
     }
