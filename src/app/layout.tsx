@@ -50,11 +50,11 @@ function HomeBackgroundVideo() {
                         autoPlay
                         loop
                         muted
-                        className="w-full h-full object-cover blur-md"
+                        className="w-full h-full object-cover"
                     />
                 </div>
             )}
-            <div className="absolute inset-0 bg-black/70"></div>
+            <div className="absolute inset-0 bg-black/70 backdrop-blur-md"></div>
         </div>
     );
 }

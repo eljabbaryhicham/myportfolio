@@ -28,12 +28,13 @@ const SmoothVideo = React.memo(({
 
     useEffect(() => {
         const video = videoRef.current;
-        if (video && autoPlay) {
+        if (video && autoPlay && src) {
             video.play().catch(() => {
                 // Autoplay was prevented. This is a common browser policy.
+                // We don't need to log an error, as it's expected behavior.
             });
         }
-    }, [autoPlay, src]); // Re-run if src changes
+    }, [autoPlay, src]); // Re-run if src or autoplay status changes
 
     return (
         <video
