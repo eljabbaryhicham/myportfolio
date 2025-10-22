@@ -48,7 +48,7 @@ export function AppNav() {
         href={item.href}
         className={cn(
           "group relative flex items-center justify-center rounded-full transition-all duration-300 hover:scale-110 aspect-square",
-          "h-10 w-10",
+          isMobile ? 'h-[clamp(2rem,8vw,2.5rem)] w-[clamp(2rem,8vw,2.5rem)]' : "h-10 w-10",
           "text-white", 
           isActive
             ? isAdminButton
@@ -66,7 +66,7 @@ export function AppNav() {
 
     if (isMobile) {
       return (
-        <div key={item.href} className="h-full flex flex-shrink basis-auto items-center justify-center">
+        <div key={item.href} className="h-full flex flex-shrink-0 basis-auto items-center justify-center">
             {navButton}
         </div>
       );
