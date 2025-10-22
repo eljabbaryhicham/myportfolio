@@ -60,7 +60,7 @@ export function AppNav() {
            isActive && isAdminButton && "shadow-[0_0_15px_#22c55e80,_0_0_20px_#22c55e60]",
         )}
       >
-        <FontAwesomeIcon icon={item.icon} className={cn("animate-icon-spin h-[50%] w-[50%]")} />
+        <FontAwesomeIcon icon={item.icon} className={cn("transition-transform duration-300 group-hover:rotate-[360deg] h-[50%] w-[50%]")} />
       </Link>
     );
 
@@ -116,8 +116,13 @@ export function AppNav() {
       <div className={cn(
         "flex h-full flex-row md:flex-col items-center justify-between rounded-lg border border-border/50 px-2 py-2 md:p-4 glass-effect"
         )}>
-        <Link href="/" className="hidden md:flex items-center justify-center text-primary w-8 mt-4">
-          <Logo src={logoUrl} />
+        <Link href="/" className="hidden md:block relative group mt-4">
+            <div className="relative w-12 h-12 flex items-center justify-center">
+                <div className="absolute inset-0 rounded-full animate-spinning-circle-border bg-gradient-to-r from-primary via-transparent to-transparent"></div>
+                <div className="relative bg-background rounded-full p-1 w-10 h-10 flex items-center justify-center">
+                    <Logo src={logoUrl} />
+                </div>
+            </div>
         </Link>
         <nav className="flex flex-row md:flex-col items-center justify-around md:justify-center w-full md:w-auto md:gap-10">
            {accessibleNavItems.map(renderNavItem)}
