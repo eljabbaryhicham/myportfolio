@@ -96,11 +96,9 @@ const VideoPlayer = ({
             return;
         }
 
-        // Register the custom button if it's not already registered
-        if (!shaka.ui.Controls.getFactories()['download']) {
-          shaka.ui.Controls.registerElement('download', new DownloadButton.Factory());
-        }
-
+        // Register the custom button. It's safe to call this multiple times.
+        shaka.ui.Controls.registerElement('download', new DownloadButton.Factory());
+        
         player = new shaka.Player(videoRef.current);
 
         // Add buffering event listeners
