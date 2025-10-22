@@ -54,7 +54,7 @@ function HomeBackgroundVideo() {
                     />
                 </div>
             )}
-            <div className="absolute inset-0 bg-black/70 backdrop-blur-md"></div>
+            <div className="absolute inset-0 bg-black/70"></div>
         </div>
     );
 }
@@ -76,22 +76,13 @@ export default function RootLayout({
         <title>Liquid Folio</title>
       </head>
       <body className={cn('font-body antialiased text-center')} suppressHydrationWarning>
-        <div className="fixed inset-0 -z-20 overflow-hidden" style={{ filter: 'url(#metaballs)' }}>
+        <div className="fixed inset-0 -z-20 overflow-hidden">
           <div className="absolute w-[60rem] h-[60rem] bg-primary/30 rounded-full blur-3xl opacity-40 top-1/4 left-1/4 blob-1"></div>
           <div className="absolute w-[50rem] h-[50rem] bg-primary/30 rounded-full blur-3xl opacity-40 bottom-1/4 right-1/4 blob-2"></div>
           <div className="absolute w-[40rem] h-[40rem] bg-primary/30 rounded-full blur-3xl opacity-40 top-1/2 left-1/2 blob-3"></div>
           <div className="absolute w-[70rem] h-[70rem] bg-primary/30 rounded-full blur-3xl opacity-30 bottom-1/2 right-1/2 blob-4"></div>
         </div>
-        <svg className="absolute w-0 h-0">
-          <defs>
-            <filter id="metaballs">
-              <feGaussianBlur in="SourceGraphic" stdDeviation="20" result="blur" />
-              <feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 25 -10" result="contrast" />
-              <feBlend in="SourceGraphic" in2="contrast" />
-            </filter>
-          </defs>
-        </svg>
-
+        
         <FirebaseClientProvider>
           {isHomePage && <HomeBackgroundVideo />}
           <LayoutProvider>
