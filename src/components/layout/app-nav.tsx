@@ -60,7 +60,7 @@ export function AppNav() {
            isActive && isAdminButton && "shadow-[0_0_15px_#22c55e80,_0_0_20px_#22c55e60]",
         )}
       >
-        <FontAwesomeIcon icon={item.icon} className={cn("transition-transform duration-300 group-hover:rotate-[360deg] h-[50%] w-[50%]")} />
+        <FontAwesomeIcon icon={item.icon} className={cn("group-hover:animate-[icon-wobble_0.8s_ease-in-out_1] h-[50%] w-[50%]")} />
       </Link>
     );
 

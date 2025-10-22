@@ -277,3 +277,10 @@
 .animate-marquee {
   animation: marquee 20s linear infinite;
 }
+
+@keyframes icon-wobble {
+    0%, 100% { transform: rotate(0deg); }
+    25% { transform: rotate(15deg); }
+    50% { transform: rotate(-10deg); }
+    75% { transform: rotate(5deg); }
+}
