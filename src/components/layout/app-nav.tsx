@@ -98,8 +98,8 @@ export function AppNav() {
         <div className={cn(
           "flex h-[7vh] min-h-[60px] flex-row items-center justify-between rounded-lg border border-border/50 glass-effect"
           )}>
-          <nav className="flex h-full flex-1 justify-center items-center gap-4 sm:gap-8">
-            {accessibleNavItems.map(item => <div key={item.href} className="flex h-full items-center justify-center">{renderNavItem(item)}</div>)}
+          <nav className="flex h-full flex-1 items-center justify-around">
+            {accessibleNavItems.map(renderNavItem)}
           </nav>
         </div>
       </motion.div>
