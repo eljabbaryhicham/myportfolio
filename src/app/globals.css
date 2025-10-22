@@ -105,59 +105,6 @@
     width: 30%;
     margin: 5%;
   }
-
-  /* === Shaka Player Custom Theme === */
-  .shaka-video-container {
-    @apply rounded-lg overflow-hidden;
-  }
-
-  .shaka-controls-container {
-    @apply bg-gradient-to-t from-black/70 to-transparent p-2;
-  }
-  
-  .shaka-play-button-container .shaka-play-button {
-    @apply bg-primary/50 border-2 border-white rounded-full w-16 h-16 transition-colors duration-200;
-  }
-
-  .shaka-play-button-container .shaka-play-button:hover {
-    @apply bg-primary/80;
-  }
-
-  .shaka-control-button .material-icons {
-    @apply text-white/90 transition-colors duration-200;
-  }
-  
-  .shaka-control-button:hover .material-icons {
-    @apply text-white;
-  }
-
-  .shaka-seek-bar-container {
-    @apply h-2;
-  }
-
-  .shaka-seek-bar-container .shaka-seek-bar {
-    @apply bg-white/20 h-full;
-  }
-
-  .shaka-seek-bar-container .shaka-seek-bar-buffer {
-    @apply bg-white/30;
-  }
-  
-  .shaka-seek-bar-container .shaka-seek-bar-played {
-    background: hsl(var(--primary)) !important;
-  }
-
-  .shaka-volume-bar-container {
-    @apply h-1 bg-white/20;
-  }
-
-  .shaka-volume-bar-container .shaka-volume-bar-level {
-     background: hsl(var(--primary));
-  }
-
-  .shaka-current-time, .shaka-time-and-duration {
-    @apply text-white text-sm;
-  }
 }
 
 @layer utilities {

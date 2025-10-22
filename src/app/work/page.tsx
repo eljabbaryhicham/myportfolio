@@ -12,7 +12,6 @@ import {
 } from '@/components/ui/dialog';
 import { useState, memo, useEffect, useMemo, useRef, useCallback } from 'react';
 import { cn } from '@/lib/utils';
-import dynamic from 'next/dynamic';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import ReactMarkdown from 'react-markdown';
@@ -34,7 +33,6 @@ import { motion, AnimatePresence, PanInfo } from 'framer-motion';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import ContactForm from '@/features/contact/components/ContactForm';
 import type { AppUser } from '@/firebase/auth/use-user';
-import DynamicVideoPlayer from '@/components/dynamic-video-player';
 
 
 const MemoizedImage = memo(Image);
@@ -57,11 +55,13 @@ const PortfolioMedia = ({
   if (item.type === 'video' && item.sourceUrl) {
     return (
       <div className="relative aspect-video bg-black flex items-center justify-center w-full">
-         <DynamicVideoPlayer 
+         <video 
             key={item.id} 
             src={item.sourceUrl} 
             poster={item.thumbnailUrl} 
+            controls
             autoPlay 
+            className="w-full h-full object-contain"
           />
       </div>
     );
@@ -697,7 +697,7 @@ export default function WorkPage() {
                                 tagNames: [...(defaultSchema.tagNames || []), 'video'],
                                 attributes: {
                                     ...defaultSchema.attributes,
-                                    'video': [...(defaultSchema.attributes?.video || []), 'src', 'controls', 'poster']
+                                    'video': [...(defaultSchema.attributes?.video || []), 'src', 'controls', 'poster', 'playsinline', 'autoplay', 'muted', 'loop']
                                 }
                             }]
                           ]}
@@ -707,7 +707,7 @@ export default function WorkPage() {
                               if (!isClient || !props.src) return null;
                               return (
                                 <div className="w-full rounded-lg overflow-hidden my-4">
-                                  <DynamicVideoPlayer key={props.src} src={props.src} poster={selectedItem.thumbnailUrl} />
+                                  <video key={props.src} {...props} className="w-full h-full" />
                                 </div>
                               );
                             }

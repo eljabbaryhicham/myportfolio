@@ -20,8 +20,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Separator } from '@/components/ui/separator';
 import AddFromUrlDialog from './AddFromUrlDialog';
 import type { AppUser } from '@/firebase/auth/use-user';
-import Plyr from "plyr";
-import "plyr/dist/plyr.css";
 
 
 // Type for the media stored in Firestore
@@ -33,26 +31,6 @@ interface MediaAsset {
     created_at: string;
     filename: string;
 }
-
-const PlyrPreviewPlayer = ({ src, poster }: { src: string; poster?: string }) => {
-  const videoRef = useRef<HTMLVideoElement>(null);
-
-  useEffect(() => {
-    if (!videoRef.current) return;
-
-    const player = new Plyr(videoRef.current, {
-      controls: ['play', 'progress', 'current-time', 'mute', 'volume', 'fullscreen'],
-      playsinline: true,
-    });
-
-    return () => {
-      player.destroy();
-    };
-  }, [src]);
-
-  return <video ref={videoRef} src={src} poster={poster} playsInline />;
-};
-
 
 const MediaFileCard = ({
   file,
@@ -429,8 +407,8 @@ export default function MediaAdmin(props: MediaAdminProps) {
 
     if (previewFile.resource_type === 'video') {
       return (
-        <div className="w-full h-full flex items-center justify-center [&_.plyr]:h-full">
-            <PlyrPreviewPlayer src={previewFile.url} />
+        <div className="w-full h-full flex items-center justify-center">
+            <video src={previewFile.url} controls autoPlay playsInline className="w-full h-full object-contain" />
         </div>
       );
     }

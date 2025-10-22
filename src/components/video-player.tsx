@@ -3,8 +3,6 @@
 
 import React, { useEffect, useRef } from 'react';
 import { cn } from '@/lib/utils';
-import Plyr from 'plyr';
-import 'plyr/dist/plyr.css';
 import Preloader from './preloader';
 
 interface VideoPlayerProps {
@@ -28,31 +26,6 @@ const VideoPlayer = ({
 }: VideoPlayerProps) => {
   const videoRef = useRef<HTMLVideoElement>(null);
 
-  useEffect(() => {
-    if (!videoRef.current) return;
-
-    const player = new Plyr(videoRef.current, {
-      controls: showControls
-        ? [
-            'play-large',
-            'play',
-            'progress',
-            'current-time',
-            'mute',
-            'volume',
-            'fullscreen',
-          ]
-        : [],
-      autoplay: autoPlay,
-      muted: muted,
-      loop: { active: loop },
-      playsinline: true,
-    });
-    
-    return () => {
-      player.destroy();
-    };
-  }, [src, poster, autoPlay, muted, loop, showControls]); // Re-init if essential props change
 
   if (!src) {
     return (
@@ -63,13 +36,17 @@ const VideoPlayer = ({
   }
 
   return (
-    <div className={cn("relative w-full h-full bg-black overflow-hidden [&>div]:h-full", className)}>
+    <div className={cn("relative w-full h-full bg-black overflow-hidden", className)}>
       <video
         ref={videoRef}
         src={src}
         poster={poster}
-        className="plyr-react plyr"
+        className="w-full h-full object-contain"
         playsInline
+        autoPlay={autoPlay}
+        muted={muted}
+        loop={loop}
+        controls={showControls}
       />
     </div>
   );
