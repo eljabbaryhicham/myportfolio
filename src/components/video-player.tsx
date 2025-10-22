@@ -41,6 +41,10 @@ const VideoPlayer = ({
 
       const player = new shaka.Player(videoRef.current);
       let ui: shaka.ui.Overlay | null = null;
+      
+      if (videoRef.current) {
+        videoRef.current.volume = 0.10; // Set default volume to 10%
+      }
 
       if (controls) {
         ui = new shaka.ui.Overlay(player, containerRef.current, videoRef.current);
