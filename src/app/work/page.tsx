@@ -642,7 +642,7 @@ export default function WorkPage() {
                               onClick={() => setIsContactFormOpen(true)}
                               className="h-auto py-2 px-4 leading-tight text-center"
                             >
-                              ASK ME
+                              Ask About
                             </Button>
                           </div>
                         </div>
