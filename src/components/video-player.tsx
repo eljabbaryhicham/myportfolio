@@ -5,6 +5,7 @@ import React, { useRef, useEffect, useState } from 'react';
 import { cn } from '@/lib/utils';
 import 'shaka-player/dist/controls.css';
 import Preloader from './preloader';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface VideoPlayerProps {
   src?: string;
@@ -30,6 +31,7 @@ const VideoPlayer = ({
   const videoRef = useRef<HTMLVideoElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [isBuffering, setIsBuffering] = useState(true);
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     if (!videoRef.current || !containerRef.current) return;
@@ -69,14 +71,9 @@ const VideoPlayer = ({
                     base: 'rgba(255, 255, 255, 0.2)',
                     level: 'hsl(var(--primary))',
                 },
-                controlPanelElements: [
-                    'play_pause',
-                    'time_and_duration',
-                    'spacer',
-                    'volume',
-                    'fullscreen',
-                    'overflow_menu',
-                ],
+                controlPanelElements: isMobile
+                    ? ['play_pause', 'time_and_duration', 'fullscreen', 'overflow_menu']
+                    : ['play_pause', 'time_and_duration', 'spacer', 'volume', 'fullscreen', 'overflow_menu'],
                 overflowMenuButtons: ['quality', 'picture_in_picture', 'loop', 'captions', 'playback_rate'],
             };
             ui.configure(uiConfig);
@@ -116,7 +113,7 @@ const VideoPlayer = ({
         player.destroy();
       }
     };
-  }, [src, controls, preloadManager]);
+  }, [src, controls, preloadManager, isMobile]);
 
   return (
     <div ref={containerRef} className={cn("relative w-full h-full bg-black", className)}>
