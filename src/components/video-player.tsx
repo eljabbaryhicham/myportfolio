@@ -61,22 +61,7 @@ const VideoPlayer = ({
 
         if (controls) {
             ui = new shaka.ui.Overlay(player, containerRef.current, videoRef.current);
-            const uiConfig: shaka.extern.UIConfiguration = {
-                seekBarColors: {
-                    base: 'rgba(255, 255, 255, 0.2)',
-                    buffered: 'rgba(255, 255, 255, 0.4)',
-                    played: 'hsl(var(--primary))',
-                },
-                volumeBarColors: {
-                    base: 'rgba(255, 255, 255, 0.2)',
-                    level: 'hsl(var(--primary))',
-                },
-                controlPanelElements: isMobile
-                    ? ['play_pause', 'time_and_duration', 'fullscreen', 'overflow_menu']
-                    : ['play_pause', 'time_and_duration', 'spacer', 'volume', 'fullscreen', 'overflow_menu'],
-                overflowMenuButtons: ['quality', 'picture_in_picture', 'loop', 'captions', 'playback_rate'],
-            };
-            ui.configure(uiConfig);
+            // Reverted to default UI by removing all custom ui.configure() calls.
         }
 
         const onError = (error: any) => {
