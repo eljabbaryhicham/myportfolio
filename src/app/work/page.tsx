@@ -422,7 +422,7 @@ export default function WorkPage() {
     }
   };
   
-  const effectiveItemsCount = visibleItemsCount ? visibleItemsCount - 1 : 0;
+  const effectiveItemsCount = visibleItemsCount || 0;
   const itemsToShow = useMemo(() => {
       if (visibleItemsCount === null) return [];
       return filteredItems.slice(0, effectiveItemsCount);
@@ -824,5 +824,3 @@ export default function WorkPage() {
     </>
   );
 }
-
-    
