@@ -7,7 +7,7 @@ import 'shaka-player/dist/controls.css';
 import Preloader from './preloader';
 
 // Custom Download Button for Shaka Player
-class DownloadButton extends (window.shaka?.ui?.Element || class {}) {
+class DownloadButton extends window.shaka.ui.Element {
   private button_: HTMLButtonElement;
 
   constructor(parent: HTMLElement, controls: shaka.ui.Controls) {
