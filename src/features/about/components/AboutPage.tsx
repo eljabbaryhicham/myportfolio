@@ -1,3 +1,4 @@
+
 'use client';
 
 import { memo, useState, useEffect, useRef, useMemo } from 'react';
@@ -168,13 +169,13 @@ export default function AboutPage() {
                        <h2 className="text-2xl md:text-3xl font-headline tracking-tight mb-6 text-center">What We Do?</h2>
                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                         {services.map((service) => {
-                            const isWebDesign = service.title === "Web Design & Development";
+                            const isProminent = service.title === "Social Media Management";
                             return (
                                 <div 
                                     key={service.title}
                                     className={cn(
                                       "glass-effect p-4 rounded-lg flex flex-col items-center justify-center text-center",
-                                      isWebDesign && "col-span-2 md:col-span-2"
+                                      isProminent && "col-span-2 md:col-span-2"
                                     )}
                                 >
                                     <service.icon className="w-8 h-8 md:w-10 md:h-10 text-primary mb-3" />
