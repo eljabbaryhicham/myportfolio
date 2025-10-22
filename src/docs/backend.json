@@ -113,9 +113,9 @@
       "description": "Stores settings for the homepage, like the featured project.",
       "type": "object",
       "properties": {
-        "featuredProjectId": {
+        "homePageBackgroundVideoId": {
           "type": "string",
-          "description": "The ID of the project featured on the homepage."
+          "description": "The ID of the project to use for the homepage background video."
         },
         "websiteBackgroundVideoId": {
           "type": "string",
@@ -123,7 +123,7 @@
         }
       },
       "required": [
-        "featuredProjectId"
+        "homePageBackgroundVideoId"
       ]
     },
     "AboutPageContent": {

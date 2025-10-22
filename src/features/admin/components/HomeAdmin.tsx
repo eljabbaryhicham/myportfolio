@@ -31,12 +31,12 @@ import type { AppUser } from '@/firebase/auth/use-user';
 import { Separator } from '@/components/ui/separator';
 
 interface HomePageSettings {
-    featuredProjectId: string;
+    homePageBackgroundVideoId?: string;
     websiteBackgroundVideoId?: string;
 }
 
 const formSchema = z.object({
-  featuredProjectId: z.string().min(1, { message: 'Please select a project.' }),
+  homePageBackgroundVideoId: z.string().min(1, { message: 'Please select a project.' }),
   websiteBackgroundVideoId: z.string().min(1, { message: 'Please select a background video.' }),
 });
 
@@ -65,7 +65,7 @@ export default function HomeAdmin() {
   const form = useForm<HomeAdminFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-        featuredProjectId: '',
+        homePageBackgroundVideoId: '',
         websiteBackgroundVideoId: '',
     },
   });
@@ -73,7 +73,7 @@ export default function HomeAdmin() {
   useEffect(() => {
     if (homeSettings) {
       form.reset({ 
-          featuredProjectId: homeSettings.featuredProjectId || '',
+          homePageBackgroundVideoId: homeSettings.homePageBackgroundVideoId || '',
           websiteBackgroundVideoId: homeSettings.websiteBackgroundVideoId || '',
        });
     }
@@ -94,7 +94,7 @@ export default function HomeAdmin() {
     
     toast({
         title: 'Home Page Updated',
-        description: 'The featured video has been successfully updated.',
+        description: 'The background videos have been successfully updated.',
     });
   };
 
@@ -113,7 +113,7 @@ export default function HomeAdmin() {
         <div className="mb-6">
             <h2 className="text-xl font-headline">Home Page Settings</h2>
             <p className="text-muted-foreground">
-                Choose the video to feature on your homepage.
+                Choose the background videos for your homepage and the rest of the site.
             </p>
         </div>
         <div className="flex-1 border rounded-lg overflow-hidden glass-effect">
@@ -124,14 +124,14 @@ export default function HomeAdmin() {
                         <fieldset disabled={!canEditHome} className="group space-y-8">
                         <FormField
                             control={form.control}
-                            name="featuredProjectId"
+                            name="homePageBackgroundVideoId"
                             render={({ field }) => (
                             <FormItem>
-                                <FormLabel>Homepage Featured Video</FormLabel>
+                                <FormLabel>Homepage Background Video</FormLabel>
                                 <Select onValueChange={field.onChange} value={field.value}>
                                 <FormControl>
                                     <SelectTrigger>
-                                    <SelectValue placeholder="Select a video to feature on the homepage" />
+                                    <SelectValue placeholder="Select a video for the homepage background" />
                                     </SelectTrigger>
                                 </FormControl>
                                 <SelectContent>
@@ -152,7 +152,7 @@ export default function HomeAdmin() {
                             name="websiteBackgroundVideoId"
                             render={({ field }) => (
                             <FormItem>
-                                <FormLabel>Website Background Video</FormLabel>
+                                <FormLabel>Website Background Video (Other Pages)</FormLabel>
                                 <Select onValueChange={field.onChange} value={field.value}>
                                 <FormControl>
                                     <SelectTrigger>

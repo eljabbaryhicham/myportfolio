@@ -5,7 +5,7 @@ import HomePageContent from "@/features/portfolio/components/HomePage";
 import { doc } from "firebase/firestore";
 
 interface HomePageSettings {
-    featuredProjectId: string;
+    homePageBackgroundVideoId: string;
 }
 
 export default function HomePage() {
@@ -17,12 +17,12 @@ export default function HomePage() {
     );
     const { data: homeSettings, isLoading: isLoadingSettings } = useDoc<HomePageSettings>(settingsDocRef);
     
-    const featuredProjectRef = useMemoFirebase(
-        () => (firestore && homeSettings?.featuredProjectId ? doc(firestore, 'projects', homeSettings.featuredProjectId) : null),
+    const backgroundVideoRef = useMemoFirebase(
+        () => (firestore && homeSettings?.homePageBackgroundVideoId ? doc(firestore, 'projects', homeSettings.homePageBackgroundVideoId) : null),
         [firestore, homeSettings]
     );
-    const { data: featuredProject, isLoading: isLoadingProject } = useDoc(featuredProjectRef);
+    const { data: backgroundVideo, isLoading: isLoadingProject } = useDoc(backgroundVideoRef);
 
 
-    return <HomePageContent featuredProject={featuredProject} isLoading={isLoadingSettings || isLoadingProject} />;
+    return <HomePageContent backgroundVideo={backgroundVideo} isLoading={isLoadingSettings || isLoadingProject} />;
 }
