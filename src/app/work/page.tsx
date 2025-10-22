@@ -62,7 +62,6 @@ const PortfolioMedia = ({
             src={item.sourceUrl} 
             poster={item.thumbnailUrl} 
             autoPlay 
-            showShakaControls={true}
           />
       </div>
     );
@@ -260,7 +259,7 @@ export default function WorkPage() {
     return () => {
       window.removeEventListener('resize', calculateAndSetItems);
     };
-  }, []);
+  }, [calculateAndSetItems]);
 
   // When filters change, reset the visible count
   useEffect(() => {
@@ -296,12 +295,12 @@ export default function WorkPage() {
     router.push(`${pathname}?${params.toString()}`, { scroll: false });
   };
 
-  const handleItemClick = (item: PortfolioItem) => {
+  const handleItemClick = useCallback((item: PortfolioItem) => {
     setIsDialogMediaLoading(true);
     setDirection(null); 
     setSelectedItem(item);
     updateUrl(slugify(item.title));
-  };
+  }, [router, pathname, searchParams]);
   
   const minOrder = useMemo(() => {
     if (!portfolioItems || portfolioItems.length === 0) return 0;
@@ -332,23 +331,23 @@ export default function WorkPage() {
     setDetailsModalOpen(open);
   };
 
-  const handleNextProject = () => {
+  const handleNextProject = useCallback(() => {
     if (!selectedItem || !filteredItems) return;
     const currentIndex = filteredItems.findIndex(item => item.id === selectedItem.id);
     const nextIndex = (currentIndex + 1) % filteredItems.length;
     const nextItem = filteredItems[nextIndex];
     handleItemClick(nextItem);
     setDirection('next');
-  };
+  }, [selectedItem, filteredItems, handleItemClick]);
 
-  const handlePreviousProject = () => {
+  const handlePreviousProject = useCallback(() => {
     if (!selectedItem || !filteredItems) return;
     const currentIndex = filteredItems.findIndex(item => item.id === selectedItem.id);
     const prevIndex = (currentIndex - 1 + filteredItems.length) % filteredItems.length;
     const prevItem = filteredItems[prevIndex];
     handleItemClick(prevItem);
     setDirection('prev');
-  };
+  }, [selectedItem, filteredItems, handleItemClick]);
 
   const handleDialogMouseMove = () => {
     if (inactivityTimer.current) {
@@ -704,7 +703,7 @@ export default function WorkPage() {
                               if (!isClient || !props.src) return null;
                               return (
                                 <div className="w-full rounded-lg overflow-hidden my-4">
-                                  <DynamicVideoPlayer key={props.src} src={props.src} poster={selectedItem.thumbnailUrl} showShakaControls={true} />
+                                  <DynamicVideoPlayer key={props.src} src={props.src} poster={selectedItem.thumbnailUrl} />
                                 </div>
                               );
                             }
@@ -822,12 +821,3 @@ export default function WorkPage() {
     </>
   );
 }
-
-    
-
-    
-
-
-
-
-

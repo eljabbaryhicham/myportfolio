@@ -14,7 +14,6 @@ interface VideoPlayerProps {
   autoPlay?: boolean;
   muted?: boolean;
   loop?: boolean;
-  showShakaControls?: boolean; // This prop is kept for compatibility but is now handled by Plyr
 }
 
 const VideoPlayer = ({
@@ -24,7 +23,6 @@ const VideoPlayer = ({
   autoPlay = false,
   muted = false,
   loop = false,
-  showShakaControls = false, // Defaulting to false, Plyr shows controls by default
 }: VideoPlayerProps) => {
 
   if (!src) {
