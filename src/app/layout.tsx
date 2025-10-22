@@ -11,6 +11,7 @@ import { usePathname } from 'next/navigation';
 import { useDoc, useFirestore, useMemoFirebase } from '@/firebase';
 import { doc } from 'firebase/firestore';
 import type { PortfolioItem } from '@/features/portfolio/data/portfolio-data';
+import VideoPlayer from '@/components/video-player';
 
 
 interface HomePageSettings {
@@ -43,13 +44,13 @@ function HomeBackgroundVideo() {
             { (isLoadingSettings || isLoadingProject) ? <div className="absolute inset-0 z-20 flex items-center justify-center bg-background" /> :
              featuredProject && (
                  <div className="w-full h-full bg-black">
-                    <video
+                    <VideoPlayer
                         key={featuredProject.id}
                         src={featuredProject.sourceUrl}
                         autoPlay
                         loop
                         muted
-                        playsInline
+                        controls={false}
                         className="w-full h-full object-cover blur-md"
                     />
                 </div>
