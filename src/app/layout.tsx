@@ -76,13 +76,6 @@ export default function RootLayout({
         <title>Liquid Folio</title>
       </head>
       <body className={cn('font-body antialiased text-center')} suppressHydrationWarning>
-        <div className="fixed inset-0 -z-20 overflow-hidden">
-          <div className="absolute w-[60rem] h-[60rem] bg-primary/30 rounded-full blur-3xl opacity-40 top-1/4 left-1/4 blob-1"></div>
-          <div className="absolute w-[50rem] h-[50rem] bg-primary/30 rounded-full blur-3xl opacity-40 bottom-1/4 right-1/4 blob-2"></div>
-          <div className="absolute w-[40rem] h-[40rem] bg-primary/30 rounded-full blur-3xl opacity-40 top-1/2 left-1/2 blob-3"></div>
-          <div className="absolute w-[70rem] h-[70rem] bg-primary/30 rounded-full blur-3xl opacity-30 bottom-1/2 right-1/2 blob-4"></div>
-        </div>
-        
         <FirebaseClientProvider>
           {isHomePage && <HomeBackgroundVideo />}
           <LayoutProvider>
