@@ -43,12 +43,10 @@ const PortfolioMedia = ({
   item,
   onFullscreenClick,
   onMediaLoaded,
-  preloadManager
 }: {
   item: PortfolioItem;
   onFullscreenClick: (url: string) => void;
   onMediaLoaded: () => void;
-  preloadManager?: shaka.media.PreloadManager;
 }) => {
 
   useEffect(() => {
@@ -65,7 +63,6 @@ const PortfolioMedia = ({
             poster={item.thumbnailUrl} 
             autoPlay 
             showShakaControls={true}
-            preloadManager={preloadManager}
           />
       </div>
     );
@@ -225,9 +222,6 @@ export default function WorkPage() {
   const [direction, setDirection] = useState<'next' | 'prev' | null>(null);
   const [isDialogMediaLoading, setIsDialogMediaLoading] = useState(true);
   
-  const [preloadPlayer, setPreloadPlayer] = useState<shaka.Player | null>(null);
-  const [preloadManager, setPreloadManager] = useState<shaka.media.PreloadManager | null>(null);
-
   const allItems = useMemo(() => {
     return portfolioItems?.filter(item => item.isVisible !== false) || [];
   }, [portfolioItems]);
@@ -263,17 +257,8 @@ export default function WorkPage() {
 
     window.addEventListener('resize', calculateAndSetItems);
     
-    // Initialize a single player instance for preloading
-    import('shaka-player/dist/shaka-player.ui').then(shaka => {
-        const player = new shaka.Player();
-        setPreloadPlayer(player);
-    });
-
-
     return () => {
       window.removeEventListener('resize', calculateAndSetItems);
-      preloadPlayer?.destroy();
-      preloadManager?.destroy();
     };
   }, []);
 
@@ -311,25 +296,11 @@ export default function WorkPage() {
     router.push(`${pathname}?${params.toString()}`, { scroll: false });
   };
 
-  const handleItemClick = async (item: PortfolioItem) => {
-    if (preloadManager) {
-        await preloadManager.destroy();
-        setPreloadManager(null);
-    }
-    
+  const handleItemClick = (item: PortfolioItem) => {
     setIsDialogMediaLoading(true);
     setDirection(null); 
     setSelectedItem(item);
     updateUrl(slugify(item.title));
-
-    if (item.type === 'video' && item.sourceUrl && preloadPlayer) {
-        try {
-            const manager = await preloadPlayer.preload(item.sourceUrl);
-            setPreloadManager(manager);
-        } catch (e) {
-            console.error("Error preloading video:", e);
-        }
-    }
   };
   
   const minOrder = useMemo(() => {
@@ -337,12 +308,8 @@ export default function WorkPage() {
     return Math.min(...portfolioItems.map(i => i.order || 0));
   }, [portfolioItems]);
 
-  const handleOpenChange = async (open: boolean) => {
+  const handleOpenChange = (open: boolean) => {
     if (!open) {
-      if (preloadManager) {
-        await preloadManager.destroy();
-        setPreloadManager(null);
-      }
       setSelectedItem(null);
       updateUrl(null);
     }
@@ -666,7 +633,6 @@ export default function WorkPage() {
                                 item={selectedItem}
                                 onFullscreenClick={setFullscreenImageUrl}
                                 onMediaLoaded={() => setIsDialogMediaLoading(false)}
-                                preloadManager={preloadManager || undefined}
                               />
                             )}
                           </div>
@@ -860,6 +826,7 @@ export default function WorkPage() {
     
 
     
+
 
 
 
