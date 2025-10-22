@@ -1,7 +1,7 @@
 
 'use client';
 
-import React, { useCallback, useState, useEffect, useMemo } from 'react';
+import React, { useCallback, useState, useEffect, useMemo, useRef } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
@@ -20,8 +20,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Separator } from '@/components/ui/separator';
 import AddFromUrlDialog from './AddFromUrlDialog';
 import type { AppUser } from '@/firebase/auth/use-user';
-import Plyr from "plyr-react";
-import "plyr-react/plyr.css";
+import Plyr from "plyr";
+import "plyr/dist/plyr.css";
 
 
 // Type for the media stored in Firestore
@@ -33,6 +33,25 @@ interface MediaAsset {
     created_at: string;
     filename: string;
 }
+
+const PlyrPreviewPlayer = ({ src, poster }: { src: string; poster?: string }) => {
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    if (!videoRef.current) return;
+
+    const player = new Plyr(videoRef.current, {
+      controls: ['play', 'progress', 'current-time', 'mute', 'volume', 'fullscreen'],
+      playsinline: true,
+    });
+
+    return () => {
+      player.destroy();
+    };
+  }, [src]);
+
+  return <video ref={videoRef} src={src} poster={poster} playsInline />;
+};
 
 
 const MediaFileCard = ({
@@ -409,18 +428,9 @@ export default function MediaAdmin(props: MediaAdminProps) {
     }
 
     if (previewFile.resource_type === 'video') {
-      const plyrSource = {
-        type: 'video',
-        sources: [
-          {
-            src: previewFile.url,
-          },
-        ],
-      } as Plyr.SourceInfo;
-
       return (
-        <div className="w-full h-full flex items-center justify-center">
-            <Plyr source={plyrSource} options={{ controls: ['play', 'progress', 'current-time', 'mute', 'volume', 'fullscreen'], playsinline: true }} />
+        <div className="w-full h-full flex items-center justify-center [&_.plyr]:h-full">
+            <PlyrPreviewPlayer src={previewFile.url} />
         </div>
       );
     }
