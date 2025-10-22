@@ -7,6 +7,47 @@ import { cn } from '@/lib/utils';
 import { FirebaseClientProvider } from '@/firebase/client-provider';
 import { LayoutProvider } from '@/components/layout/layout-provider';
 import SmoothVideo from '@/components/video-player';
+import { useDoc, useFirestore, useMemoFirebase } from '@/firebase';
+import { doc } from 'firebase/firestore';
+import type { PortfolioItem } from '@/features/portfolio/data/portfolio-data';
+
+
+interface HomePageSettings {
+    websiteBackgroundVideoId?: string;
+}
+
+function SiteBackground() {
+    const firestore = useFirestore();
+    
+    const settingsDocRef = useMemoFirebase(
+      () => (firestore ? doc(firestore, 'homepage', 'settings') : null),
+      [firestore]
+    );
+    const { data: homeSettings } = useDoc<HomePageSettings>(settingsDocRef);
+    
+    const backgroundVideoRef = useMemoFirebase(
+        () => (firestore && homeSettings?.websiteBackgroundVideoId ? doc(firestore, 'projects', homeSettings.websiteBackgroundVideoId) : null),
+        [firestore, homeSettings]
+    );
+    const { data: backgroundVideo } = useDoc<PortfolioItem>(backgroundVideoRef);
+
+    const videoSrc = backgroundVideo?.sourceUrl || "https://res.cloudinary.com/da1srnoer/video/upload/f_auto,q_auto/v1761159959/wbmz1rkepnqeotpcx9tp.webm";
+
+    return (
+        <div className="absolute inset-0 -z-10 w-full h-full">
+            <div className="w-full h-full bg-black">
+                <SmoothVideo
+                    src={videoSrc}
+                    autoPlay
+                    loop
+                    muted
+                    className="w-full h-full object-cover"
+                />
+            </div>
+            <div className="absolute inset-0 bg-black/70"></div>
+        </div>
+    );
+}
 
 
 export default function RootLayout({
@@ -24,23 +65,12 @@ export default function RootLayout({
         <title>Liquid Folio</title>
       </head>
       <body className={cn('font-body antialiased text-center')} suppressHydrationWarning>
-        <div className="absolute inset-0 -z-10 w-full h-full">
-            <div className="w-full h-full bg-black">
-                <SmoothVideo
-                    src="https://res.cloudinary.com/da1srnoer/video/upload/f_auto,q_auto/v1761159959/wbmz1rkepnqeotpcx9tp.webm"
-                    autoPlay
-                    loop
-                    muted
-                    className="w-full h-full object-cover"
-                />
-            </div>
-            <div className="absolute inset-0 bg-black/70"></div>
-        </div>
         <FirebaseClientProvider>
-          <LayoutProvider>
-            {children}
-          </LayoutProvider>
-          <Toaster />
+            <SiteBackground />
+            <LayoutProvider>
+                {children}
+            </LayoutProvider>
+            <Toaster />
         </FirebaseClientProvider>
       </body>
     </html>

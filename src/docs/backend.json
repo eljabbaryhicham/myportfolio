@@ -116,6 +116,10 @@
         "featuredProjectId": {
           "type": "string",
           "description": "The ID of the project featured on the homepage."
+        },
+        "websiteBackgroundVideoId": {
+          "type": "string",
+          "description": "The ID of the project to use for the sitewide background video."
         }
       },
       "required": [
