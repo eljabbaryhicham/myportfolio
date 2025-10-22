@@ -85,7 +85,7 @@ export default function ContactPage() {
 
   return (
     <div className="h-full w-full flex flex-col">
-      <div className="p-[5%] pb-4">
+      <div className="p-8">
         <div className="container mx-auto px-0">
           <div className="mb-8 text-center">
             <h1 className="text-3xl md:text-4xl font-headline tracking-tight">Contact Us</h1>
@@ -97,7 +97,7 @@ export default function ContactPage() {
       </div>
       <Separator className="bg-white/10" />
       <ScrollArea className="flex-1">
-        <div className="p-[5%] pt-4">
+        <div className="p-8">
           <div className="container mx-auto px-0">
             {isLoading ? (
               <div className="flex justify-center items-center h-64">
