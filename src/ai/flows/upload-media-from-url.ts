@@ -120,7 +120,10 @@ const uploadMediaFromUrlFlow = ai.defineFlow(
       console.error('Error in uploadMediaFromUrlFlow:', error);
 
       let errorMessage = 'An unexpected error occurred.';
-      if (error.http_code && error.message) {
+      // Check for Cloudinary's specific file size error
+      if (error.http_code === 400 && error.message && error.message.includes('File size too large')) {
+          errorMessage = 'The provided file is too large. Cloudinary\'s free plan limit is 100MB. Please use a smaller file.';
+      } else if (error.http_code && error.message) {
         errorMessage = `Cloudinary error: ${error.message}`;
       } else if (error.message) {
         errorMessage = error.message;
