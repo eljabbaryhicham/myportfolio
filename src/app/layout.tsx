@@ -54,7 +54,7 @@ function SiteBackground() {
                     autoPlay
                     loop
                     muted
-                    className="w-full h-full object-cover"
+                    className={cn("w-full h-full object-cover", isHomePage && "blur-sm")}
                 />
             </div>
             <div className="absolute inset-0 bg-black/80"></div>
