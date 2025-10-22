@@ -116,7 +116,7 @@ const VideoPlayer = ({
   }, [src, controls, preloadManager, isMobile]);
 
   return (
-    <div ref={containerRef} className={cn("relative w-full h-full bg-black", className)}>
+    <div ref={containerRef} className={cn("relative w-full h-full bg-black overflow-hidden", className)}>
       {isBuffering && (
         <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/50">
           <Preloader />
@@ -129,7 +129,7 @@ const VideoPlayer = ({
         muted={muted}
         loop={loop}
         playsInline
-        className="w-full h-full"
+        className="w-full h-full object-contain"
       />
     </div>
   );
