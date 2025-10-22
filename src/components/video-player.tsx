@@ -131,6 +131,7 @@ const VideoPlayer = ({
         autoPlay={autoPlay}
         muted={muted}
         loop={loop}
+        playsInline
         className="w-full h-full"
       />
     </div>

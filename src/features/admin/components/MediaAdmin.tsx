@@ -420,7 +420,7 @@ export default function MediaAdmin(props: MediaAdminProps) {
 
       return (
         <div className="w-full h-full flex items-center justify-center">
-            <Plyr source={plyrSource} options={{ controls: ['play', 'progress', 'current-time', 'mute', 'volume', 'fullscreen'] }} />
+            <Plyr source={plyrSource} options={{ controls: ['play', 'progress', 'current-time', 'mute', 'volume', 'fullscreen'], playsinline: true }} />
         </div>
       );
     }
