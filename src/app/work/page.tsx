@@ -500,8 +500,7 @@ export default function WorkPage() {
         <ScrollArea className="flex-1">
           <div className="p-[5%] pt-4">
             <div className="container mx-auto px-0">
-              <AnimatePresence mode="wait">
-                <motion.div
+              <motion.div
                   key={filter}
                   ref={gridRef}
                   className="grid gap-4"
@@ -509,7 +508,6 @@ export default function WorkPage() {
                   variants={containerVariants}
                   initial="hidden"
                   animate="visible"
-                  exit="hidden"
                 >
                   {isLoading ? (
                     <div className="col-span-full h-full min-h-[50vh] flex items-center justify-center">
@@ -549,7 +547,6 @@ export default function WorkPage() {
                     </>
                   )}
                 </motion.div>
-              </AnimatePresence>
             </div>
           </div>
         </ScrollArea>
