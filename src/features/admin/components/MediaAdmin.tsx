@@ -20,6 +20,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Separator } from '@/components/ui/separator';
 import AddFromUrlDialog from './AddFromUrlDialog';
 import type { AppUser } from '@/firebase/auth/use-user';
+import Plyr from "plyr-react";
+import "plyr-react/dist/plyr.css";
 
 
 // Type for the media stored in Firestore
@@ -407,9 +409,18 @@ export default function MediaAdmin(props: MediaAdminProps) {
     }
 
     if (previewFile.resource_type === 'video') {
+      const plyrSource = {
+        type: 'video',
+        sources: [
+          {
+            src: previewFile.url,
+          },
+        ],
+      } as Plyr.SourceInfo;
+
       return (
         <div className="w-full h-full flex items-center justify-center">
-          <video key={previewFile.id} src={previewFile.url} controls autoPlay className="w-full h-full" />
+            <Plyr source={plyrSource} options={{ controls: ['play', 'progress', 'current-time', 'mute', 'volume', 'fullscreen'] }} />
         </div>
       );
     }
