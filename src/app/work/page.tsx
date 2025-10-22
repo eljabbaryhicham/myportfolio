@@ -500,53 +500,55 @@ export default function WorkPage() {
         <ScrollArea className="flex-1">
           <div className="p-[5%] pt-4">
             <div className="container mx-auto px-0">
-              <motion.div
-                  key={filter}
-                  ref={gridRef}
-                  className="grid gap-4"
-                  style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))' }}
-                  variants={containerVariants}
-                  initial="hidden"
-                  animate="visible"
-                >
-                  {isLoading ? (
-                    <div className="col-span-full h-full min-h-[50vh] flex items-center justify-center">
-                      <Preloader />
-                    </div>
-                  ) : (
-                    <>
-                      {itemsToShow.map(item => (
-                        <motion.div key={item.id} variants={itemVariants}>
-                          <PortfolioGridItem 
-                            item={item}
-                            onClick={() => handleItemClick(item)}
-                            onEditClick={() => handleEditItem(item)}
-                            isAdmin={!!user}
-                          />
-                        </motion.div>
-                      ))}
-                      {showMoreButtonNeeded && (
-                        <motion.div
-                          variants={itemVariants}
-                          className="p-[2px] rounded-lg glass-effect"
-                        >
-                          <div
-                            className="group relative cursor-pointer overflow-hidden rounded-md transition-all duration-300 hover:scale-[1.02] aspect-square bg-black/20"
-                            onClick={showMoreItems}
+              <AnimatePresence>
+                <motion.div
+                    key={filter}
+                    ref={gridRef}
+                    className="grid gap-4"
+                    style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))' }}
+                    variants={containerVariants}
+                    initial="hidden"
+                    animate="visible"
+                  >
+                    {isLoading ? (
+                      <div className="col-span-full h-full min-h-[50vh] flex items-center justify-center">
+                        <Preloader />
+                      </div>
+                    ) : (
+                      <>
+                        {itemsToShow.map(item => (
+                          <motion.div key={item.id} variants={itemVariants}>
+                            <PortfolioGridItem 
+                              item={item}
+                              onClick={() => handleItemClick(item)}
+                              onEditClick={() => handleEditItem(item)}
+                              isAdmin={!!user}
+                            />
+                          </motion.div>
+                        ))}
+                        {showMoreButtonNeeded && (
+                          <motion.div
+                            variants={itemVariants}
+                            className="p-[2px] rounded-lg glass-effect"
                           >
-                            <div className="w-full h-full rounded-md flex flex-col items-center justify-center text-center p-4 transition-colors duration-300 group-hover:bg-black/40">
-                              <FontAwesomeIcon icon={faArrowDown} className="h-10 w-10 text-white/70 mb-4 transition-transform duration-300 group-hover:translate-y-1" />
-                              <h3 className="font-bold text-white text-lg">Show More</h3>
-                              <p className="text-white/60 text-sm">
-                                {filteredItems.length - itemsToShow.length} more projects
-                              </p>
+                            <div
+                              className="group relative cursor-pointer overflow-hidden rounded-md transition-all duration-300 hover:scale-[1.02] aspect-square bg-black/20"
+                              onClick={showMoreItems}
+                            >
+                              <div className="w-full h-full rounded-md flex flex-col items-center justify-center text-center p-4 transition-colors duration-300 group-hover:bg-black/40">
+                                <FontAwesomeIcon icon={faArrowDown} className="h-10 w-10 text-white/70 mb-4 transition-transform duration-300 group-hover:translate-y-1" />
+                                <h3 className="font-bold text-white text-lg">Show More</h3>
+                                <p className="text-white/60 text-sm">
+                                  {filteredItems.length - itemsToShow.length} more projects
+                                </p>
+                              </div>
                             </div>
-                          </div>
-                        </motion.div>
-                      )}
-                    </>
-                  )}
-                </motion.div>
+                          </motion.div>
+                        )}
+                      </>
+                    )}
+                  </motion.div>
+                </AnimatePresence>
             </div>
           </div>
         </ScrollArea>
