@@ -6,6 +6,57 @@ import { cn } from '@/lib/utils';
 import 'shaka-player/dist/controls.css';
 import Preloader from './preloader';
 
+// Custom Download Button for Shaka Player
+class DownloadButton extends (window.shaka?.ui?.Element || class {}) {
+  private button_: HTMLButtonElement;
+
+  constructor(parent: HTMLElement, controls: shaka.ui.Controls) {
+    super(parent, controls);
+
+    this.button_ = document.createElement('button');
+    this.button_.className = 'shaka-download-button shaka-control-button';
+    this.button_.innerHTML = '<i class="material-icons">download</i>'; // Using Material Icons font
+    this.button_.setAttribute('aria-label', 'Download');
+    this.parent.appendChild(this.button_);
+
+    this.eventManager.listen(this.button_, 'click', () => {
+      this.onDownloadClick_();
+    });
+  }
+
+  private onDownloadClick_() {
+    const assetUri = this.player.getAssetUri();
+    if (assetUri) {
+      const link = document.createElement('a');
+      link.href = assetUri;
+      
+      // Try to get a nice filename
+      try {
+        const url = new URL(assetUri);
+        link.download = url.pathname.split('/').pop() || 'video';
+      } catch (e) {
+        link.download = 'video';
+      }
+      
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  }
+
+  // This is required by the shaka.extern.IUIElement interface.
+  release() {
+    super.release();
+  }
+}
+
+DownloadButton.Factory = class {
+  create(rootElement: HTMLElement, controls: shaka.ui.Controls) {
+    return new DownloadButton(rootElement, controls);
+  }
+};
+
+
 interface VideoPlayerProps {
   src?: string;
   poster?: string;
@@ -45,6 +96,11 @@ const VideoPlayer = ({
             return;
         }
 
+        // Register the custom button if it's not already registered
+        if (!shaka.ui.Controls.getFactories()['download']) {
+          shaka.ui.Controls.registerElement('download', new DownloadButton.Factory());
+        }
+
         player = new shaka.Player(videoRef.current);
 
         // Add buffering event listeners
@@ -59,6 +115,7 @@ const VideoPlayer = ({
         if (controls) {
             ui = new shaka.ui.Overlay(player, containerRef.current, videoRef.current);
             const uiConfig: shaka.extern.UIConfiguration = {
+                showUnbufferedStart: false,
                 seekBarColors: {
                     base: 'rgba(255, 255, 255, 0.2)',
                     buffered: 'rgba(255, 255, 255, 0.4)',
@@ -74,6 +131,7 @@ const VideoPlayer = ({
                     'spacer',
                     'volume',
                     'fullscreen',
+                    'download', // Add the download button here
                     'overflow_menu',
                 ],
                 overflowMenuButtons: ['quality', 'picture_in_picture', 'loop', 'captions', 'playback_rate'],
