@@ -84,16 +84,20 @@ export default function ContactPage() {
 
 
   return (
-    <div className="w-full h-full">
-      <ScrollArea className="w-full h-full">
-        <div className="container mx-auto px-0 p-8 flex flex-col justify-center min-h-full">
-            <div className="mb-8 text-center flex-shrink-0">
-              <h1 className="text-3xl md:text-4xl font-headline tracking-tight">Contact Us</h1>
-              <p className="mt-2 max-w-2xl mx-auto text-base md:text-lg text-foreground/70">
-                Let&apos;s get in touch! Fill out the form below to send me a message.
-              </p>
-            </div>
-          <Separator className="bg-white/10 my-8 flex-shrink-0" />
+    <div className="w-full h-full flex flex-col">
+       <div className="p-8 pb-0">
+          <div className="container mx-auto px-0">
+              <div className="mb-8 text-center flex-shrink-0">
+                <h1 className="text-3xl md:text-4xl font-headline tracking-tight">Contact Us</h1>
+                <p className="mt-2 max-w-2xl mx-auto text-base md:text-lg text-foreground/70">
+                  Let&apos;s get in touch! Fill out the form below to send me a message.
+                </p>
+              </div>
+            <Separator className="bg-white/10 my-8 flex-shrink-0" />
+          </div>
+       </div>
+      <ScrollArea className="flex-1 min-h-0">
+        <div className="container mx-auto px-0 p-8 pt-0">
               {isLoading ? (
                 <div className="flex justify-center items-center h-64">
                   <Preloader />
