@@ -84,28 +84,22 @@ export default function ContactPage() {
 
 
   return (
-    <div className="h-full w-full flex flex-col">
-      <div className="p-8">
-        <div className="container mx-auto px-0">
+    <div className="h-screen w-full flex flex-col items-center justify-center p-8">
+      <div className="container mx-auto px-0">
           <div className="mb-8 text-center">
             <h1 className="text-3xl md:text-4xl font-headline tracking-tight">Contact Us</h1>
             <p className="mt-2 max-w-2xl mx-auto text-base md:text-lg text-foreground/70">
               Let&apos;s get in touch! Fill out the form below to send me a message.
             </p>
           </div>
-        </div>
-      </div>
-      <Separator className="bg-white/10" />
-      <ScrollArea className="flex-1">
-        <div className="p-8">
-          <div className="container mx-auto px-0">
+        <Separator className="bg-white/10 my-8" />
             {isLoading ? (
               <div className="flex justify-center items-center h-64">
                 <Preloader />
               </div>
             ) : contactInfo ? (
               <motion.div
-                className="flex flex-col md:flex-row gap-4 items-center justify-center text-center"
+                className="flex flex-col md:flex-row gap-8 items-center justify-center text-center"
                 variants={containerVariants}
                 initial="hidden"
                 animate="visible"
@@ -195,9 +189,7 @@ export default function ContactPage() {
                 ))}
               </motion.div>
             )}
-          </div>
-        </div>
-      </ScrollArea>
+      </div>
     </div>
   );
 }
