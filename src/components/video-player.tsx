@@ -61,7 +61,18 @@ const VideoPlayer = ({
           volumeBarColors: {
             base: 'rgba(255, 255, 255, 0.2)',
             level: 'hsl(var(--primary))',
-          }
+          },
+          // Add overflow menu to main controls
+          controlPanelElements: [
+            'play_pause',
+            'time_and_duration',
+            'spacer',
+            'volume',
+            'fullscreen',
+            'overflow_menu',
+          ],
+          // Add quality and PiP buttons to the overflow menu
+          overflowMenuButtons: ['quality', 'picture_in_picture', 'loop', 'captions', 'playback_rate'],
         };
         ui.configure(uiConfig);
       }
