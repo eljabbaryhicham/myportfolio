@@ -48,7 +48,7 @@ export function AppNav() {
         href={item.href}
         className={cn(
           "group relative flex items-center justify-center rounded-full transition-all duration-300 hover:scale-110 aspect-square",
-          "h-10 w-10 md:h-10 md:w-10",
+          "h-8 w-8 sm:h-10 sm:w-10",
           "text-white", 
           isActive
             ? isAdminButton
