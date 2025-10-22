@@ -111,6 +111,13 @@ export default function ContactPage() {
                   animate="visible"
                 >
                   <motion.div className="w-full md:w-1/2 flex justify-center" variants={itemVariants}>
+                    <Card className="glass-effect p-6 sm:p-8 h-full flex flex-col justify-center w-full max-w-md">
+                      <CardContent className="p-0 flex flex-col items-center">
+                          <ContactForm />
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                  <motion.div className="w-full md:w-1/2 flex justify-center" variants={itemVariants}>
                     <Card className="glass-effect p-6 flex flex-col h-full w-full max-w-md">
                       <CardContent className="flex flex-col items-center text-center p-0">
                         <Avatar className="border-2 border-white mb-4" style={{ width: '80px', height: '80px' }}>
@@ -154,13 +161,6 @@ export default function ContactPage() {
                             </Button>
                           </>
                         )}
-                      </CardContent>
-                    </Card>
-                  </motion.div>
-                  <motion.div className="w-full md:w-1/2 flex justify-center" variants={itemVariants}>
-                    <Card className="glass-effect p-6 sm:p-8 h-full flex flex-col justify-center w-full max-w-md">
-                      <CardContent className="p-0 flex flex-col items-center">
-                          <ContactForm />
                       </CardContent>
                     </Card>
                   </motion.div>
