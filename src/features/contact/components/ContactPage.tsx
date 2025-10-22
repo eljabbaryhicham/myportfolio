@@ -84,8 +84,8 @@ export default function ContactPage() {
 
 
   return (
-    <div className="h-screen w-full flex flex-col items-center justify-center p-8">
-      <div className="container mx-auto px-0">
+    <div className="h-full w-full flex flex-col items-center justify-center">
+      <div className="container mx-auto px-0 p-8">
           <div className="mb-8 text-center">
             <h1 className="text-3xl md:text-4xl font-headline tracking-tight">Contact Us</h1>
             <p className="mt-2 max-w-2xl mx-auto text-base md:text-lg text-foreground/70">
