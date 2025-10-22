@@ -33,6 +33,7 @@ import { motion, AnimatePresence, PanInfo } from 'framer-motion';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import ContactForm from '@/features/contact/components/ContactForm';
 import type { AppUser } from '@/firebase/auth/use-user';
+import SmoothVideo from '@/components/video-player';
 
 
 const MemoizedImage = memo(Image);
@@ -55,13 +56,12 @@ const PortfolioMedia = ({
   if (item.type === 'video' && item.sourceUrl) {
     return (
       <div className="relative aspect-video bg-black flex items-center justify-center w-full">
-         <video 
+         <SmoothVideo
             key={item.id} 
             src={item.sourceUrl} 
             poster={item.thumbnailUrl} 
             controls
-            autoPlay 
-            className="w-full h-full object-contain"
+            autoPlay
           />
       </div>
     );
@@ -707,7 +707,7 @@ export default function WorkPage() {
                               if (!isClient || !props.src) return null;
                               return (
                                 <div className="w-full rounded-lg overflow-hidden my-4">
-                                  <video key={props.src} {...props} className="w-full h-full" />
+                                  <SmoothVideo key={props.src} {...props} className="w-full h-full" controls />
                                 </div>
                               );
                             }

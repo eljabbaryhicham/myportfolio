@@ -1,55 +1,62 @@
-
 'use client';
 
 import React, { useEffect, useRef } from 'react';
 import { cn } from '@/lib/utils';
-import Preloader from './preloader';
 
-interface VideoPlayerProps {
-  src?: string;
-  poster?: string;
-  className?: string;
-  autoPlay?: boolean;
-  muted?: boolean;
-  loop?: boolean;
-  showControls?: boolean;
+interface SmoothVideoProps {
+    src?: string;
+    poster?: string;
+    className?: string;
+    autoPlay?: boolean;
+    muted?: boolean;
+    loop?: boolean;
+    controls?: boolean;
+    playsInline?: boolean;
 }
 
-const VideoPlayer = ({
-  src,
-  poster,
-  className,
-  autoPlay = false,
-  muted = false,
-  loop = false,
-  showControls = true,
-}: VideoPlayerProps) => {
-  const videoRef = useRef<HTMLVideoElement>(null);
+const SmoothVideo = React.memo(({
+    src,
+    poster,
+    className,
+    autoPlay = false,
+    muted = false,
+    loop = false,
+    controls = false,
+    playsInline = true,
+}: SmoothVideoProps) => {
+    const videoRef = useRef<HTMLVideoElement>(null);
 
+    useEffect(() => {
+        const video = videoRef.current;
+        if (video && autoPlay) {
+            video.play().catch(() => {
+                // Autoplay was prevented. This is a common browser policy.
+            });
+        }
+    }, [autoPlay, src]); // Re-run if src changes
 
-  if (!src) {
     return (
-      <div className="w-full h-full flex items-center justify-center bg-black">
-        <Preloader />
-      </div>
+        <video
+            ref={videoRef}
+            src={src}
+            poster={poster}
+            muted={muted}
+            autoPlay={autoPlay}
+            playsInline={playsInline}
+            loop={loop}
+            controls={controls}
+            preload="metadata"
+            className={cn('w-full h-full object-contain', className)}
+            style={{
+                transform: "translateZ(0)",
+                willChange: "transform",
+                backfaceVisibility: "hidden",
+                display: "block",
+            }}
+        />
     );
-  }
+});
 
-  return (
-    <div className={cn("relative w-full h-full bg-black overflow-hidden", className)}>
-      <video
-        ref={videoRef}
-        src={src}
-        poster={poster}
-        className="w-full h-full object-contain"
-        playsInline
-        autoPlay={autoPlay}
-        muted={muted}
-        loop={loop}
-        controls={showControls}
-      />
-    </div>
-  );
-};
+SmoothVideo.displayName = 'SmoothVideo';
 
-export default VideoPlayer;
+export default SmoothVideo;
