@@ -54,10 +54,10 @@ function SiteBackground() {
                     autoPlay
                     loop
                     muted
-                    className={cn("w-full h-full object-cover", isHomePage && "blur-md")}
+                    className={cn("w-full h-full object-cover", isHomePage && "blur-lg")}
                 />
             </div>
-            <div className={cn("absolute inset-0", isHomePage ? "bg-black/80" : "bg-black/70")}></div>
+            <div className={cn("absolute inset-0", isHomePage ? "bg-black/60" : "bg-black/70")}></div>
         </div>
     );
 }
