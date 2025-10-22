@@ -115,7 +115,7 @@ export default function AboutPage() {
 
   return (
     <div className="h-full w-full flex flex-col">
-      <div className="p-[5%] pb-4 flex-shrink-0">
+      <div className="p-8 flex-shrink-0">
         <div className="container mx-auto px-0">
             <div className="mb-8 text-center">
               <h1 className="text-3xl md:text-4xl font-headline tracking-tight">About Us</h1>
@@ -127,7 +127,7 @@ export default function AboutPage() {
       </div>
       <Separator className="bg-white/10 flex-shrink-0" />
       <ScrollArea className="flex-1 min-h-0">
-        <div className="p-8 flex items-center justify-center min-h-[calc(100vh-200px)] md:min-h-full md:h-full">
+        <div className="p-8 flex items-center justify-center min-h-[calc(100vh-230px)] md:h-full">
           <div className="container mx-auto px-0 text-center">
             {isLoading ? (
               <div className="flex justify-center items-center h-full min-h-[50vh]">
@@ -175,7 +175,7 @@ export default function AboutPage() {
                                     key={service.title}
                                     className={cn(
                                       "glass-effect p-4 rounded-lg flex flex-col items-center justify-center text-center",
-                                      isProminent && "col-span-2 md:col-span-3"
+                                      isProminent && "col-span-2"
                                     )}
                                 >
                                     <service.icon className="w-8 h-8 md:w-10 md:h-10 text-primary mb-3" />
