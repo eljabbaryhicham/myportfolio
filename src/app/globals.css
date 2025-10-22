@@ -158,11 +158,6 @@
   .shaka-current-time, .shaka-time-and-duration {
     @apply text-white text-sm;
   }
-
-  /* Hide default shaka spinner */
-  .shaka-spinner {
-    display: none !important;
-  }
 }
 
 @layer utilities {
