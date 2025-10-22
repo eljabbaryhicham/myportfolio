@@ -32,15 +32,12 @@ import {
   DialogClose,
 } from '@/components/ui/dialog';
 import type { PortfolioItem } from '@/features/portfolio/data/portfolio-data';
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faXmark, faImages, faUpload, faSpinner } from '@fortawesome/free-solid-svg-icons';
+import { faXmark, faImages } from '@fortawesome/free-solid-svg-icons';
 import { useToast } from '@/hooks/use-toast';
-import { addDocumentNonBlocking, useFirestore } from '@/firebase';
-import { collection } from 'firebase/firestore';
-import { Progress } from '@/components/ui/progress';
 import { Switch } from '@/components/ui/switch';
 
 
@@ -74,13 +71,6 @@ interface PortfolioItemFormProps {
 
 export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onChooseFromLibrary, canEdit}: PortfolioItemFormProps) {
     const { toast } = useToast();
-    const firestore = useFirestore();
-
-    const [uploadingField, setUploadingField] = useState<null | 'thumbnail' | 'source'>(null);
-    const [uploadProgress, setUploadProgress] = useState(0);
-
-    const thumbnailUploadRef = useRef<HTMLInputElement>(null);
-    const sourceUploadRef = useRef<HTMLInputElement>(null);
 
     const form = useForm<PortfolioItemFormValues>({
       resolver: zodResolver(formSchema),
@@ -164,87 +154,7 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onCho
             }
         });
     };
-
-    const handleUpload = useCallback(async (file: File, field: 'thumbnail' | 'source') => {
-      const cloudName = 'da1srnoer';
-      const uploadPreset = 'belofted';
-      
-      setUploadingField(field);
-      setUploadProgress(0);
-
-      const formData = new FormData();
-      formData.append('file', file);
-      formData.append('upload_preset', uploadPreset);
-
-      const xhr = new XMLHttpRequest();
-      xhr.open('POST', `https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`, true);
-
-      xhr.upload.onprogress = (event) => {
-        if (event.lengthComputable) {
-          const progress = Math.round((event.loaded / event.total) * 100);
-          setUploadProgress(progress);
-        }
-      };
-
-      xhr.onload = async () => {
-        setUploadingField(null);
-        if (xhr.status === 200) {
-            const data = JSON.parse(xhr.responseText);
-
-            if (firestore) {
-                addDocumentNonBlocking(collection(firestore, 'media'), {
-                    public_id: data.public_id,
-                    url: data.secure_url, // Save the original URL
-                    resource_type: data.resource_type,
-                    created_at: data.created_at,
-                    filename: file.name,
-                });
-            }
-            
-            toast({ title: 'Upload successful', description: `${file.name} has been uploaded.` });
-            
-            const resourceType = data.resource_type === 'video' ? 'video' : 'image';
-
-            if(field === 'thumbnail') {
-              if (resourceType !== 'image') {
-                toast({ variant: 'destructive', title: 'Invalid Thumbnail', description: 'Thumbnails must be an image file.'});
-              } else {
-                form.setValue('thumbnailUrl', data.secure_url, { shouldValidate: true });
-              }
-            } else if (field === 'source') {
-              form.setValue('sourceUrl', data.secure_url, { shouldValidate: true });
-              form.setValue('type', resourceType, { shouldValidate: true });
-              
-              if (!item?.id) {
-                const title = file.name.split('.').slice(0, -1).join('.');
-                form.setValue('title', title, { shouldValidate: true });
-              }
-            }
-        } else {
-             const errorData = JSON.parse(xhr.responseText);
-             toast({ variant: 'destructive', title: `Upload Failed for ${file.name}`, description: errorData.error.message || 'An unknown error occurred.' });
-        }
-      };
-      
-      xhr.onerror = () => {
-          setUploadingField(null);
-          toast({ variant: 'destructive', title: `Upload Failed for ${file.name}`, description: 'A network error occurred.' });
-      }
-
-      xhr.send(formData);
-
-    }, [toast, firestore, form, item]);
-
-    const onFileSelect = (e: React.ChangeEvent<HTMLInputElement>, field: 'thumbnail' | 'source') => {
-        const file = e.target.files?.[0];
-        if (file) {
-            handleUpload(file, field);
-        }
-        e.target.value = '';
-    };
     
-    const isUploading = !!uploadingField;
-
     return (
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
             <DialogContent className="w-[80vw] max-w-[80vw] h-[90vh] flex flex-col glass-effect p-0 rounded-lg">
@@ -259,7 +169,7 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onCho
                   <div className="p-6">
                     <Form {...form}>
                       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8">
-                        <fieldset disabled={!canEdit || isUploading} className="group space-y-8">
+                        <fieldset disabled={!canEdit} className="group space-y-8">
                           <FormField
                           control={form.control}
                           name="title"
@@ -337,28 +247,11 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onCho
                                   <FormControl>
                                       <Input placeholder="https://example.com/thumbnail.jpg" {...field} />
                                   </FormControl>
-                                  <input 
-                                      type="file" 
-                                      ref={thumbnailUploadRef} 
-                                      className="hidden" 
-                                      onChange={(e) => onFileSelect(e, 'thumbnail')}
-                                      accept="image/*"
-                                  />
-                                  <Button type="button" variant="outline" size="sm" onClick={() => thumbnailUploadRef.current?.click()} disabled={uploadingField === 'thumbnail'}>
-                                      <FontAwesomeIcon icon={uploadingField === 'thumbnail' ? faSpinner : faUpload} className={cn(uploadingField === 'thumbnail' && 'animate-spin')}/>
-                                      <span className="ml-2 hidden sm:inline">Upload</span>
-                                  </Button>
                                   <Button type="button" variant="outline" size="sm" onClick={handleChooseThumbnail}>
                                       <FontAwesomeIcon icon={faImages} />
                                       <span className="ml-2 hidden sm:inline">Library</span>
                                   </Button>
                                 </div>
-                                {uploadingField === 'thumbnail' && (
-                                    <div className="mt-2">
-                                        <Progress value={uploadProgress} />
-                                        <p className="text-xs text-center mt-1 text-muted-foreground">{uploadProgress}%</p>
-                                    </div>
-                                )}
                                 <FormMessage />
                               </FormItem>
                           )}
@@ -389,28 +282,11 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onCho
                                   <FormControl>
                                       <Input placeholder="https://example.com/full-image.jpg" {...field} />
                                   </FormControl>
-                                  <input 
-                                      type="file" 
-                                      ref={sourceUploadRef} 
-                                      className="hidden" 
-                                      onChange={(e) => onFileSelect(e, 'source')}
-                                      accept="image/*,video/*"
-                                  />
-                                  <Button type="button" variant="outline" size="sm" onClick={() => sourceUploadRef.current?.click()} disabled={uploadingField === 'source'}>
-                                      <FontAwesomeIcon icon={uploadingField === 'source' ? faSpinner : faUpload} className={cn(uploadingField === 'source' && 'animate-spin')}/>
-                                      <span className="ml-2 hidden sm:inline">Upload</span>
-                                  </Button>
                                    <Button type="button" variant="outline" size="sm" onClick={handleChooseSource}>
                                     <FontAwesomeIcon icon={faImages} />
                                     <span className="ml-2 hidden sm:inline">Library</span>
                                   </Button>
                                 </div>
-                                {uploadingField === 'source' && (
-                                    <div className="mt-2">
-                                        <Progress value={uploadProgress} />
-                                        <p className="text-xs text-center mt-1 text-muted-foreground">{uploadProgress}%</p>
-                                    </div>
-                                )}
                                 <FormMessage />
                               </FormItem>
                           )}

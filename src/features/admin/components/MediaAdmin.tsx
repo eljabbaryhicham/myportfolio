@@ -254,11 +254,17 @@ export default function MediaAdmin(props: MediaAdminProps) {
       xhr.onload = async () => {
         if (xhr.status === 200) {
           const response = JSON.parse(xhr.responseText);
+
+          // Manually construct the optimized URL
+          const optimizedUrl = response.secure_url.replace(
+            `/upload/`,
+            `/upload/f_auto,q_auto/`
+          );
           
           if(firestore) {
               const docRefPromise = addDocumentNonBlocking(collection(firestore, 'media'), {
                   public_id: response.public_id,
-                  url: response.secure_url,
+                  url: optimizedUrl, // Save the OPTIMIZED URL
                   resource_type: response.resource_type,
                   created_at: response.created_at,
                   filename: file.name,
@@ -269,12 +275,11 @@ export default function MediaAdmin(props: MediaAdminProps) {
               if (docRef && !props.isDialog && props.onUploadComplete) {
                   props.onUploadComplete(docRef.id, response.resource_type);
               }
-
           }
 
           toast({
             title: 'Upload successful',
-            description: `${file.name} has been uploaded.`,
+            description: `${file.name} has been uploaded and optimized.`,
           });
         } else {
           const error = JSON.parse(xhr.responseText).error;
