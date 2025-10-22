@@ -1,9 +1,8 @@
 'use client';
 
 import React, { useRef, useEffect } from 'react';
-import shaka from 'shaka-player/dist/shaka-player.ui';
-import 'shaka-player/dist/controls.css';
 import { cn } from '@/lib/utils';
+import 'shaka-player/dist/controls.css';
 
 interface VideoPlayerProps {
   src?: string;
@@ -30,36 +29,47 @@ const VideoPlayer = ({
   useEffect(() => {
     if (!videoRef.current || !containerRef.current || !src) return;
 
-    shaka.polyfill.installAll();
-    if (!shaka.Player.isBrowserSupported()) {
-      console.error('Browser not supported!');
-      return;
-    }
+    // Dynamically import shaka-player only on the client side
+    import('shaka-player/dist/shaka-player.ui').then(shaka => {
+      if (!videoRef.current || !containerRef.current) return;
 
-    const player = new shaka.Player(videoRef.current);
-    let ui: shaka.ui.Overlay | null = null;
-
-    if (controls) {
-      ui = new shaka.ui.Overlay(player, containerRef.current, videoRef.current);
-      // You can customize the UI configuration here if needed
-      // const uiConfig = {};
-      // ui.configure(uiConfig);
-    }
-
-    const onError = (error: any) => {
-        console.error('Error code', error.code, 'object', error);
-    }
-    
-    player.addEventListener('error', onError);
-
-    player.load(src).catch(onError);
-
-    return () => {
-      if (ui) {
-        ui.destroy();
+      shaka.polyfill.installAll();
+      if (!shaka.Player.isBrowserSupported()) {
+        console.error('Browser not supported!');
+        return;
       }
-      player.destroy();
-    };
+
+      const player = new shaka.Player(videoRef.current);
+      let ui: shaka.ui.Overlay | null = null;
+
+      if (controls) {
+        ui = new shaka.ui.Overlay(player, containerRef.current, videoRef.current);
+      }
+
+      const onError = (error: any) => {
+          console.error('Error code', error.code, 'object', error);
+      }
+      
+      player.addEventListener('error', onError);
+
+      // Configure the player to not use DRM.
+      player.configure({
+        drm: {
+          servers: {},
+          clearKeys: {}
+        }
+      });
+
+      player.load(src).catch(onError);
+
+      return () => {
+        if (ui) {
+          ui.destroy();
+        }
+        player.destroy();
+      };
+    });
+
   }, [src, controls]);
 
   return (
