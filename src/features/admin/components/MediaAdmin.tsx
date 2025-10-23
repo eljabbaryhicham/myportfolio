@@ -11,7 +11,7 @@ import Image from 'next/image';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCloudUploadAlt, faCopy, faTrash, faFilm, faFileImage, faImages, faXmark, faPlus, faEye, faFolderOpen, faLink, faUniversity } from '@fortawesome/free-solid-svg-icons';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose, DialogDescription } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
 import Preloader from '@/components/preloader';
 import { useCollection, useFirestore, useMemoFirebase, addDocumentNonBlocking, deleteDocumentNonBlocking, useUser } from '@/firebase';
@@ -232,12 +232,12 @@ export default function MediaAdmin(props: MediaAdminProps) {
     const suffix = libraryId === 'primary' ? '_1' : '_2';
     const cloudName = process.env[`NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME${suffix}`];
     const uploadPreset = process.env[`NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET${suffix}`];
-    
-    if (!cloudName || !uploadPreset) {
+
+    if (!cloudName || !uploadPreset || uploadPreset.includes("your_unsigned_preset")) {
       toast({
         variant: 'destructive',
         title: 'Configuration Error',
-        description: `Cloudinary settings for ${libraryId === 'primary' ? 'Library Primary' : 'Library Extented'} are not set in environment variables.`,
+        description: `Cloudinary settings for ${libraryId === 'primary' ? 'Library Primary' : 'Library Extented'} are not set. Please add them to your .env file.`,
         duration: 10000,
       });
       setFilesToUpload([]);
@@ -580,6 +580,9 @@ export default function MediaAdmin(props: MediaAdminProps) {
                 <Button onClick={() => handleLibraryChoiceAndUpload('primary')} size="lg" className="w-40"><FontAwesomeIcon icon={faUniversity} className="mr-2"/> Library Primary</Button>
                 <Button onClick={() => handleLibraryChoiceAndUpload('extented')} size="lg" className="w-40"><FontAwesomeIcon icon={faUniversity} className="mr-2"/> Library Extented</Button>
             </div>
+             <DialogFooter>
+                <Button variant="outline" onClick={() => setIsChoosingLibrary(false)}>Cancel</Button>
+            </DialogFooter>
         </DialogContent>
       </Dialog>
     </>
