@@ -51,9 +51,9 @@ export default function CdnClapprPlayer({ source, poster, chromeless = false, au
         parentId: `#${playerRef.current.id}`,
         width: '100%',
         height: '100%',
-        autoPlay: autoPlay || chromeless,
-        mute: autoPlay || chromeless,
-        loop: chromeless,
+        autoPlay: autoPlay,
+        mute: autoPlay,
+        loop: chromeless, // loop is the only thing we want chromeless to control
         plugins: plugins,
         shakaConfiguration: {
           streaming: {
