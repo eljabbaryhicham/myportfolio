@@ -10,7 +10,7 @@ import { useDoc, useFirestore, useMemoFirebase } from '@/firebase';
 import { doc } from 'firebase/firestore';
 import type { PortfolioItem } from '@/features/portfolio/data/portfolio-data';
 import { usePathname } from 'next/navigation';
-import Image from 'next/image';
+import ClapperPlayer from '@/components/ClapperPlayer';
 
 
 interface HomePageSettings {
@@ -41,20 +41,22 @@ function SiteBackground() {
     );
     const { data: siteVideo } = useDoc<PortfolioItem>(siteVideoRef);
 
-    const imageSrc = isHomePage 
-      ? (homeVideo?.thumbnailUrl || "https://res.cloudinary.com/da1srnoer/image/upload/f_auto,q_auto/v1/wbmz1rkepnqeotpcx9tp")
-      : (siteVideo?.thumbnailUrl || "https://res.cloudinary.com/da1srnoer/image/upload/f_auto,q_auto/v1/wbmz1rkepnqeotpcx9tp");
+    const videoSource = isHomePage 
+      ? (homeVideo?.sourceUrl || "https://res.cloudinary.com/da1srnoer/video/upload/f_auto:video,q_auto/v1/wbmz1rkepnqeotpcx9tp")
+      : (siteVideo?.sourceUrl || "https://res.cloudinary.com/da1srnoer/video/upload/f_auto:video,q_auto/v1/wbmz1rkepnqeotpcx9tp");
+      
+    const posterSource = isHomePage
+      ? homeVideo?.thumbnailUrl
+      : siteVideo?.thumbnailUrl;
 
     return (
         <div className="absolute inset-0 -z-10 w-full h-full">
             <div className="w-full h-full bg-black">
-                {imageSrc && (
-                    <Image
-                        src={imageSrc}
-                        alt="Background"
-                        fill
-                        className="object-cover"
-                        priority
+                {videoSource && (
+                   <ClapperPlayer
+                        source={videoSource}
+                        poster={posterSource}
+                        chromeless={true}
                     />
                 )}
             </div>

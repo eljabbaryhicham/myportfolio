@@ -33,6 +33,7 @@ import { motion, AnimatePresence, PanInfo } from 'framer-motion';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import ContactForm from '@/features/contact/components/ContactForm';
 import type { AppUser } from '@/firebase/auth/use-user';
+import ClapperPlayer from '@/components/ClapperPlayer';
 
 
 const MemoizedImage = memo(Image);
@@ -57,16 +58,9 @@ const PortfolioMedia = ({
   if (item.type === 'video') {
     return (
       <div className="relative aspect-video bg-black flex items-center justify-center w-full group">
-        <MemoizedImage
-          src={item.thumbnailUrl}
-          alt={item.title}
-          fill
-          className="object-contain"
-          onLoad={onMediaLoaded}
-        />
-        <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
-            <FontAwesomeIcon icon={faFilm} className="h-16 w-16 text-white/70" />
-        </div>
+        {mediaUrl && (
+          <ClapperPlayer source={mediaUrl} poster={item.thumbnailUrl} />
+        )}
       </div>
     );
   }
@@ -705,11 +699,8 @@ export default function WorkPage() {
                             video: ({node, ...props}) => {
                               if (!isClient || !props.src) return null;
                               return (
-                                <div className="w-full my-4 rounded-lg overflow-hidden relative aspect-video bg-black flex items-center justify-center group">
-                                    <Image src={props.poster || ''} alt="Video poster" fill className="object-cover" />
-                                    <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
-                                        <FontAwesomeIcon icon={faFilm} className="h-16 w-16 text-white/70" />
-                                    </div>
+                                <div className="w-full my-4 rounded-lg overflow-hidden aspect-video">
+                                  <ClapperPlayer source={props.src} poster={props.poster} />
                                 </div>
                               );
                             }
