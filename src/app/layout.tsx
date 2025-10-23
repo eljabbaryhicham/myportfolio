@@ -10,8 +10,6 @@ import { useDoc, useFirestore, useMemoFirebase } from '@/firebase';
 import { doc } from 'firebase/firestore';
 import type { PortfolioItem } from '@/features/portfolio/data/portfolio-data';
 import { usePathname } from 'next/navigation';
-import Script from 'next/script';
-
 
 interface HomePageSettings {
     websiteBackgroundVideoId?: string;
@@ -31,25 +29,22 @@ function SiteBackground() {
     );
     const { data: homeSettings } = useDoc<HomePageSettings>(settingsDocRef);
     
-    const homeVideoRef = useMemoFirebase(
-        () => (firestore && homeSettings?.homePageBackgroundVideoId ? doc(firestore, 'projects', homeSettings.homePageBackgroundVideoId) : null),
-        [firestore, homeSettings?.homePageBackgroundVideoId]
+    const backgroundVideoId = isHomePage 
+        ? homeSettings?.homePageBackgroundVideoId 
+        : homeSettings?.websiteBackgroundVideoId;
+        
+    const videoRef = useMemoFirebase(
+        () => (firestore && backgroundVideoId ? doc(firestore, 'projects', backgroundVideoId) : null),
+        [firestore, backgroundVideoId]
     );
-    const { data: homeVideo } = useDoc<PortfolioItem>(homeVideoRef);
-
-    const siteVideoRef = useMemoFirebase(
-        () => (firestore && homeSettings?.websiteBackgroundVideoId ? doc(firestore, 'projects', homeSettings.websiteBackgroundVideoId) : null),
-        [firestore, homeSettings?.websiteBackgroundVideoId]
-    );
-    const { data: siteVideo } = useDoc<PortfolioItem>(siteVideoRef);
+    const { data: backgroundVideo } = useDoc<PortfolioItem>(videoRef);
 
     const isVideoEnabled = isHomePage
       ? homeSettings?.isHomePageVideoEnabled ?? true
       : homeSettings?.isWebsiteVideoEnabled ?? true;
 
-    const currentVideo = isHomePage ? homeVideo : siteVideo;
-    const videoSource = currentVideo?.sourceUrl || "https://res.cloudinary.com/da1srnoer/video/upload/f_auto:video,q_auto/v1/wbmz1rkepnqeotpcx9tp";
-    const posterSource = currentVideo?.useVideoFrameAsPoster ? undefined : currentVideo?.thumbnailUrl;
+    const videoSource = backgroundVideo?.sourceUrl || "https://res.cloudinary.com/da1srnoer/video/upload/f_auto:video,q_auto/v1/wbmz1rkepnqeotpcx9tp";
+    const posterSource = backgroundVideo?.useVideoFrameAsPoster ? undefined : backgroundVideo?.thumbnailUrl;
       
     return (
         <div className="absolute inset-0 -z-10 w-full h-full">
@@ -61,6 +56,7 @@ function SiteBackground() {
                         poster={posterSource}
                         autoPlay
                         loop
+                        muted
                         playsInline
                     >
                         <source src={videoSource} type="video/mp4" />

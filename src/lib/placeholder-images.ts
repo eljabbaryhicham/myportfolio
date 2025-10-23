@@ -1,14 +1,17 @@
-import data from './placeholder-images.json' with { type: 'json' };
-
-export type ImagePlaceholder = {
+export interface PortfolioItem {
   id: string;
+  type: 'image' | 'video';
+  title: string;
   description: string;
-  imageUrl: string;
-  imageHint: string;
-};
+  thumbnailUrl: string;
+  thumbnailHint?: string;
+  sourceUrl?: string; // For images or single-source videos
+  details?: string;
+  order?: number;
+  isVisible?: boolean;
+  useVideoFrameAsPoster?: boolean;
+  [key: string]: any; // Allow other properties
+}
 
-export const placeholderImages: Record<string, ImagePlaceholder> = 
-  data.placeholderImages.reduce((acc, img) => {
-    acc[img.id] = img;
-    return acc;
-  }, {} as Record<string, ImagePlaceholder>);
+
+export const defaultPortfolioItems: PortfolioItem[] = [];

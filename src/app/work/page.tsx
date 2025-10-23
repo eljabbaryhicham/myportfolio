@@ -14,9 +14,6 @@ import { useState, memo, useEffect, useMemo, useRef, useCallback } from 'react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import ReactMarkdown from 'react-markdown';
-import rehypeRaw from 'rehype-raw';
-import rehypeSanitize, { defaultSchema } from 'rehype-sanitize';
 import { useCollection, useFirestore, useMemoFirebase, useUser, setDocumentNonBlocking, addDocumentNonBlocking } from '@/firebase';
 import { collection, query, orderBy, doc } from 'firebase/firestore';
 import type { PortfolioItem } from '@/features/portfolio/data/portfolio-data';
@@ -686,23 +683,7 @@ export default function WorkPage() {
                 </DialogHeader>
                 <ScrollArea className="flex-1">
                     <div className="prose dark:prose-invert max-w-none space-y-4 text-sm text-foreground/80 whitespace-pre-wrap p-4 md:p-6">
-                        <ReactMarkdown
-                          rehypePlugins={[
-                            rehypeRaw,
-                            [rehypeSanitize, {
-                                ...defaultSchema,
-                                tagNames: [...(defaultSchema.tagNames || []), 'video'],
-                                attributes: {
-                                    ...defaultSchema.attributes,
-                                    'video': [...(defaultSchema.attributes?.video || []), 'src', 'controls', 'poster', 'playsinline', 'autoplay', 'muted', 'loop']
-                                }
-                            }]
-                          ]}
-                          components={{
-                            img: ({node, ...props}) => <img className="w-full rounded-lg" {...props} />,
-                            video: () => null,
-                          }}
-                        >{selectedItem.details || ''}</ReactMarkdown>
+                        {selectedItem.details || ''}
                     </div>
                 </ScrollArea>
                  <DialogClose className={cn(

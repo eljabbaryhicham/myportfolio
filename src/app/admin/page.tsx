@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -17,15 +16,13 @@ import { faRightFromBracket } from '@fortawesome/free-solid-svg-icons';
 import { Separator } from '@/components/ui/separator';
 import Preloader from '@/components/preloader';
 import HomeAdmin from '@/features/admin/components/HomeAdmin';
-import { PortfolioItem } from '@/features/portfolio/data/portfolio-data';
+import type { PortfolioItem } from '@/features/portfolio/data/portfolio-data';
 import { PortfolioItemFormSheet } from '@/features/admin/components/PortfolioItemForm';
 import { addDocumentNonBlocking, setDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { collection, doc } from 'firebase/firestore';
 import { useFirestore, useUser } from '@/firebase';
 import AdminManagement from '@/features/admin/components/AdminManagement';
 import AboutAdmin from '@/features/admin/components/AboutAdmin';
-import { cn } from '@/lib/utils';
-import { ScrollArea } from '@/components/ui/scroll-area';
 
 
 function AdminPage() {
@@ -48,7 +45,6 @@ function AdminPage() {
   const typedUser = user as AppUser | null;
   const isSuperAdmin = typedUser?.email === 'eljabbaryhicham@example.com';
   
-  const canEditHome = isSuperAdmin || (typedUser?.permissions?.canEditHome ?? true);
   const canEditProjects = isSuperAdmin || (typedUser?.permissions?.canEditProjects ?? true);
   
   useEffect(() => {

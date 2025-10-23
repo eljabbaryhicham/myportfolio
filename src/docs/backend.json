@@ -19,23 +19,31 @@
           "type": "string",
           "description": "A brief description of the project."
         },
-        "imageUrl": {
+        "type": {
           "type": "string",
-          "description": "URL of the project's image.",
-          "format": "uri"
+          "enum": ["image", "video"]
         },
-        "videoUrl": {
+        "thumbnailUrl": {
           "type": "string",
-          "description": "URL of the project's video (if applicable).",
-          "format": "uri"
+          "format": "uri",
+          "description": "URL of the project's thumbnail image for the grid view."
+        },
+        "sourceUrl": {
+          "type": "string",
+          "format": "uri",
+          "description": "URL of the main media file (full-size image or video)."
+        },
+        "thumbnailHint": {
+            "type": "string",
+            "description": "A 1-2 word hint for AI image generation services."
+        },
+        "details": {
+            "type": "string",
+            "description": "More detailed information about the project, can include Markdown."
         },
         "useVideoFrameAsPoster": {
           "type": "boolean",
           "description": "If true, the player will generate a thumbnail from the video. If false, it will use the thumbnailUrl as a poster."
-        },
-        "isFeatured": {
-          "type": "boolean",
-          "description": "Indicates whether the project is featured on the homepage."
         },
         "order": {
           "type": "number",
@@ -49,7 +57,8 @@
       "required": [
         "id",
         "title",
-        "imageUrl",
+        "thumbnailUrl",
+        "type",
         "order"
       ]
     },
