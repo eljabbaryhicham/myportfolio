@@ -470,6 +470,10 @@ export default function WorkPage() {
     },
   };
   
+  const gridStyle = isMobile 
+    ? { gridTemplateColumns: 'repeat(2, 1fr)' } 
+    : { gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))' };
+
   return (
     <>
       <div className="h-full w-full flex flex-col">
@@ -507,7 +511,7 @@ export default function WorkPage() {
                     key={filter}
                     ref={gridRef}
                     className="grid gap-4"
-                    style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(clamp(150px, 40%, 400px), 1fr))' }}
+                    style={gridStyle}
                     variants={containerVariants}
                     initial="hidden"
                     animate="visible"
