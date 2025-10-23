@@ -232,8 +232,8 @@ export default function MediaAdmin(props: MediaAdminProps) {
     let cloudName, uploadPreset;
 
     if (libraryId === 'primary') {
-        cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME_1 || process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
-        uploadPreset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET_1 || process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
+        cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME_1;
+        uploadPreset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET_1;
     } else { // extented
         cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME_2;
         uploadPreset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET_2;
