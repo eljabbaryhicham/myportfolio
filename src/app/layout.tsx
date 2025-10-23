@@ -6,7 +6,7 @@ import { Toaster } from '@/components/ui/toaster';
 import { cn } from '@/lib/utils';
 import { FirebaseClientProvider } from '@/firebase/client-provider';
 import { LayoutProvider } from '@/components/layout/layout-provider';
-import SmoothVideo from '@/components/video-player';
+import ClapperPlayer from '@/components/ClapperPlayer';
 import { useDoc, useFirestore, useMemoFirebase } from '@/firebase';
 import { doc } from 'firebase/firestore';
 import type { PortfolioItem } from '@/features/portfolio/data/portfolio-data';
@@ -48,13 +48,9 @@ function SiteBackground() {
     return (
         <div className="absolute inset-0 -z-10 w-full h-full">
             <div className="w-full h-full bg-black">
-                <SmoothVideo
-                    key={videoSrc} // Use key to force re-render on src change
-                    src={videoSrc}
-                    autoPlay
-                    loop
-                    muted
-                    className="w-full h-full object-cover"
+                <ClapperPlayer
+                    source={videoSrc}
+                    chromeless
                 />
             </div>
             <div className={cn("absolute inset-0", isHomePage ? "bg-black/60" : "bg-black/70")}></div>

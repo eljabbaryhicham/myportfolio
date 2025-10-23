@@ -20,7 +20,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Separator } from '@/components/ui/separator';
 import AddFromUrlDialog from './AddFromUrlDialog';
 import type { AppUser } from '@/firebase/auth/use-user';
-import SmoothVideo from '@/components/video-player';
+import ClapperPlayer from '@/components/ClapperPlayer';
 
 
 // Type for the media stored in Firestore
@@ -77,7 +77,7 @@ const MediaFileCard = ({
             <Image src={file.url} alt={file.public_id} fill className="object-cover" />
           ) : (
             <div className="w-full h-full bg-black flex items-center justify-center">
-              <SmoothVideo src={file.url} muted loop playsInline className="w-full h-full object-cover" />
+              <ClapperPlayer source={file.url} chromeless />
             </div>
           )}
         </div>
@@ -409,7 +409,7 @@ export default function MediaAdmin(props: MediaAdminProps) {
     if (previewFile.resource_type === 'video') {
       return (
         <div className="w-full h-full flex items-center justify-center">
-            <SmoothVideo src={previewFile.url} controls autoPlay />
+            <ClapperPlayer source={previewFile.url} />
         </div>
       );
     }
