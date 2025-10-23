@@ -229,7 +229,7 @@ export default function WorkPage() {
     if (isMobile) {
         const mobileInitialLoad = 8;
         setItemsPerLoad(mobileInitialLoad);
-        setVisibleItemsCount(prev => prev === null ? mobileInitialLoad : prev);
+        setVisibleItemsCount(prev => prev === null ? mobileInitialLoad - 1 : prev);
         return;
     }
 
@@ -247,7 +247,7 @@ export default function WorkPage() {
         
         const calculatedCount = columnCount * rowCount;
         setItemsPerLoad(calculatedCount);
-        setVisibleItemsCount(prev => prev === null ? calculatedCount : prev);
+        setVisibleItemsCount(prev => prev === null ? calculatedCount - 1 : prev);
     }
   }, [isMobile]);
 
@@ -265,7 +265,7 @@ export default function WorkPage() {
 
   // When filters change, reset the visible count
   useEffect(() => {
-    setVisibleItemsCount(prev => (prev === null ? null : itemsPerLoad));
+    setVisibleItemsCount(prev => (prev === null ? null : itemsPerLoad -1));
   }, [filter, itemsPerLoad]);
 
 
