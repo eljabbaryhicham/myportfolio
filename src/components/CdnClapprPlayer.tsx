@@ -115,6 +115,7 @@ export default function CdnClapprPlayer({ source, poster, autoPlay = true }: Cdn
           // shaka_player.getNetworkingEngine().registerRequestFilter() ...
         },
         events: {
+          onReady: () => setIsLoading(false),
           onPlay: () => setIsLoading(false),
           onError: () => setIsLoading(false),
         }
@@ -131,6 +132,11 @@ export default function CdnClapprPlayer({ source, poster, autoPlay = true }: Cdn
   // Use a static ID or generate one that's consistent across renders
   return (
     <div className="w-full h-full relative bg-black">
+       <style jsx global>{`
+        .spinner[data-spinner], .shaka-spinner {
+          display: none !important;
+        }
+      `}</style>
       {isLoading && (
         <div className="absolute inset-0 z-10 flex items-center justify-center">
             <Preloader />
