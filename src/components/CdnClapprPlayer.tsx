@@ -32,11 +32,6 @@ export default function CdnClapprPlayer({ source, poster, chromeless = false }: 
       return;
     }
     
-    // Ensure HLS plugin is available if needed
-    if (source.includes('.m3u8') && typeof window.HlsJs === 'undefined') {
-        console.warn('HLS plugin is not loaded. HLS playback may not work.');
-    }
-
     // 1. Destroy any existing player instance to prevent duplicates.
     if (playerInstanceRef.current) {
       playerInstanceRef.current.destroy();
@@ -60,9 +55,6 @@ export default function CdnClapprPlayer({ source, poster, chromeless = false }: 
         playback: {
             playInline: true,
             hlsjsConfig: {}, // Basic config for HLS.js
-        },
-        plugins: {
-          playback: [window.HlsJs]
         },
     });
 
