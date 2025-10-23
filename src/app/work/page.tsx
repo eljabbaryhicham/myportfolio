@@ -507,7 +507,7 @@ export default function WorkPage() {
                     key={filter}
                     ref={gridRef}
                     className="grid gap-4"
-                    style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(clamp(40%, 150px, 100%), 1fr))' }}
+                    style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(clamp(150px, 40%, 400px), 1fr))' }}
                     variants={containerVariants}
                     initial="hidden"
                     animate="visible"
