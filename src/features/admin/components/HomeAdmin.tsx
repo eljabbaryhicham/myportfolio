@@ -35,13 +35,15 @@ import { Separator } from '@/components/ui/separator';
 interface HomePageSettings {
     homePageBackgroundVideoId?: string;
     websiteBackgroundVideoId?: string;
-    isVideoBackgroundEnabled?: boolean;
+    isHomePageVideoEnabled?: boolean;
+    isWebsiteVideoEnabled?: boolean;
 }
 
 const settingsSchema = z.object({
   homePageBackgroundVideoId: z.string().optional(),
   websiteBackgroundVideoId: z.string().optional(),
-  isVideoBackgroundEnabled: z.boolean().optional(),
+  isHomePageVideoEnabled: z.boolean().optional(),
+  isWebsiteVideoEnabled: z.boolean().optional(),
 });
 
 type SettingsFormValues = z.infer<typeof settingsSchema>;
@@ -71,7 +73,8 @@ export default function HomeAdmin() {
     defaultValues: {
       homePageBackgroundVideoId: '',
       websiteBackgroundVideoId: '',
-      isVideoBackgroundEnabled: true,
+      isHomePageVideoEnabled: true,
+      isWebsiteVideoEnabled: true,
     },
   });
 
@@ -80,7 +83,8 @@ export default function HomeAdmin() {
       form.reset({
         homePageBackgroundVideoId: homeSettings.homePageBackgroundVideoId || '',
         websiteBackgroundVideoId: homeSettings.websiteBackgroundVideoId || '',
-        isVideoBackgroundEnabled: homeSettings.isVideoBackgroundEnabled ?? true,
+        isHomePageVideoEnabled: homeSettings.isHomePageVideoEnabled ?? true,
+        isWebsiteVideoEnabled: homeSettings.isWebsiteVideoEnabled ?? true,
       });
     }
   }, [homeSettings, form]);
@@ -90,7 +94,8 @@ export default function HomeAdmin() {
     
     setDocumentNonBlocking(settingsDocRef, { 
       ...values,
-      isVideoBackgroundEnabled: values.isVideoBackgroundEnabled ?? true
+      isHomePageVideoEnabled: values.isHomePageVideoEnabled ?? true,
+      isWebsiteVideoEnabled: values.isWebsiteVideoEnabled ?? true,
     }, { merge: true });
     
     toast({
@@ -121,79 +126,101 @@ export default function HomeAdmin() {
             <ScrollArea className="h-full">
                 <div className="p-6">
                     <Form {...form}>
-                        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 max-w-lg mx-auto">
+                        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 max-w-2xl mx-auto">
                             <fieldset disabled={!canEditHome} className="group space-y-8">
-                                <FormField
-                                    control={form.control}
-                                    name="isVideoBackgroundEnabled"
-                                    render={({ field }) => (
-                                        <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4 glass-effect">
-                                            <div className="space-y-0.5">
-                                                <FormLabel className="text-base">
-                                                    Enable Video Background
-                                                </FormLabel>
-                                                <FormDescription>
-                                                    Turn the site-wide video background on or off.
-                                                </FormDescription>
-                                            </div>
-                                            <FormControl>
-                                                <Switch
-                                                    checked={field.value}
-                                                    onCheckedChange={field.onChange}
-                                                />
-                                            </FormControl>
+                                <div className="space-y-4 p-4 rounded-lg border glass-effect">
+                                    <FormField
+                                        control={form.control}
+                                        name="homePageBackgroundVideoId"
+                                        render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Homepage Background Video</FormLabel>
+                                            <Select onValueChange={field.onChange} value={field.value}>
+                                                <FormControl>
+                                                <SelectTrigger>
+                                                    <SelectValue placeholder="Select a video for the homepage" />
+                                                </SelectTrigger>
+                                                </FormControl>
+                                                <SelectContent>
+                                                {videoItems.map((item) => (
+                                                    <SelectItem key={item.id} value={item.id}>
+                                                        {item.title}
+                                                    </SelectItem>
+                                                ))}
+                                                </SelectContent>
+                                            </Select>
+                                            <FormMessage />
                                         </FormItem>
-                                    )}
-                                />
+                                        )}
+                                    />
+                                    <FormField
+                                        control={form.control}
+                                        name="isHomePageVideoEnabled"
+                                        render={({ field }) => (
+                                            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
+                                                <div className="space-y-0.5">
+                                                    <FormLabel>
+                                                        Enable Homepage Video
+                                                    </FormLabel>
+                                                </div>
+                                                <FormControl>
+                                                    <Switch
+                                                        checked={field.value}
+                                                        onCheckedChange={field.onChange}
+                                                    />
+                                                </FormControl>
+                                            </FormItem>
+                                        )}
+                                    />
+                                </div>
+
                                 <Separator />
-                                <FormField
-                                    control={form.control}
-                                    name="homePageBackgroundVideoId"
-                                    render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Homepage Background Video</FormLabel>
-                                        <Select onValueChange={field.onChange} value={field.value}>
-                                            <FormControl>
-                                            <SelectTrigger>
-                                                <SelectValue placeholder="Select a video for the homepage" />
-                                            </SelectTrigger>
-                                            </FormControl>
-                                            <SelectContent>
-                                            {videoItems.map((item) => (
-                                                <SelectItem key={item.id} value={item.id}>
-                                                    {item.title}
-                                                </SelectItem>
-                                            ))}
-                                            </SelectContent>
-                                        </Select>
-                                        <FormMessage />
-                                    </FormItem>
-                                    )}
-                                />
-                                <FormField
-                                    control={form.control}
-                                    name="websiteBackgroundVideoId"
-                                    render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Website Background Video (Other Pages)</FormLabel>
-                                         <Select onValueChange={field.onChange} value={field.value}>
-                                            <FormControl>
-                                            <SelectTrigger>
-                                                <SelectValue placeholder="Select a video for other pages" />
-                                            </SelectTrigger>
-                                            </FormControl>
-                                            <SelectContent>
-                                            {videoItems.map((item) => (
-                                                <SelectItem key={item.id} value={item.id}>
-                                                    {item.title}
-                                                </SelectItem>
-                                            ))}
-                                            </SelectContent>
-                                        </Select>
-                                        <FormMessage />
-                                    </FormItem>
-                                    )}
-                                />
+
+                                <div className="space-y-4 p-4 rounded-lg border glass-effect">
+                                    <FormField
+                                        control={form.control}
+                                        name="websiteBackgroundVideoId"
+                                        render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Website Background Video (Other Pages)</FormLabel>
+                                            <Select onValueChange={field.onChange} value={field.value}>
+                                                <FormControl>
+                                                <SelectTrigger>
+                                                    <SelectValue placeholder="Select a video for other pages" />
+                                                </SelectTrigger>
+                                                </FormControl>
+                                                <SelectContent>
+                                                {videoItems.map((item) => (
+                                                    <SelectItem key={item.id} value={item.id}>
+                                                        {item.title}
+                                                    </SelectItem>
+                                                ))}
+                                                </SelectContent>
+                                            </Select>
+                                            <FormMessage />
+                                        </FormItem>
+                                        )}
+                                    />
+                                    <FormField
+                                        control={form.control}
+                                        name="isWebsiteVideoEnabled"
+                                        render={({ field }) => (
+                                            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
+                                                <div className="space-y-0.5">
+                                                    <FormLabel>
+                                                        Enable Website Video
+                                                    </FormLabel>
+                                                </div>
+                                                <FormControl>
+                                                    <Switch
+                                                        checked={field.value}
+                                                        onCheckedChange={field.onChange}
+                                                    />
+                                                </FormControl>
+                                            </FormItem>
+                                        )}
+                                    />
+                                </div>
                                 <div className="flex justify-end pt-4">
                                     <Button type="submit" disabled={!canEditHome}>Save All Settings</Button>
                                 </div>
@@ -206,3 +233,5 @@ export default function HomeAdmin() {
     </div>
   );
 }
+
+    
