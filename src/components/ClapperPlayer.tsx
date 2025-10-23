@@ -2,7 +2,7 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import { Player } from '@clappr/player';
+// Do not import Player from '@clappr/player' directly at the top level
 
 interface ClapperPlayerProps {
   source: string;
@@ -12,31 +12,50 @@ interface ClapperPlayerProps {
 
 export default function ClapperPlayer({ source, poster, isBackground = false }: ClapperPlayerProps) {
   const playerRef = useRef<HTMLDivElement>(null);
+  const playerInstanceRef = useRef<any>(null); // To hold the player instance
 
   useEffect(() => {
     if (!playerRef.current) return;
 
-    const player = new Player({
-      source: source,
-      poster: poster,
-      parentId: `#${playerRef.current.id}`,
-      width: '100%',
-      height: '100%',
-      autoPlay: isBackground,
-      mute: isBackground,
-      loop: isBackground,
-      chromeless: isBackground, // Removes all player controls
-      playback: {
-        hlsjsConfig: {
-          // HLS.js configuration
+    // Dynamically import the Player class inside useEffect
+    import('@clappr/player').then(({ default: Player }) => {
+      // Ensure we don't create duplicate players
+      if (playerInstanceRef.current) {
+        playerInstanceRef.current.destroy();
+      }
+
+      const player = new Player({
+        source: source,
+        poster: poster,
+        parentId: `#${playerRef.current!.id}`,
+        width: '100%',
+        height: '100%',
+        autoPlay: isBackground,
+        mute: isBackground,
+        loop: isBackground,
+        chromeless: isBackground, // Removes all player controls
+        playback: {
+          hlsjsConfig: {
+            // HLS.js configuration
+          },
         },
-      },
+      });
+      
+      playerInstanceRef.current = player;
     });
 
+    // Cleanup function to destroy the player instance when the component unmounts
     return () => {
-      player.destroy();
+      if (playerInstanceRef.current) {
+        playerInstanceRef.current.destroy();
+        playerInstanceRef.current = null;
+      }
     };
+  // We only want to re-run this effect if the source URL changes.
   }, [source, poster, isBackground]);
 
-  return <div id={`player-${Math.random().toString(36).substring(7)}`} ref={playerRef} className="w-full h-full"></div>;
+  // Generate a unique ID for each player instance to avoid conflicts
+  const playerId = useRef(`player-${Math.random().toString(36).substring(7)}`).current;
+
+  return <div id={playerId} ref={playerRef} className="w-full h-full"></div>;
 }
