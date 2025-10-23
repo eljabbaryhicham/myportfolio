@@ -15,11 +15,10 @@ declare global {
 interface CdnClapprPlayerProps {
   source: string;
   poster?: string;
-  chromeless?: boolean;
   autoPlay?: boolean;
 }
 
-export default function CdnClapprPlayer({ source, poster, chromeless = false, autoPlay = true }: CdnClapprPlayerProps) {
+export default function CdnClapprPlayer({ source, poster, autoPlay = true }: CdnClapprPlayerProps) {
   const playerRef = useRef<HTMLDivElement>(null);
   const playerInstanceRef = useRef<any>(null);
 
@@ -52,8 +51,7 @@ export default function CdnClapprPlayer({ source, poster, chromeless = false, au
         width: '100%',
         height: '100%',
         autoPlay: autoPlay,
-        mute: autoPlay,
-        loop: chromeless, // loop is the only thing we want chromeless to control
+        volume: 20, // Set volume to 20%
         plugins: plugins,
         shakaConfiguration: {
           streaming: {
@@ -71,7 +69,7 @@ export default function CdnClapprPlayer({ source, poster, chromeless = false, au
         playerInstanceRef.current.destroy();
       }
     };
-  }, [source, poster, chromeless, autoPlay]); // Re-run the effect if these props change
+  }, [source, poster, autoPlay]); // Re-run the effect if these props change
 
   // Use a static ID or generate one that's consistent across renders
   return <div id="cdn-clappr-player" ref={playerRef} className="w-full h-full" />;

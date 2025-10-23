@@ -10,7 +10,6 @@ import { useDoc, useFirestore, useMemoFirebase } from '@/firebase';
 import { doc } from 'firebase/firestore';
 import type { PortfolioItem } from '@/features/portfolio/data/portfolio-data';
 import { usePathname } from 'next/navigation';
-import CdnClapprPlayer from '@/components/CdnClapprPlayer';
 import Script from 'next/script';
 
 
@@ -61,7 +60,6 @@ function SiteBackground() {
                         className="w-full h-full object-cover"
                         poster={posterSource}
                         autoPlay
-                        muted
                         loop
                         playsInline
                     >
