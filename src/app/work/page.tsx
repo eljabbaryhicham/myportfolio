@@ -1,4 +1,3 @@
-
 'use client';
 
 import Image from 'next/image';
@@ -696,7 +695,7 @@ export default function WorkPage() {
                           ]}
                           components={{
                             img: ({node, ...props}) => <img className="w-full rounded-lg" {...props} />,
-                            video: () => null, // This will prevent any video tags in markdown from rendering
+                            video: () => null,
                           }}
                         >{selectedItem.details || ''}</ReactMarkdown>
                     </div>
