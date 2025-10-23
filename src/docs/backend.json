@@ -121,9 +121,13 @@
           "type": "string",
           "description": "The ID of the project to use for the sitewide background video."
         },
-        "isVideoBackgroundEnabled": {
-            "type": "boolean",
-            "description": "Controls whether the site-wide video background is enabled."
+        "isHomePageVideoEnabled": {
+          "type": "boolean",
+          "description": "Controls whether the homepage video background is enabled."
+        },
+        "isWebsiteVideoEnabled": {
+          "type": "boolean",
+          "description": "Controls whether the video background for other pages is enabled."
         }
       }
     },
@@ -397,3 +401,6 @@
     ]
   }
 }
+    
+
+    

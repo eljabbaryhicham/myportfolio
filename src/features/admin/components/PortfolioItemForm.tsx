@@ -50,7 +50,6 @@ const formSchema = z.object({
   }),
   type: z.enum(['image', 'video']),
   thumbnailUrl: z.string().url({ message: 'Please enter a valid URL for the grid thumbnail.' }),
-  videoPosterUrl: z.string().url({ message: 'Please enter a valid URL for the video poster.' }).optional().or(z.literal('')),
   sourceUrl: z.string().url({ message: 'Please enter a valid URL for the main media.' }).optional().or(z.literal('')),
   details: z.string().optional(),
   thumbnailHint: z.string().optional(),
@@ -80,7 +79,6 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onCho
         description: '',
         type: 'image',
         thumbnailUrl: '',
-        videoPosterUrl: '',
         sourceUrl: '',
         thumbnailHint: '',
         featured: false,
@@ -101,7 +99,6 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onCho
             ...item,
             featured: item.featured || false,
             thumbnailHint: item.thumbnailHint || '',
-            videoPosterUrl: item.videoPosterUrl || '',
             details: item.details || '',
             sourceUrl: item.sourceUrl || '',
             order: item.order ?? 0,
@@ -111,7 +108,6 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onCho
             description: '',
             type: 'image' as 'image' | 'video',
             thumbnailUrl: '',
-            videoPosterUrl: '',
             sourceUrl: '',
             thumbnailHint: '',
             featured: false,
@@ -138,7 +134,6 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onCho
           id: item?.id || '', // id will be handled by parent
           ...values,
           thumbnailHint: values.thumbnailHint || '',
-          videoPosterUrl: values.videoPosterUrl || '',
           isVisible: values.isVisible ?? true,
         });
     };
@@ -150,16 +145,6 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onCho
               return;
             }
             form.setValue('thumbnailUrl', url, { shouldValidate: true });
-        });
-    };
-
-    const handleChooseVideoPoster = () => {
-        onChooseFromLibrary((url, type) => {
-            if (type !== 'image') {
-              toast({ variant: 'destructive', title: 'Invalid Poster', description: 'Video posters must be an image file.'});
-              return;
-            }
-            form.setValue('videoPosterUrl', url, { shouldValidate: true });
         });
     };
 
@@ -272,33 +257,11 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onCho
                                       <span className="ml-2 hidden sm:inline">Library</span>
                                   </Button>
                                 </div>
-                                <FormDescription>Image shown in the main portfolio grid.</FormDescription>
+                                <FormDescription>Image shown in the main portfolio grid. Also used as video poster.</FormDescription>
                                 <FormMessage />
                               </FormItem>
                           )}
                           />
-                          {itemType === 'video' && (
-                             <FormField
-                              control={form.control}
-                              name="videoPosterUrl"
-                              render={({ field }) => (
-                                  <FormItem>
-                                    <FormLabel>Video Poster URL</FormLabel>
-                                    <div className="flex items-center gap-2">
-                                      <FormControl>
-                                          <Input placeholder="https://example.com/video-poster.jpg" {...field} />
-                                      </FormControl>
-                                      <Button type="button" variant="outline" size="sm" onClick={handleChooseVideoPoster}>
-                                          <FontAwesomeIcon icon={faImages} />
-                                          <span className="ml-2 hidden sm:inline">Library</span>
-                                      </Button>
-                                    </div>
-                                    <FormDescription>Image shown before a video plays. If blank, the grid thumbnail is used.</FormDescription>
-                                    <FormMessage />
-                                  </FormItem>
-                              )}
-                              />
-                          )}
                           <FormField
                           control={form.control}
                           name="thumbnailHint"

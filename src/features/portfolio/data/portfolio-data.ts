@@ -8,7 +8,6 @@ export interface PortfolioItem {
   description: string;
   thumbnailUrl: string;
   thumbnailHint?: string;
-  videoPosterUrl?: string; // Specific poster for video player
   sourceUrl?: string; // For images or single-source videos
   featured?: boolean;
   details?: string;
@@ -25,7 +24,6 @@ export const defaultPortfolioItems: PortfolioItem[] = [
     description: 'An exploration of dynamic typography and fluid motion.',
     thumbnailUrl: placeholderImages['vid1-thumb'].imageUrl,
     thumbnailHint: placeholderImages['vid1-thumb'].imageHint,
-    videoPosterUrl: placeholderImages['vid1-thumb'].imageUrl,
     sourceUrl: 'https://cdn.plyr.io/static/demo/View_From_A_Blue_Moon_Trailer-1080p.mp4',
     featured: true,
     details: `This project was created using a combination of Adobe After Effects and Cinema 4D. The goal was to create a visceral experience through motion. 
@@ -75,7 +73,6 @@ The process involved several stages, including a video compilation of the digita
     description: 'A short cinematic piece about solitude and nature.',
     thumbnailUrl: placeholderImages['vid2-thumb'].imageUrl,
     thumbnailHint: placeholderImages['vid2-thumb'].imageHint,
-    videoPosterUrl: placeholderImages['vid2-thumb'].imageUrl,
     sourceUrl: 'https://cdn.plyr.io/static/demo/View_From_A_Blue_Moon_Trailer-1080p.mp4',
     featured: false,
     order: 3,
@@ -136,7 +133,6 @@ The process involved several stages, including a video compilation of the digita
     description: 'A peaceful walk through the woods.',
     thumbnailUrl: 'https://picsum.photos/seed/forest/800/800',
     thumbnailHint: 'forest path',
-    videoPosterUrl: 'https://picsum.photos/seed/forest/800/800',
     sourceUrl: 'https://cdn.plyr.io/static/demo/View_From_A_Blue_Moon_Trailer-720p.mp4',
     featured: false,
     order: 8,
@@ -173,7 +169,6 @@ The process involved several stages, including a video compilation of the digita
     description: 'A timelapse of a city at night.',
     thumbnailUrl: 'https://picsum.photos/seed/nightcity/800/800',
     thumbnailHint: 'city timelapse',
-    videoPosterUrl: 'https://picsum.photos/seed/nightcity/800/800',
     sourceUrl: 'https://cdn.plyr.io/static/demo/View_From_A_Blue_Moon_Trailer-576p.mp4',
     featured: false,
     order: 11,
@@ -198,7 +193,6 @@ The process involved several stages, including a video compilation of the digita
     description: 'An animated voyage through space.',
     thumbnailUrl: 'https://picsum.photos/seed/space1/800/800',
     thumbnailHint: 'galaxy stars',
-    videoPosterUrl: 'https://picsum.photos/seed/space1/800/800',
     sourceUrl: 'https://cdn.plyr.io/static/demo/View_From_A_Blue_Moon_Trailer-720p.mp4',
     featured: true,
     order: 13,
@@ -223,7 +217,6 @@ The process involved several stages, including a video compilation of the digita
     description: 'A glimpse into the life of a coral reef.',
     thumbnailUrl: 'https://picsum.photos/seed/reef1/800/800',
     thumbnailHint: 'coral reef',
-    videoPosterUrl: 'https://picsum.photos/seed/reef1/800/800',
     sourceUrl: 'https://cdn.plyr.io/static/demo/View_From_A_Blue_Moon_Trailer-576p.mp4',
     featured: false,
     order: 15,
@@ -248,7 +241,6 @@ The process involved several stages, including a video compilation of the digita
     description: 'The energy and motion of skateboarding.',
     thumbnailUrl: 'https://picsum.photos/seed/skate1/800/800',
     thumbnailHint: 'skateboarding trick',
-    videoPosterUrl: 'https://picsum.photos/seed/skate1/800/800',
     sourceUrl: 'https://cdn.plyr.io/static/demo/View_From_A_Blue_Moon_Trailer-720p.mp4',
     featured: false,
     order: 17,
@@ -273,7 +265,6 @@ The process involved several stages, including a video compilation of the digita
     description: 'The art of cooking, from prep to plate.',
     thumbnailUrl: 'https://picsum.photos/seed/cooking1/800/800',
     thumbnailHint: 'chef cooking',
-    videoPosterUrl: 'https://picsum.photos/seed/cooking1/800/800',
     sourceUrl: 'https://cdn.plyr.io/static/demo/View_From_A_Blue_Moon_Trailer-576p.mp4',
     featured: false,
     order: 19,
@@ -298,7 +289,6 @@ The process involved several stages, including a video compilation of the digita
     description: 'A short feature on animals in their natural habitat.',
     thumbnailUrl: 'https://picsum.photos/seed/wildlife1/800/800',
     thumbnailHint: 'wildlife animal',
-    videoPosterUrl: 'https://picsum.photos/seed/wildlife1/800/800',
     sourceUrl: 'https://cdn.plyr.io/static/demo/View_From_A_Blue_Moon_Trailer-1080p.mp4',
     featured: false,
     order: 21,
