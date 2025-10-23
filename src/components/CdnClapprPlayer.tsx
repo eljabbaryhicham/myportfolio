@@ -106,6 +106,7 @@ export default function CdnClapprPlayer({ source, poster, autoPlay = true }: Cdn
           height: '100%',
           autoPlay: autoPlay,
           playsInline: true,
+          playinline: true, // Explicitly set for maximum iOS compatibility
           volume: 20,
           plugins: plugins,
           clapprColors: {
