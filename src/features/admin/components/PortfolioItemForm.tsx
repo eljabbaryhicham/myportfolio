@@ -56,6 +56,7 @@ const formSchema = z.object({
   featured: z.boolean().optional(),
   order: z.number().optional(),
   isVisible: z.boolean().optional(),
+  useVideoFrameAsPoster: z.boolean().optional(),
 });
 
 type PortfolioItemFormValues = z.infer<typeof formSchema>;
@@ -85,6 +86,7 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onCho
         details: '',
         order: undefined,
         isVisible: true,
+        useVideoFrameAsPoster: false,
       }
     });
 
@@ -103,6 +105,7 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onCho
             sourceUrl: item.sourceUrl || '',
             order: item.order ?? 0,
             isVisible: item.isVisible ?? true,
+            useVideoFrameAsPoster: item.useVideoFrameAsPoster || false,
         } : {
             title: '',
             description: '',
@@ -114,6 +117,7 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onCho
             details: '',
             order: undefined, // Let parent component decide the order for new items
             isVisible: true,
+            useVideoFrameAsPoster: false,
         };
         form.reset(defaultValues);
       }
@@ -135,6 +139,7 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onCho
           ...values,
           thumbnailHint: values.thumbnailHint || '',
           isVisible: values.isVisible ?? true,
+          useVideoFrameAsPoster: values.useVideoFrameAsPoster || false,
         });
     };
 
@@ -257,11 +262,35 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onCho
                                       <span className="ml-2 hidden sm:inline">Library</span>
                                   </Button>
                                 </div>
-                                <FormDescription>Image shown in the main portfolio grid. Also used as video poster.</FormDescription>
+                                <FormDescription>Image shown in the main portfolio grid. Also used as video poster if enabled below.</FormDescription>
                                 <FormMessage />
                               </FormItem>
                           )}
                           />
+                           {itemType === 'video' && (
+                            <FormField
+                                control={form.control}
+                                name="useVideoFrameAsPoster"
+                                render={({ field }) => (
+                                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4 glass-effect">
+                                        <div className="space-y-0.5">
+                                            <FormLabel className="text-base">
+                                                Use video frame as poster
+                                            </FormLabel>
+                                            <FormDescription>
+                                                If enabled, the player generates a thumbnail from the video. If disabled, it uses the Grid Thumbnail URL.
+                                            </FormDescription>
+                                        </div>
+                                        <FormControl>
+                                            <Switch
+                                                checked={field.value}
+                                                onCheckedChange={field.onChange}
+                                            />
+                                        </FormControl>
+                                    </FormItem>
+                                )}
+                            />
+                          )}
                           <FormField
                           control={form.control}
                           name="thumbnailHint"
@@ -367,5 +396,3 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onCho
         </Dialog>
     )
 }
-
-    

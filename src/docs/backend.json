@@ -29,6 +29,10 @@
           "description": "URL of the project's video (if applicable).",
           "format": "uri"
         },
+        "useVideoFrameAsPoster": {
+          "type": "boolean",
+          "description": "If true, the player will generate a thumbnail from the video. If false, it will use the thumbnailUrl as a poster."
+        },
         "isFeatured": {
           "type": "boolean",
           "description": "Indicates whether the project is featured on the homepage."
@@ -401,6 +405,4 @@
     ]
   }
 }
-    
-
     

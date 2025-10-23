@@ -48,9 +48,9 @@ function SiteBackground() {
       ? homeSettings?.isHomePageVideoEnabled ?? true
       : homeSettings?.isWebsiteVideoEnabled ?? true;
 
-    const videoSource = isHomePage 
-      ? (homeVideo?.sourceUrl || "https://res.cloudinary.com/da1srnoer/video/upload/f_auto:video,q_auto/v1/wbmz1rkepnqeotpcx9tp")
-      : (siteVideo?.sourceUrl || "https://res.cloudinary.com/da1srnoer/video/upload/f_auto:video,q_auto/v1/wbmz1rkepnqeotpcx9tp");
+    const currentVideo = isHomePage ? homeVideo : siteVideo;
+    const videoSource = currentVideo?.sourceUrl || "https://res.cloudinary.com/da1srnoer/video/upload/f_auto:video,q_auto/v1/wbmz1rkepnqeotpcx9tp";
+    const posterSource = currentVideo?.useVideoFrameAsPoster ? undefined : currentVideo?.thumbnailUrl;
       
     return (
         <div className="absolute inset-0 -z-10 w-full h-full">
@@ -58,6 +58,7 @@ function SiteBackground() {
                 {isVideoEnabled && videoSource && (
                    <CdnClapprPlayer
                         source={videoSource}
+                        poster={posterSource}
                         chromeless={true}
                     />
                 )}
@@ -96,6 +97,3 @@ export default function RootLayout({
     </html>
   );
 }
-    
-
-    
