@@ -25,7 +25,7 @@ export default function ClapperPlayer({ source, poster, chromeless = false }: Cl
     // Dynamically import the real Clappr module (client-side only)
     import('@clappr/player').then((module) => {
       // The default export *is* the player constructor
-      const Clappr = module.default;
+      const Clappr = (module as unknown as PlayerModule).default;
 
       if (playerRef.current) {
         // Create player instance correctly
