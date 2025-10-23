@@ -56,11 +56,17 @@ function SiteBackground() {
         <div className="absolute inset-0 -z-10 w-full h-full">
             <div className="w-full h-full bg-black">
                 {isVideoEnabled && videoSource && (
-                   <CdnClapprPlayer
-                        source={videoSource}
+                    <video
+                        key={videoSource}
+                        className="w-full h-full object-cover"
                         poster={posterSource}
-                        chromeless={true}
-                    />
+                        autoPlay
+                        muted
+                        loop
+                        playsInline
+                    >
+                        <source src={videoSource} type="video/mp4" />
+                    </video>
                 )}
             </div>
             <div className={cn("absolute inset-0", isHomePage ? "bg-black/60" : "bg-black/70")}></div>
@@ -81,11 +87,12 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
         <link href="https://fonts.googleapis.com/css2?family=Bungee&family=Quicksand:wght@400;500;700&family=Dancing+Script:wght@700&display=swap" rel="stylesheet" />
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@clappr/player@0.11.0/dist/clappr.min.css" />
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@clappr/player@latest/dist/clappr.min.css" />
         <title>Liquid Folio</title>
       </head>
       <body className={cn('font-body antialiased text-center')} suppressHydrationWarning>
-        <Script src="https://cdn.jsdelivr.net/npm/@clappr/player@0.11.0/dist/clappr.min.js" strategy="beforeInteractive" />
+        <Script src="https://cdn.jsdelivr.net/npm/@clappr/player@latest/dist/clappr.min.js" strategy="beforeInteractive" />
+        <Script src="https://cdn.jsdelivr.net/npm/clappr-hlsjs-playback@latest/dist/hlsjs-playback.min.js" strategy="beforeInteractive" />
         <FirebaseClientProvider>
             <SiteBackground />
             <LayoutProvider>
