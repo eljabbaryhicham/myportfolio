@@ -11,7 +11,6 @@ import { doc } from 'firebase/firestore';
 import type { PortfolioItem } from '@/features/portfolio/data/portfolio-data';
 import { usePathname } from 'next/navigation';
 import Image from 'next/image';
-import ClapperPlayer from '@/components/ClapperPlayer';
 
 
 interface HomePageSettings {
@@ -42,7 +41,6 @@ function SiteBackground() {
     );
     const { data: siteVideo } = useDoc<PortfolioItem>(siteVideoRef);
 
-    const videoSrc = isHomePage ? homeVideo?.sourceUrl : siteVideo?.sourceUrl;
     const imageSrc = isHomePage 
       ? (homeVideo?.thumbnailUrl || "https://res.cloudinary.com/da1srnoer/image/upload/f_auto,q_auto/v1/wbmz1rkepnqeotpcx9tp")
       : (siteVideo?.thumbnailUrl || "https://res.cloudinary.com/da1srnoer/image/upload/f_auto,q_auto/v1/wbmz1rkepnqeotpcx9tp");
@@ -50,13 +48,7 @@ function SiteBackground() {
     return (
         <div className="absolute inset-0 -z-10 w-full h-full">
             <div className="w-full h-full bg-black">
-                {videoSrc ? (
-                     <ClapperPlayer 
-                        source={videoSrc}
-                        poster={imageSrc}
-                        isBackground={true} 
-                    />
-                ) : imageSrc && (
+                {imageSrc && (
                     <Image
                         src={imageSrc}
                         alt="Background"
