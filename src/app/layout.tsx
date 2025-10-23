@@ -11,6 +11,7 @@ import { doc } from 'firebase/firestore';
 import type { PortfolioItem } from '@/features/portfolio/data/portfolio-data';
 import { usePathname } from 'next/navigation';
 import CdnClapprPlayer from '@/components/CdnClapprPlayer';
+import Script from 'next/script';
 
 
 interface HomePageSettings {
@@ -84,12 +85,12 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
         <link href="https://fonts.googleapis.com/css2?family=Bungee&family=Quicksand:wght@400;500;700&family=Dancing+Script:wght@700&display=swap" rel="stylesheet" />
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@clappr/player@0.11.0/dist/clappr.min.css" />
-        <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@clappr/player@0.11.0/dist/clappr.min.js"></script>
-        <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/clappr-hls-plugin@0.4.0/dist/clappr-hls-plugin.min.js"></script>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@clappr/player@0.5.0/dist/clappr.min.css" />
         <title>Liquid Folio</title>
       </head>
       <body className={cn('font-body antialiased text-center')} suppressHydrationWarning>
+        <Script src="https://cdn.jsdelivr.net/npm/@clappr/player@0.5.0/dist/clappr.min.js" strategy="beforeInteractive" />
+        <Script src="https://cdn.jsdelivr.net/npm/clappr-hls-plugin@1.1.2/dist/clappr-hls-plugin.min.js" strategy="beforeInteractive" />
         <FirebaseClientProvider>
             <SiteBackground />
             <LayoutProvider>
@@ -101,5 +102,3 @@ export default function RootLayout({
     </html>
   );
 }
-
-    
