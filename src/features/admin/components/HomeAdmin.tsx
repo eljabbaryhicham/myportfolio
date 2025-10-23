@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -22,73 +23,28 @@ import {
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { useDoc, useFirestore, useMemoFirebase, setDocumentNonBlocking, useCollection, useUser } from '@/firebase';
-import { collection, doc, DocumentReference } from 'firebase/firestore';
+import { collection, doc } from 'firebase/firestore';
 import type { PortfolioItem } from '@/features/portfolio/data/portfolio-data';
 import { useEffect } from 'react';
 import Preloader from '@/components/preloader';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import type { AppUser } from '@/firebase/auth/use-user';
+import { Switch } from '@/components/ui/switch';
+import { Separator } from '@/components/ui/separator';
 
 interface HomePageSettings {
     homePageBackgroundVideoId?: string;
     websiteBackgroundVideoId?: string;
+    isVideoBackgroundEnabled?: boolean;
 }
 
-const homePageSchema = z.object({
-  homePageBackgroundVideoId: z.string().min(1, { message: 'Please select a project.' }),
+const settingsSchema = z.object({
+  homePageBackgroundVideoId: z.string().optional(),
+  websiteBackgroundVideoId: z.string().optional(),
+  isVideoBackgroundEnabled: z.boolean().optional(),
 });
-const websiteSchema = z.object({
-  websiteBackgroundVideoId: z.string().min(1, { message: 'Please select a background video.' }),
-});
 
-type HomePageFormValues = z.infer<typeof homePageSchema>;
-type WebsiteFormValues = z.infer<typeof websiteSchema>;
-
-interface BackgroundVideoFormProps {
-    form: UseFormReturn<any>;
-    onSubmit: (values: any) => void;
-    fieldName: "homePageBackgroundVideoId" | "websiteBackgroundVideoId";
-    label: string;
-    placeholder: string;
-    videoItems: PortfolioItem[];
-    canEdit: boolean;
-}
-
-function BackgroundVideoForm({ form, onSubmit, fieldName, label, placeholder, videoItems, canEdit }: BackgroundVideoFormProps) {
-    return (
-        <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                <FormField
-                    control={form.control}
-                    name={fieldName}
-                    render={({ field }) => (
-                    <FormItem>
-                        <FormLabel>{label}</FormLabel>
-                        <div className="flex gap-4">
-                        <Select onValueChange={field.onChange} value={field.value} disabled={!canEdit}>
-                            <FormControl>
-                            <SelectTrigger>
-                                <SelectValue placeholder={placeholder} />
-                            </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                            {videoItems.map((item) => (
-                                <SelectItem key={item.id} value={item.id}>
-                                    {item.title}
-                                </SelectItem>
-                            ))}
-                            </SelectContent>
-                        </Select>
-                        <Button type="submit" disabled={!canEdit}>Save</Button>
-                        </div>
-                        <FormMessage />
-                    </FormItem>
-                    )}
-                />
-            </form>
-        </Form>
-    )
-}
+type SettingsFormValues = z.infer<typeof settingsSchema>;
 
 export default function HomeAdmin() {
   const { toast } = useToast();
@@ -110,40 +66,37 @@ export default function HomeAdmin() {
 
   const videoItems = portfolioItems?.filter(item => item.type === 'video') || [];
 
-  const homePageForm = useForm<HomePageFormValues>({
-    resolver: zodResolver(homePageSchema),
-    defaultValues: { homePageBackgroundVideoId: '' },
-  });
-
-  const websiteForm = useForm<WebsiteFormValues>({
-    resolver: zodResolver(websiteSchema),
-    defaultValues: { websiteBackgroundVideoId: '' },
+  const form = useForm<SettingsFormValues>({
+    resolver: zodResolver(settingsSchema),
+    defaultValues: {
+      homePageBackgroundVideoId: '',
+      websiteBackgroundVideoId: '',
+      isVideoBackgroundEnabled: true,
+    },
   });
 
   useEffect(() => {
     if (homeSettings) {
-      homePageForm.reset({ homePageBackgroundVideoId: homeSettings.homePageBackgroundVideoId || '' });
-      websiteForm.reset({ websiteBackgroundVideoId: homeSettings.websiteBackgroundVideoId || '' });
+      form.reset({
+        homePageBackgroundVideoId: homeSettings.homePageBackgroundVideoId || '',
+        websiteBackgroundVideoId: homeSettings.websiteBackgroundVideoId || '',
+        isVideoBackgroundEnabled: homeSettings.isVideoBackgroundEnabled ?? true,
+      });
     }
-  }, [homeSettings, homePageForm, websiteForm]);
+  }, [homeSettings, form]);
 
-  const handleSave = (fieldName: string, value: string, successMessage: string) => {
+  const onSubmit = (values: SettingsFormValues) => {
     if (!settingsDocRef || !canEditHome) return;
     
-    setDocumentNonBlocking(settingsDocRef, { [fieldName]: value }, { merge: true });
+    setDocumentNonBlocking(settingsDocRef, { 
+      ...values,
+      isVideoBackgroundEnabled: values.isVideoBackgroundEnabled ?? true
+    }, { merge: true });
     
     toast({
-        title: 'Setting Saved',
-        description: successMessage,
+        title: 'Settings Saved',
+        description: 'Your home page settings have been updated.',
     });
-  };
-
-  const onHomePageSubmit = (values: HomePageFormValues) => {
-    handleSave('homePageBackgroundVideoId', values.homePageBackgroundVideoId, 'Homepage background video has been updated.');
-  };
-
-  const onWebsiteSubmit = (values: WebsiteFormValues) => {
-    handleSave('websiteBackgroundVideoId', values.websiteBackgroundVideoId, 'Website background video has been updated.');
   };
 
   const isLoading = isLoadingSettings || isLoadingProjects;
@@ -161,32 +114,92 @@ export default function HomeAdmin() {
         <div className="mb-6">
             <h2 className="text-xl font-headline">Home Page Settings</h2>
             <p className="text-muted-foreground">
-                Choose the background videos for your homepage and the rest of the site.
+                Manage background videos and other global settings.
             </p>
         </div>
         <div className="flex-1 border rounded-lg overflow-hidden glass-effect">
             <ScrollArea className="h-full">
                 <div className="p-6">
-                    <div className="space-y-8 max-w-lg mx-auto">
-                        <BackgroundVideoForm
-                            form={homePageForm}
-                            onSubmit={onHomePageSubmit}
-                            fieldName="homePageBackgroundVideoId"
-                            label="Homepage Background Video"
-                            placeholder="Select a video for the homepage background"
-                            videoItems={videoItems}
-                            canEdit={canEditHome}
-                        />
-                         <BackgroundVideoForm
-                            form={websiteForm}
-                            onSubmit={onWebsiteSubmit}
-                            fieldName="websiteBackgroundVideoId"
-                            label="Website Background Video (Other Pages)"
-                            placeholder="Select a video for the site background"
-                            videoItems={videoItems}
-                            canEdit={canEditHome}
-                        />
-                    </div>
+                    <Form {...form}>
+                        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 max-w-lg mx-auto">
+                            <fieldset disabled={!canEditHome} className="group space-y-8">
+                                <FormField
+                                    control={form.control}
+                                    name="isVideoBackgroundEnabled"
+                                    render={({ field }) => (
+                                        <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4 glass-effect">
+                                            <div className="space-y-0.5">
+                                                <FormLabel className="text-base">
+                                                    Enable Video Background
+                                                </FormLabel>
+                                                <FormDescription>
+                                                    Turn the site-wide video background on or off.
+                                                </FormDescription>
+                                            </div>
+                                            <FormControl>
+                                                <Switch
+                                                    checked={field.value}
+                                                    onCheckedChange={field.onChange}
+                                                />
+                                            </FormControl>
+                                        </FormItem>
+                                    )}
+                                />
+                                <Separator />
+                                <FormField
+                                    control={form.control}
+                                    name="homePageBackgroundVideoId"
+                                    render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Homepage Background Video</FormLabel>
+                                        <Select onValueChange={field.onChange} value={field.value}>
+                                            <FormControl>
+                                            <SelectTrigger>
+                                                <SelectValue placeholder="Select a video for the homepage" />
+                                            </SelectTrigger>
+                                            </FormControl>
+                                            <SelectContent>
+                                            {videoItems.map((item) => (
+                                                <SelectItem key={item.id} value={item.id}>
+                                                    {item.title}
+                                                </SelectItem>
+                                            ))}
+                                            </SelectContent>
+                                        </Select>
+                                        <FormMessage />
+                                    </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="websiteBackgroundVideoId"
+                                    render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Website Background Video (Other Pages)</FormLabel>
+                                         <Select onValueChange={field.onChange} value={field.value}>
+                                            <FormControl>
+                                            <SelectTrigger>
+                                                <SelectValue placeholder="Select a video for other pages" />
+                                            </SelectTrigger>
+                                            </FormControl>
+                                            <SelectContent>
+                                            {videoItems.map((item) => (
+                                                <SelectItem key={item.id} value={item.id}>
+                                                    {item.title}
+                                                </SelectItem>
+                                            ))}
+                                            </SelectContent>
+                                        </Select>
+                                        <FormMessage />
+                                    </FormItem>
+                                    )}
+                                />
+                                <div className="flex justify-end pt-4">
+                                    <Button type="submit" disabled={!canEditHome}>Save All Settings</Button>
+                                </div>
+                            </fieldset>
+                        </form>
+                    </Form>
                 </div>
             </ScrollArea>
         </div>

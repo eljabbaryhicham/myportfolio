@@ -16,6 +16,7 @@ import ClapperPlayer from '@/components/ClapperPlayer';
 interface HomePageSettings {
     websiteBackgroundVideoId?: string;
     homePageBackgroundVideoId?: string;
+    isVideoBackgroundEnabled?: boolean;
 }
 
 function SiteBackground() {
@@ -41,6 +42,8 @@ function SiteBackground() {
     );
     const { data: siteVideo } = useDoc<PortfolioItem>(siteVideoRef);
 
+    const isVideoEnabled = homeSettings?.isVideoBackgroundEnabled ?? true;
+
     const videoSource = isHomePage 
       ? (homeVideo?.sourceUrl || "https://res.cloudinary.com/da1srnoer/video/upload/f_auto:video,q_auto/v1/wbmz1rkepnqeotpcx9tp")
       : (siteVideo?.sourceUrl || "https://res.cloudinary.com/da1srnoer/video/upload/f_auto:video,q_auto/v1/wbmz1rkepnqeotpcx9tp");
@@ -52,7 +55,7 @@ function SiteBackground() {
     return (
         <div className="absolute inset-0 -z-10 w-full h-full">
             <div className="w-full h-full bg-black">
-                {videoSource && (
+                {isVideoEnabled && videoSource && (
                    <ClapperPlayer
                         source={videoSource}
                         poster={posterSource}

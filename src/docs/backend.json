@@ -110,7 +110,7 @@
     },
     "HomePageSettings": {
       "title": "Home Page Settings",
-      "description": "Stores settings for the homepage, like the featured project.",
+      "description": "Stores settings for the homepage, like background videos.",
       "type": "object",
       "properties": {
         "homePageBackgroundVideoId": {
@@ -120,11 +120,12 @@
         "websiteBackgroundVideoId": {
           "type": "string",
           "description": "The ID of the project to use for the sitewide background video."
+        },
+        "isVideoBackgroundEnabled": {
+            "type": "boolean",
+            "description": "Controls whether the site-wide video background is enabled."
         }
-      },
-      "required": [
-        "homePageBackgroundVideoId"
-      ]
+      }
     },
     "AboutPageContent": {
       "title": "About Page Content",
@@ -396,5 +397,3 @@
     ]
   }
 }
-
-    
