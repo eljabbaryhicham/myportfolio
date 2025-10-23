@@ -100,6 +100,7 @@ export default function CdnClapprPlayer({ source, poster, autoPlay = true }: Cdn
         width: '100%',
         height: '100%',
         autoPlay: autoPlay,
+        playsInline: true,
         volume: 20,
         plugins: plugins,
         clapprColors: {
