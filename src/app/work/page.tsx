@@ -33,7 +33,6 @@ import { motion, AnimatePresence, PanInfo } from 'framer-motion';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import ContactForm from '@/features/contact/components/ContactForm';
 import type { AppUser } from '@/firebase/auth/use-user';
-import ClapperPlayer from '@/components/ClapperPlayer';
 
 
 const MemoizedImage = memo(Image);
@@ -53,22 +52,29 @@ const PortfolioMedia = ({
   }, [item, onMediaLoaded]);
 
 
-  if (item.type === 'video' && item.sourceUrl) {
+  const mediaUrl = item.sourceUrl || item.thumbnailUrl;
+
+  if (item.type === 'video') {
     return (
-      <div className="relative aspect-video bg-black flex items-center justify-center w-full">
-         <ClapperPlayer
-            source={item.sourceUrl}
-            poster={item.thumbnailUrl}
-          />
+      <div className="relative aspect-video bg-black flex items-center justify-center w-full group">
+        <MemoizedImage
+          src={item.thumbnailUrl}
+          alt={item.title}
+          fill
+          className="object-contain"
+          onLoad={onMediaLoaded}
+        />
+        <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
+            <FontAwesomeIcon icon={faFilm} className="h-16 w-16 text-white/50" />
+        </div>
       </div>
     );
   }
-
-  if (item.type === 'image' && item.sourceUrl) {
-    return (
+  
+  return (
       <div className="relative aspect-video bg-black flex justify-center items-center group w-full">
         <MemoizedImage
-          src={item.sourceUrl}
+          src={mediaUrl}
           alt={item.title}
           fill
           className="object-contain"
@@ -78,16 +84,13 @@ const PortfolioMedia = ({
             variant="ghost"
             size="icon"
             className="absolute inset-0 m-auto z-10 h-12 w-12 md:h-16 md:w-16 text-white bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity"
-            onClick={() => onFullscreenClick(item.sourceUrl!)}
+            onClick={() => onFullscreenClick(mediaUrl)}
           >
             <FontAwesomeIcon icon={faExpand} className="h-6 w-6 md:h-8 md:w-8" />
             <span className="sr-only">Fullscreen</span>
         </Button>
       </div>
     );
-  }
-
-  return <div className="relative aspect-video bg-black flex justify-center items-center group w-full"></div>;
 };
 PortfolioMedia.displayName = 'PortfolioMedia';
 
@@ -702,8 +705,19 @@ export default function WorkPage() {
                             video: ({node, ...props}) => {
                               if (!isClient || !props.src) return null;
                               return (
-                                <div className="w-full rounded-lg overflow-hidden my-4">
-                                  <ClapperPlayer key={props.src} source={props.src} />
+                                <div className="w-full my-4 rounded-lg overflow-hidden relative aspect-video bg-black flex items-center justify-center group">
+                                    {props.poster && (
+                                        <Image
+                                            src={props.poster}
+                                            alt="Video poster"
+                                            fill
+                                            className="object-contain"
+                                        />
+                                    )}
+                                    <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
+                                        <FontAwesomeIcon icon={faFilm} className="h-16 w-16 text-white/50" />
+                                    </div>
+                                    <p className="absolute bottom-2 right-2 text-xs text-white bg-black/50 px-2 py-1 rounded">Video player removed</p>
                                 </div>
                               );
                             }

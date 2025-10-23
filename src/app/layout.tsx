@@ -6,11 +6,11 @@ import { Toaster } from '@/components/ui/toaster';
 import { cn } from '@/lib/utils';
 import { FirebaseClientProvider } from '@/firebase/client-provider';
 import { LayoutProvider } from '@/components/layout/layout-provider';
-import ClapperPlayer from '@/components/ClapperPlayer';
 import { useDoc, useFirestore, useMemoFirebase } from '@/firebase';
 import { doc } from 'firebase/firestore';
 import type { PortfolioItem } from '@/features/portfolio/data/portfolio-data';
 import { usePathname } from 'next/navigation';
+import Image from 'next/image';
 
 
 interface HomePageSettings {
@@ -41,17 +41,22 @@ function SiteBackground() {
     );
     const { data: siteVideo } = useDoc<PortfolioItem>(siteVideoRef);
 
-    const videoSrc = isHomePage 
-      ? (homeVideo?.sourceUrl || "https://res.cloudinary.com/da1srnoer/video/upload/f_auto,q_auto/v1761159959/wbmz1rkepnqeotpcx9tp.webm")
-      : (siteVideo?.sourceUrl || "https://res.cloudinary.com/da1srnoer/video/upload/f_auto,q_auto/v1761159959/wbmz1rkepnqeotpcx9tp.webm");
+    const imageSrc = isHomePage 
+      ? (homeVideo?.thumbnailUrl || "https://res.cloudinary.com/da1srnoer/image/upload/f_auto,q_auto/v1/wbmz1rkepnqeotpcx9tp")
+      : (siteVideo?.thumbnailUrl || "https://res.cloudinary.com/da1srnoer/image/upload/f_auto,q_auto/v1/wbmz1rkepnqeotpcx9tp");
 
     return (
         <div className="absolute inset-0 -z-10 w-full h-full">
             <div className="w-full h-full bg-black">
-                <ClapperPlayer
-                    source={videoSrc}
-                    chromeless
-                />
+                {imageSrc && (
+                    <Image
+                        src={imageSrc}
+                        alt="Background"
+                        fill
+                        className="object-cover"
+                        priority
+                    />
+                )}
             </div>
             <div className={cn("absolute inset-0", isHomePage ? "bg-black/60" : "bg-black/70")}></div>
         </div>
