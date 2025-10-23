@@ -13,6 +13,7 @@ export interface PortfolioItem {
   details?: string;
   order?: number;
   isVisible?: boolean;
+  useVideoFrameAsPoster?: boolean;
 }
 
 
