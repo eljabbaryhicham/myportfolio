@@ -36,6 +36,10 @@
         "order": {
           "type": "number",
           "description": "The order in which the project will be displayed."
+        },
+        "isVisible": {
+          "type": "boolean",
+          "description": "Controls the visibility of the project on the public portfolio."
         }
       },
       "required": [
@@ -90,6 +94,11 @@
         "twitterUrl": {
           "type": "string",
           "format": "uri"
+        },
+        "logoUrl": {
+          "type": "string",
+          "format": "uri",
+          "description": "URL for the main site logo."
         }
       },
       "required": [
@@ -101,16 +110,47 @@
     },
     "HomePageSettings": {
       "title": "Home Page Settings",
-      "description": "Stores settings for the homepage, like the featured project.",
+      "description": "Stores settings for the homepage, like background videos.",
       "type": "object",
       "properties": {
-        "featuredProjectId": {
+        "homePageBackgroundVideoId": {
           "type": "string",
-          "description": "The ID of the project featured on the homepage."
+          "description": "The ID of the project to use for the homepage background video."
+        },
+        "websiteBackgroundVideoId": {
+          "type": "string",
+          "description": "The ID of the project to use for the sitewide background video."
+        }
+      }
+    },
+    "AboutPageContent": {
+      "title": "About Page Content",
+      "description": "Stores the editable content for the About Us page.",
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string",
+          "description": "The main heading for the about section."
+        },
+        "content": {
+          "type": "string",
+          "description": "The paragraph content for the about section."
+        },
+        "imageUrl": {
+          "type": "string",
+          "format": "uri",
+          "description": "URL of the image for the about section."
+        },
+        "logoUrl": {
+            "type": "string",
+            "format": "uri",
+            "description": "URL of the logo for the about section."
         }
       },
       "required": [
-        "featuredProjectId"
+        "title",
+        "content",
+        "imageUrl"
       ]
     },
     "MediaAsset": {
@@ -179,11 +219,55 @@
             "canDeleteMedia": {
               "type": "boolean",
               "description": "Whether the user can delete existing media files."
+            },
+            "canEditProjects": {
+              "type": "boolean",
+              "description": "Whether the user can edit portfolio projects."
+            },
+            "canEditAbout": {
+              "type": "boolean",
+              "description": "Whether the user can edit the about page."
+            },
+            "canEditContact": {
+              "type": "boolean",
+              "description": "Whether the user can edit contact page settings."
+            },
+            "canEditHome": {
+              "type": "boolean",
+              "description": "Whether the user can edit home page settings."
             }
           }
         }
       },
       "required": ["uid", "username", "email", "role", "createdAt"]
+    },
+    "Client": {
+      "title": "Client",
+      "description": "Represents a client or brand.",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "The name of the client."
+        },
+        "logoUrl": {
+          "type": "string",
+          "description": "URL of the client's logo.",
+          "format": "uri"
+        },
+        "order": {
+          "type": "number",
+          "description": "The order in which the client will be displayed."
+        },
+        "isVisible": {
+          "type": "boolean",
+          "description": "Controls the visibility of the client on the public about page."
+        }
+      },
+      "required": [
+        "name",
+        "logoUrl"
+      ]
     }
   },
   "auth": {
@@ -243,6 +327,22 @@
         }
       },
       {
+        "path": "/about/{contentId}",
+        "definition": {
+          "entityName": "AboutPageContent",
+          "schema": {
+            "$ref": "#/backend/entities/AboutPageContent"
+          },
+          "description": "Stores the content for the About Us page.",
+          "params": [
+            {
+              "name": "contentId",
+              "description": "The unique identifier for the about page content document."
+            }
+          ]
+        }
+      },
+      {
         "path": "/media/{mediaId}",
         "definition": {
             "entityName": "MediaAsset",
@@ -273,7 +373,25 @@
                 }
             ]
         }
+      },
+      {
+        "path": "/clients/{clientId}",
+        "definition": {
+            "entityName": "Client",
+            "schema": {
+                "$ref": "#/backend/entities/Client"
+            },
+            "description": "Stores client logos and names.",
+            "params": [
+                {
+                    "name": "clientId",
+                    "description": "The unique identifier for the client."
+                }
+            ]
+        }
       }
     ]
   }
 }
+
+    
