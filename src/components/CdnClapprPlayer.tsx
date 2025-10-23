@@ -7,6 +7,8 @@ declare global {
     interface Window {
         Clappr: any;
         DashShakaPlayback: any;
+        HlsjsPlayback: any;
+        PipPlugin: any;
     }
 }
 
@@ -22,7 +24,7 @@ export default function CdnClapprPlayer({ source, poster, chromeless = false }: 
 
   useEffect(() => {
     // Don't run on server or if Clappr script hasn't loaded yet
-    if (typeof window === 'undefined' || !playerRef.current || typeof window.Clappr === 'undefined' || typeof window.DashShakaPlayback === 'undefined') {
+    if (typeof window === 'undefined' || !playerRef.current || typeof window.Clappr === 'undefined') {
       return;
     }
     
@@ -31,15 +33,25 @@ export default function CdnClapprPlayer({ source, poster, chromeless = false }: 
       playerInstanceRef.current.destroy();
     }
     
+    const plugins = [];
+    if (window.DashShakaPlayback) {
+      plugins.push(window.DashShakaPlayback);
+    }
+    if (window.HlsjsPlayback) {
+      plugins.push(window.HlsjsPlayback);
+    }
+    if(window.PipPlugin) {
+      plugins.push(window.PipPlugin);
+    }
+
     playerInstanceRef.current = new window.Clappr.Player({
         source,
         poster,
         parentId: `#${playerRef.current.id}`,
         width: '100%',
         height: '100%',
-        plugins: [window.DashShakaPlayback],
+        plugins: plugins,
         shakaConfiguration: {
-          // Example configuration, can be extended
           streaming: {
             rebufferingGoal: 15
           }
