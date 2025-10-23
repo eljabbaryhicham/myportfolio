@@ -94,6 +94,7 @@ export default function RootLayout({
       <body className={cn('font-body antialiased text-center')} suppressHydrationWarning>
         <Script src="https://cdn.jsdelivr.net/npm/@clappr/player@latest/dist/clappr.min.js" strategy="beforeInteractive" />
         <Script src="https://cdn.jsdelivr.net/npm/clappr-hlsjs-playback@latest/dist/hlsjs-playback.min.js" strategy="beforeInteractive" />
+        <Script src="https://cdn.jsdelivr.net/npm/clappr-pip-plugin@latest/dist/clappr-pip-plugin.js" strategy="beforeInteractive" />
         <FirebaseClientProvider>
             <SiteBackground />
             <LayoutProvider>

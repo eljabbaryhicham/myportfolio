@@ -44,6 +44,11 @@ export default function CdnClapprPlayer({ source, poster, chromeless = false }: 
     // 2. Clear any leftover DOM elements from the container. This is a crucial safeguard.
     playerRef.current.innerHTML = '';
     
+    const plugins = [];
+    if (window.PipPlugin) {
+      plugins.push(window.PipPlugin);
+    }
+    
     // 3. Create the new player instance using the Clappr constructor from the window object.
     playerInstanceRef.current = new window.Clappr.Player({
         source,
@@ -55,6 +60,7 @@ export default function CdnClapprPlayer({ source, poster, chromeless = false }: 
         mute: true,
         loop: chromeless,
         chromeless: chromeless,
+        plugins: plugins,
         mediacontrol: {
           seekbar: "hsl(var(--destructive))",
         },
