@@ -52,6 +52,9 @@ export default function CdnClapprPlayer({ source, poster, autoPlay = true }: Cdn
         autoPlay: autoPlay,
         volume: 20,
         plugins: plugins,
+        clapprColors: {
+            main: '#e61e53', // Red theme for the player
+        },
         shakaConfiguration: {
           streaming: {
             rebufferingGoal: 15
