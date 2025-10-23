@@ -229,9 +229,15 @@ export default function MediaAdmin(props: MediaAdminProps) {
   const handleLibraryChoiceAndUpload = useCallback(async (libraryId: 'primary' | 'extented') => {
     setIsChoosingLibrary(false);
     
-    const suffix = libraryId === 'primary' ? '_1' : '_2';
-    const cloudName = process.env[`NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME${suffix}`];
-    const uploadPreset = process.env[`NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET${suffix}`];
+    let cloudName, uploadPreset;
+
+    if (libraryId === 'primary') {
+        cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME_1 || process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
+        uploadPreset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET_1 || process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
+    } else { // extented
+        cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME_2;
+        uploadPreset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET_2;
+    }
 
     if (!cloudName || !uploadPreset || uploadPreset.includes("your_unsigned_preset")) {
       toast({
@@ -577,8 +583,8 @@ export default function MediaAdmin(props: MediaAdminProps) {
                 <DialogDescription>Select which Cloudinary library you want to upload the files to.</DialogDescription>
             </DialogHeader>
             <div className="flex justify-center gap-4 py-4">
-                <Button onClick={() => handleLibraryChoiceAndUpload('primary')} size="lg" className="w-40"><FontAwesomeIcon icon={faUniversity} className="mr-2"/> Library Primary</Button>
-                <Button onClick={() => handleLibraryChoiceAndUpload('extented')} size="lg" className="w-40"><FontAwesomeIcon icon={faUniversity} className="mr-2"/> Library Extented</Button>
+                <Button onClick={() => handleLibraryChoiceAndUpload('primary')} size="lg" className="w-48"><FontAwesomeIcon icon={faUniversity} className="mr-2"/> Library Primary</Button>
+                <Button onClick={() => handleLibraryChoiceAndUpload('extented')} size="lg" className="w-48"><FontAwesomeIcon icon={faUniversity} className="mr-2"/> Library Extented</Button>
             </div>
              <DialogFooter>
                 <Button variant="outline" onClick={() => setIsChoosingLibrary(false)}>Cancel</Button>
