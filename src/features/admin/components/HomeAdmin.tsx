@@ -48,6 +48,41 @@ const settingsSchema = z.object({
 
 type SettingsFormValues = z.infer<typeof settingsSchema>;
 
+function SingleSettingSaver({
+    docRef,
+    fieldsToSave,
+    getValues,
+    canEdit
+}: {
+    docRef: any,
+    fieldsToSave: (keyof SettingsFormValues)[],
+    getValues: () => SettingsFormValues,
+    canEdit: boolean,
+}) {
+    const { toast } = useToast();
+    const saveSettings = () => {
+        if (!docRef || !canEdit) return;
+        const allValues = getValues();
+        const valuesToSave = fieldsToSave.reduce((acc, key) => {
+            acc[key] = allValues[key];
+            return acc;
+        }, {} as Partial<SettingsFormValues>);
+        
+        setDocumentNonBlocking(docRef, valuesToSave, { merge: true });
+        
+        toast({
+            title: 'Settings Saved',
+            description: 'Your settings have been updated.',
+        });
+    };
+    
+    return (
+        <div className="flex justify-end pt-4">
+            <Button type="button" onClick={saveSettings} disabled={!canEdit}>Save Changes</Button>
+        </div>
+    );
+}
+
 export default function HomeAdmin() {
   const { toast } = useToast();
   const firestore = useFirestore();
@@ -89,21 +124,6 @@ export default function HomeAdmin() {
     }
   }, [homeSettings, form]);
 
-  const onSubmit = (values: SettingsFormValues) => {
-    if (!settingsDocRef || !canEditHome) return;
-    
-    setDocumentNonBlocking(settingsDocRef, { 
-      ...values,
-      isHomePageVideoEnabled: values.isHomePageVideoEnabled ?? true,
-      isWebsiteVideoEnabled: values.isWebsiteVideoEnabled ?? true,
-    }, { merge: true });
-    
-    toast({
-        title: 'Settings Saved',
-        description: 'Your home page settings have been updated.',
-    });
-  };
-
   const isLoading = isLoadingSettings || isLoadingProjects;
 
   if (isLoading) {
@@ -126,7 +146,7 @@ export default function HomeAdmin() {
             <ScrollArea className="h-full">
                 <div className="p-6">
                     <Form {...form}>
-                        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 max-w-2xl mx-auto">
+                        <div className="space-y-8 max-w-2xl mx-auto">
                             <fieldset disabled={!canEditHome} className="group space-y-8">
                                 <div className="space-y-4 p-4 rounded-lg border glass-effect">
                                     <FormField
@@ -171,6 +191,12 @@ export default function HomeAdmin() {
                                                 </FormControl>
                                             </FormItem>
                                         )}
+                                    />
+                                     <SingleSettingSaver
+                                        docRef={settingsDocRef}
+                                        fieldsToSave={['homePageBackgroundVideoId', 'isHomePageVideoEnabled']}
+                                        getValues={() => form.getValues()}
+                                        canEdit={canEditHome}
                                     />
                                 </div>
 
@@ -220,12 +246,15 @@ export default function HomeAdmin() {
                                             </FormItem>
                                         )}
                                     />
-                                </div>
-                                <div className="flex justify-end pt-4">
-                                    <Button type="submit" disabled={!canEditHome}>Save All Settings</Button>
+                                     <SingleSettingSaver
+                                        docRef={settingsDocRef}
+                                        fieldsToSave={['websiteBackgroundVideoId', 'isWebsiteVideoEnabled']}
+                                        getValues={() => form.getValues()}
+                                        canEdit={canEditHome}
+                                    />
                                 </div>
                             </fieldset>
-                        </form>
+                        </div>
                     </Form>
                 </div>
             </ScrollArea>
@@ -233,5 +262,3 @@ export default function HomeAdmin() {
     </div>
   );
 }
-
-    
