@@ -226,6 +226,13 @@ export default function WorkPage() {
   }, [allItems, filter]);
   
   const calculateAndSetItems = useCallback(() => {
+    if (isMobile) {
+        const mobileInitialLoad = 8;
+        setItemsPerLoad(mobileInitialLoad);
+        setVisibleItemsCount(prev => prev === null ? mobileInitialLoad : prev);
+        return;
+    }
+
     if (gridRef.current) {
         const itemMinWidth = 250; // Corresponds to `minmax(250px, 1fr)`
         const gridGap = 16; // Corresponds to `gap-4`
@@ -236,13 +243,13 @@ export default function WorkPage() {
         const itemHeightWithGap = (gridWidth / columnCount);
         
         const gridHeight = window.innerHeight * 0.8;
-        const rowCount = Math.max(2, Math.floor(gridHeight / itemHeightWithGap)); // Ensure at least 2 rows
+        const rowCount = Math.max(1, Math.floor(gridHeight / itemHeightWithGap));
         
-        const calculatedCount = Math.max(4, (columnCount * rowCount) -1);
+        const calculatedCount = columnCount * rowCount;
         setItemsPerLoad(calculatedCount);
         setVisibleItemsCount(prev => prev === null ? calculatedCount : prev);
     }
-  }, []);
+  }, [isMobile]);
 
   useEffect(() => {
     // Only run this on the client
@@ -500,7 +507,7 @@ export default function WorkPage() {
                     key={filter}
                     ref={gridRef}
                     className="grid gap-4"
-                    style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))' }}
+                    style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(clamp(40%, 150px, 100%), 1fr))' }}
                     variants={containerVariants}
                     initial="hidden"
                     animate="visible"
