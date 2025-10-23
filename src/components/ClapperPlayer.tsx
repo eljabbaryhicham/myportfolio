@@ -1,5 +1,4 @@
 'use client';
-
 import { useEffect, useRef } from 'react';
 
 // Define the expected shape of the Player module for TypeScript
