@@ -2,7 +2,7 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm, type UseFormReturn } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import * as z from 'zod';
 import { Button } from '@/components/ui/button';
 import {
@@ -48,41 +48,6 @@ const settingsSchema = z.object({
 
 type SettingsFormValues = z.infer<typeof settingsSchema>;
 
-function SingleSettingSaver({
-    docRef,
-    fieldsToSave,
-    getValues,
-    canEdit
-}: {
-    docRef: any,
-    fieldsToSave: (keyof SettingsFormValues)[],
-    getValues: () => SettingsFormValues,
-    canEdit: boolean,
-}) {
-    const { toast } = useToast();
-    const saveSettings = () => {
-        if (!docRef || !canEdit) return;
-        const allValues = getValues();
-        const valuesToSave = fieldsToSave.reduce((acc, key) => {
-            acc[key] = allValues[key];
-            return acc;
-        }, {} as Partial<SettingsFormValues>);
-        
-        setDocumentNonBlocking(docRef, valuesToSave, { merge: true });
-        
-        toast({
-            title: 'Settings Saved',
-            description: 'Your settings have been updated.',
-        });
-    };
-    
-    return (
-        <div className="flex justify-end pt-4">
-            <Button type="button" onClick={saveSettings} disabled={!canEdit}>Save Changes</Button>
-        </div>
-    );
-}
-
 export default function HomeAdmin() {
   const { toast } = useToast();
   const firestore = useFirestore();
@@ -113,6 +78,8 @@ export default function HomeAdmin() {
     },
   });
 
+  const { watch } = form;
+
   useEffect(() => {
     if (homeSettings) {
       form.reset({
@@ -123,6 +90,27 @@ export default function HomeAdmin() {
       });
     }
   }, [homeSettings, form]);
+
+  useEffect(() => {
+    if (!canEditHome) return;
+
+    const subscription = watch((value, { name, type }) => {
+      if (type === 'change' && settingsDocRef) {
+        const fieldName = name as keyof SettingsFormValues;
+        const dataToSave = { [fieldName]: value[fieldName] };
+        
+        setDocumentNonBlocking(settingsDocRef, dataToSave, { merge: true });
+        
+        toast({
+          title: 'Setting Saved',
+          description: 'Your change has been saved automatically.',
+        });
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [watch, settingsDocRef, canEditHome, toast]);
+
 
   const isLoading = isLoadingSettings || isLoadingProjects;
 
@@ -139,7 +127,7 @@ export default function HomeAdmin() {
         <div className="mb-6">
             <h2 className="text-xl font-headline">Home Page Settings</h2>
             <p className="text-muted-foreground">
-                Manage background videos and other global settings.
+                Manage background videos and other global settings. Changes save automatically.
             </p>
         </div>
         <div className="flex-1 border rounded-lg overflow-hidden glass-effect">
@@ -149,12 +137,13 @@ export default function HomeAdmin() {
                         <div className="space-y-8 max-w-2xl mx-auto">
                             <fieldset disabled={!canEditHome} className="group space-y-8">
                                 <div className="space-y-4 p-4 rounded-lg border glass-effect">
+                                    <h3 className="font-headline text-lg">Homepage Background</h3>
                                     <FormField
                                         control={form.control}
                                         name="homePageBackgroundVideoId"
                                         render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>Homepage Background Video</FormLabel>
+                                            <FormLabel>Background Video</FormLabel>
                                             <Select onValueChange={field.onChange} value={field.value}>
                                                 <FormControl>
                                                 <SelectTrigger>
@@ -192,23 +181,18 @@ export default function HomeAdmin() {
                                             </FormItem>
                                         )}
                                     />
-                                     <SingleSettingSaver
-                                        docRef={settingsDocRef}
-                                        fieldsToSave={['homePageBackgroundVideoId', 'isHomePageVideoEnabled']}
-                                        getValues={() => form.getValues()}
-                                        canEdit={canEditHome}
-                                    />
                                 </div>
 
                                 <Separator />
 
                                 <div className="space-y-4 p-4 rounded-lg border glass-effect">
+                                     <h3 className="font-headline text-lg">Other Pages Background</h3>
                                     <FormField
                                         control={form.control}
                                         name="websiteBackgroundVideoId"
                                         render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>Website Background Video (Other Pages)</FormLabel>
+                                            <FormLabel>Background Video</FormLabel>
                                             <Select onValueChange={field.onChange} value={field.value}>
                                                 <FormControl>
                                                 <SelectTrigger>
@@ -245,12 +229,6 @@ export default function HomeAdmin() {
                                                 </FormControl>
                                             </FormItem>
                                         )}
-                                    />
-                                     <SingleSettingSaver
-                                        docRef={settingsDocRef}
-                                        fieldsToSave={['websiteBackgroundVideoId', 'isWebsiteVideoEnabled']}
-                                        getValues={() => form.getValues()}
-                                        canEdit={canEditHome}
                                     />
                                 </div>
                             </fieldset>
