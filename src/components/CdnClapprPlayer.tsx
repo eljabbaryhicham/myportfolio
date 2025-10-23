@@ -48,12 +48,12 @@ export default function CdnClapprPlayer({ source, poster, chromeless = false }: 
         parentId: `#${uniqueIdRef.current}`,
         width: '100%',
         height: '100%',
-        autoPlay: chromeless,
+        autoPlay: true, // Enable autoplay
         mute: chromeless,
         loop: chromeless,
         chromeless: chromeless,
         playback: {
-            playInline: true,
+            playInline: true, // Essential for iOS and inline playback
             hlsjsConfig: {}, // Basic config for HLS.js
         },
     });
