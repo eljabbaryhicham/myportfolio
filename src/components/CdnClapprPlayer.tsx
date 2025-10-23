@@ -1,6 +1,8 @@
 
 'use client';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import Preloader from './preloader';
+import { cn } from '@/lib/utils';
 
 // Make Clappr and its plugins available on the window object for type safety
 declare global {
@@ -8,7 +10,6 @@ declare global {
         Clappr: any;
         DashShakaPlayback: any;
         HlsjsPlayback: any;
-        PipPlugin: any;
     }
 }
 
@@ -21,6 +22,7 @@ interface CdnClapprPlayerProps {
 export default function CdnClapprPlayer({ source, poster, autoPlay = true }: CdnClapprPlayerProps) {
   const playerRef = useRef<HTMLDivElement>(null);
   const playerInstanceRef = useRef<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     // Don't run on server or if Clappr script hasn't loaded yet
@@ -40,9 +42,6 @@ export default function CdnClapprPlayer({ source, poster, autoPlay = true }: Cdn
     if (window.HlsjsPlayback) {
       plugins.push(window.HlsjsPlayback);
     }
-    if(window.PipPlugin) {
-      plugins.push(window.PipPlugin);
-    }
 
     playerInstanceRef.current = new window.Clappr.Player({
         source,
@@ -51,7 +50,7 @@ export default function CdnClapprPlayer({ source, poster, autoPlay = true }: Cdn
         width: '100%',
         height: '100%',
         autoPlay: autoPlay,
-        volume: 20, // Set volume to 20%
+        mute: true,
         plugins: plugins,
         shakaConfiguration: {
           streaming: {
@@ -61,6 +60,10 @@ export default function CdnClapprPlayer({ source, poster, autoPlay = true }: Cdn
         shakaOnBeforeLoad: function(shaka_player: any) {
           // shaka_player.getNetworkingEngine().registerRequestFilter() ...
         },
+        events: {
+          onPlay: () => setIsLoading(false),
+          onError: () => setIsLoading(false),
+        }
     });
 
     // Cleanup function to destroy the player when the component unmounts
@@ -72,5 +75,18 @@ export default function CdnClapprPlayer({ source, poster, autoPlay = true }: Cdn
   }, [source, poster, autoPlay]); // Re-run the effect if these props change
 
   // Use a static ID or generate one that's consistent across renders
-  return <div id="cdn-clappr-player" ref={playerRef} className="w-full h-full" />;
+  return (
+    <div className="w-full h-full relative bg-black">
+      {isLoading && (
+        <div className="absolute inset-0 z-10 flex items-center justify-center">
+            <Preloader />
+        </div>
+      )}
+      <div 
+        id="cdn-clappr-player" 
+        ref={playerRef} 
+        className={cn("w-full h-full transition-opacity duration-300", isLoading ? 'opacity-0' : 'opacity-100')} 
+      />
+    </div>
+  );
 }

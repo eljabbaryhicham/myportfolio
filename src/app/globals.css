@@ -218,3 +218,7 @@
 .shaka-spinner {
   display: none !important;
 }
+
+.spinner[data-spinner] {
+    display: none !important;
+}
