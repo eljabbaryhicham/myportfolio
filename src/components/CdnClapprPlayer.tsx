@@ -19,7 +19,7 @@ interface CdnClapprPlayerProps {
   autoPlay?: boolean;
 }
 
-export default function CdnClapprPlayer({ source, poster, chromeless = false, autoPlay = false }: CdnClapprPlayerProps) {
+export default function CdnClapprPlayer({ source, poster, chromeless = false, autoPlay = true }: CdnClapprPlayerProps) {
   const playerRef = useRef<HTMLDivElement>(null);
   const playerInstanceRef = useRef<any>(null);
 

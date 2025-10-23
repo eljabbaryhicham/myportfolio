@@ -62,6 +62,7 @@ const PortfolioMedia = ({
           <CdnClapprPlayer 
             source={mediaUrl} 
             poster={item.useVideoFrameAsPoster ? undefined : item.thumbnailUrl}
+            autoPlay={true}
           />
         )}
       </div>
