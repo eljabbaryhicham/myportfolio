@@ -50,7 +50,7 @@ export default function CdnClapprPlayer({ source, poster, autoPlay = true }: Cdn
         width: '100%',
         height: '100%',
         autoPlay: autoPlay,
-        mute: true,
+        volume: 20,
         plugins: plugins,
         shakaConfiguration: {
           streaming: {
