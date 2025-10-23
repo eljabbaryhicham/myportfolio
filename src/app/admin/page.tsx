@@ -41,6 +41,7 @@ function AdminPage() {
   const [fromMediaLibrary, setFromMediaLibrary] = useState(false);
   const [newlyUploadedId, setNewlyUploadedId] = useState<string | null>(null);
   const [dialogActiveTab, setDialogActiveTab] = useState<'images' | 'videos'>('images');
+  const [dialogActiveLibrary, setDialogActiveLibrary] = useState<'primary' | 'extented'>('primary');
 
   const typedUser = user as AppUser | null;
   const isSuperAdmin = typedUser?.email === 'eljabbaryhicham@example.com';
@@ -158,7 +159,7 @@ function AdminPage() {
     }
   };
 
-  const handleUploadComplete = async (docId: string, resourceType: 'image' | 'video') => {
+  const handleUploadComplete = async (docId: string, resourceType: 'image' | 'video', libraryId: 'primary' | 'extented') => {
     if (!docId) return;
     setNewlyUploadedId(docId);
     
@@ -168,6 +169,7 @@ function AdminPage() {
     }
     
     setDialogActiveTab(resourceType === 'video' ? 'videos' : 'images');
+    setDialogActiveLibrary(libraryId);
     setIsLibraryOpen(true); // Open the library
     
     // Reset the animation highlight after a delay
@@ -271,6 +273,8 @@ function AdminPage() {
         }}
         activeTab={dialogActiveTab}
         setActiveTab={setDialogActiveTab}
+        activeLibrary={dialogActiveLibrary}
+        setActiveLibrary={setDialogActiveLibrary}
         newlyUploadedId={newlyUploadedId}
       />
     </>
@@ -278,3 +282,5 @@ function AdminPage() {
 }
 
 export default AdminPage;
+
+    

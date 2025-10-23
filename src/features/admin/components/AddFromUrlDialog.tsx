@@ -27,7 +27,7 @@ type FormValues = z.infer<typeof formSchema>;
 interface AddFromUrlDialogProps {
   isOpen: boolean;
   onOpenChange: (isOpen: boolean) => void;
-  onUploadComplete: (mediaId: string, resourceType: 'image' | 'video') => void;
+  onUploadComplete: (mediaId: string, resourceType: 'image' | 'video', libraryId: 'primary' | 'extented') => void;
 }
 
 export default function AddFromUrlDialog({ isOpen, onOpenChange, onUploadComplete }: AddFromUrlDialogProps) {
@@ -81,7 +81,7 @@ export default function AddFromUrlDialog({ isOpen, onOpenChange, onUploadComplet
           title: 'Upload Successful',
           description: result.message,
         });
-        onUploadComplete(result.mediaId, result.resource_type || 'image');
+        onUploadComplete(result.mediaId, result.resource_type || 'image', values.libraryId);
         setTimeout(() => {
           onOpenChange(false);
           setIsSubmitting(false);
@@ -196,3 +196,5 @@ export default function AddFromUrlDialog({ isOpen, onOpenChange, onUploadComplet
     </Dialog>
   );
 }
+
+    

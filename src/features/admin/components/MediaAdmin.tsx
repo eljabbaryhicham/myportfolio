@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useCallback, useState, useEffect, useMemo, useRef } from 'react';
@@ -141,7 +140,7 @@ const MediaFileCard = ({
 interface StandaloneMediaAdminProps {
   isDialog?: false;
   onMediaSelect: (url: string, type: 'image' | 'video', filename: string) => void;
-  onUploadComplete: (docId: string, resourceType: 'image' | 'video') => void;
+  onUploadComplete: (docId: string, resourceType: 'image' | 'video', libraryId: 'primary' | 'extented') => void;
   onLibraryOpenRequest: () => void;
   isOpen?: never;
   onOpenChange?: never;
@@ -149,6 +148,8 @@ interface StandaloneMediaAdminProps {
   onSelectionComplete?: never;
   activeTab?: never;
   setActiveTab?: never;
+  activeLibrary?: never;
+  setActiveLibrary?: never;
   newlyUploadedId?: never;
 }
 
@@ -161,6 +162,8 @@ interface DialogMediaAdminProps {
   onSelectionComplete: () => void;
   activeTab: 'images' | 'videos';
   setActiveTab: (tab: 'images' | 'videos') => void;
+  activeLibrary: 'primary' | 'extented';
+  setActiveLibrary: (library: 'primary' | 'extented') => void;
   newlyUploadedId: string | null;
   onUploadComplete?: never;
   onLibraryOpenRequest?: never;
@@ -180,10 +183,11 @@ export default function MediaAdmin(props: MediaAdminProps) {
   const [isAddFromUrlOpen, setIsAddFromUrlOpen] = useState(false);
   const [isChoosingLibrary, setIsChoosingLibrary] = useState(false);
   const [filesToUpload, setFilesToUpload] = useState<File[]>([]);
-  const [activeLibrary, setActiveLibrary] = useState<'primary' | 'extented'>('primary');
   
   const activeTab = props.isDialog ? props.activeTab : 'images';
   const setActiveTab = props.isDialog ? props.setActiveTab : () => {};
+  const activeLibrary = props.isDialog ? props.activeLibrary : 'primary';
+  const setActiveLibrary = props.isDialog ? props.setActiveLibrary : () => {};
   
   const newlyUploadedId = props.isDialog ? props.newlyUploadedId : null;
 
@@ -289,7 +293,7 @@ export default function MediaAdmin(props: MediaAdminProps) {
               const docRef = await docRefPromise as DocumentReference | undefined;
 
               if (docRef && !props.isDialog && props.onUploadComplete) {
-                  props.onUploadComplete(docRef.id, response.resource_type);
+                  props.onUploadComplete(docRef.id, response.resource_type, libraryId);
               }
           }
 
@@ -364,9 +368,9 @@ export default function MediaAdmin(props: MediaAdminProps) {
     }
   };
   
-  const handleUrlUploadComplete = (mediaId: string, resourceType: 'image' | 'video') => {
+  const handleUrlUploadComplete = (mediaId: string, resourceType: 'image' | 'video', libraryId: 'primary' | 'extented') => {
     if (!props.isDialog && props.onUploadComplete) {
-      props.onUploadComplete(mediaId, resourceType);
+      props.onUploadComplete(mediaId, resourceType, libraryId);
     }
   };
 
@@ -594,3 +598,5 @@ export default function MediaAdmin(props: MediaAdminProps) {
     </>
   );
 }
+
+    
