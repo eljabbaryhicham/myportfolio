@@ -696,14 +696,7 @@ export default function WorkPage() {
                           ]}
                           components={{
                             img: ({node, ...props}) => <img className="w-full rounded-lg" {...props} />,
-                            video: ({node, ...props}) => {
-                              if (!isClient || !props.src) return null;
-                              return (
-                                <div className="w-full my-4 rounded-lg overflow-hidden aspect-video">
-                                  <ClapperPlayer source={props.src} poster={props.poster} />
-                                </div>
-                              );
-                            }
+                            video: () => null, // This will prevent any video tags in markdown from rendering
                           }}
                         >{selectedItem.details || ''}</ReactMarkdown>
                     </div>
