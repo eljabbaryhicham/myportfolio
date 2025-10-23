@@ -16,12 +16,12 @@ export default function ClapperPlayer({ source, poster, isBackground = false }: 
   useEffect(() => {
     if (!playerRef.current) return;
 
-    // Dynamically import the Player class inside useEffect
+    // Dynamically import the Player class inside useEffect to ensure it only runs on the client
     import('@clappr/player').then((PlayerModule) => {
       // The module exports the constructor as the default export.
       const Player = PlayerModule.default;
 
-      // Ensure we don't create duplicate players
+      // Ensure we don't create duplicate players if the component re-renders
       if (playerInstanceRef.current) {
         playerInstanceRef.current.destroy();
       }
@@ -38,7 +38,7 @@ export default function ClapperPlayer({ source, poster, isBackground = false }: 
         chromeless: isBackground, // Removes all player controls
         playback: {
           hlsjsConfig: {
-            // HLS.js configuration
+            // HLS.js configuration can be added here if needed
           },
         },
       });
@@ -53,7 +53,7 @@ export default function ClapperPlayer({ source, poster, isBackground = false }: 
         playerInstanceRef.current = null;
       }
     };
-  // We only want to re-run this effect if the source URL changes.
+  // Re-run this effect if the source URL changes.
   }, [source, poster, isBackground]);
 
   // Generate a unique ID for each player instance to avoid conflicts
