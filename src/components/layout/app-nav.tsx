@@ -9,7 +9,7 @@ import { motion } from "framer-motion";
 import React from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faHouse, faImage, faCircleInfo, faEnvelope, faShieldHalved } from "@fortawesome/free-solid-svg-icons";
+import { faHouse, faImage, faCircleInfo, faEnvelope, faShieldHalved, faVial } from "@fortawesome/free-solid-svg-icons";
 import Logo from "../logo";
 import { doc } from "firebase/firestore";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -21,6 +21,7 @@ const navItems = [
   { href: "/about", label: "About", icon: faCircleInfo, public: true },
   { href: "/contact", label: "Contact", icon: faEnvelope, public: true },
   { href: "/admin", label: "Admin", icon: faShieldHalved, public: false },
+  { href: "/test", label: "Test", icon: faVial, public: true },
 ];
 
 export function AppNav() {
@@ -42,6 +43,7 @@ export function AppNav() {
   const renderNavItem = (item: (typeof navItems)[0]) => {
     const isActive = item.href === "/" ? pathname === item.href : pathname.startsWith(item.href);
     const isAdminButton = item.label === 'Admin';
+    const isTestButton = item.label === 'Test';
 
     const navButton = (
       <Link
@@ -51,13 +53,18 @@ export function AppNav() {
           isMobile ? 'h-[clamp(2.5rem,10vw,3rem)] w-[clamp(2.5rem,10vw,3rem)]' : "h-10 w-10",
           "text-white", 
           isActive
-            ? isAdminButton
-              ? "bg-green-500"
-              : "bg-destructive text-destructive-foreground shadow-[0_0_15px_hsl(var(--primary)/0.8),_0_0_20px_hsl(var(--primary)/0.6)]"
-            : isAdminButton
-              ? "bg-green-500/80 hover:bg-green-500"
-              : "text-foreground/70 glass-effect",
+            ? isTestButton 
+              ? "bg-blue-500"
+              : isAdminButton
+                ? "bg-green-500"
+                : "bg-destructive text-destructive-foreground shadow-[0_0_15px_hsl(var(--primary)/0.8),_0_0_20px_hsl(var(--primary)/0.6)]"
+            : isTestButton
+              ? "bg-blue-500/80 hover:bg-blue-500"
+              : isAdminButton
+                ? "bg-green-500/80 hover:bg-green-500"
+                : "text-foreground/70 glass-effect",
            isActive && isAdminButton && "shadow-[0_0_15px_#22c55e80,_0_0_20px_#22c55e60]",
+           isActive && isTestButton && "shadow-[0_0_15px_#3b82f680,_0_0_20px_#3b82f660]",
         )}
       >
         <FontAwesomeIcon icon={item.icon} className={cn("group-hover:animate-[icon-wobble_0.8s_ease-in-out_1] h-[50%] w-[50%]")} />
@@ -98,7 +105,7 @@ export function AppNav() {
         <div className={cn(
           "flex h-[7vh] min-h-[60px] flex-row items-center justify-between rounded-lg border border-border/50 glass-effect"
           )}>
-          <nav className="flex h-full flex-1 items-center justify-between px-[15vw]">
+          <nav className="flex h-full flex-1 items-center justify-between px-[5vw] sm:px-[15vw]">
             {accessibleNavItems.map(renderNavItem)}
           </nav>
         </div>
