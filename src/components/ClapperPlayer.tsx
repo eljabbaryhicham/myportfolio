@@ -18,7 +18,11 @@ export default function ClapperPlayer({ source, poster, isBackground = false }: 
     if (!playerRef.current) return;
 
     // Dynamically import the Player class inside useEffect
-    import('@clappr/player').then(({ default: Player }) => {
+    import('@clappr/player').then((PlayerModule) => {
+      // The module might be the constructor directly, or it might be on a .default property.
+      // This handles both cases.
+      const Player = (PlayerModule as any).default || PlayerModule;
+
       // Ensure we don't create duplicate players
       if (playerInstanceRef.current) {
         playerInstanceRef.current.destroy();
