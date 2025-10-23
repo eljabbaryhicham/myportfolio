@@ -193,6 +193,11 @@
           "enum": ["image", "video", "raw"],
           "description": "The type of the media file."
         },
+        "videoFormat": {
+            "type": "string",
+            "enum": ["mp4", "m3u8"],
+            "description": "The format for video delivery (optimized MP4 or adaptive HLS)."
+        },
         "created_at": {
           "type": "string",
           "format": "date-time",

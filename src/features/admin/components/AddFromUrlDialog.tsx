@@ -16,10 +16,13 @@ import { faSpinner, faXmark } from '@fortawesome/free-solid-svg-icons';
 import { cn } from '@/lib/utils';
 import { Progress } from '@/components/ui/progress';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Label } from '@/components/ui/label';
 
 const formSchema = z.object({
   mediaUrl: z.string().url({ message: 'Please enter a valid URL.' }),
   libraryId: z.enum(['primary', 'extented']),
+  videoFormat: z.enum(['mp4', 'm3u8']).optional(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -34,11 +37,25 @@ export default function AddFromUrlDialog({ isOpen, onOpenChange, onUploadComplet
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [isVideoUrl, setIsVideoUrl] = useState(false);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
-    defaultValues: { mediaUrl: '', libraryId: 'primary' },
+    defaultValues: { mediaUrl: '', libraryId: 'primary', videoFormat: 'mp4' },
   });
+
+  const mediaUrl = form.watch('mediaUrl');
+
+  useEffect(() => {
+    const videoExtensions = ['.mp4', '.mov', '.webm', '.m3u8', '.mpd'];
+    const isVideo = videoExtensions.some(ext => mediaUrl.toLowerCase().endsWith(ext));
+    setIsVideoUrl(isVideo);
+    if (!isVideo) {
+      form.setValue('videoFormat', undefined);
+    } else if (!form.getValues('videoFormat')) {
+      form.setValue('videoFormat', 'mp4');
+    }
+  }, [mediaUrl, form]);
 
   useEffect(() => {
     let timer: NodeJS.Timeout | undefined;
@@ -159,6 +176,42 @@ export default function AddFromUrlDialog({ isOpen, onOpenChange, onUploadComplet
                   </FormItem>
                 )}
               />
+              {isVideoUrl && (
+                <FormField
+                  control={form.control}
+                  name="videoFormat"
+                  render={({ field }) => (
+                    <FormItem className="space-y-3">
+                      <FormLabel>Video Format</FormLabel>
+                      <FormControl>
+                        <RadioGroup
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                          className="flex flex-col space-y-1"
+                        >
+                          <FormItem className="flex items-center space-x-3 space-y-0">
+                            <FormControl>
+                              <RadioGroupItem value="mp4" />
+                            </FormControl>
+                            <FormLabel className="font-normal">
+                              MP4 (Optimized for web)
+                            </FormLabel>
+                          </FormItem>
+                          <FormItem className="flex items-center space-x-3 space-y-0">
+                            <FormControl>
+                              <RadioGroupItem value="m3u8" />
+                            </FormControl>
+                            <FormLabel className="font-normal">
+                              M3U8 (Adaptive streaming for best performance)
+                            </FormLabel>
+                          </FormItem>
+                        </RadioGroup>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
             </fieldset>
 
             {isSubmitting && (
@@ -196,5 +249,3 @@ export default function AddFromUrlDialog({ isOpen, onOpenChange, onUploadComplet
     </Dialog>
   );
 }
-
-    

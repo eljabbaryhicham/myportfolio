@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useCallback, useState, useEffect, useMemo, useRef } from 'react';
@@ -20,6 +21,8 @@ import { Separator } from '@/components/ui/separator';
 import AddFromUrlDialog from './AddFromUrlDialog';
 import type { AppUser } from '@/firebase/auth/use-user';
 import CdnClapprPlayer from '@/components/CdnClapprPlayer';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Label } from '@/components/ui/label';
 
 
 // Type for the media stored in Firestore
@@ -31,6 +34,7 @@ interface MediaAsset {
     created_at: string;
     filename: string;
     libraryId?: 'primary' | 'extented';
+    videoFormat?: 'mp4' | 'm3u8';
 }
 
 const MediaFileCard = ({
@@ -77,7 +81,7 @@ const MediaFileCard = ({
             <Image src={file.url} alt={file.public_id} fill className="object-cover" />
           ) : (
             <div className="w-full h-full bg-black flex items-center justify-center">
-              <Image src={file.url.replace(/\.webm$/, '.jpg').replace(/\.mp4$/, '.jpg')} alt={file.public_id} fill className="object-cover" />
+              <Image src={file.url.replace(/\.(webm|m3u8)$/, '.jpg').replace(/\.mp4$/, '.jpg')} alt={file.public_id} fill className="object-cover" />
               <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
                 <FontAwesomeIcon icon={faFilm} className="h-8 w-8 text-white/70" />
               </div>
@@ -182,7 +186,9 @@ export default function MediaAdmin(props: MediaAdminProps) {
   const [previewFile, setPreviewFile] = useState<MediaAsset | null>(null);
   const [isAddFromUrlOpen, setIsAddFromUrlOpen] = useState(false);
   const [isChoosingLibrary, setIsChoosingLibrary] = useState(false);
+  const [isChoosingVideoFormat, setIsChoosingVideoFormat] = useState(false);
   const [filesToUpload, setFilesToUpload] = useState<File[]>([]);
+  const [uploadVideoFormat, setUploadVideoFormat] = useState<'mp4' | 'm3u8'>('mp4');
   
   const activeTab = props.isDialog ? props.activeTab : 'images';
   const setActiveTab = props.isDialog ? props.setActiveTab : () => {};
@@ -227,7 +233,14 @@ export default function MediaAdmin(props: MediaAdminProps) {
       return;
     }
     setFilesToUpload(acceptedFiles);
-    setIsChoosingLibrary(true);
+    
+    // If any of the files are videos, ask for format choice. Otherwise, just ask for library.
+    if (acceptedFiles.some(file => file.type.startsWith('video/'))) {
+        setIsChoosingVideoFormat(true);
+    } else {
+        setUploadVideoFormat('mp4'); // Default for non-videos
+        setIsChoosingLibrary(true);
+    }
   }, [canUpload, toast]);
   
   const handleLibraryChoiceAndUpload = useCallback(async (libraryId: 'primary' | 'extented') => {
@@ -278,17 +291,25 @@ export default function MediaAdmin(props: MediaAdminProps) {
         if (xhr.status === 200) {
           const response = JSON.parse(xhr.responseText);
 
-          const optimizedUrl = response.secure_url.replace(`/upload/`, `/upload/f_auto,q_auto/`);
+          let finalUrl = response.secure_url;
+          if (response.resource_type === 'video' && uploadVideoFormat === 'm3u8') {
+             finalUrl = `https://res.cloudinary.com/${cloudName}/video/upload/sp_auto/v${response.version}/${response.public_id}.m3u8`;
+          } else if (response.resource_type === 'video' || response.resource_type === 'image') {
+             finalUrl = finalUrl.replace(`/upload/`, `/upload/f_auto,q_auto/`);
+          }
           
           if(firestore) {
-              const docRefPromise = addDocumentNonBlocking(collection(firestore, 'media'), {
+              const mediaData = {
                   public_id: response.public_id,
-                  url: optimizedUrl,
+                  url: finalUrl,
                   resource_type: response.resource_type,
                   created_at: response.created_at,
                   filename: file.name,
                   libraryId: libraryId,
-              });
+                  ...(response.resource_type === 'video' && { videoFormat: uploadVideoFormat }),
+              };
+              
+              const docRefPromise = addDocumentNonBlocking(collection(firestore, 'media'), mediaData);
 
               const docRef = await docRefPromise as DocumentReference | undefined;
 
@@ -331,7 +352,7 @@ export default function MediaAdmin(props: MediaAdminProps) {
     setUploadProgress(0);
     setFilesToUpload([]);
 
-  }, [filesToUpload, toast, firestore, props]);
+  }, [filesToUpload, toast, firestore, props, uploadVideoFormat]);
 
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -580,6 +601,28 @@ export default function MediaAdmin(props: MediaAdminProps) {
         onOpenChange={setIsAddFromUrlOpen}
         onUploadComplete={handleUrlUploadComplete}
       />
+      <Dialog open={isChoosingVideoFormat} onOpenChange={setIsChoosingVideoFormat}>
+        <DialogContent>
+            <DialogHeader>
+                <DialogTitle>Choose Video Format</DialogTitle>
+                <DialogDescription>Select the delivery format for the video(s) you are uploading.</DialogDescription>
+            </DialogHeader>
+            <RadioGroup defaultValue="mp4" onValueChange={(value: 'mp4' | 'm3u8') => setUploadVideoFormat(value)}>
+                <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="mp4" id="r1" />
+                    <Label htmlFor="r1">MP4 (Optimized for web)</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="m3u8" id="r2" />
+                    <Label htmlFor="r2">M3U8 (Adaptive streaming)</Label>
+                </div>
+            </RadioGroup>
+            <DialogFooter>
+                <Button variant="outline" onClick={() => setIsChoosingVideoFormat(false)}>Cancel</Button>
+                <Button onClick={() => { setIsChoosingVideoFormat(false); setIsChoosingLibrary(true); }}>Next</Button>
+            </DialogFooter>
+        </DialogContent>
+      </Dialog>
       <Dialog open={isChoosingLibrary} onOpenChange={setIsChoosingLibrary}>
         <DialogContent>
             <DialogHeader>
@@ -598,5 +641,3 @@ export default function MediaAdmin(props: MediaAdminProps) {
     </>
   );
 }
-
-    

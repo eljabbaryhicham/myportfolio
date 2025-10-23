@@ -4,13 +4,14 @@
  * @fileOverview A Genkit flow for uploading media from a URL to a specified Cloudinary library and saving to Firestore.
  */
 import { ai } from '@/ai/genkit';
-import { z } from 'genkit';
+import { z } from 'zod';
 import { getFirestore as getAdminFirestore } from 'firebase-admin/firestore';
 import { initializeServerApp } from '@/firebase/server-init';
 
 const UploadMediaFromUrlInputSchema = z.object({
   mediaUrl: z.string().url(),
   libraryId: z.enum(['primary', 'extented']),
+  videoFormat: z.enum(['mp4', 'm3u8']).optional(),
 });
 export type UploadMediaFromUrlInput = z.infer<typeof UploadMediaFromUrlInputSchema>;
 
@@ -48,7 +49,7 @@ const uploadMediaFromUrlFlow = ai.defineFlow(
   },
   async (input): Promise<UploadMediaFromUrlOutput> => {
     try {
-      const { libraryId } = input;
+      const { libraryId, videoFormat } = input;
       const suffix = libraryId === 'primary' ? '_1' : '_2';
       
       const cloudName = process.env[`CLOUDINARY_CLOUD_NAME${suffix}`];
@@ -85,7 +86,10 @@ const uploadMediaFromUrlFlow = ai.defineFlow(
 
       let finalUrl = uploadResult.secure_url;
       
-      if (uploadResult.resource_type === 'image' || uploadResult.resource_type === 'video') {
+      if (uploadResult.resource_type === 'video' && videoFormat === 'm3u8') {
+          finalUrl = `https://res.cloudinary.com/${cloudName}/video/upload/sp_auto/v${uploadResult.version}/${uploadResult.public_id}.m3u8`;
+          console.log(`Generated adaptive streaming (HLS) URL: ${finalUrl}`);
+      } else if (uploadResult.resource_type === 'image' || uploadResult.resource_type === 'video') {
           finalUrl = cloudinary.url(uploadResult.public_id, {
               fetch_format: 'auto',
               quality: 'auto',
@@ -107,6 +111,7 @@ const uploadMediaFromUrlFlow = ai.defineFlow(
         created_at: uploadResult.created_at,
         filename: filename || uploadResult.public_id,
         libraryId: libraryId, // Save the library ID
+        ...(uploadResult.resource_type === 'video' && { videoFormat: videoFormat || 'mp4' }),
       };
 
       const docRef = await firestore.collection('media').add(mediaData);
