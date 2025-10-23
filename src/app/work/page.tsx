@@ -33,6 +33,7 @@ import { motion, AnimatePresence, PanInfo } from 'framer-motion';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import ContactForm from '@/features/contact/components/ContactForm';
 import type { AppUser } from '@/firebase/auth/use-user';
+import ClapperPlayer from '@/components/ClapperPlayer';
 
 
 const MemoizedImage = memo(Image);
@@ -57,16 +58,7 @@ const PortfolioMedia = ({
   if (item.type === 'video') {
     return (
       <div className="relative aspect-video bg-black flex items-center justify-center w-full group">
-        <MemoizedImage
-          src={item.thumbnailUrl}
-          alt={item.title}
-          fill
-          className="object-contain"
-          onLoad={onMediaLoaded}
-        />
-        <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
-            <FontAwesomeIcon icon={faFilm} className="h-16 w-16 text-white/50" />
-        </div>
+        <ClapperPlayer source={mediaUrl} poster={item.thumbnailUrl} />
       </div>
     );
   }
@@ -706,18 +698,7 @@ export default function WorkPage() {
                               if (!isClient || !props.src) return null;
                               return (
                                 <div className="w-full my-4 rounded-lg overflow-hidden relative aspect-video bg-black flex items-center justify-center group">
-                                    {props.poster && (
-                                        <Image
-                                            src={props.poster}
-                                            alt="Video poster"
-                                            fill
-                                            className="object-contain"
-                                        />
-                                    )}
-                                    <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
-                                        <FontAwesomeIcon icon={faFilm} className="h-16 w-16 text-white/50" />
-                                    </div>
-                                    <p className="absolute bottom-2 right-2 text-xs text-white bg-black/50 px-2 py-1 rounded">Video player removed</p>
+                                    <ClapperPlayer source={props.src} poster={props.poster} />
                                 </div>
                               );
                             }

@@ -20,6 +20,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Separator } from '@/components/ui/separator';
 import AddFromUrlDialog from './AddFromUrlDialog';
 import type { AppUser } from '@/firebase/auth/use-user';
+import ClapperPlayer from '@/components/ClapperPlayer';
 
 
 // Type for the media stored in Firestore
@@ -411,18 +412,10 @@ export default function MediaAdmin(props: MediaAdminProps) {
     if (previewFile.resource_type === 'video') {
       return (
         <div className="w-full h-full flex items-center justify-center bg-black">
-          <div className="relative w-full aspect-video">
-            <Image 
-              src={previewFile.url.replace(/\.webm$/, '.jpg').replace(/\.mp4$/, '.jpg')} 
-              alt={previewFile.filename}
-              fill
-              className="object-contain" 
+            <ClapperPlayer 
+                source={previewFile.url} 
+                poster={previewFile.url.replace(/\.webm$/, '.jpg').replace(/\.mp4$/, '.jpg')} 
             />
-            <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
-              <FontAwesomeIcon icon={faFilm} className="h-16 w-16 text-white/50" />
-            </div>
-            <p className="absolute bottom-2 left-2 text-xs text-white bg-black/50 px-2 py-1 rounded">Video player removed</p>
-          </div>
         </div>
       );
     }
