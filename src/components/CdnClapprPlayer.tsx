@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import Preloader from './preloader';
 import { cn } from '@/lib/utils';
+import { useToast } from '@/hooks/use-toast';
 
 // Make Clappr and its plugins available on the window object for type safety
 declare global {
@@ -52,22 +53,25 @@ export default function CdnClapprPlayer({ source, poster, autoPlay = true }: Cdn
   const playerInstanceRef = useRef<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [scriptsLoaded, setScriptsLoaded] = useState(false);
+  const { toast } = useToast();
 
   useEffect(() => {
     loadStylesheet('https://cdn.jsdelivr.net/npm/@clappr/player@latest/dist/clappr.min.css', 'clappr-stylesheet');
 
     Promise.all([
-      loadScript('https://cdn.jsdelivr.net/npm/clappr@latest/dist/clappr.min.js', 'clappr-script'),
-    ]).then(() => {
-        return Promise.all([
-            loadScript('https://cdn.jsdelivr.net/npm/clappr-pip-plugin@latest/dist/clappr-pip-plugin.js', 'clappr-pip-plugin'),
-            loadScript('https://cdn.jsdelivr.net/npm/clappr-hlsjs-playback@latest/dist/hlsjs-playback.min.js', 'clappr-hls-playback'),
-            loadScript('https://cdn.jsdelivr.net/gh/clappr/dash-shaka-playback@latest/dist/dash-shaka-playback.js', 'clappr-shaka-playback'),
-        ]);
-    })
+        loadScript('https://cdn.jsdelivr.net/npm/clappr@latest/dist/clappr.min.js', 'clappr-script'),
+        loadScript('https://cdn.jsdelivr.net/gh/clappr/dash-shaka-playback@latest/dist/dash-shaka-playback.js', 'clappr-shaka-playback'),
+    ])
     .then(() => setScriptsLoaded(true))
-    .catch(error => console.error(error));
-  }, []);
+    .catch(error => {
+      console.error(error)
+      toast({
+        variant: 'destructive',
+        title: 'Could not load video player',
+        description: 'An essential script for video playback failed to load. Please check your internet connection or ad-blocker.'
+      })
+    });
+  }, [toast]);
 
   useEffect(() => {
     // Don't run on server or if Clappr script hasn't loaded yet
@@ -84,6 +88,7 @@ export default function CdnClapprPlayer({ source, poster, autoPlay = true }: Cdn
     if (window.DashShakaPlayback) {
       plugins.push(window.DashShakaPlayback);
     }
+    // HLSjsPlayback is built-in, so we don't need to load it as a separate plugin, just check for its existence
     if (window.HlsjsPlayback) {
       plugins.push(window.HlsjsPlayback);
     }
