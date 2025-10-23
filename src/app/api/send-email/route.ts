@@ -41,7 +41,7 @@ export async function POST(req: NextRequest) {
 
   try {
     const { data, error } = await resend.emails.send({
-      from: `Contact Form <${FROM_EMAIL}>`,
+      from: `BELOFTED <${FROM_EMAIL}>`,
       to: TO_EMAIL,
       subject: `New Message from ${name}`,
       reply_to: email,
