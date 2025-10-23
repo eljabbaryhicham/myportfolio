@@ -18,14 +18,14 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { useCollection, useFirestore, useMemoFirebase, useUser, errorEmitter, FirestorePermissionError } from '@/firebase';
+import { useCollection, useFirestore, useMemoFirebase, useUser, errorEmitter, FirestorePermissionError, updateDocumentNonBlocking } from '@/firebase';
 import { useToast } from '@/hooks/use-toast';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { deleteDocumentNonBlocking, setDocumentNonBlocking, addDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { collection, doc, query, orderBy, writeBatch } from 'firebase/firestore';
 import { cn } from '@/lib/utils';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPlusCircle, faEllipsisH, faCloudUploadAlt, faImages, faGripVertical } from '@fortawesome/free-solid-svg-icons';
+import { faPlusCircle, faEllipsisH, faCloudUploadAlt, faImages, faGripVertical, faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
 import Preloader from '@/components/preloader';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
@@ -41,15 +41,16 @@ interface Client {
   name: string;
   logoUrl: string;
   order: number;
+  isVisible?: boolean;
 }
 
 const defaultClients: Omit<Client, 'id'>[] = [
-    { name: 'QuantumLeap', logoUrl: 'https://res.cloudinary.com/da1srnoer/image/upload/v1760834216/nqnqvmroqxngfamrcpuf.png', order: 0 },
-    { name: 'StellarForge', logoUrl: 'https://res.cloudinary.com/da1srnoer/image/upload/v1760834216/nqnqvmroqxngfamrcpuf.png', order: 1 },
-    { name: 'ApexInnovate', logoUrl: 'https://res.cloudinary.com/da1srnoer/image/upload/v1760834216/nqnqvmroqxngfamrcpuf.png', order: 2 },
-    { name: 'NexusCore', logoUrl: 'https://res.cloudinary.com/da1srnoer/image/upload/v1760834216/nqnqvmroqxngfamrcpuf.png', order: 3 },
-    { name: 'VertexDynamics', logoUrl: 'https://res.cloudinary.com/da1srnoer/image/upload/v1760834216/nqnqvmroqxngfamrcpuf.png', order: 4 },
-    { name: 'MomentumSuite', logoUrl: 'https://res.cloudinary.com/da1srnoer/image/upload/v1760834216/nqnqvmroqxngfamrcpuf.png', order: 5 },
+    { name: 'QuantumLeap', logoUrl: 'https://res.cloudinary.com/da1srnoer/image/upload/v1760834216/nqnqvmroqxngfamrcpuf.png', order: 0, isVisible: true },
+    { name: 'StellarForge', logoUrl: 'https://res.cloudinary.com/da1srnoer/image/upload/v1760834216/nqnqvmroqxngfamrcpuf.png', order: 1, isVisible: true },
+    { name: 'ApexInnovate', logoUrl: 'https://res.cloudinary.com/da1srnoer/image/upload/v1760834216/nqnqvmroqxngfamrcpuf.png', order: 2, isVisible: true },
+    { name: 'NexusCore', logoUrl: 'https://res.cloudinary.com/da1srnoer/image/upload/v1760834216/nqnqvmroqxngfamrcpuf.png', order: 3, isVisible: true },
+    { name: 'VertexDynamics', logoUrl: 'https://res.cloudinary.com/da1srnoer/image/upload/v1760834216/nqnqvmroqxngfamrcpuf.png', order: 4, isVisible: true },
+    { name: 'MomentumSuite', logoUrl: 'https://res.cloudinary.com/da1srnoer/image/upload/v1760834216/nqnqvmroqxngfamrcpuf.png', order: 5, isVisible: true },
 ];
 
 
@@ -205,6 +206,17 @@ export default function ClientAdmin() {
       description: 'The client has been removed.',
     });
   };
+
+  const handleToggleVisibility = (item: Client) => {
+    if (!firestore || !canEdit) return;
+    const docRef = doc(firestore, 'clients', item.id);
+    const newVisibility = !(item.isVisible ?? true);
+    updateDocumentNonBlocking(docRef, { isVisible: newVisibility });
+    toast({
+        title: `Client ${newVisibility ? 'Visible' : 'Hidden'}`,
+        description: `"${item.name}" is now ${newVisibility ? 'visible' : 'hidden'} on the about page.`,
+    });
+  };
   
   const handleFormSubmit = (values: ClientFormValues) => {
     if (!firestore || !canEdit) return;
@@ -212,12 +224,12 @@ export default function ClientAdmin() {
     if (selectedClient && selectedClient.id) {
         // Editing existing client
         const clientRef = doc(firestore, 'clients', selectedClient.id);
-        setDocumentNonBlocking(clientRef, { ...values, order: selectedClient.order ?? 0 }, { merge: true });
+        setDocumentNonBlocking(clientRef, { ...values, order: selectedClient.order ?? 0, isVisible: selectedClient.isVisible ?? true }, { merge: true });
         toast({ title: 'Client Updated', description: 'The client has been updated.'});
     } else {
         // Adding new client
         const maxOrder = clients ? Math.max(-1, ...clients.map(c => c.order)) : -1;
-        const newClient = { ...values, order: maxOrder + 1 };
+        const newClient = { ...values, order: maxOrder + 1, isVisible: true };
         addDocumentNonBlocking(collection(firestore, 'clients'), newClient);
         toast({ title: 'Client Added', description: 'A new client has been added.'});
     }
@@ -342,7 +354,7 @@ export default function ClientAdmin() {
                                 onDragEnter={(e) => handleDragEnter(e, client.id)}
                                 onDragEnd={handleDragEnd}
                                 onDragOver={(e) => e.preventDefault()}
-                                className="p-4 rounded-lg bg-black/10 border border-white/10 flex items-center justify-between relative"
+                                className={cn("p-4 rounded-lg bg-black/10 border border-white/10 flex items-center justify-between relative", (client.isVisible === false) && "opacity-50 hover:opacity-80")}
                             >
                                 <div className="flex items-center gap-4">
                                     <FontAwesomeIcon icon={faGripVertical} className={cn("h-5 w-5 text-foreground/50", !canEdit && "opacity-20", canEdit && "cursor-grab")} />
@@ -355,17 +367,22 @@ export default function ClientAdmin() {
                                     />
                                     <p className="font-medium truncate">{client.name}</p>
                                 </div>
-                                <DropdownMenu>
-                                    <DropdownMenuTrigger asChild>
-                                        <Button variant="ghost" size="icon" disabled={!canEdit}>
-                                            <FontAwesomeIcon icon={faEllipsisH} />
-                                        </Button>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent className="glass-effect">
-                                        <DropdownMenuItem onClick={() => handleEditItem(client)}>Edit</DropdownMenuItem>
-                                        <DropdownMenuItem onClick={() => handleDeleteItem(client.id)} className="text-destructive">Delete</DropdownMenuItem>
-                                    </DropdownMenuContent>
-                                </DropdownMenu>
+                                <div className="flex items-center">
+                                    <Button variant="ghost" size="icon" onClick={() => handleToggleVisibility(client)} disabled={!canEdit} title={client.isVisible === false ? "Show Client" : "Hide Client"}>
+                                        <FontAwesomeIcon icon={client.isVisible === false ? faEyeSlash : faEye} />
+                                    </Button>
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                            <Button variant="ghost" size="icon" disabled={!canEdit}>
+                                                <FontAwesomeIcon icon={faEllipsisH} />
+                                            </Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent className="glass-effect">
+                                            <DropdownMenuItem onClick={() => handleEditItem(client)}>Edit</DropdownMenuItem>
+                                            <DropdownMenuItem onClick={() => handleDeleteItem(client.id)} className="text-destructive">Delete</DropdownMenuItem>
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
+                                </div>
                             </div>
                         ))}
                     </div>
@@ -378,7 +395,7 @@ export default function ClientAdmin() {
                                 <TableHead className="w-[40px]"></TableHead>
                                 <TableHead className="w-[100px] text-center">Logo</TableHead>
                                 <TableHead>Name</TableHead>
-                                <TableHead className="text-right w-[50px]">Actions</TableHead>
+                                <TableHead className="text-right w-[100px]">Actions</TableHead>
                             </TableRow>
                             </TableHeader>
                             <TableBody>
@@ -390,7 +407,7 @@ export default function ClientAdmin() {
                                     onDragEnter={(e) => handleDragEnter(e, client.id)}
                                     onDragEnd={handleDragEnd}
                                     onDragOver={(e) => e.preventDefault()}
-                                    className={cn("border-b-0 transition-all relative", canEdit && "cursor-grab")}
+                                    className={cn("border-b-0 transition-all relative", canEdit && "cursor-grab", (client.isVisible === false) && "opacity-50 hover:opacity-80")}
                                 >
                                 <TableCell className="text-center">
                                   <FontAwesomeIcon icon={faGripVertical} className={cn("h-5 w-5 text-foreground/50", !canEdit && "opacity-20")} />
@@ -406,24 +423,29 @@ export default function ClientAdmin() {
                                 </TableCell>
                                 <TableCell className="font-medium max-w-[100px] md:max-w-xs truncate">{client.name}</TableCell>
                                 <TableCell className="text-right">
-                                    <DropdownMenu>
-                                    <DropdownMenuTrigger asChild>
-                                        <Button variant="ghost" size="icon" disabled={!canEdit}>
-                                        <FontAwesomeIcon icon={faEllipsisH} />
-                                        </Button>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent className="glass-effect">
-                                        <DropdownMenuItem onClick={() => handleEditItem(client)}>
-                                        Edit
-                                        </DropdownMenuItem>
-                                        <DropdownMenuItem
-                                        onClick={() => handleDeleteItem(client.id)}
-                                        className="text-destructive"
-                                        >
-                                        Delete
-                                        </DropdownMenuItem>
-                                    </DropdownMenuContent>
-                                    </DropdownMenu>
+                                    <div className="flex justify-end items-center gap-1">
+                                      <Button variant="ghost" size="icon" onClick={() => handleToggleVisibility(client)} disabled={!canEdit} title={client.isVisible === false ? "Show Client" : "Hide Client"}>
+                                        <FontAwesomeIcon icon={client.isVisible === false ? faEyeSlash : faEye} />
+                                      </Button>
+                                      <DropdownMenu>
+                                      <DropdownMenuTrigger asChild>
+                                          <Button variant="ghost" size="icon" disabled={!canEdit}>
+                                          <FontAwesomeIcon icon={faEllipsisH} />
+                                          </Button>
+                                      </DropdownMenuTrigger>
+                                      <DropdownMenuContent className="glass-effect">
+                                          <DropdownMenuItem onClick={() => handleEditItem(client)}>
+                                          Edit
+                                          </DropdownMenuItem>
+                                          <DropdownMenuItem
+                                          onClick={() => handleDeleteItem(client.id)}
+                                          className="text-destructive"
+                                          >
+                                          Delete
+                                          </DropdownMenuItem>
+                                      </DropdownMenuContent>
+                                      </DropdownMenu>
+                                    </div>
                                 </TableCell>
                                 </TableRow>
                             ))}
@@ -485,3 +507,5 @@ export default function ClientAdmin() {
     </>
   );
 }
+
+    

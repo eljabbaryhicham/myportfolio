@@ -25,6 +25,7 @@ interface Client {
   name: string;
   logoUrl: string;
   order: number;
+  isVisible?: boolean;
 }
 
 interface AboutPageContent {
@@ -87,7 +88,7 @@ export default function AboutPage() {
     () => firestore ? query(collection(firestore, 'clients'), orderBy('order')) : null,
     [firestore]
   );
-  const { data: clients, isLoading: isLoadingClients } = useCollection<Client>(clientsQuery);
+  const { data: allClients, isLoading: isLoadingClients } = useCollection<Client>(clientsQuery);
   
   const aboutContentRef = useMemoFirebase(
     () => firestore ? doc(firestore, 'about', 'content') : null,
@@ -95,6 +96,8 @@ export default function AboutPage() {
   );
   const { data: aboutContent, isLoading: isLoadingContent } = useDoc<AboutPageContent>(aboutContentRef);
   
+  const clients = useMemo(() => allClients?.filter(c => c.isVisible !== false) || [], [allClients]);
+
   const isLoading = isLoadingClients || isLoadingContent;
   const logoUrl = aboutContent?.logoUrl || "https://i.imgur.com/N9c8oEJ.png";
   
@@ -245,3 +248,5 @@ export default function AboutPage() {
     </div>
   );
 }
+
+    

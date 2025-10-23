@@ -261,6 +261,10 @@
         "order": {
           "type": "number",
           "description": "The order in which the client will be displayed."
+        },
+        "isVisible": {
+          "type": "boolean",
+          "description": "Controls the visibility of the client on the public about page."
         }
       },
       "required": [
@@ -392,3 +396,5 @@
     ]
   }
 }
+
+    
