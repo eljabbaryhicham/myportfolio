@@ -29,6 +29,11 @@
           "description": "URL of the project's video (if applicable).",
           "format": "uri"
         },
+        "videoPosterUrl": {
+            "type": "string",
+            "description": "URL for the video's poster image.",
+            "format": "uri"
+        },
         "isFeatured": {
           "type": "boolean",
           "description": "Indicates whether the project is featured on the homepage."
@@ -401,5 +406,6 @@
     ]
   }
 }
+    
 
     

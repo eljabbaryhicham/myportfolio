@@ -2,7 +2,7 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import * as z from 'zod';
 import { Button } from '@/components/ui/button';
 import {
@@ -49,8 +49,9 @@ const formSchema = z.object({
     message: 'Description must be at least 10 characters.',
   }),
   type: z.enum(['image', 'video']),
-  thumbnailUrl: z.string().url({ message: 'Please enter a valid URL.' }),
-  sourceUrl: z.string().url({ message: 'Please enter a valid URL.' }).optional().or(z.literal('')),
+  thumbnailUrl: z.string().url({ message: 'Please enter a valid URL for the grid thumbnail.' }),
+  videoPosterUrl: z.string().url({ message: 'Please enter a valid URL for the video poster.' }).optional().or(z.literal('')),
+  sourceUrl: z.string().url({ message: 'Please enter a valid URL for the main media.' }).optional().or(z.literal('')),
   details: z.string().optional(),
   thumbnailHint: z.string().optional(),
   featured: z.boolean().optional(),
@@ -79,6 +80,7 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onCho
         description: '',
         type: 'image',
         thumbnailUrl: '',
+        videoPosterUrl: '',
         sourceUrl: '',
         thumbnailHint: '',
         featured: false,
@@ -87,6 +89,11 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onCho
         isVisible: true,
       }
     });
+
+    const itemType = useWatch({
+      control: form.control,
+      name: 'type',
+    });
   
     useEffect(() => {
       if (isOpen) {
@@ -94,6 +101,7 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onCho
             ...item,
             featured: item.featured || false,
             thumbnailHint: item.thumbnailHint || '',
+            videoPosterUrl: item.videoPosterUrl || '',
             details: item.details || '',
             sourceUrl: item.sourceUrl || '',
             order: item.order ?? 0,
@@ -103,6 +111,7 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onCho
             description: '',
             type: 'image' as 'image' | 'video',
             thumbnailUrl: '',
+            videoPosterUrl: '',
             sourceUrl: '',
             thumbnailHint: '',
             featured: false,
@@ -129,6 +138,7 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onCho
           id: item?.id || '', // id will be handled by parent
           ...values,
           thumbnailHint: values.thumbnailHint || '',
+          videoPosterUrl: values.videoPosterUrl || '',
           isVisible: values.isVisible ?? true,
         });
     };
@@ -140,6 +150,16 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onCho
               return;
             }
             form.setValue('thumbnailUrl', url, { shouldValidate: true });
+        });
+    };
+
+    const handleChooseVideoPoster = () => {
+        onChooseFromLibrary((url, type) => {
+            if (type !== 'image') {
+              toast({ variant: 'destructive', title: 'Invalid Poster', description: 'Video posters must be an image file.'});
+              return;
+            }
+            form.setValue('videoPosterUrl', url, { shouldValidate: true });
         });
     };
 
@@ -242,7 +262,7 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onCho
                           name="thumbnailUrl"
                           render={({ field }) => (
                               <FormItem>
-                                <FormLabel>Thumbnail URL</FormLabel>
+                                <FormLabel>Grid Thumbnail URL</FormLabel>
                                 <div className="flex items-center gap-2">
                                   <FormControl>
                                       <Input placeholder="https://example.com/thumbnail.jpg" {...field} />
@@ -252,10 +272,33 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onCho
                                       <span className="ml-2 hidden sm:inline">Library</span>
                                   </Button>
                                 </div>
+                                <FormDescription>Image shown in the main portfolio grid.</FormDescription>
                                 <FormMessage />
                               </FormItem>
                           )}
                           />
+                          {itemType === 'video' && (
+                             <FormField
+                              control={form.control}
+                              name="videoPosterUrl"
+                              render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel>Video Poster URL</FormLabel>
+                                    <div className="flex items-center gap-2">
+                                      <FormControl>
+                                          <Input placeholder="https://example.com/video-poster.jpg" {...field} />
+                                      </FormControl>
+                                      <Button type="button" variant="outline" size="sm" onClick={handleChooseVideoPoster}>
+                                          <FontAwesomeIcon icon={faImages} />
+                                          <span className="ml-2 hidden sm:inline">Library</span>
+                                      </Button>
+                                    </div>
+                                    <FormDescription>Image shown before a video plays. If blank, the grid thumbnail is used.</FormDescription>
+                                    <FormMessage />
+                                  </FormItem>
+                              )}
+                              />
+                          )}
                           <FormField
                           control={form.control}
                           name="thumbnailHint"
@@ -277,7 +320,7 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onCho
                           name="sourceUrl"
                           render={({ field }) => (
                               <FormItem>
-                                <FormLabel>Source URL</FormLabel>
+                                <FormLabel>Source Media URL</FormLabel>
                                 <div className="flex items-center gap-2">
                                   <FormControl>
                                       <Input placeholder="https://example.com/full-image.jpg" {...field} />
@@ -287,6 +330,7 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onCho
                                     <span className="ml-2 hidden sm:inline">Library</span>
                                   </Button>
                                 </div>
+                                <FormDescription>The full-size image or the main video file.</FormDescription>
                                 <FormMessage />
                               </FormItem>
                           )}
@@ -360,3 +404,5 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onCho
         </Dialog>
     )
 }
+
+    

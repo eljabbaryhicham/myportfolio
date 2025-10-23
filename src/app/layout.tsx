@@ -53,8 +53,8 @@ function SiteBackground() {
       : (siteVideo?.sourceUrl || "https://res.cloudinary.com/da1srnoer/video/upload/f_auto:video,q_auto/v1/wbmz1rkepnqeotpcx9tp");
       
     const posterSource = isHomePage
-      ? homeVideo?.thumbnailUrl
-      : siteVideo?.thumbnailUrl;
+      ? homeVideo?.videoPosterUrl || homeVideo?.thumbnailUrl
+      : siteVideo?.videoPosterUrl || siteVideo?.thumbnailUrl;
 
     return (
         <div className="absolute inset-0 -z-10 w-full h-full">
@@ -101,3 +101,5 @@ export default function RootLayout({
     </html>
   );
 }
+
+    

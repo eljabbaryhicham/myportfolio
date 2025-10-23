@@ -1,3 +1,4 @@
+
 'use client';
 
 import Image from 'next/image';
@@ -58,7 +59,7 @@ const PortfolioMedia = ({
     return (
       <div className="relative aspect-video bg-black flex items-center justify-center w-full group">
         {mediaUrl && (
-          <CdnClapprPlayer source={mediaUrl} poster={item.thumbnailUrl} />
+          <CdnClapprPlayer source={mediaUrl} poster={item.videoPosterUrl || item.thumbnailUrl} />
         )}
       </div>
     );
@@ -810,3 +811,5 @@ export default function WorkPage() {
     </>
   );
 }
+
+    
