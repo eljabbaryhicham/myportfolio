@@ -74,7 +74,7 @@ export default function AddFromUrlDialog({ isOpen, onOpenChange, onUploadComplet
     setIsSubmitting(true);
     try {
       const result = await uploadMediaFromUrl(values);
-      if (result.success && result.mediaId) {
+      if (result.success && result.mediaId && result.resource_type !== 'raw') {
         setProgress(100);
         toast({
           title: 'Upload Successful',
@@ -85,6 +85,14 @@ export default function AddFromUrlDialog({ isOpen, onOpenChange, onUploadComplet
           onOpenChange(false);
           setIsSubmitting(false);
         }, 500); // Wait for progress bar to show 100%
+      } else if (result.resource_type === 'raw') {
+          toast({
+            variant: 'destructive',
+            title: 'Unsupported File Type',
+            description: 'The provided URL points to a file type that is not an image or video.',
+            duration: 8000,
+          });
+          setIsSubmitting(false);
       } else {
         toast({
           variant: 'destructive',
