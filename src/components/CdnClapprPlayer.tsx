@@ -74,55 +74,62 @@ export default function CdnClapprPlayer({ source, poster, autoPlay = true }: Cdn
   }, [toast]);
 
   useEffect(() => {
-    // Don't run on server or if Clappr script hasn't loaded yet
-    if (!scriptsLoaded || !playerRef.current || typeof window.Clappr === 'undefined') {
+    if (!scriptsLoaded || !playerRef.current) {
       return;
     }
-    
-    // Destroy any existing player instance to prevent duplicates
-    if (playerInstanceRef.current) {
-      playerInstanceRef.current.destroy();
-    }
-    
-    const plugins = [];
-    if (window.DashShakaPlayback) {
-      plugins.push(window.DashShakaPlayback);
-    }
-    // HLSjsPlayback is built-in, so we don't need to load it as a separate plugin, just check for its existence
-    if (window.HlsjsPlayback) {
-      plugins.push(window.HlsjsPlayback);
-    }
 
-    playerInstanceRef.current = new window.Clappr.Player({
-        source,
-        poster,
-        parentId: `#${playerRef.current.id}`,
-        width: '100%',
-        height: '100%',
-        autoPlay: autoPlay,
-        playsInline: true,
-        volume: 20,
-        plugins: plugins,
-        clapprColors: {
-            main: '#e61e53', // Red theme for the player
-        },
-        shakaConfiguration: {
-          streaming: {
-            rebufferingGoal: 15
+    // Small delay to ensure scripts are fully available on the window object
+    const timer = setTimeout(() => {
+      // Guard clause to ensure Clappr is initialized
+      if (typeof window.Clappr === 'undefined') {
+        return;
+      }
+      
+      // Destroy any existing player instance to prevent duplicates
+      if (playerInstanceRef.current) {
+        playerInstanceRef.current.destroy();
+      }
+      
+      const plugins = [];
+      if (window.DashShakaPlayback) {
+        plugins.push(window.DashShakaPlayback);
+      }
+      if (window.HlsjsPlayback) {
+        plugins.push(window.HlsjsPlayback);
+      }
+
+      playerInstanceRef.current = new window.Clappr.Player({
+          source,
+          poster,
+          parentId: `#${playerRef.current.id}`,
+          width: '100%',
+          height: '100%',
+          autoPlay: autoPlay,
+          playsInline: true,
+          volume: 20,
+          plugins: plugins,
+          clapprColors: {
+              main: '#e61e53', // Red theme for the player
+          },
+          shakaConfiguration: {
+            streaming: {
+              rebufferingGoal: 15
+            }
+          },
+          shakaOnBeforeLoad: function(shaka_player: any) {
+            // shaka_player.getNetworkingEngine().registerRequestFilter() ...
+          },
+          events: {
+            onReady: () => setIsLoading(false),
+            onPlay: () => setIsLoading(false),
+            onError: () => setIsLoading(false),
           }
-        },
-        shakaOnBeforeLoad: function(shaka_player: any) {
-          // shaka_player.getNetworkingEngine().registerRequestFilter() ...
-        },
-        events: {
-          onReady: () => setIsLoading(false),
-          onPlay: () => setIsLoading(false),
-          onError: () => setIsLoading(false),
-        }
-    });
+      });
+    }, 100); // 100ms delay
 
-    // Cleanup function to destroy the player when the component unmounts
+    // Cleanup function
     return () => {
+      clearTimeout(timer);
       if (playerInstanceRef.current) {
         playerInstanceRef.current.destroy();
       }
@@ -133,8 +140,29 @@ export default function CdnClapprPlayer({ source, poster, autoPlay = true }: Cdn
   return (
     <div className="w-full h-full relative bg-black">
        <style jsx global>{`
+        /* Hide Clappr's default spinners to use our own preloader */
         .spinner[data-spinner], .shaka-spinner {
           display: none !important;
+        }
+        /* Style player controls safely */
+        .media-control[data-media-control] .media-control-layer[data-media-control-layer] .bar-container[data-seekbar] .bar-fill-2[data-seekbar],
+        .media-control[data-media-control] .media-control-layer[data-media-control-layer] .bar-container[data-volume] .bar-fill-2[data-volume] {
+          background-color: hsl(var(--destructive)) !important;
+        }
+
+        .media-control[data-media-control] .media-control-layer[data-media-control-layer] .drawer-container[data-settings-menu] .drawer-list[data-settings-list] button.active {
+            color: hsl(var(--destructive)) !important;
+        }
+
+        .media-control-button[data-playpause]:hover svg,
+        .media-control-button[data-playpause]:focus svg,
+        .media-control-button[data-fullscreen]:hover svg,
+        .media-control-button[data-fullscreen]:focus svg,
+        .media-control-button[data-volume]:hover svg,
+        .media-control-button[data-volume]:focus svg,
+        .level-selector__list-item:hover, .level-selector__list-item.active {
+            fill: hsl(var(--destructive)) !important;
+            color: hsl(var(--destructive)) !important;
         }
       `}</style>
       {isLoading && (
