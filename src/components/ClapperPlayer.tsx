@@ -19,37 +19,38 @@ export default function ClapperPlayer({ source, poster, chromeless = false }: Cl
   const playerId = useRef(`clappr-player-${Math.random().toString(36).substr(2, 9)}`).current;
 
   useEffect(() => {
-    let player: any = null;
+    if (typeof window === 'undefined' || !playerRef.current) return;
 
-    if (playerRef.current) {
-      // Dynamically import the Clappr player only on the client-side
-      import('@clappr/player').then((PlayerModule: unknown) => {
-        // Correctly access the default export
-        const ClapprPlayer = (PlayerModule as PlayerModule).default;
+    let playerInstance: any;
 
-        if (ClapprPlayer && playerRef.current) {
-          player = new ClapprPlayer({
-            source: source,
-            poster: poster,
-            parentId: `#${playerRef.current.id}`,
-            width: '100%',
-            height: '100%',
-            autoPlay: chromeless, // Autoplay only for chromeless
-            mute: chromeless, // Mute only for chromeless
-            loop: chromeless, // Loop only for chromeless
-            chromeless: chromeless, // No controls for background video
-            playback: {
-              playInline: true,
-            },
-          });
-        }
-      });
-    }
+    // Dynamically import the real Clappr module (client-side only)
+    import('@clappr/player').then((module) => {
+      // The default export *is* the player constructor
+      const Clappr = module.default;
 
-    // Cleanup on unmount
+      if (playerRef.current) {
+        // Create player instance correctly
+        playerInstance = new Clappr({
+          source,
+          poster,
+          parentId: `#${playerRef.current.id}`,
+          width: '100%',
+          height: '100%',
+          autoPlay: chromeless,
+          mute: chromeless,
+          loop: chromeless,
+          chromeless: chromeless,
+          playback: {
+            playInline: true,
+          },
+        });
+      }
+    });
+
+    // Clean up player when component unmounts
     return () => {
-      if (player) {
-        player.destroy();
+      if (playerInstance && typeof playerInstance.destroy === 'function') {
+        playerInstance.destroy();
       }
     };
   }, [source, poster, chromeless]);
