@@ -95,6 +95,7 @@ export default function RootLayout({
         <Script src="https://cdn.jsdelivr.net/npm/@clappr/player@latest/dist/clappr.min.js" strategy="beforeInteractive" />
         <Script src="https://cdn.jsdelivr.net/npm/clappr-hlsjs-playback@latest/dist/hlsjs-playback.min.js" strategy="beforeInteractive" />
         <Script src="https://cdn.jsdelivr.net/npm/clappr-pip-plugin@latest/dist/clappr-pip-plugin.js" strategy="beforeInteractive" />
+        <Script src="https://cdn.jsdelivr.net/gh/clappr/dash-shaka-playback@latest/dist/dash-shaka-playback.js" strategy="beforeInteractive" />
         <FirebaseClientProvider>
             <SiteBackground />
             <LayoutProvider>
