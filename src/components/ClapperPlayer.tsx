@@ -2,7 +2,6 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-// Do not import Player from '@clappr/player' directly at the top level
 
 interface ClapperPlayerProps {
   source: string;
@@ -19,9 +18,8 @@ export default function ClapperPlayer({ source, poster, isBackground = false }: 
 
     // Dynamically import the Player class inside useEffect
     import('@clappr/player').then((PlayerModule) => {
-      // The module might be the constructor directly, or it might be on a .default property.
-      // This handles both cases.
-      const Player = (PlayerModule as any).default || PlayerModule;
+      // The module exports the constructor as the default export.
+      const Player = PlayerModule.default;
 
       // Ensure we don't create duplicate players
       if (playerInstanceRef.current) {
