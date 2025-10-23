@@ -214,11 +214,3 @@
     50% { transform: rotate(-10deg); }
     75% { transform: rotate(5deg); }
 }
-
-.shaka-spinner {
-  display: none !important;
-}
-
-.spinner[data-spinner] {
-    display: none !important;
-}
