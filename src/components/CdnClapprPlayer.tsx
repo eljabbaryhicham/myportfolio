@@ -48,10 +48,13 @@ export default function CdnClapprPlayer({ source, poster, chromeless = false }: 
         parentId: `#${uniqueIdRef.current}`,
         width: '100%',
         height: '100%',
-        autoPlay: true, // Enable autoplay
+        autoPlay: chromeless, // Autoplay only for chromeless background videos
         mute: chromeless,
         loop: chromeless,
         chromeless: chromeless,
+        mediacontrol: {
+          seekbar: "hsl(var(--destructive))",
+        },
         playback: {
             playInline: true, // Essential for iOS and inline playback
             hlsjsConfig: {}, // Basic config for HLS.js
