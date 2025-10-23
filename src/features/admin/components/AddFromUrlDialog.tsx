@@ -15,9 +15,11 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSpinner, faXmark } from '@fortawesome/free-solid-svg-icons';
 import { cn } from '@/lib/utils';
 import { Progress } from '@/components/ui/progress';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const formSchema = z.object({
   mediaUrl: z.string().url({ message: 'Please enter a valid URL.' }),
+  libraryId: z.enum(['primary', 'extented']),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -35,7 +37,7 @@ export default function AddFromUrlDialog({ isOpen, onOpenChange, onUploadComplet
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
-    defaultValues: { mediaUrl: '' },
+    defaultValues: { mediaUrl: '', libraryId: 'primary' },
   });
 
   useEffect(() => {
@@ -62,7 +64,6 @@ export default function AddFromUrlDialog({ isOpen, onOpenChange, onUploadComplet
   
   const handleClose = (open: boolean) => {
     if (!open) {
-        // Only allow closing if not submitting, or reset state
         if (isSubmitting) return;
         form.reset();
         setProgress(0);
@@ -118,12 +119,12 @@ export default function AddFromUrlDialog({ isOpen, onOpenChange, onUploadComplet
         <DialogHeader>
           <DialogTitle>Add Media from URL</DialogTitle>
           <DialogDescription>
-            Paste a direct link to an image or video to add it to your library.
+            Paste a direct link to an image or video and choose a library to add it to.
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
-            <fieldset disabled={isSubmitting}>
+            <fieldset disabled={isSubmitting} className="space-y-4">
               <FormField
                 control={form.control}
                 name="mediaUrl"
@@ -133,6 +134,27 @@ export default function AddFromUrlDialog({ isOpen, onOpenChange, onUploadComplet
                     <FormControl>
                       <Input placeholder="https://..." {...field} />
                     </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="libraryId"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Library</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                            <SelectTrigger>
+                                <SelectValue placeholder="Select a library" />
+                            </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                            <SelectItem value="primary">Library Primary</SelectItem>
+                            <SelectItem value="extented">Library Extented</SelectItem>
+                        </SelectContent>
+                    </Select>
                     <FormMessage />
                   </FormItem>
                 )}

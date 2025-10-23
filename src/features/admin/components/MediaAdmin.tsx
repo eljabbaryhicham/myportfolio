@@ -9,7 +9,7 @@ import { useToast } from '@/hooks/use-toast';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import Image from 'next/image';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCloudUploadAlt, faCopy, faTrash, faFilm, faFileImage, faImages, faXmark, faPlus, faEye, faFolderOpen, faLink } from '@fortawesome/free-solid-svg-icons';
+import { faCloudUploadAlt, faCopy, faTrash, faFilm, faFileImage, faImages, faXmark, faPlus, faEye, faFolderOpen, faLink, faUniversity } from '@fortawesome/free-solid-svg-icons';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose, DialogDescription } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
@@ -31,6 +31,7 @@ interface MediaAsset {
     resource_type: 'image' | 'video' | 'raw';
     created_at: string;
     filename: string;
+    libraryId?: 'primary' | 'extented';
 }
 
 const MediaFileCard = ({
@@ -44,7 +45,7 @@ const MediaFileCard = ({
   canDelete,
 }: {
   file: MediaAsset;
-  onDelete: (publicId: string, id: string, resourceType: string) => void;
+  onDelete: (publicId: string, id: string, resourceType: string, libraryId: 'primary' | 'extented') => void;
   onCopy: (url: string) => void;
   onPreview: (file: MediaAsset) => void;
   isNewlyUploaded: boolean;
@@ -54,7 +55,7 @@ const MediaFileCard = ({
 }) => {
   
   const handleDelete = () => {
-    onDelete(file.public_id, file.id, file.resource_type);
+    onDelete(file.public_id, file.id, file.resource_type, file.libraryId || 'primary');
   };
 
   const handleSelect = () => {
@@ -177,7 +178,10 @@ export default function MediaAdmin(props: MediaAdminProps) {
   const [uploadingFileName, setUploadingFileName] = useState('');
   const [previewFile, setPreviewFile] = useState<MediaAsset | null>(null);
   const [isAddFromUrlOpen, setIsAddFromUrlOpen] = useState(false);
-
+  const [isChoosingLibrary, setIsChoosingLibrary] = useState(false);
+  const [filesToUpload, setFilesToUpload] = useState<File[]>([]);
+  const [activeLibrary, setActiveLibrary] = useState<'primary' | 'extented'>('primary');
+  
   const activeTab = props.isDialog ? props.activeTab : 'images';
   const setActiveTab = props.isDialog ? props.setActiveTab : () => {};
   
@@ -197,34 +201,19 @@ export default function MediaAdmin(props: MediaAdminProps) {
     const images: MediaAsset[] = [];
     const videos: MediaAsset[] = [];
     mediaAssets?.forEach(asset => {
-        if (asset.resource_type === 'image') {
-            images.push(asset);
-        } else if (asset.resource_type === 'video') {
-            videos.push(asset);
+        const libraryMatch = asset.libraryId === activeLibrary || (activeLibrary === 'primary' && !asset.libraryId);
+        if (libraryMatch) {
+            if (asset.resource_type === 'image') {
+                images.push(asset);
+            } else if (asset.resource_type === 'video') {
+                videos.push(asset);
+            }
         }
     });
     return { imageAssets: images, videoAssets: videos };
-  }, [mediaAssets]);
+  }, [mediaAssets, activeLibrary]);
 
-  const onDrop = useCallback(async (acceptedFiles: File[]) => {
-    // --- IMPORTANT ---
-    // The credentials below are hardcoded to ensure functionality.
-    const cloudName = 'da1srnoer';
-    // This is an unsigned upload preset. You can create your own in your Cloudinary settings.
-    // For this to work, you MUST create an "unsigned" upload preset in your Cloudinary
-    // account settings and name it 'belofted' or change the name here.
-    const uploadPreset = 'belofted';
-    
-    if (!cloudName || !uploadPreset) {
-      toast({
-        variant: 'destructive',
-        title: 'Configuration Error',
-        description: "Cloudinary cloud name or upload preset is not set. Please edit the code in MediaAdmin.tsx to fix this.",
-        duration: 10000,
-      });
-      return;
-    }
-    
+  const onDrop = useCallback((acceptedFiles: File[]) => {
     if (!canUpload) {
       toast({
         variant: 'destructive',
@@ -233,10 +222,31 @@ export default function MediaAdmin(props: MediaAdminProps) {
       });
       return;
     }
+    setFilesToUpload(acceptedFiles);
+    setIsChoosingLibrary(true);
+  }, [canUpload, toast]);
+  
+  const handleLibraryChoiceAndUpload = useCallback(async (libraryId: 'primary' | 'extented') => {
+    setIsChoosingLibrary(false);
+    
+    const suffix = libraryId === 'primary' ? '_1' : '_2';
+    const cloudName = process.env[`NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME${suffix}`];
+    const uploadPreset = process.env[`NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET${suffix}`];
+    
+    if (!cloudName || !uploadPreset) {
+      toast({
+        variant: 'destructive',
+        title: 'Configuration Error',
+        description: `Cloudinary settings for ${libraryId === 'primary' ? 'Library Primary' : 'Library Extented'} are not set in environment variables.`,
+        duration: 10000,
+      });
+      setFilesToUpload([]);
+      return;
+    }
 
     setIsUploading(true);
 
-    for (const file of acceptedFiles) {
+    for (const file of filesToUpload) {
       setUploadingFileName(file.name);
       setUploadProgress(0);
 
@@ -258,19 +268,16 @@ export default function MediaAdmin(props: MediaAdminProps) {
         if (xhr.status === 200) {
           const response = JSON.parse(xhr.responseText);
 
-          // Manually construct the optimized URL
-          const optimizedUrl = response.secure_url.replace(
-            `/upload/`,
-            `/upload/f_auto,q_auto/`
-          );
+          const optimizedUrl = response.secure_url.replace(`/upload/`, `/upload/f_auto,q_auto/`);
           
           if(firestore) {
               const docRefPromise = addDocumentNonBlocking(collection(firestore, 'media'), {
                   public_id: response.public_id,
-                  url: optimizedUrl, // Save the OPTIMIZED URL
+                  url: optimizedUrl,
                   resource_type: response.resource_type,
                   created_at: response.created_at,
                   filename: file.name,
+                  libraryId: libraryId,
               });
 
               const docRef = await docRefPromise as DocumentReference | undefined;
@@ -282,7 +289,7 @@ export default function MediaAdmin(props: MediaAdminProps) {
 
           toast({
             title: 'Upload successful',
-            description: `${file.name} has been uploaded and optimized.`,
+            description: `${file.name} has been uploaded to ${libraryId === 'primary' ? 'Library Primary' : 'Library Extented'}.`,
           });
         } else {
           const error = JSON.parse(xhr.responseText).error;
@@ -312,8 +319,10 @@ export default function MediaAdmin(props: MediaAdminProps) {
     setIsUploading(false);
     setUploadingFileName('');
     setUploadProgress(0);
+    setFilesToUpload([]);
 
-  }, [toast, firestore, props, canUpload]);
+  }, [filesToUpload, toast, firestore, props]);
+
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
@@ -324,7 +333,7 @@ export default function MediaAdmin(props: MediaAdminProps) {
     disabled: !canUpload || isUploading,
   });
   
-  const handleDelete = async (publicId: string, docId: string, resourceType: string) => {
+  const handleDelete = async (publicId: string, docId: string, resourceType: string, libraryId: 'primary' | 'extented') => {
     if (!firestore || !canDelete) return;
     
     try {
@@ -369,7 +378,7 @@ export default function MediaAdmin(props: MediaAdminProps) {
         return (
             <div className="text-center py-12 text-muted-foreground">
                 <FontAwesomeIcon icon={type === 'image' ? faFileImage : faFilm} className="h-12 w-12 mb-4" />
-                <p>No {type}s uploaded yet.</p>
+                <p>No {type}s uploaded to this library yet.</p>
             </div>
         );
     }
@@ -427,6 +436,12 @@ export default function MediaAdmin(props: MediaAdminProps) {
           <DialogTitle className="font-headline">{props.isDialog && props.isSelectionMode ? "Choose Media" : "Media Library"}</DialogTitle>
            <DialogDescription>Upload and manage your images and videos.</DialogDescription>
       </DialogHeader>
+        <Tabs value={activeLibrary} onValueChange={(value) => setActiveLibrary(value as 'primary' | 'extented')} className='px-4 pt-4'>
+            <TabsList>
+                <TabsTrigger value="primary" className="py-2 px-4 text-base glass-effect data-[state=active]:bg-destructive">Library Primary</TabsTrigger>
+                <TabsTrigger value="extented" className="py-2 px-4 text-base glass-effect data-[state=active]:bg-destructive">Library Extented</TabsTrigger>
+            </TabsList>
+        </Tabs>
       <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'images' | 'videos')} className="flex-1 flex flex-col min-h-0">
           <div className='px-4 pt-4'>
             <TabsList>
@@ -555,6 +570,18 @@ export default function MediaAdmin(props: MediaAdminProps) {
         onOpenChange={setIsAddFromUrlOpen}
         onUploadComplete={handleUrlUploadComplete}
       />
+      <Dialog open={isChoosingLibrary} onOpenChange={setIsChoosingLibrary}>
+        <DialogContent>
+            <DialogHeader>
+                <DialogTitle>Choose a Library</DialogTitle>
+                <DialogDescription>Select which Cloudinary library you want to upload the files to.</DialogDescription>
+            </DialogHeader>
+            <div className="flex justify-center gap-4 py-4">
+                <Button onClick={() => handleLibraryChoiceAndUpload('primary')} size="lg" className="w-40"><FontAwesomeIcon icon={faUniversity} className="mr-2"/> Library Primary</Button>
+                <Button onClick={() => handleLibraryChoiceAndUpload('extented')} size="lg" className="w-40"><FontAwesomeIcon icon={faUniversity} className="mr-2"/> Library Extented</Button>
+            </div>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }

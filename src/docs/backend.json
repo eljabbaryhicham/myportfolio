@@ -188,9 +188,14 @@
           "type": "string",
           "format": "date-time",
           "description": "The timestamp when the file was uploaded."
+        },
+        "libraryId": {
+            "type": "string",
+            "enum": ["primary", "extented"],
+            "description": "The ID of the Cloudinary library the asset belongs to."
         }
       },
-      "required": ["public_id", "url", "resource_type", "created_at"]
+      "required": ["public_id", "url", "resource_type", "created_at", "libraryId"]
     },
     "User": {
       "title": "User",

@@ -1,7 +1,7 @@
 
 'use server';
 /**
- * @fileOverview A Genkit flow for uploading media from a URL to Cloudinary and saving to Firestore.
+ * @fileOverview A Genkit flow for uploading media from a URL to a specified Cloudinary library and saving to Firestore.
  */
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
@@ -10,6 +10,7 @@ import { initializeServerApp } from '@/firebase/server-init';
 
 const UploadMediaFromUrlInputSchema = z.object({
   mediaUrl: z.string().url(),
+  libraryId: z.enum(['primary', 'extented']),
 });
 export type UploadMediaFromUrlInput = z.infer<typeof UploadMediaFromUrlInputSchema>;
 
@@ -24,7 +25,7 @@ export type UploadMediaFromUrlOutput = z.infer<typeof UploadMediaFromUrlOutputSc
 /**
  * A server-side function to handle the upload process.
  * This is a wrapper around the Genkit flow.
- * @param input The media URL.
+ * @param input The media URL and library ID.
  * @returns A promise that resolves with the result of the upload.
  */
 export async function uploadMediaFromUrl(
@@ -36,7 +37,7 @@ export async function uploadMediaFromUrl(
 
 
 /**
- * A Genkit flow that uploads a file from a URL to Cloudinary,
+ * A Genkit flow that uploads a file from a URL to a specific Cloudinary library,
  * then creates a corresponding document in Firestore.
  */
 const uploadMediaFromUrlFlow = ai.defineFlow(
@@ -47,13 +48,15 @@ const uploadMediaFromUrlFlow = ai.defineFlow(
   },
   async (input): Promise<UploadMediaFromUrlOutput> => {
     try {
-      if (
-        !process.env.CLOUDINARY_CLOUD_NAME ||
-        !process.env.CLOUDINARY_API_KEY ||
-        !process.env.CLOUDINARY_API_SECRET
-      ) {
-        const errorMessage =
-          'Cloudinary environment variables (CLOUD_NAME, API_KEY, API_SECRET) are not set. Please add them to your .env file.';
+      const { libraryId } = input;
+      const suffix = libraryId === 'primary' ? '_1' : '_2';
+      
+      const cloudName = process.env[`CLOUDINARY_CLOUD_NAME${suffix}`];
+      const apiKey = process.env[`CLOUDINARY_API_KEY${suffix}`];
+      const apiSecret = process.env[`CLOUDINARY_API_SECRET${suffix}`];
+
+      if (!cloudName || !apiKey || !apiSecret) {
+        const errorMessage = `Cloudinary credentials for ${libraryId} library are missing. Please check your .env file for CLOUDINARY_CLOUD_NAME${suffix}, CLOUDINARY_API_KEY${suffix}, and CLOUDINARY_API_SECRET${suffix}.`;
         console.error('Error in uploadMediaFromUrlFlow:', errorMessage);
         return {
           success: false,
@@ -65,13 +68,13 @@ const uploadMediaFromUrlFlow = ai.defineFlow(
 
       const cloudinary = (await import('cloudinary')).v2;
       cloudinary.config({
-        cloud_name: process.env.CLOUDINARY_CLOUD_NAME, 
-        api_key: process.env.CLOUDINARY_API_KEY, 
-        api_secret: process.env.CLOUDINARY_API_SECRET,
+        cloud_name: cloudName, 
+        api_key: apiKey, 
+        api_secret: apiSecret,
         secure: true
       });
       
-      console.log(`Uploading from URL: ${input.mediaUrl}`);
+      console.log(`Uploading to ${libraryId} library from URL: ${input.mediaUrl}`);
 
       // 1. Upload to Cloudinary.
       const uploadResult = await cloudinary.uploader.upload(input.mediaUrl, {
@@ -83,7 +86,6 @@ const uploadMediaFromUrlFlow = ai.defineFlow(
       let finalUrl = uploadResult.secure_url;
       
       if (uploadResult.resource_type === 'image' || uploadResult.resource_type === 'video') {
-          // Apply automatic optimization for images and videos
           finalUrl = cloudinary.url(uploadResult.public_id, {
               fetch_format: 'auto',
               quality: 'auto',
@@ -104,6 +106,7 @@ const uploadMediaFromUrlFlow = ai.defineFlow(
         resource_type: uploadResult.resource_type,
         created_at: uploadResult.created_at,
         filename: filename || uploadResult.public_id,
+        libraryId: libraryId, // Save the library ID
       };
 
       const docRef = await firestore.collection('media').add(mediaData);
@@ -120,7 +123,6 @@ const uploadMediaFromUrlFlow = ai.defineFlow(
       console.error('Error in uploadMediaFromUrlFlow:', error);
 
       let errorMessage = 'An unexpected error occurred.';
-      // Check for Cloudinary's specific file size error
       if (error.http_code === 400 && error.message && error.message.includes('File size too large')) {
           errorMessage = 'The provided file is too large. Cloudinary\'s free plan limit is 100MB. Please use a smaller file.';
       } else if (error.http_code && error.message) {
