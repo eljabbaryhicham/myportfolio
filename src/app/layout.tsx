@@ -10,7 +10,7 @@ import { useDoc, useFirestore, useMemoFirebase } from '@/firebase';
 import { doc } from 'firebase/firestore';
 import type { PortfolioItem } from '@/features/portfolio/data/portfolio-data';
 import { usePathname } from 'next/navigation';
-import ClapperPlayer from '@/components/ClapperPlayer';
+import CdnClapprPlayer from '@/components/CdnClapprPlayer';
 
 
 interface HomePageSettings {
@@ -59,7 +59,7 @@ function SiteBackground() {
         <div className="absolute inset-0 -z-10 w-full h-full">
             <div className="w-full h-full bg-black">
                 {isVideoEnabled && videoSource && (
-                   <ClapperPlayer
+                   <CdnClapprPlayer
                         source={videoSource}
                         poster={posterSource}
                         chromeless={true}
@@ -85,6 +85,7 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
         <link href="https://fonts.googleapis.com/css2?family=Bungee&family=Quicksand:wght@400;500;700&family=Dancing+Script:wght@700&display=swap" rel="stylesheet" />
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@clappr/player@0.11.0/dist/clappr.min.css" />
+        <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@clappr/player@0.11.0/dist/clappr.min.js"></script>
         <title>Liquid Folio</title>
       </head>
       <body className={cn('font-body antialiased text-center')} suppressHydrationWarning>

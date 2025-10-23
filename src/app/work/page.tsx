@@ -32,7 +32,7 @@ import { motion, AnimatePresence, PanInfo } from 'framer-motion';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import ContactForm from '@/features/contact/components/ContactForm';
 import type { AppUser } from '@/firebase/auth/use-user';
-import ClapperPlayer from '@/components/ClapperPlayer';
+import CdnClapprPlayer from '@/components/CdnClapprPlayer';
 
 
 const MemoizedImage = memo(Image);
@@ -58,7 +58,7 @@ const PortfolioMedia = ({
     return (
       <div className="relative aspect-video bg-black flex items-center justify-center w-full group">
         {mediaUrl && (
-          <ClapperPlayer source={mediaUrl} poster={item.thumbnailUrl} />
+          <CdnClapprPlayer source={mediaUrl} poster={item.thumbnailUrl} />
         )}
       </div>
     );
