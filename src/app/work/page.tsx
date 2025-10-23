@@ -59,7 +59,7 @@ const PortfolioMedia = ({
     return (
       <div className="relative aspect-video bg-black flex items-center justify-center w-full group">
         {mediaUrl && (
-          <CdnClapprPlayer source={mediaUrl} poster={item.thumbnailUrl} />
+          <CdnClapprPlayer source={mediaUrl} />
         )}
       </div>
     );

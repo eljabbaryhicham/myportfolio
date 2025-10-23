@@ -413,8 +413,7 @@ export default function MediaAdmin(props: MediaAdminProps) {
       return (
         <div className="w-full h-full flex items-center justify-center bg-black">
           <CdnClapprPlayer 
-            source={previewFile.url} 
-            poster={previewFile.url.replace(/\.webm$/, '.jpg').replace(/\.mp4$/, '.jpg')}
+            source={previewFile.url}
           />
         </div>
       );

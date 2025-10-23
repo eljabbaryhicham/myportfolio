@@ -52,17 +52,12 @@ function SiteBackground() {
       ? (homeVideo?.sourceUrl || "https://res.cloudinary.com/da1srnoer/video/upload/f_auto:video,q_auto/v1/wbmz1rkepnqeotpcx9tp")
       : (siteVideo?.sourceUrl || "https://res.cloudinary.com/da1srnoer/video/upload/f_auto:video,q_auto/v1/wbmz1rkepnqeotpcx9tp");
       
-    const posterSource = isHomePage
-      ? homeVideo?.thumbnailUrl
-      : siteVideo?.thumbnailUrl;
-
     return (
         <div className="absolute inset-0 -z-10 w-full h-full">
             <div className="w-full h-full bg-black">
                 {isVideoEnabled && videoSource && (
                    <CdnClapprPlayer
                         source={videoSource}
-                        poster={posterSource}
                         chromeless={true}
                     />
                 )}
