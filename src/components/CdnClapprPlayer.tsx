@@ -6,7 +6,7 @@ import { useEffect, useRef } from 'react';
 declare global {
     interface Window {
         Clappr: any;
-        HLS: any; // The HLS plugin is exposed as HLS
+        HlsJs: any; // The HLS plugin is exposed as HlsJs
     }
 }
 
@@ -33,7 +33,7 @@ export default function CdnClapprPlayer({ source, poster, chromeless = false }: 
     }
     
     // Ensure HLS plugin is available if needed
-    if (source.includes('.m3u8') && typeof window.HLS === 'undefined') {
+    if (source.includes('.m3u8') && typeof window.HlsJs === 'undefined') {
         console.warn('HLS plugin is not loaded. HLS playback may not work.');
     }
 
@@ -61,7 +61,9 @@ export default function CdnClapprPlayer({ source, poster, chromeless = false }: 
             playInline: true,
             hlsjsConfig: {}, // Basic config for HLS.js
         },
-        plugins: [window.HLS], // Include the HLS plugin
+        plugins: {
+          playback: [window.HlsJs]
+        },
     });
 
     // 4. Return a cleanup function to destroy the player when the component unmounts.
