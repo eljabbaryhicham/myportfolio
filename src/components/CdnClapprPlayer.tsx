@@ -1,10 +1,11 @@
 'use client';
 import { useEffect, useRef } from 'react';
 
-// Make Clappr available on the window object for type safety
+// Make Clappr and its plugins available on the window object for type safety
 declare global {
     interface Window {
         Clappr: any;
+        HLS: any; // Assuming HLSPlugin is exposed as HLS
     }
 }
 
@@ -29,6 +30,12 @@ export default function CdnClapprPlayer({ source, poster, chromeless = false }: 
     if (typeof window === 'undefined' || !playerRef.current || typeof window.Clappr === 'undefined') {
       return;
     }
+    
+    // Ensure HLS plugin is available
+    if (source.includes('.m3u8') && typeof window.HLS === 'undefined') {
+        console.warn('HLS plugin is not loaded. HLS playback may not work.');
+    }
+
 
     // 1. Destroy any existing player instance to prevent duplicates.
     if (playerInstanceRef.current) {
@@ -52,7 +59,9 @@ export default function CdnClapprPlayer({ source, poster, chromeless = false }: 
         chromeless: chromeless,
         playback: {
             playInline: true,
+            hlsjsConfig: {}, // Basic config for HLS.js
         },
+        plugins: [window.HLS], // Include the HLS plugin
     });
 
     // 4. Return a cleanup function to destroy the player when the component unmounts.

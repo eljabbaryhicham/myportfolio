@@ -86,6 +86,7 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=Bungee&family=Quicksand:wght@400;500;700&family=Dancing+Script:wght@700&display=swap" rel="stylesheet" />
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@clappr/player@0.11.0/dist/clappr.min.css" />
         <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@clappr/player@0.11.0/dist/clappr.min.js"></script>
+        <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/clappr-hls-plugin@0.4.0/dist/clappr-hls-plugin.min.js"></script>
         <title>Liquid Folio</title>
       </head>
       <body className={cn('font-body antialiased text-center')} suppressHydrationWarning>
