@@ -30,8 +30,13 @@ const formSchema = z.object({
   password: z.string().min(6, {
     message: 'Password must be at least 6 characters.',
   }),
-  secretCode: z.string().refine((val) => val === 'BELOFTED', {
-    message: "Invalid secret code.",
+  secretCode: z.string().superRefine((val, ctx) => {
+    if (val !== 'BELOFTED') {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Invalid secret code.',
+      });
+    }
   }),
 });
 
