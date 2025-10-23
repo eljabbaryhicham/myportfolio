@@ -89,13 +89,11 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
         <link href="https://fonts.googleapis.com/css2?family=Bungee&family=Quicksand:wght@400;500;700&family=Dancing+Script:wght@700&display=swap" rel="stylesheet" />
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@clappr/player@latest/dist/clappr.min.css" />
+        <script src="https://cdn.jsdelivr.net/gh/clappr/clappr@latest/dist/clappr.min.js" />
+        <script src="https://cdn.jsdelivr.net/gh/clappr/dash-shaka-playback@latest/dist/dash-shaka-playback.js" />
         <title>Liquid Folio</title>
       </head>
       <body className={cn('font-body antialiased text-center')} suppressHydrationWarning>
-        <Script src="https://cdn.jsdelivr.net/npm/@clappr/player@latest/dist/clappr.min.js" strategy="beforeInteractive" />
-        <Script src="https://cdn.jsdelivr.net/npm/clappr-hlsjs-playback@latest/dist/hlsjs-playback.min.js" strategy="beforeInteractive" />
-        <Script src="https://cdn.jsdelivr.net/npm/clappr-pip-plugin@latest/dist/clappr-pip-plugin.js" strategy="beforeInteractive" />
-        <Script src="https://cdn.jsdelivr.net/gh/clappr/dash-shaka-playback@latest/dist/dash-shaka-playback.js" strategy="beforeInteractive" />
         <FirebaseClientProvider>
             <SiteBackground />
             <LayoutProvider>

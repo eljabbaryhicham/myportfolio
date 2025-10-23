@@ -6,8 +6,6 @@ import { useEffect, useRef } from 'react';
 declare global {
     interface Window {
         Clappr: any;
-        HlsjsPlayback: any;
-        PipPlugin: any;
         DashShakaPlayback: any;
     }
 }
@@ -24,7 +22,7 @@ export default function CdnClapprPlayer({ source, poster, chromeless = false }: 
 
   useEffect(() => {
     // Don't run on server or if Clappr script hasn't loaded yet
-    if (typeof window === 'undefined' || !playerRef.current || typeof window.Clappr === 'undefined') {
+    if (typeof window === 'undefined' || !playerRef.current || typeof window.Clappr === 'undefined' || typeof window.DashShakaPlayback === 'undefined') {
       return;
     }
     
@@ -33,32 +31,22 @@ export default function CdnClapprPlayer({ source, poster, chromeless = false }: 
       playerInstanceRef.current.destroy();
     }
     
-    const plugins = [];
-    if (window.HlsjsPlayback) {
-      plugins.push(window.HlsjsPlayback);
-    }
-    if (window.PipPlugin) {
-      plugins.push(window.PipPlugin);
-    }
-    if (window.DashShakaPlayback) {
-        plugins.push(window.DashShakaPlayback);
-    }
-
     playerInstanceRef.current = new window.Clappr.Player({
         source,
         poster,
         parentId: `#${playerRef.current.id}`,
         width: '100%',
         height: '100%',
-        autoPlay: true,
-        mute: true,
-        plugins: plugins,
-        playback: {
-            playInline: true, // Essential for iOS and inline playback
-            hlsjsConfig: {}, // Basic config for HLS.js
+        plugins: [window.DashShakaPlayback],
+        shakaConfiguration: {
+          // Example configuration, can be extended
+          streaming: {
+            rebufferingGoal: 15
+          }
         },
-        shakaConfiguration: {},
-        shakaOnBeforeLoad: function(shaka_player: any) {},
+        shakaOnBeforeLoad: function(shaka_player: any) {
+          // shaka_player.getNetworkingEngine().registerRequestFilter() ...
+        },
     });
 
     // Cleanup function to destroy the player when the component unmounts
