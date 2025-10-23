@@ -60,7 +60,7 @@ export default function TestPage() {
         </div>
       </div>
       <Separator className="bg-white/10 w-full max-w-4xl mb-8" />
-      <div className="w-full max-w-4xl aspect-video rounded-lg overflow-hidden glass-effect">
+      <div className="w-full max-w-4xl aspect-video bg-black">
         <CdnClapprPlayer key={source} source={source} autoPlay={true} />
       </div>
     </div>

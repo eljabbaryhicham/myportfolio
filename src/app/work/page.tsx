@@ -54,7 +54,7 @@ const PortfolioMedia = ({
 
   if (item.type === 'video') {
     return (
-      <div className="relative aspect-video bg-black flex items-center justify-center w-full group">
+      <div className="relative aspect-video bg-black flex items-center justify-center w-full">
         {mediaUrl && (
           <CdnClapprPlayer 
             source={mediaUrl} 
