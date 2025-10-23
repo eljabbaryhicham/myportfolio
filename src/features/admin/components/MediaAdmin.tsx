@@ -602,7 +602,7 @@ export default function MediaAdmin(props: MediaAdminProps) {
         onUploadComplete={handleUrlUploadComplete}
       />
       <Dialog open={isChoosingVideoFormat} onOpenChange={setIsChoosingVideoFormat}>
-        <DialogContent>
+        <DialogContent className="w-[65vw] max-w-[65vw]">
             <DialogHeader>
                 <DialogTitle>Choose Video Format</DialogTitle>
                 <DialogDescription>Select the delivery format for the video(s) you are uploading.</DialogDescription>
