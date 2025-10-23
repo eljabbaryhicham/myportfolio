@@ -20,7 +20,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Separator } from '@/components/ui/separator';
 import AddFromUrlDialog from './AddFromUrlDialog';
 import type { AppUser } from '@/firebase/auth/use-user';
-import ClapperPlayer from '@/components/ClapperPlayer';
+import CdnClapprPlayer from '@/components/CdnClapprPlayer';
 
 
 // Type for the media stored in Firestore
@@ -412,7 +412,7 @@ export default function MediaAdmin(props: MediaAdminProps) {
     if (previewFile.resource_type === 'video' && previewFile.url) {
       return (
         <div className="w-full h-full flex items-center justify-center bg-black">
-          <ClapperPlayer 
+          <CdnClapprPlayer 
             source={previewFile.url} 
             poster={previewFile.url.replace(/\.webm$/, '.jpg').replace(/\.mp4$/, '.jpg')}
           />
