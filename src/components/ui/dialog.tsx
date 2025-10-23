@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils"
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faXmark } from '@fortawesome/free-solid-svg-icons';
 import { Slot } from "@radix-ui/react-slot";
-import { motion } from "framer-motion";
+import { motion, type HTMLMotionProps } from "framer-motion";
 
 const Dialog = DialogPrimitive.Root
 
@@ -36,7 +36,7 @@ const DialogContent = React.forwardRef<
   React.ElementRef<typeof DialogPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content> & { asChild?: boolean }
 >(({ className, children, asChild = false, ...props }, ref) => {
-    const Comp = asChild ? motion.div : DialogPrimitive.Content;
+    const Comp = asChild ? (motion.div as React.ElementType) : DialogPrimitive.Content;
     return (
       <DialogPortal>
         <DialogOverlay />
