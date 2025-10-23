@@ -33,11 +33,10 @@ import type { AppUser } from '@/firebase/auth/use-user';
 interface ProjectAdminProps {
   setSelectedItem: (item: PortfolioItem | null) => void;
   setIsSheetOpen: (isOpen: boolean) => void;
-  handleFormSubmit: (values: PortfolioItem, minOrder: number) => void;
 }
 
 
-function ProjectAdmin({ setSelectedItem, setIsSheetOpen, handleFormSubmit }: ProjectAdminProps) {
+function ProjectAdmin({ setSelectedItem, setIsSheetOpen }: ProjectAdminProps) {
   const firestore = useFirestore();
   const { user } = useUser();
   const { toast } = useToast();
@@ -59,11 +58,6 @@ function ProjectAdmin({ setSelectedItem, setIsSheetOpen, handleFormSubmit }: Pro
       const newSortedItems = [...items].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
       setSortedItems(newSortedItems);
     }
-  }, [items]);
-
-  const minOrder = useMemo(() => {
-    if (!items || items.length === 0) return 0;
-    return Math.min(...items.map(i => i.order || 0));
   }, [items]);
 
   const handleSeedData = async () => {

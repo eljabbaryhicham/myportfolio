@@ -50,8 +50,6 @@ function AdminPage() {
   
   const canEditHome = isSuperAdmin || (typedUser?.permissions?.canEditHome ?? true);
   const canEditProjects = isSuperAdmin || (typedUser?.permissions?.canEditProjects ?? true);
-  const canEditAbout = isSuperAdmin || (typedUser?.permissions?.canEditAbout ?? true);
-  const canEditContact = isSuperAdmin || (typedUser?.permissions?.canEditContact ?? true);
   
   useEffect(() => {
     const savedTab = localStorage.getItem('adminActiveTab');
@@ -232,7 +230,6 @@ function AdminPage() {
                   <ProjectAdmin 
                     setSelectedItem={setSelectedPortfolioItem}
                     setIsSheetOpen={setIsPortfolioSheetOpen}
-                    handleFormSubmit={handlePortfolioFormSubmit}
                   />
               </TabsContent>
               <TabsContent value="about" className="flex-1 overflow-auto mt-4">
@@ -285,5 +282,3 @@ function AdminPage() {
 }
 
 export default AdminPage;
-
-    
