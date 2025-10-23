@@ -16,9 +16,10 @@ interface CdnClapprPlayerProps {
   source: string;
   poster?: string;
   chromeless?: boolean;
+  autoPlay?: boolean;
 }
 
-export default function CdnClapprPlayer({ source, poster, chromeless = false }: CdnClapprPlayerProps) {
+export default function CdnClapprPlayer({ source, poster, chromeless = false, autoPlay = false }: CdnClapprPlayerProps) {
   const playerRef = useRef<HTMLDivElement>(null);
   const playerInstanceRef = useRef<any>(null);
 
@@ -50,6 +51,9 @@ export default function CdnClapprPlayer({ source, poster, chromeless = false }: 
         parentId: `#${playerRef.current.id}`,
         width: '100%',
         height: '100%',
+        autoPlay: autoPlay || chromeless,
+        mute: autoPlay || chromeless,
+        loop: chromeless,
         plugins: plugins,
         shakaConfiguration: {
           streaming: {
@@ -67,7 +71,7 @@ export default function CdnClapprPlayer({ source, poster, chromeless = false }: 
         playerInstanceRef.current.destroy();
       }
     };
-  }, [source, poster]); // Re-run the effect if these props change
+  }, [source, poster, chromeless, autoPlay]); // Re-run the effect if these props change
 
   // Use a static ID or generate one that's consistent across renders
   return <div id="cdn-clappr-player" ref={playerRef} className="w-full h-full" />;
