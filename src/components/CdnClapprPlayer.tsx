@@ -6,7 +6,10 @@ import { useEffect, useRef } from 'react';
 declare global {
     interface Window {
         Clappr: any;
-        HlsJs: any; // The HLS plugin is exposed as HlsJs
+        HlsjsPlayback: any;
+        LevelSelector: any;
+        PipPlugin: any;
+        DownloadPlugin: any;
     }
 }
 
@@ -48,8 +51,8 @@ export default function CdnClapprPlayer({ source, poster, chromeless = false }: 
         parentId: `#${uniqueIdRef.current}`,
         width: '100%',
         height: '100%',
-        autoPlay: chromeless, // Autoplay only for chromeless background videos
-        mute: chromeless,
+        autoPlay: true, 
+        mute: true,
         loop: chromeless,
         chromeless: chromeless,
         mediacontrol: {
