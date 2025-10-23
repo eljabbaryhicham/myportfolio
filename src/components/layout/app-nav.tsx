@@ -1,4 +1,3 @@
-
 "use client";
 
 import Link from "next/link";
@@ -21,7 +20,7 @@ const navItems = [
   { href: "/about", label: "About", icon: faCircleInfo, public: true },
   { href: "/contact", label: "Contact", icon: faEnvelope, public: true },
   { href: "/admin", label: "Admin", icon: faShieldHalved, public: false },
-  { href: "/test", label: "Test", icon: faVial, public: true },
+  { href: "/test", label: "Test", icon: faVial, public: false },
 ];
 
 export function AppNav() {
