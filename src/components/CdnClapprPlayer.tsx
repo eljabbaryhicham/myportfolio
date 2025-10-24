@@ -50,6 +50,7 @@ export default function CdnClapprPlayer({ source, poster, autoPlay = true, playe
     Promise.all([
         loadScript('https://cdn.jsdelivr.net/npm/clappr@latest/dist/clappr.min.js', 'clappr-script'),
         loadScript('https://cdn.jsdelivr.net/gh/clappr/dash-shaka-playback@latest/dist/dash-shaka-playback.js', 'clappr-shaka-playback'),
+        loadScript('https://cdn.jsdelivr.net/npm/clappr-level-selector-plugin@latest/dist/level-selector.min.js', 'clappr-level-selector'),
     ])
     .then(() => setScriptsLoaded(true))
     .catch(error => {
@@ -80,8 +81,8 @@ export default function CdnClapprPlayer({ source, poster, autoPlay = true, playe
       if (window.DashShakaPlayback) {
         plugins.push(window.DashShakaPlayback);
       }
-      if (window.Clappr.LevelSelector) {
-        plugins.push(window.Clappr.LevelSelector);
+      if (window.LevelSelector) {
+        plugins.push(window.LevelSelector);
       }
 
       const player = new window.Clappr.Player({
