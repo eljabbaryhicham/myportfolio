@@ -11,6 +11,7 @@ declare global {
         Clappr: any;
         DashShakaPlayback: any;
         LevelSelector: any;
+        PlaybackRate: any;
     }
 }
 
@@ -25,7 +26,6 @@ interface CdnClapprPlayerProps {
 const loadScript = (src: string, id: string, globalVar: string): Promise<void> => {
   return new Promise((resolve, reject) => {
     if (document.getElementById(id)) {
-      // If script tag exists, poll for the global variable
       const checkVar = () => {
         if ((window as any)[globalVar]) {
           resolve();
@@ -43,7 +43,6 @@ const loadScript = (src: string, id: string, globalVar: string): Promise<void> =
     script.async = true;
 
     script.onload = () => {
-      // After loading, poll for the global variable to be available
       const checkVar = () => {
         if ((window as any)[globalVar]) {
           resolve();
@@ -76,23 +75,22 @@ export default function CdnClapprPlayer({ source, poster, autoPlay = true, playe
       setIsLoading(true);
 
       try {
-        // Step 1: Load the core Clappr player script and wait for it.
         await loadScript('https://cdn.jsdelivr.net/npm/@clappr/player@latest/dist/clappr.min.js', 'clappr-script', 'Clappr');
         
         if (!isMounted) return;
 
-        // Step 2: Load all plugin scripts in parallel now that core is loaded.
         await Promise.all([
             loadScript('https://cdn.jsdelivr.net/gh/clappr/dash-shaka-playback@latest/dist/dash-shaka-playback.js', 'clappr-shaka-playback', 'DashShakaPlayback'),
             loadScript('https://cdn.jsdelivr.net/gh/clappr/clappr-level-selector-plugin@latest/dist/level-selector.min.js', 'clappr-level-selector', 'LevelSelector'),
+            loadScript('https://cdn.jsdelivr.net/npm/clappr-playback-rate-plugin@latest/dist/PlaybackRate.min.js', 'clappr-playback-rate', 'PlaybackRate'),
         ]);
 
         if (!isMounted || !playerContainerRef.current) return;
         
-        // Step 3: Initialize Player now that all scripts are loaded and verified
         const plugins = [];
         if (window.DashShakaPlayback) plugins.push(window.DashShakaPlayback);
         if (window.LevelSelector) plugins.push(window.LevelSelector);
+        if (window.PlaybackRate) plugins.push(window.PlaybackRate);
 
         player = new window.Clappr.Player({
             parentId: `#${playerContainerRef.current.id}`,
@@ -122,6 +120,10 @@ export default function CdnClapprPlayer({ source, poster, autoPlay = true, playe
                   1: 'Med', // e.g., 720p
                   0: 'Low', // e.g., 360p
               },
+            },
+            playbackRateConfig: {
+                defaultRate: 1.0,
+                rates: [0.5, 1.0, 1.5, 2.0]
             },
             events: {
               onReady: () => isMounted && setIsLoading(false),
@@ -162,7 +164,7 @@ export default function CdnClapprPlayer({ source, poster, autoPlay = true, playe
       }
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [source]); // Rerun only when the source changes
+  }, [source]); 
 
   return (
     <div className="w-full h-full relative bg-black">
