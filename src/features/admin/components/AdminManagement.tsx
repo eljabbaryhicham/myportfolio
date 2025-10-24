@@ -16,7 +16,7 @@ import Preloader from '@/components/preloader';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faTrash, faShieldHalved } from '@fortawesome/free-solid-svg-icons';
+import { faTrash, faShieldHalved, faPlusCircle } from '@fortawesome/free-solid-svg-icons';
 import { useToast } from '@/hooks/use-toast';
 import { useMemo, useState } from 'react';
 import { deleteDocumentNonBlocking } from '@/firebase/non-blocking-updates';
@@ -25,6 +25,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import type { AppUser } from '@/firebase/auth/use-user';
+import NewAdminForm from './NewAdminForm';
 
 interface AdminUser {
     id: string;
@@ -111,6 +112,7 @@ export default function AdminManagement() {
   
   const [selectedUser, setSelectedUser] = useState<AdminUser | null>(null);
   const [isPermissionsDialogOpen, setIsPermissionsDialogOpen] = useState(false);
+  const [isAddAdminDialogOpen, setIsAddAdminDialogOpen] = useState(false);
 
 
   const displayedUsers = useMemo(() => {
@@ -147,9 +149,17 @@ export default function AdminManagement() {
   return (
     <>
       <div className="flex-1 flex flex-col h-full min-h-0">
-        <div className="mb-6">
-          <h2 className="text-xl font-headline">Admin Management</h2>
-          <p className="text-muted-foreground">View and manage administrator accounts and permissions.</p>
+        <div className="mb-6 flex items-start justify-between">
+            <div>
+                <h2 className="text-xl font-headline">Admin Management</h2>
+                <p className="text-muted-foreground">View and manage administrator accounts and permissions.</p>
+            </div>
+             {isSuperAdmin && (
+                <Button onClick={() => setIsAddAdminDialogOpen(true)} size="sm">
+                    <FontAwesomeIcon icon={faPlusCircle} className="mr-2 h-4 w-4" />
+                    New Admin
+                </Button>
+            )}
         </div>
         
         {isLoading && (
@@ -250,6 +260,7 @@ export default function AdminManagement() {
           </div>
         )}
       </div>
+      
       {selectedUser && (
         <PermissionsDialog 
           user={selectedUser} 
@@ -258,6 +269,18 @@ export default function AdminManagement() {
           onSave={handleSavePermissions} 
         />
       )}
+
+       <Dialog open={isAddAdminDialogOpen} onOpenChange={setIsAddAdminDialogOpen}>
+        <DialogContent className="w-[80vw] glass-effect">
+            <DialogHeader>
+                <DialogTitle className="font-headline">Create New Admin</DialogTitle>
+                <DialogDescription>
+                    Enter a username and password to create a new administrator account.
+                </DialogDescription>
+            </DialogHeader>
+            <NewAdminForm onSuccess={() => setIsAddAdminDialogOpen(false)} />
+        </DialogContent>
+      </Dialog>
     </>
   );
 }
