@@ -1,4 +1,3 @@
-
 'use client';
 import { useEffect, useRef, useState } from 'react';
 import Preloader from './preloader';
@@ -11,7 +10,6 @@ declare global {
         Clappr: any;
         DashShakaPlayback: any;
         LevelSelector: any;
-        PipPlugin: any;
     }
 }
 
@@ -20,6 +18,8 @@ interface CdnClapprPlayerProps {
   poster?: string;
   autoPlay?: boolean;
   playerRef?: React.MutableRefObject<any | null>;
+  watermark?: string;
+  watermarkLink?: string;
 }
 
 const loadScript = (src: string, id: string) => {
@@ -38,7 +38,7 @@ const loadScript = (src: string, id: string) => {
   });
 };
 
-export default function CdnClapprPlayer({ source, poster, autoPlay = true, playerRef: parentPlayerRef }: CdnClapprPlayerProps) {
+export default function CdnClapprPlayer({ source, poster, autoPlay = true, playerRef: parentPlayerRef, watermark, watermarkLink }: CdnClapprPlayerProps) {
   const playerContainerRef = useRef<HTMLDivElement>(null);
   const internalPlayerRef = useRef<any>(null);
   const playerRef = parentPlayerRef || internalPlayerRef;
@@ -52,7 +52,6 @@ export default function CdnClapprPlayer({ source, poster, autoPlay = true, playe
         loadScript('https://cdn.jsdelivr.net/npm/clappr@latest/dist/clappr.min.js', 'clappr-script'),
         loadScript('https://cdn.jsdelivr.net/gh/clappr/dash-shaka-playback@latest/dist/dash-shaka-playback.js', 'clappr-shaka-playback'),
         loadScript('https://cdn.jsdelivr.net/npm/clappr-level-selector-plugin@latest/dist/level-selector.min.js', 'clappr-level-selector'),
-        loadScript('https://cdn.jsdelivr.net/npm/clappr-pip-plugin@latest/dist/clappr-pip-plugin.min.js', 'clappr-pip-plugin'),
     ])
     .then(() => setScriptsLoaded(true))
     .catch(error => {
@@ -70,7 +69,7 @@ export default function CdnClapprPlayer({ source, poster, autoPlay = true, playe
       return;
     }
 
-    if (typeof window.Clappr === 'undefined') {
+    if (typeof window.Clappr === 'undefined' || typeof window.Clappr.Player === 'undefined') {
       return;
     }
     
@@ -85,9 +84,6 @@ export default function CdnClapprPlayer({ source, poster, autoPlay = true, playe
     if (window.LevelSelector) {
       plugins.push(window.LevelSelector);
     }
-    if (window.PipPlugin) {
-        plugins.push(window.PipPlugin);
-    }
 
     const player = new window.Clappr.Player({
         source,
@@ -96,6 +92,8 @@ export default function CdnClapprPlayer({ source, poster, autoPlay = true, playe
         width: '100%',
         height: '100%',
         autoPlay: autoPlay,
+        watermark: watermark || '',
+        watermarkLink: watermarkLink || undefined,
         playsInline: true,
         playinline: true,
         volume: 20,
@@ -134,7 +132,8 @@ export default function CdnClapprPlayer({ source, poster, autoPlay = true, playe
         playerRef.current = null;
       }
     };
-  }, [source, poster, autoPlay, scriptsLoaded, playerRef]); 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [source, poster, autoPlay, scriptsLoaded, watermark, watermarkLink]); 
 
   return (
     <div className="w-full h-full relative bg-black">
@@ -144,7 +143,7 @@ export default function CdnClapprPlayer({ source, poster, autoPlay = true, playe
         </div>
       )}
       <div 
-        id="cdn-clappr-player" 
+        id={`cdn-clappr-player-${source}`}
         ref={playerContainerRef} 
         className={cn("w-full h-full transition-opacity duration-300", isLoading ? 'opacity-0' : 'opacity-100')} 
       />

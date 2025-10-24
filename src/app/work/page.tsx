@@ -14,7 +14,7 @@ import { useState, memo, useEffect, useMemo, useRef, useCallback } from 'react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { useCollection, useFirestore, useMemoFirebase, useUser, setDocumentNonBlocking, addDocumentNonBlocking } from '@/firebase';
+import { useCollection, useFirestore, useMemoFirebase, useUser, setDocumentNonBlocking, addDocumentNonBlocking, useDoc } from '@/firebase';
 import { collection, query, orderBy, doc } from 'firebase/firestore';
 import type { PortfolioItem } from '@/features/portfolio/data/portfolio-data';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -40,11 +40,15 @@ const PortfolioMedia = ({
   onFullscreenClick,
   onMediaLoaded,
   playerRef,
+  watermark,
+  watermarkLink,
 }: {
   item: PortfolioItem;
   onFullscreenClick: (url: string) => void;
   onMediaLoaded: () => void;
   playerRef: React.MutableRefObject<any | null>;
+  watermark?: string;
+  watermarkLink?: string;
 }) => {
 
   useEffect(() => {
@@ -63,6 +67,8 @@ const PortfolioMedia = ({
             poster={item.useVideoFrameAsPoster ? undefined : item.thumbnailUrl}
             autoPlay={true}
             playerRef={playerRef}
+            watermark={watermark}
+            watermarkLink={watermarkLink}
           />
         )}
       </div>
@@ -191,6 +197,12 @@ export default function WorkPage() {
     [firestore]
   );
   const { data: portfolioItems, isLoading: isPortfolioLoading } = useCollection<PortfolioItem>(projectsQuery);
+
+  const contactDocRef = useMemoFirebase(
+    () => (firestore ? doc(firestore, 'contact', 'details') : null),
+    [firestore]
+  );
+  const { data: contactInfo } = useDoc(contactDocRef);
   
   const selectedSlug = searchParams.get('id');
 
@@ -509,6 +521,9 @@ export default function WorkPage() {
     ? { gridTemplateColumns: 'repeat(2, 1fr)' } 
     : { gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))' };
 
+  const logoUrl = contactInfo?.logoUrl;
+  const watermarkLink = typeof window !== 'undefined' ? window.location.origin : '';
+
   return (
     <>
       <div className="h-full w-full flex flex-col">
@@ -677,6 +692,8 @@ export default function WorkPage() {
                                 onFullscreenClick={setFullscreenImageUrl}
                                 onMediaLoaded={() => setIsDialogMediaLoading(false)}
                                 playerRef={playerInstanceRef}
+                                watermark={logoUrl}
+                                watermarkLink={watermarkLink}
                               />
                             )}
                           </div>

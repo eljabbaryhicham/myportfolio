@@ -145,6 +145,21 @@
     display: none !important;
 }
 
+/* Watermark styles */
+.clappr-watermark[data-watermark] {
+  top: 15px !important;
+  right: 15px !important;
+  width: 8% !important;
+  height: auto !important;
+  opacity: 0.8;
+  transition: opacity 0.3s;
+}
+
+.clappr-watermark[data-watermark]:hover {
+  opacity: 1;
+}
+
+
 @keyframes spinning-circle {
   from {
     transform: rotate(0deg);
