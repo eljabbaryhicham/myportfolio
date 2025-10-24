@@ -132,7 +132,7 @@ export default function AddFromUrlDialog({ isOpen, onOpenChange, onUploadComplet
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="glass-effect w-[80vw] max-w-[50vw]">
+      <DialogContent className="glass-effect w-[80vw]">
         <DialogHeader>
           <DialogTitle>Add Media from URL</DialogTitle>
           <DialogDescription>

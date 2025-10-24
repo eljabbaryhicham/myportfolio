@@ -611,7 +611,7 @@ export default function WorkPage() {
           <DialogContent
             className={cn(
               "glass-effect p-0 flex flex-col group overflow-hidden",
-              "w-[95vw] max-w-7xl",
+              "w-[80vw] max-w-7xl",
               isExtraWide || isDescriptionLong ? "h-[90vh]" : "max-h-[90vh]"
             )}
             onMouseMove={handleDialogMouseMove}
@@ -731,7 +731,7 @@ export default function WorkPage() {
       
       {/* Nested Dialog for Details */}
       <Dialog open={detailsModalOpen} onOpenChange={handleDetailsOpenChange}>
-        <DialogContent className="w-[95vw] md:w-[90vw] md:max-w-[80vw] h-[90vh] glass-effect p-0 flex flex-col group"
+        <DialogContent className="w-[80vw] h-[90vh] glass-effect p-0 flex flex-col group"
           onMouseMove={handleDialogMouseMove}
           onMouseEnter={handleDialogMouseEnter}
           onMouseLeave={handleDialogMouseLeave}
@@ -760,7 +760,7 @@ export default function WorkPage() {
       
       {/* Contact Form Dialog */}
       <Dialog open={isContactFormOpen} onOpenChange={handleContactOpenChange}>
-        <DialogContent className="w-[90vw] max-w-xl glass-effect">
+        <DialogContent className="w-[80vw] max-w-xl glass-effect">
             <DialogHeader>
               <DialogTitle className="font-headline">Contact Us</DialogTitle>
               <DialogDescription>
@@ -786,7 +786,7 @@ export default function WorkPage() {
 
       {/* Fullscreen Image Dialog */}
       <Dialog open={!!fullscreenImageUrl} onOpenChange={(open) => !open && setFullscreenImageUrl(null)}>
-        <DialogContent className="w-[95vw] h-[90vh] glass-effect p-0 flex flex-col items-center justify-center bg-black/80 border-0 group"
+        <DialogContent className="w-[80vw] h-[90vh] glass-effect p-0 flex flex-col items-center justify-center bg-black/80 border-0 group"
           onMouseMove={handleDialogMouseMove}
           onMouseEnter={handleDialogMouseEnter}
           onMouseLeave={handleDialogMouseLeave}

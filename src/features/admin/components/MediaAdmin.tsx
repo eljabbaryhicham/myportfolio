@@ -595,7 +595,7 @@ export default function MediaAdmin(props: MediaAdminProps) {
 
   const previewDialog = (
     <Dialog open={!!previewFile} onOpenChange={(isOpen) => !isOpen && setPreviewFile(null)}>
-      <DialogContent className="w-[80vw] max-w-[80vw] h-[90vh] glass-effect p-0 flex flex-col items-center justify-center bg-black/80 border-0">
+      <DialogContent className="w-[80vw] h-[90vh] glass-effect p-0 flex flex-col items-center justify-center bg-black/80 border-0">
         <DialogHeader className="absolute top-4 left-4 z-10">
           <DialogTitle className="text-white/80 font-headline">{previewFile?.filename}</DialogTitle>
         </DialogHeader>
@@ -612,7 +612,7 @@ export default function MediaAdmin(props: MediaAdminProps) {
   
   const setBackgroundDialog = (
     <Dialog open={isSetBackgroundOpen} onOpenChange={setIsSetBackgroundOpen}>
-        <DialogContent className="glass-effect">
+        <DialogContent className="glass-effect w-[80vw]">
             <DialogHeader>
                 <DialogTitle>Set as Background Video</DialogTitle>
                 <DialogDescription>
@@ -643,7 +643,7 @@ export default function MediaAdmin(props: MediaAdminProps) {
       return (
         <>
           <Dialog open={props.isOpen} onOpenChange={props.onOpenChange}>
-              <DialogContent className="w-[80vw] max-w-[80vw] h-[90vh] glass-effect p-0 flex flex-col">
+              <DialogContent className="w-[80vw] h-[90vh] glass-effect p-0 flex flex-col">
                   {commonDialogContent}
               </DialogContent>
           </Dialog>
@@ -717,7 +717,7 @@ export default function MediaAdmin(props: MediaAdminProps) {
         onUploadComplete={handleUrlUploadComplete}
       />
       <Dialog open={isChoosingVideoFormat} onOpenChange={setIsChoosingVideoFormat}>
-        <DialogContent className="w-[65vw] max-w-[65vw]">
+        <DialogContent className="w-[80vw]">
             <DialogHeader>
                 <DialogTitle>Choose Video Format</DialogTitle>
                 <DialogDescription>Select the delivery format for the video(s) you are uploading.</DialogDescription>
@@ -739,7 +739,7 @@ export default function MediaAdmin(props: MediaAdminProps) {
         </DialogContent>
       </Dialog>
       <Dialog open={isChoosingLibrary} onOpenChange={setIsChoosingLibrary}>
-        <DialogContent>
+        <DialogContent className="w-[80vw]">
             <DialogHeader>
                 <DialogTitle>Choose a Library</DialogTitle>
                 <DialogDescription>Select which Cloudinary library you want to upload the files to.</DialogDescription>
@@ -756,5 +756,3 @@ export default function MediaAdmin(props: MediaAdminProps) {
     </>
   );
 }
-
-    

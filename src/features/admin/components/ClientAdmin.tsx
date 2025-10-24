@@ -463,7 +463,7 @@ export default function ClientAdmin() {
             </ScrollArea>
           </div>
         <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
-          <DialogContent className="w-[80vw] max-w-lg glass-effect">
+          <DialogContent className="w-[80vw] glass-effect">
             <DialogHeader>
               <DialogTitle className="font-headline">{selectedClient?.id ? 'Edit Client' : 'Add New Client'}</DialogTitle>
               <DialogDescription>
@@ -507,5 +507,3 @@ export default function ClientAdmin() {
     </>
   );
 }
-
-    

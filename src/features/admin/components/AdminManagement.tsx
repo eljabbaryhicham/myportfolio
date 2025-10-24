@@ -67,7 +67,7 @@ function PermissionsDialog({ user, isOpen, onOpenChange, onSave }: { user: Admin
 
     return (
         <Dialog open={isOpen} onOpenChange={onOpenChange}>
-            <DialogContent className="w-[80vw] max-w-2xl glass-effect">
+            <DialogContent className="w-[80vw] glass-effect">
                 <DialogHeader>
                     <DialogTitle className="font-headline">Edit Permissions for {user.username}</DialogTitle>
                     <DialogDescription>
