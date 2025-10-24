@@ -59,11 +59,7 @@ export default function ContactForm({ onSuccess, defaultMessage = '' }: ContactF
   });
 
   useEffect(() => {
-    form.reset({
-      name: '',
-      email: '',
-      message: defaultMessage,
-    });
+    form.setValue('message', defaultMessage);
   }, [defaultMessage, form]);
 
 
@@ -83,9 +79,15 @@ export default function ContactForm({ onSuccess, defaultMessage = '' }: ContactF
 
       if (response.ok && result.success) {
         setIsSent(true);
-        form.reset();
         if (onSuccess) {
-            setTimeout(onSuccess, 2000);
+            setTimeout(() => {
+                onSuccess();
+                // Reset form state after dialog closes
+                setTimeout(() => {
+                    setIsSent(false);
+                    form.reset({ name: '', email: '', message: defaultMessage });
+                }, 500);
+            }, 2000);
         }
       } else {
         toast({
@@ -94,6 +96,7 @@ export default function ContactForm({ onSuccess, defaultMessage = '' }: ContactF
           description: result.message || "An unexpected error occurred. Please try again.",
           duration: 8000,
         });
+        setIsSubmitting(false);
       }
     } catch (error) {
        toast({
@@ -101,8 +104,7 @@ export default function ContactForm({ onSuccess, defaultMessage = '' }: ContactF
           title: "An Error Occurred",
           description: "A network error occurred. Please check your connection and try again.",
         });
-    } finally {
-      setIsSubmitting(false);
+       setIsSubmitting(false);
     }
   };
 

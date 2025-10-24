@@ -351,6 +351,22 @@ export default function WorkPage() {
     }
     setDetailsModalOpen(true);
   };
+  
+  const handleContactOpenChange = (open: boolean) => {
+    setIsContactFormOpen(open);
+    if (!open && playerInstanceRef.current && wasVideoPlaying) {
+        playerInstanceRef.current.play();
+        setWasVideoPlaying(false);
+    }
+  };
+
+  const handleAskAboutClick = () => {
+    if (playerInstanceRef.current && playerInstanceRef.current.isPlaying()) {
+        setWasVideoPlaying(true);
+        playerInstanceRef.current.pause();
+    }
+    setIsContactFormOpen(true);
+  };
 
   const handleNextProject = useCallback(() => {
     if (!selectedItem || !filteredItems) return;
@@ -677,7 +693,7 @@ export default function WorkPage() {
                             )}
                             <Button
                               variant="secondary"
-                              onClick={() => setIsContactFormOpen(true)}
+                              onClick={handleAskAboutClick}
                               className="h-auto py-2 px-4 leading-tight text-center"
                             >
                               Ask About
@@ -730,7 +746,7 @@ export default function WorkPage() {
       </Dialog>
       
       {/* Contact Form Dialog */}
-      <Dialog open={isContactFormOpen} onOpenChange={setIsContactFormOpen}>
+      <Dialog open={isContactFormOpen} onOpenChange={handleContactOpenChange}>
         <DialogContent className="w-[90vw] max-w-xl glass-effect">
             <DialogHeader>
               <DialogTitle className="font-headline">Contact Us</DialogTitle>
@@ -739,7 +755,7 @@ export default function WorkPage() {
               </DialogDescription>
             </DialogHeader>
             <ContactForm
-                onSuccess={() => setIsContactFormOpen(false)}
+                onSuccess={() => handleContactOpenChange(false)}
                 defaultMessage={selectedItem ? `I'm contacting you about discuss a similar project of "${selectedItem.title}"` : ''}
             />
             <DialogClose className={cn(
