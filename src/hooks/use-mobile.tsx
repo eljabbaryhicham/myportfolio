@@ -10,6 +10,12 @@ export function useIsMobile() {
       setIsMobile(false);
       return;
     }
+
+    const isAndroid = /Android/i.test(navigator.userAgent);
+    if (isAndroid) {
+        setIsMobile(true);
+        return;
+    }
     
     const mql = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT - 1}px)`)
     const onChange = () => {
