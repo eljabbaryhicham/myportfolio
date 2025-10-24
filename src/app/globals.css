@@ -151,13 +151,13 @@
   right: 15px !important;
   width: 8% !important;
   height: auto !important;
-  filter: grayscale(1);
-  opacity: 0.1;
+  filter: brightness(0) invert(1);
+  opacity: 0.2;
   transition: opacity 0.3s;
 }
 
 .clappr-watermark[data-watermark]:hover {
-  opacity: 0.3;
+  opacity: 0.5;
 }
 
 
