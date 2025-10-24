@@ -18,7 +18,7 @@ interface CdnClapprPlayerProps {
   source: string;
   poster?: string;
   autoPlay?: boolean;
-  playerRef: React.MutableRefObject<any | null>;
+  playerRef?: React.MutableRefObject<any | null>;
 }
 
 const loadScript = (src: string, id: string) => {
@@ -51,6 +51,9 @@ const loadStylesheet = (href: string, id: string) => {
 
 export default function CdnClapprPlayer({ source, poster, autoPlay = true, playerRef: parentPlayerRef }: CdnClapprPlayerProps) {
   const playerContainerRef = useRef<HTMLDivElement>(null);
+  const internalPlayerRef = useRef<any>(null);
+  const playerRef = parentPlayerRef || internalPlayerRef;
+  
   const [isLoading, setIsLoading] = useState(true);
   const [scriptsLoaded, setScriptsLoaded] = useState(false);
   const { toast } = useToast();
@@ -61,7 +64,11 @@ export default function CdnClapprPlayer({ source, poster, autoPlay = true, playe
     Promise.all([
         loadScript('https://cdn.jsdelivr.net/npm/clappr@latest/dist/clappr.min.js', 'clappr-script'),
         loadScript('https://cdn.jsdelivr.net/gh/clappr/dash-shaka-playback@latest/dist/dash-shaka-playback.js', 'clappr-shaka-playback'),
+        loadScript('https://cdn.jsdelivr.net/npm/hls.js@latest/dist/hls.min.js', 'hls-script'),
     ])
+    .then(() => {
+        return loadScript('https://cdn.jsdelivr.net/npm/clappr-hlsjs-playback@latest/dist/hlsjs-playback.min.js', 'clappr-hls-playback');
+    })
     .then(() => setScriptsLoaded(true))
     .catch(error => {
       console.error(error)
@@ -83,8 +90,8 @@ export default function CdnClapprPlayer({ source, poster, autoPlay = true, playe
         return;
       }
       
-      if (parentPlayerRef.current) {
-        parentPlayerRef.current.destroy();
+      if (playerRef.current) {
+        playerRef.current.destroy();
       }
       
       const plugins = [];
@@ -111,6 +118,10 @@ export default function CdnClapprPlayer({ source, poster, autoPlay = true, playe
               rebufferingGoal: 15
             }
           },
+          mediacontrol: {
+            seekbar: "hsl(347 86% 52%)",
+            buttons: "hsl(347 86% 52%)"
+          },
           shakaOnBeforeLoad: function(shaka_player: any) {},
           events: {
             onReady: () => setIsLoading(false),
@@ -119,19 +130,18 @@ export default function CdnClapprPlayer({ source, poster, autoPlay = true, playe
           }
       });
       
-      parentPlayerRef.current = player;
+      playerRef.current = player;
 
     }, 100);
 
     return () => {
       clearTimeout(timer);
-      if (parentPlayerRef.current) {
-        parentPlayerRef.current.destroy();
-        parentPlayerRef.current = null;
+      if (playerRef.current) {
+        playerRef.current.destroy();
+        playerRef.current = null;
       }
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [source, poster, autoPlay, scriptsLoaded, parentPlayerRef]); 
+  }, [source, poster, autoPlay, scriptsLoaded, playerRef]); 
 
   return (
     <div className="w-full h-full relative bg-black">
