@@ -54,16 +54,20 @@ export default function CdnClapprPlayer({ source, poster, autoPlay = true, playe
       if (!playerContainerRef.current) return;
 
       try {
-        // Step 1: Load all scripts in parallel
+        // Step 1: Load the core Clappr player script first.
+        await loadScript('https://cdn.jsdelivr.net/npm/@clappr/player@latest/dist/clappr.min.js', 'clappr-script');
+
+        if (!isMounted) return;
+
+        // Step 2: Load all plugin scripts in parallel now that core is loaded.
         await Promise.all([
-            loadScript('https://cdn.jsdelivr.net/npm/@clappr/player@latest/dist/clappr.min.js', 'clappr-script'),
             loadScript('https://cdn.jsdelivr.net/gh/clappr/dash-shaka-playback@latest/dist/dash-shaka-playback.js', 'clappr-shaka-playback'),
             loadScript('https://cdn.jsdelivr.net/npm/clappr-level-selector-plugin@latest/dist/level-selector.min.js', 'clappr-level-selector'),
         ]);
 
         if (!isMounted || !playerContainerRef.current) return;
         
-        // Step 2: Initialize Player now that all scripts are loaded
+        // Step 3: Initialize Player now that all scripts are loaded
         const plugins = [];
         if (window.DashShakaPlayback) {
           plugins.push(window.DashShakaPlayback);
