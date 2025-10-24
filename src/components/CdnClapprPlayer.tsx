@@ -113,7 +113,12 @@ export default function CdnClapprPlayer({ source, poster, autoPlay = true, playe
             },
             mediacontrol: {
               seekbar: "hsl(var(--destructive))",
-              buttons: "#FFFFFF"
+              buttons: {
+                play: 'play',
+                volume: 'volume',
+                pip: 'pip',
+                fullscreen: 'fullscreen'
+              }
             },
             levelSelectorConfig: {
               title: 'Quality',
