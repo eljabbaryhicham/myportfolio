@@ -11,7 +11,6 @@ declare global {
         Clappr: any;
         DashShakaPlayback: any;
         LevelSelector: any;
-        PlaybackRate: any;
     }
 }
 
@@ -82,7 +81,6 @@ export default function CdnClapprPlayer({ source, poster, autoPlay = true, playe
         await Promise.all([
             loadScript('https://cdn.jsdelivr.net/gh/clappr/dash-shaka-playback@latest/dist/dash-shaka-playback.js', 'clappr-shaka-playback', 'DashShakaPlayback'),
             loadScript('https://cdn.jsdelivr.net/gh/clappr/clappr-level-selector-plugin@latest/dist/level-selector.min.js', 'clappr-level-selector', 'LevelSelector'),
-            loadScript('https://cdn.jsdelivr.net/npm/clappr-playback-rate-plugin@latest/dist/clappr-playback-rate-plugin.min.js', 'clappr-playback-rate', 'PlaybackRate'),
         ]);
 
         if (!isMounted || !playerContainerRef.current) return;
@@ -90,7 +88,6 @@ export default function CdnClapprPlayer({ source, poster, autoPlay = true, playe
         const plugins = [];
         if (window.DashShakaPlayback) plugins.push(window.DashShakaPlayback);
         if (window.LevelSelector) plugins.push(window.LevelSelector);
-        if (window.PlaybackRate) plugins.push(window.PlaybackRate);
 
         player = new window.Clappr.Player({
             parentId: `#${playerContainerRef.current.id}`,
