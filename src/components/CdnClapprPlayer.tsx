@@ -49,7 +49,6 @@ export default function CdnClapprPlayer({ source, poster, autoPlay = true, playe
     Promise.all([
         loadScript('https://cdn.jsdelivr.net/npm/clappr@latest/dist/clappr.min.js', 'clappr-script'),
         loadScript('https://cdn.jsdelivr.net/gh/clappr/dash-shaka-playback@latest/dist/dash-shaka-playback.js', 'clappr-shaka-playback'),
-        loadScript('https://cdn.jsdelivr.net/npm/hls.js@latest/dist/hls.min.js', 'hls-script'),
     ])
     .then(() => setScriptsLoaded(true))
     .catch(error => {
@@ -99,7 +98,7 @@ export default function CdnClapprPlayer({ source, poster, autoPlay = true, playe
           },
           mediacontrol: {
             seekbar: "hsl(347 86% 52%)",
-            buttons: "hsl(347 86% 52%)"
+            buttons: "#FFFFFF"
           },
           shakaOnBeforeLoad: function(shaka_player: any) {},
           events: {
