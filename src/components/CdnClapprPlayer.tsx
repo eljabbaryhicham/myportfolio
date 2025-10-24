@@ -140,32 +140,6 @@ export default function CdnClapprPlayer({ source, poster, autoPlay = true }: Cdn
   // Use a static ID or generate one that's consistent across renders
   return (
     <div className="w-full h-full relative bg-black">
-       <style jsx global>{`
-        /* Hide Clappr's default spinners to use our own preloader */
-        .spinner[data-spinner], .shaka-spinner {
-          display: none !important;
-        }
-        /* Style player controls safely */
-        .media-control[data-media-control] .media-control-layer[data-media-control-layer] .bar-container[data-seekbar] .bar-fill-2[data-seekbar],
-        .media-control[data-media-control] .media-control-layer[data-media-control-layer] .bar-container[data-volume] .bar-fill-2[data-volume] {
-          background-color: hsl(var(--destructive)) !important;
-        }
-
-        .media-control[data-media-control] .media-control-layer[data-media-control-layer] .drawer-container[data-settings-menu] .drawer-list[data-settings-list] button.active {
-            color: hsl(var(--destructive)) !important;
-        }
-
-        .media-control-button[data-playpause]:hover svg,
-        .media-control-button[data-playpause]:focus svg,
-        .media-control-button[data-fullscreen]:hover svg,
-        .media-control-button[data-fullscreen]:focus svg,
-        .media-control-button[data-volume]:hover svg,
-        .media-control-button[data-volume]:focus svg,
-        .level-selector__list-item:hover, .level-selector__list-item.active {
-            fill: hsl(var(--destructive)) !important;
-            color: hsl(var(--destructive)) !important;
-        }
-      `}</style>
       {isLoading && (
         <div className="absolute inset-0 z-10 flex items-center justify-center">
             <Preloader />
