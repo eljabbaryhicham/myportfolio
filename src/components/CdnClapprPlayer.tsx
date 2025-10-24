@@ -95,9 +95,9 @@ export default function CdnClapprPlayer({ source, poster, autoPlay = true, playe
         if (window.LevelSelector) plugins.push(window.LevelSelector);
 
         player = new window.Clappr.Player({
+            parent: `#${playerContainerRef.current.id}`,
             source,
             poster,
-            parentId: `#${playerContainerRef.current.id}`,
             width: '100%',
             height: '100%',
             autoPlay: autoPlay,

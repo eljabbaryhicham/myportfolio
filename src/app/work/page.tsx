@@ -225,6 +225,7 @@ export default function WorkPage() {
   const [isLibraryOpen, setIsLibraryOpen] = useState(false);
   const [librarySelectionConfig, setLibrarySelectionConfig] = useState<{ onSelect: (url: string, type: 'image' | 'video', filename: string) => void } | null>(null);
   const [dialogActiveTab, setDialogActiveTab] = useState<'images' | 'videos'>('images');
+  const [dialogActiveLibrary, setDialogActiveLibrary] = useState<'primary' | 'extented'>('primary');
   const [direction, setDirection] = useState<'next' | 'prev' | null>(null);
   const [isDialogMediaLoading, setIsDialogMediaLoading] = useState(true);
   
@@ -848,6 +849,8 @@ export default function WorkPage() {
             }}
             activeTab={dialogActiveTab}
             setActiveTab={setDialogActiveTab}
+            activeLibrary={dialogActiveLibrary}
+            setActiveLibrary={setDialogActiveLibrary}
             newlyUploadedId={null}
           />
         </>
