@@ -35,6 +35,7 @@ interface MediaAsset {
     filename: string;
     libraryId?: 'primary' | 'extented';
     videoFormat?: 'mp4' | 'm3u8';
+    title?: string;
 }
 
 const MediaFileCard = ({

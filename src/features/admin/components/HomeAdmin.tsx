@@ -11,6 +11,7 @@ import {
   FormField,
   FormItem,
   FormLabel,
+  FormMessage,
 } from '@/components/ui/form';
 import {
   Select,
@@ -56,6 +57,8 @@ interface MediaAsset {
     id: string;
     url: string;
     filename: string;
+    resource_type: 'image' | 'video' | 'raw';
+    title?: string;
 }
 
 export default function HomeAdmin() {
