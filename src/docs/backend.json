@@ -126,13 +126,23 @@
       "description": "Stores settings for the homepage, like background videos.",
       "type": "object",
       "properties": {
-        "homePageBackgroundVideoId": {
-          "type": "string",
-          "description": "The ID of the project to use for the homepage background video."
+        "homePageBackgroundType": {
+            "type": "string",
+            "enum": ["video", "image"],
+            "description": "The type of media to use for the homepage background."
         },
-        "websiteBackgroundVideoId": {
+        "homePageBackgroundMediaId": {
           "type": "string",
-          "description": "The ID of the project to use for the sitewide background video."
+          "description": "The ID of the project or media asset to use for the homepage background."
+        },
+        "websiteBackgroundType": {
+            "type": "string",
+            "enum": ["video", "image"],
+            "description": "The type of media to use for the website background."
+        },
+        "websiteBackgroundMediaId": {
+          "type": "string",
+          "description": "The ID of the project or media asset to use for the sitewide background."
         },
         "isHomePageVideoEnabled": {
           "type": "boolean",

@@ -10,12 +10,19 @@ import { useDoc, useFirestore, useMemoFirebase } from '@/firebase';
 import { doc } from 'firebase/firestore';
 import type { PortfolioItem } from '@/features/portfolio/data/portfolio-data';
 import { usePathname } from 'next/navigation';
+import Image from 'next/image';
 
 interface HomePageSettings {
-    websiteBackgroundVideoId?: string;
-    homePageBackgroundVideoId?: string;
+    homePageBackgroundType?: 'video' | 'image';
+    homePageBackgroundMediaId?: string;
+    websiteBackgroundType?: 'video' | 'image';
+    websiteBackgroundMediaId?: string;
     isHomePageVideoEnabled?: boolean;
     isWebsiteVideoEnabled?: boolean;
+}
+
+interface MediaAsset {
+    url: string;
 }
 
 function SiteBackground() {
@@ -29,37 +36,70 @@ function SiteBackground() {
     );
     const { data: homeSettings } = useDoc<HomePageSettings>(settingsDocRef);
     
-    const backgroundVideoId = isHomePage 
-        ? homeSettings?.homePageBackgroundVideoId 
-        : homeSettings?.websiteBackgroundVideoId;
-        
-    const videoRef = useMemoFirebase(
-        () => (firestore && backgroundVideoId ? doc(firestore, 'projects', backgroundVideoId) : null),
-        [firestore, backgroundVideoId]
+    const backgroundType = isHomePage
+        ? homeSettings?.homePageBackgroundType || 'video'
+        : homeSettings?.websiteBackgroundType || 'video';
+
+    const backgroundMediaId = isHomePage 
+        ? homeSettings?.homePageBackgroundMediaId 
+        : homeSettings?.websiteBackgroundMediaId;
+    
+    const backgroundProjectRef = useMemoFirebase(
+        () => (firestore && backgroundMediaId && backgroundType === 'video' ? doc(firestore, 'projects', backgroundMediaId) : null),
+        [firestore, backgroundMediaId, backgroundType]
     );
-    const { data: backgroundVideo } = useDoc<PortfolioItem>(videoRef);
+    const { data: backgroundProject } = useDoc<PortfolioItem>(backgroundProjectRef);
+
+    const backgroundMediaRef = useMemoFirebase(
+        () => (firestore && backgroundMediaId && backgroundType === 'image' ? doc(firestore, 'media', backgroundMediaId) : null),
+        [firestore, backgroundMediaId, backgroundType]
+    );
+    const { data: backgroundMedia } = useDoc<MediaAsset>(backgroundMediaRef);
 
     const isVideoEnabled = isHomePage
       ? homeSettings?.isHomePageVideoEnabled ?? true
       : homeSettings?.isWebsiteVideoEnabled ?? true;
 
-    const videoSource = backgroundVideo?.sourceUrl || "https://res.cloudinary.com/da1srnoer/video/upload/f_auto:video,q_auto/v1/wbmz1rkepnqeotpcx9tp";
-    const posterSource = backgroundVideo?.useVideoFrameAsPoster ? undefined : backgroundVideo?.thumbnailUrl;
+    const mediaUrl = backgroundType === 'video' 
+      ? backgroundProject?.sourceUrl
+      : backgroundMedia?.url;
       
+    const posterUrl = backgroundType === 'video' ? backgroundProject?.thumbnailUrl : undefined;
+
     return (
         <div className="absolute inset-0 -z-10 w-full h-full">
             <div className="w-full h-full bg-black">
-                {isVideoEnabled && videoSource && (
+                {backgroundType === 'video' && isVideoEnabled && mediaUrl ? (
                     <video
-                        key={videoSource}
+                        key={mediaUrl}
                         className="w-full h-full object-cover"
-                        poster={posterSource}
+                        poster={posterUrl}
                         autoPlay
                         loop
                         muted
                         playsInline
                     >
-                        <source src={videoSource} type="video/mp4" />
+                        <source src={mediaUrl} type="video/mp4" />
+                    </video>
+                ) : backgroundType === 'image' && mediaUrl ? (
+                    <Image
+                      src={mediaUrl}
+                      alt="Background"
+                      fill
+                      className="object-cover"
+                      priority
+                    />
+                ) : (
+                    // Fallback to default video
+                    <video
+                        key="default-video"
+                        className="w-full h-full object-cover"
+                        autoPlay
+                        loop
+                        muted
+                        playsInline
+                    >
+                        <source src="https://res.cloudinary.com/da1srnoer/video/upload/f_auto:video,q_auto/v1/wbmz1rkepnqeotpcx9tp" type="video/mp4" />
                     </video>
                 )}
             </div>

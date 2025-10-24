@@ -110,11 +110,9 @@ const MediaFileCard = ({
                 <Button size="icon" variant="default" onClick={() => onMediaSelect(file.url, file.resource_type === 'video' ? 'video' : 'image', file.filename)} title="Create Project" className="h-8 w-8 md:h-10 md:w-10 glass-effect">
                   <FontAwesomeIcon icon={faPlus} />
                 </Button>
-                 {file.resource_type === 'video' && (
-                  <Button size="icon" variant="secondary" onClick={() => onSetBackground(file)} title="Set as Background" className="h-8 w-8 md:h-10 md:w-10 glass-effect">
-                    <FontAwesomeIcon icon={faPhotoFilm} />
-                  </Button>
-                )}
+                <Button size="icon" variant="secondary" onClick={() => onSetBackground(file)} title="Set as Background" className="h-8 w-8 md:h-10 md:w-10 glass-effect">
+                  <FontAwesomeIcon icon={faPhotoFilm} />
+                </Button>
                 {file.resource_type === 'image' && (
                   <Button size="icon" variant="secondary" onClick={() => onSetLogo(file.url)} title="Set as Logo" className="h-8 w-8 md:h-10 md:w-10 glass-effect">
                     <FontAwesomeIcon icon={faStar} />
@@ -130,7 +128,7 @@ const MediaFileCard = ({
                         <FontAwesomeIcon icon={faTrash} />
                       </Button>
                     </AlertDialogTrigger>
-                    <AlertDialogContent>
+                    <AlertDialogContent className="w-[80vw]">
                       <AlertDialogHeader>
                         <AlertDialogTitle>Are you sure?</AlertDialogTitle>
                         <AlertDialogDescription>
@@ -432,42 +430,46 @@ export default function MediaAdmin(props: MediaAdminProps) {
   const handleConfirmSetBackground = async () => {
     if (!firestore || !backgroundFile) return;
 
-    // Find if a project for this media URL already exists
-    const projectsRef = collection(firestore, 'projects');
-    const q = query(projectsRef, where("sourceUrl", "==", backgroundFile.url));
-    const querySnapshot = await getDocs(q);
+    let mediaIdForDb = backgroundFile.id;
+    const mediaTypeForDb = backgroundFile.resource_type === 'video' ? 'video' : 'image';
+    
+    // If it's a video, ensure a project exists.
+    if (mediaTypeForDb === 'video') {
+        const projectsRef = collection(firestore, 'projects');
+        const q = query(projectsRef, where("sourceUrl", "==", backgroundFile.url));
+        const querySnapshot = await getDocs(q);
 
-    let projectId: string;
+        if (!querySnapshot.empty) {
+            mediaIdForDb = querySnapshot.docs[0].id;
+        } else {
+            const newProjectRef = doc(projectsRef);
+            mediaIdForDb = newProjectRef.id;
 
-    if (!querySnapshot.empty) {
-      // Project exists, use its ID
-      projectId = querySnapshot.docs[0].id;
-    } else {
-      // Project doesn't exist, create it
-      const projectsCol = collection(firestore, 'projects');
-      const newProjectRef = doc(projectsCol);
-      projectId = newProjectRef.id;
-
-      const batch = writeBatch(firestore);
-      const title = backgroundFile.filename.split('.').slice(0, -1).join('.') || 'New Background Project';
-      
-      batch.set(newProjectRef, {
-        title: title,
-        description: "Automatically created for background video.",
-        type: 'video',
-        sourceUrl: backgroundFile.url,
-        thumbnailUrl: backgroundFile.url.replace(/\.mp4$/, '.jpg'), // Simple poster generation
-        isVisible: false, // Don't show in the main portfolio
-        order: 999, // Place it last
-      });
-      await batch.commit();
-      toast({ title: 'Project Created', description: 'A hidden project was created for this background video.'});
+            const batch = writeBatch(firestore);
+            const title = backgroundFile.filename.split('.').slice(0, -1).join('.') || 'New Background Project';
+            
+            batch.set(newProjectRef, {
+                title: title,
+                description: "Automatically created for background video.",
+                type: 'video',
+                sourceUrl: backgroundFile.url,
+                thumbnailUrl: backgroundFile.url.replace(/\.(mp4|m3u8|webm)$/, '.jpg'),
+                isVisible: false,
+                order: 999,
+            });
+            await batch.commit();
+            toast({ title: 'Project Created', description: 'A hidden project was created for this background video.'});
+        }
     }
 
-    // Now update the homepage settings
     const settingsDocRef = doc(firestore, 'homepage', 'settings');
-    const fieldToUpdate = backgroundTarget === 'home' ? 'homePageBackgroundVideoId' : 'websiteBackgroundVideoId';
-    setDocumentNonBlocking(settingsDocRef, { [fieldToUpdate]: projectId }, { merge: true });
+    const fieldToUpdateId = backgroundTarget === 'home' ? 'homePageBackgroundMediaId' : 'websiteBackgroundMediaId';
+    const fieldToUpdateType = backgroundTarget === 'home' ? 'homePageBackgroundType' : 'websiteBackgroundType';
+    
+    setDocumentNonBlocking(settingsDocRef, { 
+      [fieldToUpdateId]: mediaIdForDb,
+      [fieldToUpdateType]: mediaTypeForDb,
+    }, { merge: true });
 
     toast({
         title: 'Background Updated',
@@ -612,11 +614,11 @@ export default function MediaAdmin(props: MediaAdminProps) {
   
   const setBackgroundDialog = (
     <Dialog open={isSetBackgroundOpen} onOpenChange={setIsSetBackgroundOpen}>
-        <DialogContent className="glass-effect w-[80vw]">
+        <DialogContent className="w-[80vw]">
             <DialogHeader>
-                <DialogTitle>Set as Background Video</DialogTitle>
+                <DialogTitle>Set as Background</DialogTitle>
                 <DialogDescription>
-                    Where would you like to set this video as the background?
+                    Where would you like to set this media as the background?
                 </DialogDescription>
             </DialogHeader>
             <div className="py-4">

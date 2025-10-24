@@ -4,7 +4,6 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import * as z from 'zod';
-import { Button } from '@/components/ui/button';
 import {
   Form,
   FormControl,
@@ -12,7 +11,6 @@ import {
   FormField,
   FormItem,
   FormLabel,
-  FormMessage,
 } from '@/components/ui/form';
 import {
   Select,
@@ -31,22 +29,34 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import type { AppUser } from '@/firebase/auth/use-user';
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Label } from '@/components/ui/label';
 
 interface HomePageSettings {
-    homePageBackgroundVideoId?: string;
-    websiteBackgroundVideoId?: string;
-    isHomePageVideoEnabled?: boolean;
-    isWebsiteVideoEnabled?: boolean;
+    homePageBackgroundType?: 'video' | 'image';
+    homePageBackgroundMediaId?: string;
+    websiteBackgroundType?: 'video' | 'image';
+    websiteBackgroundMediaId?: string;
+    isHomePageVideoEnabled?: boolean; // Kept for backwards compatibility if only video is selected
+    isWebsiteVideoEnabled?: boolean; // Kept for backwards compatibility if only video is selected
 }
 
 const settingsSchema = z.object({
-  homePageBackgroundVideoId: z.string().optional(),
-  websiteBackgroundVideoId: z.string().optional(),
+  homePageBackgroundType: z.enum(['video', 'image']).optional(),
+  homePageBackgroundMediaId: z.string().optional(),
+  websiteBackgroundType: z.enum(['video', 'image']).optional(),
+  websiteBackgroundMediaId: z.string().optional(),
   isHomePageVideoEnabled: z.boolean().optional(),
   isWebsiteVideoEnabled: z.boolean().optional(),
 });
 
 type SettingsFormValues = z.infer<typeof settingsSchema>;
+
+interface MediaAsset {
+    id: string;
+    url: string;
+    filename: string;
+}
 
 export default function HomeAdmin() {
   const { toast } = useToast();
@@ -65,26 +75,34 @@ export default function HomeAdmin() {
 
   const projectsCollection = useMemoFirebase(() => firestore ? collection(firestore, 'projects') : null, [firestore]);
   const { data: portfolioItems, isLoading: isLoadingProjects } = useCollection<PortfolioItem>(projectsCollection);
+  
+  const mediaCollection = useMemoFirebase(() => firestore ? collection(firestore, 'media') : null, [firestore]);
+  const { data: mediaAssets, isLoading: isLoadingMedia } = useCollection<MediaAsset>(mediaCollection);
 
   const videoItems = portfolioItems?.filter(item => item.type === 'video') || [];
+  const imageAssets = mediaAssets?.filter(asset => asset.resource_type === 'image') || [];
 
   const form = useForm<SettingsFormValues>({
     resolver: zodResolver(settingsSchema),
     defaultValues: {
-      homePageBackgroundVideoId: '',
-      websiteBackgroundVideoId: '',
+      homePageBackgroundType: 'video',
+      homePageBackgroundMediaId: '',
+      websiteBackgroundType: 'video',
+      websiteBackgroundMediaId: '',
       isHomePageVideoEnabled: true,
       isWebsiteVideoEnabled: true,
     },
   });
 
-  const { watch } = form;
+  const { watch, control, setValue } = form;
 
   useEffect(() => {
     if (homeSettings) {
       form.reset({
-        homePageBackgroundVideoId: homeSettings.homePageBackgroundVideoId || '',
-        websiteBackgroundVideoId: homeSettings.websiteBackgroundVideoId || '',
+        homePageBackgroundType: homeSettings.homePageBackgroundType || 'video',
+        homePageBackgroundMediaId: homeSettings.homePageBackgroundMediaId || '',
+        websiteBackgroundType: homeSettings.websiteBackgroundType || 'video',
+        websiteBackgroundMediaId: homeSettings.websiteBackgroundMediaId || '',
         isHomePageVideoEnabled: homeSettings.isHomePageVideoEnabled ?? true,
         isWebsiteVideoEnabled: homeSettings.isWebsiteVideoEnabled ?? true,
       });
@@ -111,8 +129,7 @@ export default function HomeAdmin() {
     return () => subscription.unsubscribe();
   }, [watch, settingsDocRef, canEditHome, toast]);
 
-
-  const isLoading = isLoadingSettings || isLoadingProjects;
+  const isLoading = isLoadingSettings || isLoadingProjects || isLoadingMedia;
 
   if (isLoading) {
     return (
@@ -136,24 +153,55 @@ export default function HomeAdmin() {
                     <Form {...form}>
                         <div className="space-y-8 max-w-2xl mx-auto">
                             <fieldset disabled={!canEditHome} className="group space-y-8">
+                                
+                                {/* Homepage Background Settings */}
                                 <div className="space-y-4 p-4 rounded-lg border glass-effect">
                                     <h3 className="font-headline text-lg">Homepage Background</h3>
                                     <FormField
-                                        control={form.control}
-                                        name="homePageBackgroundVideoId"
+                                      control={control}
+                                      name="homePageBackgroundType"
+                                      render={({ field }) => (
+                                        <FormItem className="space-y-3">
+                                          <FormLabel>Background Type</FormLabel>
+                                          <FormControl>
+                                            <RadioGroup
+                                              onValueChange={(value) => {
+                                                  field.onChange(value);
+                                                  setValue('homePageBackgroundMediaId', ''); // Reset selection on type change
+                                              }}
+                                              value={field.value}
+                                              className="flex items-center space-x-4"
+                                            >
+                                              <FormItem className="flex items-center space-x-2 space-y-0">
+                                                <FormControl><RadioGroupItem value="video" /></FormControl>
+                                                <FormLabel className="font-normal">Video</FormLabel>
+                                              </FormItem>
+                                              <FormItem className="flex items-center space-x-2 space-y-0">
+                                                <FormControl><RadioGroupItem value="image" /></FormControl>
+                                                <FormLabel className="font-normal">Image</FormLabel>
+                                              </FormItem>
+                                            </RadioGroup>
+                                          </FormControl>
+                                        </FormItem>
+                                      )}
+                                    />
+
+                                    <FormField
+                                        control={control}
+                                        name="homePageBackgroundMediaId"
                                         render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>Background Video</FormLabel>
+                                            <FormLabel>Background Media</FormLabel>
                                             <Select onValueChange={field.onChange} value={field.value}>
                                                 <FormControl>
                                                 <SelectTrigger>
-                                                    <SelectValue placeholder="Select a video for the homepage" />
+                                                    <SelectValue placeholder={`Select a ${watch('homePageBackgroundType')}`} />
                                                 </SelectTrigger>
                                                 </FormControl>
                                                 <SelectContent>
-                                                {videoItems.map((item) => (
+                                                {(watch('homePageBackgroundType') === 'video' ? videoItems : imageAssets).map((item) => (
                                                     <SelectItem key={item.id} value={item.id}>
-                                                        {item.title}
+                                                        {item.title || item.filename}
                                                     </SelectItem>
                                                 ))}
                                                 </SelectContent>
@@ -162,47 +210,74 @@ export default function HomeAdmin() {
                                         </FormItem>
                                         )}
                                     />
-                                    <FormField
-                                        control={form.control}
-                                        name="isHomePageVideoEnabled"
-                                        render={({ field }) => (
-                                            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
-                                                <div className="space-y-0.5">
-                                                    <FormLabel>
-                                                        Enable Homepage Video
-                                                    </FormLabel>
-                                                </div>
-                                                <FormControl>
-                                                    <Switch
-                                                        checked={field.value}
-                                                        onCheckedChange={field.onChange}
-                                                    />
-                                                </FormControl>
-                                            </FormItem>
-                                        )}
-                                    />
+                                    {watch('homePageBackgroundType') === 'video' && (
+                                        <FormField
+                                            control={control}
+                                            name="isHomePageVideoEnabled"
+                                            render={({ field }) => (
+                                                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
+                                                    <div className="space-y-0.5">
+                                                        <FormLabel>Enable Homepage Video</FormLabel>
+                                                    </div>
+                                                    <FormControl>
+                                                        <Switch checked={field.value} onCheckedChange={field.onChange} />
+                                                    </FormControl>
+                                                </FormItem>
+                                            )}
+                                        />
+                                    )}
                                 </div>
 
                                 <Separator />
 
+                                {/* Website Background Settings */}
                                 <div className="space-y-4 p-4 rounded-lg border glass-effect">
                                      <h3 className="font-headline text-lg">Other Pages Background</h3>
                                     <FormField
-                                        control={form.control}
-                                        name="websiteBackgroundVideoId"
+                                      control={control}
+                                      name="websiteBackgroundType"
+                                      render={({ field }) => (
+                                        <FormItem className="space-y-3">
+                                          <FormLabel>Background Type</FormLabel>
+                                          <FormControl>
+                                            <RadioGroup
+                                              onValueChange={(value) => {
+                                                  field.onChange(value);
+                                                  setValue('websiteBackgroundMediaId', ''); // Reset selection on type change
+                                              }}
+                                              value={field.value}
+                                              className="flex items-center space-x-4"
+                                            >
+                                              <FormItem className="flex items-center space-x-2 space-y-0">
+                                                <FormControl><RadioGroupItem value="video" /></FormControl>
+                                                <FormLabel className="font-normal">Video</FormLabel>
+                                              </FormItem>
+                                              <FormItem className="flex items-center space-x-2 space-y-0">
+                                                <FormControl><RadioGroupItem value="image" /></FormControl>
+                                                <FormLabel className="font-normal">Image</FormLabel>
+                                              </FormItem>
+                                            </RadioGroup>
+                                          </FormControl>
+                                        </FormItem>
+                                      )}
+                                    />
+
+                                    <FormField
+                                        control={control}
+                                        name="websiteBackgroundMediaId"
                                         render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>Background Video</FormLabel>
+                                            <FormLabel>Background Media</FormLabel>
                                             <Select onValueChange={field.onChange} value={field.value}>
                                                 <FormControl>
                                                 <SelectTrigger>
-                                                    <SelectValue placeholder="Select a video for other pages" />
+                                                    <SelectValue placeholder={`Select a ${watch('websiteBackgroundType')}`} />
                                                 </SelectTrigger>
                                                 </FormControl>
                                                 <SelectContent>
-                                                {videoItems.map((item) => (
+                                                {(watch('websiteBackgroundType') === 'video' ? videoItems : imageAssets).map((item) => (
                                                     <SelectItem key={item.id} value={item.id}>
-                                                        {item.title}
+                                                        {item.title || item.filename}
                                                     </SelectItem>
                                                 ))}
                                                 </SelectContent>
@@ -211,25 +286,22 @@ export default function HomeAdmin() {
                                         </FormItem>
                                         )}
                                     />
-                                    <FormField
-                                        control={form.control}
-                                        name="isWebsiteVideoEnabled"
-                                        render={({ field }) => (
-                                            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
-                                                <div className="space-y-0.5">
-                                                    <FormLabel>
-                                                        Enable Website Video
-                                                    </FormLabel>
-                                                </div>
-                                                <FormControl>
-                                                    <Switch
-                                                        checked={field.value}
-                                                        onCheckedChange={field.onChange}
-                                                    />
-                                                </FormControl>
-                                            </FormItem>
-                                        )}
-                                    />
+                                    {watch('websiteBackgroundType') === 'video' && (
+                                        <FormField
+                                            control={control}
+                                            name="isWebsiteVideoEnabled"
+                                            render={({ field }) => (
+                                                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
+                                                    <div className="space-y-0.5">
+                                                        <FormLabel>Enable Website Video</FormLabel>
+                                                    </div>
+                                                    <FormControl>
+                                                        <Switch checked={field.value} onCheckedChange={field.onChange} />
+                                                    </FormControl>
+                                                </FormItem>
+                                            )}
+                                        />
+                                    )}
                                 </div>
                             </fieldset>
                         </div>
