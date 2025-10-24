@@ -22,17 +22,17 @@ interface CdnClapprPlayerProps {
   watermark?: string;
 }
 
-const loadScript = (src: string, id: string) => {
+const loadScript = (src: string, id: string): Promise<void> => {
   return new Promise((resolve, reject) => {
     if (document.getElementById(id)) {
-      resolve(true);
+      resolve();
       return;
     }
     const script = document.createElement('script');
     script.id = id;
     script.src = src;
     script.async = true;
-    script.onload = () => resolve(true);
+    script.onload = () => resolve();
     script.onerror = (e) => reject(new Error(`Failed to load script: ${src}. Error: ${e}`));
     document.head.appendChild(script);
   });
@@ -52,17 +52,21 @@ export default function CdnClapprPlayer({ source, poster, autoPlay = true, playe
 
     const initPlayer = async () => {
       if (!playerContainerRef.current) return;
+      setIsLoading(true);
 
       try {
         // Step 1: Load the core Clappr player script first.
         await loadScript('https://cdn.jsdelivr.net/npm/@clappr/player@latest/dist/clappr.min.js', 'clappr-script');
-
+        
         if (!isMounted) return;
+        if (!window.Clappr) {
+          throw new Error('Clappr script loaded but window.Clappr is not available.');
+        }
 
         // Step 2: Load all plugin scripts in parallel now that core is loaded.
         await Promise.all([
             loadScript('https://cdn.jsdelivr.net/gh/clappr/dash-shaka-playback@latest/dist/dash-shaka-playback.js', 'clappr-shaka-playback'),
-            loadScript('https://cdn.jsdelivr.net/npm/clappr-level-selector-plugin@latest/dist/level-selector.min.js', 'clappr-level-selector'),
+            loadScript('https://cdn.jsdelivr.net/gh/clappr/clappr-level-selector-plugin@latest/dist/level-selector.min.js', 'clappr-level-selector'),
         ]);
 
         if (!isMounted || !playerContainerRef.current) return;
@@ -86,7 +90,6 @@ export default function CdnClapprPlayer({ source, poster, autoPlay = true, playe
             watermark: watermark || '',
             watermarkLink: undefined,
             playsInline: true,
-            playinline: true,
             volume: 20,
             plugins: plugins,
             shakaConfiguration: {
@@ -95,7 +98,7 @@ export default function CdnClapprPlayer({ source, poster, autoPlay = true, playe
               }
             },
             mediacontrol: {
-              seekbar: "hsl(347 86% 52%)",
+              seekbar: "hsl(var(--destructive))",
               buttons: "#FFFFFF"
             },
             levelSelectorConfig: {
@@ -107,9 +110,14 @@ export default function CdnClapprPlayer({ source, poster, autoPlay = true, playe
               },
             },
             events: {
-              onReady: () => setIsLoading(false),
-              onPlay: () => setIsLoading(false),
-              onError: () => setIsLoading(false),
+              onReady: () => isMounted && setIsLoading(false),
+              onPlay: () => isMounted && setIsLoading(false),
+              onError: (e: any) => {
+                if (isMounted) {
+                  setIsLoading(false);
+                  console.error("Clappr player error:", e);
+                }
+              },
             }
         });
         
@@ -119,12 +127,14 @@ export default function CdnClapprPlayer({ source, poster, autoPlay = true, playe
 
       } catch (error: any) {
         console.error(error);
-        toast({
-          variant: 'destructive',
-          title: 'Could not load video player',
-          description: error.message || 'An essential script for video playback failed to load. Please check your internet connection or ad-blocker.'
-        });
-        setIsLoading(false);
+        if (isMounted) {
+          toast({
+            variant: 'destructive',
+            title: 'Could not load video player',
+            description: error.message || 'An essential script for video playback failed to load. Please check your internet connection or ad-blocker.'
+          });
+          setIsLoading(false);
+        }
       }
     };
     
