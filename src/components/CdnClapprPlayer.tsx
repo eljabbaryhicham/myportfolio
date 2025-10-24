@@ -53,7 +53,7 @@ const loadScript = (src: string, id: string, globalVar: string): Promise<void> =
       checkVar();
     };
 
-    script.onerror = (e) => reject(new Error(`Failed to load script: ${src}. Error: ${e}`));
+    script.onerror = (e) => reject(new Error(`Failed to load script: ${src}.`));
     document.head.appendChild(script);
   });
 };
@@ -82,7 +82,7 @@ export default function CdnClapprPlayer({ source, poster, autoPlay = true, playe
         await Promise.all([
             loadScript('https://cdn.jsdelivr.net/gh/clappr/dash-shaka-playback@latest/dist/dash-shaka-playback.js', 'clappr-shaka-playback', 'DashShakaPlayback'),
             loadScript('https://cdn.jsdelivr.net/gh/clappr/clappr-level-selector-plugin@latest/dist/level-selector.min.js', 'clappr-level-selector', 'LevelSelector'),
-            loadScript('https://cdn.jsdelivr.net/npm/clappr-playback-rate-plugin@latest/dist/PlaybackRate.min.js', 'clappr-playback-rate', 'PlaybackRate'),
+            loadScript('https://cdn.jsdelivr.net/npm/clappr-playback-rate-plugin@latest/dist/clappr-playback-rate-plugin.min.js', 'clappr-playback-rate', 'PlaybackRate'),
         ]);
 
         if (!isMounted || !playerContainerRef.current) return;
@@ -147,7 +147,8 @@ export default function CdnClapprPlayer({ source, poster, autoPlay = true, playe
           toast({
             variant: 'destructive',
             title: 'Could not load video player',
-            description: error.message || 'An essential script for video playback failed to load. Please check your internet connection or ad-blocker.'
+            description: error.message || 'An essential script for video playback failed to load. Please check your internet connection or ad-blocker.',
+            duration: 9000,
           });
           setIsLoading(false);
         }
