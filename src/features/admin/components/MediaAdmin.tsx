@@ -9,13 +9,13 @@ import { useToast } from '@/hooks/use-toast';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import Image from 'next/image';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCloudUploadAlt, faCopy, faTrash, faFilm, faFileImage, faImages, faXmark, faPlus, faEye, faFolderOpen, faLink, faUniversity, faStar } from '@fortawesome/free-solid-svg-icons';
+import { faCloudUploadAlt, faCopy, faTrash, faFilm, faFileImage, faImages, faXmark, faPlus, faEye, faFolderOpen, faLink, faUniversity, faStar, faPhotoFilm } from '@fortawesome/free-solid-svg-icons';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
 import Preloader from '@/components/preloader';
 import { useCollection, useFirestore, useMemoFirebase, addDocumentNonBlocking, deleteDocumentNonBlocking, useUser, setDocumentNonBlocking } from '@/firebase';
-import { collection, doc, query, orderBy, DocumentReference } from 'firebase/firestore';
+import { collection, doc, query, orderBy, DocumentReference, where, getDocs, writeBatch } from 'firebase/firestore';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Separator } from '@/components/ui/separator';
 import AddFromUrlDialog from './AddFromUrlDialog';
@@ -43,6 +43,7 @@ const MediaFileCard = ({
   onCopy,
   onPreview,
   onSetLogo,
+  onSetBackground,
   isNewlyUploaded,
   onMediaSelect,
   isSelectionMode,
@@ -53,6 +54,7 @@ const MediaFileCard = ({
   onCopy: (url: string) => void;
   onPreview: (file: MediaAsset) => void;
   onSetLogo: (url: string) => void;
+  onSetBackground: (file: MediaAsset) => void;
   isNewlyUploaded: boolean;
   onMediaSelect: (url: string, type: 'image' | 'video', filename: string) => void;
   isSelectionMode: boolean;
@@ -108,6 +110,11 @@ const MediaFileCard = ({
                 <Button size="icon" variant="default" onClick={() => onMediaSelect(file.url, file.resource_type === 'video' ? 'video' : 'image', file.filename)} title="Create Project" className="h-8 w-8 md:h-10 md:w-10 glass-effect">
                   <FontAwesomeIcon icon={faPlus} />
                 </Button>
+                 {file.resource_type === 'video' && (
+                  <Button size="icon" variant="secondary" onClick={() => onSetBackground(file)} title="Set as Background" className="h-8 w-8 md:h-10 md:w-10 glass-effect">
+                    <FontAwesomeIcon icon={faPhotoFilm} />
+                  </Button>
+                )}
                 {file.resource_type === 'image' && (
                   <Button size="icon" variant="secondary" onClick={() => onSetLogo(file.url)} title="Set as Logo" className="h-8 w-8 md:h-10 md:w-10 glass-effect">
                     <FontAwesomeIcon icon={faStar} />
@@ -197,6 +204,11 @@ export default function MediaAdmin(props: MediaAdminProps) {
   const [filesToUpload, setFilesToUpload] = useState<File[]>([]);
   const [uploadVideoFormat, setUploadVideoFormat] = useState<'mp4' | 'm3u8'>('mp4');
   
+  // State for setting background
+  const [isSetBackgroundOpen, setIsSetBackgroundOpen] = useState(false);
+  const [backgroundTarget, setBackgroundTarget] = useState<'home' | 'website'>('home');
+  const [backgroundFile, setBackgroundFile] = useState<MediaAsset | null>(null);
+
   const activeTab = props.isDialog ? props.activeTab : 'images';
   const setActiveTab = props.isDialog ? props.setActiveTab : () => {};
   const activeLibrary = props.isDialog ? props.activeLibrary : 'primary';
@@ -412,6 +424,59 @@ export default function MediaAdmin(props: MediaAdminProps) {
     }
   };
 
+  const handleOpenSetBackgroundDialog = (file: MediaAsset) => {
+    setBackgroundFile(file);
+    setIsSetBackgroundOpen(true);
+  };
+  
+  const handleConfirmSetBackground = async () => {
+    if (!firestore || !backgroundFile) return;
+
+    // Find if a project for this media URL already exists
+    const projectsRef = collection(firestore, 'projects');
+    const q = query(projectsRef, where("sourceUrl", "==", backgroundFile.url));
+    const querySnapshot = await getDocs(q);
+
+    let projectId: string;
+
+    if (!querySnapshot.empty) {
+      // Project exists, use its ID
+      projectId = querySnapshot.docs[0].id;
+    } else {
+      // Project doesn't exist, create it
+      const projectsCol = collection(firestore, 'projects');
+      const newProjectRef = doc(projectsCol);
+      projectId = newProjectRef.id;
+
+      const batch = writeBatch(firestore);
+      const title = backgroundFile.filename.split('.').slice(0, -1).join('.') || 'New Background Project';
+      
+      batch.set(newProjectRef, {
+        title: title,
+        description: "Automatically created for background video.",
+        type: 'video',
+        sourceUrl: backgroundFile.url,
+        thumbnailUrl: backgroundFile.url.replace(/\.mp4$/, '.jpg'), // Simple poster generation
+        isVisible: false, // Don't show in the main portfolio
+        order: 999, // Place it last
+      });
+      await batch.commit();
+      toast({ title: 'Project Created', description: 'A hidden project was created for this background video.'});
+    }
+
+    // Now update the homepage settings
+    const settingsDocRef = doc(firestore, 'homepage', 'settings');
+    const fieldToUpdate = backgroundTarget === 'home' ? 'homePageBackgroundVideoId' : 'websiteBackgroundVideoId';
+    setDocumentNonBlocking(settingsDocRef, { [fieldToUpdate]: projectId }, { merge: true });
+
+    toast({
+        title: 'Background Updated',
+        description: `The background for the ${backgroundTarget === 'home' ? 'Homepage' : 'Other Pages'} has been set.`,
+    });
+    
+    setIsSetBackgroundOpen(false);
+  };
+
 
   const renderLibrary = (assets: MediaAsset[], type: 'image' | 'video') => {
     if (isLoadingMedia) {
@@ -441,6 +506,7 @@ export default function MediaAdmin(props: MediaAdminProps) {
                   onCopy={handleCopy}
                   onPreview={setPreviewFile}
                   onSetLogo={handleSetLogo}
+                  onSetBackground={handleOpenSetBackgroundDialog}
                   isNewlyUploaded={file.id === newlyUploadedId}
                   onMediaSelect={handleMediaSelect}
                   isSelectionMode={!!(props.isDialog && props.isSelectionMode)}
@@ -543,6 +609,35 @@ export default function MediaAdmin(props: MediaAdminProps) {
       </DialogContent>
     </Dialog>
   );
+  
+  const setBackgroundDialog = (
+    <Dialog open={isSetBackgroundOpen} onOpenChange={setIsSetBackgroundOpen}>
+        <DialogContent className="glass-effect">
+            <DialogHeader>
+                <DialogTitle>Set as Background Video</DialogTitle>
+                <DialogDescription>
+                    Where would you like to set this video as the background?
+                </DialogDescription>
+            </DialogHeader>
+            <div className="py-4">
+                 <RadioGroup defaultValue="home" value={backgroundTarget} onValueChange={(value: 'home' | 'website') => setBackgroundTarget(value)}>
+                    <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="home" id="bg-home" />
+                        <Label htmlFor="bg-home">Homepage Only</Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="website" id="bg-website" />
+                        <Label htmlFor="bg-website">Other Pages</Label>
+                    </div>
+                </RadioGroup>
+            </div>
+            <DialogFooter>
+                <Button variant="outline" onClick={() => setIsSetBackgroundOpen(false)}>Cancel</Button>
+                <Button onClick={handleConfirmSetBackground}>Confirm</Button>
+            </DialogFooter>
+        </DialogContent>
+    </Dialog>
+  );
 
   if (props.isDialog) {
       return (
@@ -558,6 +653,7 @@ export default function MediaAdmin(props: MediaAdminProps) {
             onOpenChange={setIsAddFromUrlOpen}
             onUploadComplete={handleUrlUploadComplete}
           />
+          {setBackgroundDialog}
         </>
       );
   }
@@ -614,6 +710,7 @@ export default function MediaAdmin(props: MediaAdminProps) {
         </div>
       </div>
       {previewDialog}
+      {setBackgroundDialog}
       <AddFromUrlDialog
         isOpen={isAddFromUrlOpen}
         onOpenChange={setIsAddFromUrlOpen}
@@ -659,3 +756,5 @@ export default function MediaAdmin(props: MediaAdminProps) {
     </>
   );
 }
+
+    
