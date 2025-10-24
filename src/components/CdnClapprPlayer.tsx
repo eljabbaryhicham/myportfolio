@@ -11,6 +11,7 @@ declare global {
         Clappr: any;
         DashShakaPlayback: any;
         LevelSelector: any;
+        PipPlugin: any;
     }
 }
 
@@ -51,6 +52,7 @@ export default function CdnClapprPlayer({ source, poster, autoPlay = true, playe
         loadScript('https://cdn.jsdelivr.net/npm/clappr@latest/dist/clappr.min.js', 'clappr-script'),
         loadScript('https://cdn.jsdelivr.net/gh/clappr/dash-shaka-playback@latest/dist/dash-shaka-playback.js', 'clappr-shaka-playback'),
         loadScript('https://cdn.jsdelivr.net/npm/clappr-level-selector-plugin@latest/dist/level-selector.min.js', 'clappr-level-selector'),
+        loadScript('https://cdn.jsdelivr.net/npm/clappr-pip-plugin@latest/dist/clappr-pip-plugin.min.js', 'clappr-pip-plugin'),
     ])
     .then(() => setScriptsLoaded(true))
     .catch(error => {
@@ -68,65 +70,65 @@ export default function CdnClapprPlayer({ source, poster, autoPlay = true, playe
       return;
     }
 
-    const timer = setTimeout(() => {
-      if (typeof window.Clappr === 'undefined') {
-        return;
-      }
-      
-      if (playerRef.current) {
-        playerRef.current.destroy();
-      }
-      
-      const plugins = [];
-      if (window.DashShakaPlayback) {
-        plugins.push(window.DashShakaPlayback);
-      }
-      if (window.LevelSelector) {
-        plugins.push(window.LevelSelector);
-      }
+    if (typeof window.Clappr === 'undefined') {
+      return;
+    }
+    
+    if (playerRef.current) {
+      playerRef.current.destroy();
+    }
+    
+    const plugins = [];
+    if (window.DashShakaPlayback) {
+      plugins.push(window.DashShakaPlayback);
+    }
+    if (window.LevelSelector) {
+      plugins.push(window.LevelSelector);
+    }
+    if (window.PipPlugin) {
+        plugins.push(window.PipPlugin);
+    }
 
-      const player = new window.Clappr.Player({
-          source,
-          poster,
-          parentId: `#${playerContainerRef.current.id}`,
-          width: '100%',
-          height: '100%',
-          autoPlay: autoPlay,
-          playsInline: true,
-          playinline: true,
-          volume: 20,
-          plugins: plugins,
-          shakaConfiguration: {
-            streaming: {
-              rebufferingGoal: 15
-            }
-          },
-          mediacontrol: {
-            seekbar: "hsl(347 86% 52%)",
-            buttons: "#FFFFFF"
-          },
-          levelSelectorConfig: {
-            title: 'Quality',
-            labels: {
-                2: 'High', // 1080p
-                1: 'Med', // 720p
-                0: 'Low', // 360p
-            },
-          },
-          shakaOnBeforeLoad: function(shaka_player: any) {},
-          events: {
-            onReady: () => setIsLoading(false),
-            onPlay: () => setIsLoading(false),
-            onError: () => setIsLoading(false),
+    const player = new window.Clappr.Player({
+        source,
+        poster,
+        parentId: `#${playerContainerRef.current.id}`,
+        width: '100%',
+        height: '100%',
+        autoPlay: autoPlay,
+        playsInline: true,
+        playinline: true,
+        volume: 20,
+        plugins: plugins,
+        shakaConfiguration: {
+          streaming: {
+            rebufferingGoal: 15
           }
-      });
-      
-      playerRef.current = player;
+        },
+        mediacontrol: {
+          seekbar: "hsl(347 86% 52%)",
+          buttons: "#FFFFFF"
+        },
+        levelSelectorConfig: {
+          title: 'Quality',
+          labels: {
+              2: 'High', // 1080p
+              1: 'Med', // 720p
+              0: 'Low', // 360p
+          },
+        },
+        shakaOnBeforeLoad: function(shaka_player: any) {},
+        events: {
+          onReady: () => setIsLoading(false),
+          onPlay: () => setIsLoading(false),
+          onError: () => setIsLoading(false),
+        }
+    });
+    
+    playerRef.current = player;
 
-    }, 100);
 
     return () => {
-      clearTimeout(timer);
       if (playerRef.current) {
         playerRef.current.destroy();
         playerRef.current = null;
