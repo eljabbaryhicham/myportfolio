@@ -41,14 +41,12 @@ const PortfolioMedia = ({
   onMediaLoaded,
   playerRef,
   watermark,
-  watermarkLink,
 }: {
   item: PortfolioItem;
   onFullscreenClick: (url: string) => void;
   onMediaLoaded: () => void;
   playerRef: React.MutableRefObject<any | null>;
   watermark?: string;
-  watermarkLink?: string;
 }) => {
 
   useEffect(() => {
@@ -68,7 +66,6 @@ const PortfolioMedia = ({
             autoPlay={true}
             playerRef={playerRef}
             watermark={watermark}
-            watermarkLink={watermarkLink}
           />
         )}
       </div>
@@ -522,7 +519,6 @@ export default function WorkPage() {
     : { gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))' };
 
   const logoUrl = contactInfo?.logoUrl;
-  const watermarkLink = typeof window !== 'undefined' ? window.location.origin : '';
 
   return (
     <>
@@ -693,7 +689,6 @@ export default function WorkPage() {
                                 onMediaLoaded={() => setIsDialogMediaLoading(false)}
                                 playerRef={playerInstanceRef}
                                 watermark={logoUrl}
-                                watermarkLink={watermarkLink}
                               />
                             )}
                           </div>

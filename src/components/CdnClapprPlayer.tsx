@@ -20,7 +20,6 @@ interface CdnClapprPlayerProps {
   autoPlay?: boolean;
   playerRef?: React.MutableRefObject<any | null>;
   watermark?: string;
-  watermarkLink?: string;
 }
 
 const loadScript = (src: string, id: string) => {
@@ -39,7 +38,7 @@ const loadScript = (src: string, id: string) => {
   });
 };
 
-export default function CdnClapprPlayer({ source, poster, autoPlay = true, playerRef: parentPlayerRef, watermark, watermarkLink }: CdnClapprPlayerProps) {
+export default function CdnClapprPlayer({ source, poster, autoPlay = true, playerRef: parentPlayerRef, watermark }: CdnClapprPlayerProps) {
   const playerContainerRef = useRef<HTMLDivElement>(null);
   const internalPlayerRef = useRef<any>(null);
   const playerRef = parentPlayerRef || internalPlayerRef;
@@ -85,7 +84,7 @@ export default function CdnClapprPlayer({ source, poster, autoPlay = true, playe
             height: '100%',
             autoPlay: autoPlay,
             watermark: watermark || '',
-            watermarkLink: watermarkLink || undefined,
+            watermarkLink: undefined,
             playsInline: true,
             playinline: true,
             volume: 20,

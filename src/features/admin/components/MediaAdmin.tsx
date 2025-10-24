@@ -9,12 +9,12 @@ import { useToast } from '@/hooks/use-toast';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import Image from 'next/image';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCloudUploadAlt, faCopy, faTrash, faFilm, faFileImage, faImages, faXmark, faPlus, faEye, faFolderOpen, faLink, faUniversity } from '@fortawesome/free-solid-svg-icons';
+import { faCloudUploadAlt, faCopy, faTrash, faFilm, faFileImage, faImages, faXmark, faPlus, faEye, faFolderOpen, faLink, faUniversity, faStar } from '@fortawesome/free-solid-svg-icons';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
 import Preloader from '@/components/preloader';
-import { useCollection, useFirestore, useMemoFirebase, addDocumentNonBlocking, deleteDocumentNonBlocking, useUser } from '@/firebase';
+import { useCollection, useFirestore, useMemoFirebase, addDocumentNonBlocking, deleteDocumentNonBlocking, useUser, setDocumentNonBlocking } from '@/firebase';
 import { collection, doc, query, orderBy, DocumentReference } from 'firebase/firestore';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Separator } from '@/components/ui/separator';
@@ -42,6 +42,7 @@ const MediaFileCard = ({
   onDelete,
   onCopy,
   onPreview,
+  onSetLogo,
   isNewlyUploaded,
   onMediaSelect,
   isSelectionMode,
@@ -51,6 +52,7 @@ const MediaFileCard = ({
   onDelete: (publicId: string, id: string, resourceType: string, libraryId: 'primary' | 'extented') => void;
   onCopy: (url: string) => void;
   onPreview: (file: MediaAsset) => void;
+  onSetLogo: (url: string) => void;
   isNewlyUploaded: boolean;
   onMediaSelect: (url: string, type: 'image' | 'video', filename: string) => void;
   isSelectionMode: boolean;
@@ -106,6 +108,11 @@ const MediaFileCard = ({
                 <Button size="icon" variant="default" onClick={() => onMediaSelect(file.url, file.resource_type === 'video' ? 'video' : 'image', file.filename)} title="Create Project" className="h-8 w-8 md:h-10 md:w-10 glass-effect">
                   <FontAwesomeIcon icon={faPlus} />
                 </Button>
+                {file.resource_type === 'image' && (
+                  <Button size="icon" variant="secondary" onClick={() => onSetLogo(file.url)} title="Set as Logo" className="h-8 w-8 md:h-10 md:w-10 glass-effect">
+                    <FontAwesomeIcon icon={faStar} />
+                  </Button>
+                )}
                 <Button size="icon" variant="secondary" onClick={() => onCopy(file.url)} title="Copy URL" className="h-8 w-8 md:h-10 md:w-10 glass-effect">
                   <FontAwesomeIcon icon={faCopy} />
                 </Button>
@@ -375,6 +382,16 @@ export default function MediaAdmin(props: MediaAdminProps) {
     }
   };
 
+  const handleSetLogo = (url: string) => {
+    if (!firestore) return;
+    const contactDocRef = doc(firestore, 'contact', 'details');
+    setDocumentNonBlocking(contactDocRef, { logoUrl: url }, { merge: true });
+    toast({
+        title: 'Logo Updated',
+        description: 'The site logo has been successfully updated.',
+    });
+  }
+
   const handleCopy = (url: string) => {
     navigator.clipboard.writeText(url);
     toast({ title: "Copied!", description: "File URL copied to clipboard."});
@@ -423,6 +440,7 @@ export default function MediaAdmin(props: MediaAdminProps) {
                   onDelete={handleDelete} 
                   onCopy={handleCopy}
                   onPreview={setPreviewFile}
+                  onSetLogo={handleSetLogo}
                   isNewlyUploaded={file.id === newlyUploadedId}
                   onMediaSelect={handleMediaSelect}
                   isSelectionMode={!!(props.isDialog && props.isSelectionMode)}
