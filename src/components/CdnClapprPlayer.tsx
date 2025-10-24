@@ -22,17 +22,38 @@ interface CdnClapprPlayerProps {
   watermark?: string;
 }
 
-const loadScript = (src: string, id: string): Promise<void> => {
+const loadScript = (src: string, id: string, globalVar: string): Promise<void> => {
   return new Promise((resolve, reject) => {
     if (document.getElementById(id)) {
-      resolve();
+      // If script tag exists, poll for the global variable
+      const checkVar = () => {
+        if ((window as any)[globalVar]) {
+          resolve();
+        } else {
+          setTimeout(checkVar, 100);
+        }
+      };
+      checkVar();
       return;
     }
+
     const script = document.createElement('script');
     script.id = id;
     script.src = src;
     script.async = true;
-    script.onload = () => resolve();
+
+    script.onload = () => {
+      // After loading, poll for the global variable to be available
+      const checkVar = () => {
+        if ((window as any)[globalVar]) {
+          resolve();
+        } else {
+          setTimeout(checkVar, 100);
+        }
+      };
+      checkVar();
+    };
+
     script.onerror = (e) => reject(new Error(`Failed to load script: ${src}. Error: ${e}`));
     document.head.appendChild(script);
   });
@@ -55,30 +76,23 @@ export default function CdnClapprPlayer({ source, poster, autoPlay = true, playe
       setIsLoading(true);
 
       try {
-        // Step 1: Load the core Clappr player script first.
-        await loadScript('https://cdn.jsdelivr.net/npm/@clappr/player@latest/dist/clappr.min.js', 'clappr-script');
+        // Step 1: Load the core Clappr player script and wait for it.
+        await loadScript('https://cdn.jsdelivr.net/npm/@clappr/player@latest/dist/clappr.min.js', 'clappr-script', 'Clappr');
         
         if (!isMounted) return;
-        if (!window.Clappr) {
-          throw new Error('Clappr script loaded but window.Clappr is not available.');
-        }
 
         // Step 2: Load all plugin scripts in parallel now that core is loaded.
         await Promise.all([
-            loadScript('https://cdn.jsdelivr.net/gh/clappr/dash-shaka-playback@latest/dist/dash-shaka-playback.js', 'clappr-shaka-playback'),
-            loadScript('https://cdn.jsdelivr.net/gh/clappr/clappr-level-selector-plugin@latest/dist/level-selector.min.js', 'clappr-level-selector'),
+            loadScript('https://cdn.jsdelivr.net/gh/clappr/dash-shaka-playback@latest/dist/dash-shaka-playback.js', 'clappr-shaka-playback', 'DashShakaPlayback'),
+            loadScript('https://cdn.jsdelivr.net/gh/clappr/clappr-level-selector-plugin@latest/dist/level-selector.min.js', 'clappr-level-selector', 'LevelSelector'),
         ]);
 
         if (!isMounted || !playerContainerRef.current) return;
         
-        // Step 3: Initialize Player now that all scripts are loaded
+        // Step 3: Initialize Player now that all scripts are loaded and verified
         const plugins = [];
-        if (window.DashShakaPlayback) {
-          plugins.push(window.DashShakaPlayback);
-        }
-        if (window.LevelSelector) {
-          plugins.push(window.LevelSelector);
-        }
+        if (window.DashShakaPlayback) plugins.push(window.DashShakaPlayback);
+        if (window.LevelSelector) plugins.push(window.LevelSelector);
 
         player = new window.Clappr.Player({
             source,
@@ -104,9 +118,9 @@ export default function CdnClapprPlayer({ source, poster, autoPlay = true, playe
             levelSelectorConfig: {
               title: 'Quality',
               labels: {
-                  2: 'High', // 1080p
-                  1: 'Med', // 720p
-                  0: 'Low', // 360p
+                  2: 'High', // e.g., 1080p
+                  1: 'Med', // e.g., 720p
+                  0: 'Low', // e.g., 360p
               },
             },
             events: {
