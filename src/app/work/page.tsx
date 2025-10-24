@@ -39,12 +39,12 @@ const PortfolioMedia = ({
   item,
   onFullscreenClick,
   onMediaLoaded,
-  onPlayerReady,
+  playerRef,
 }: {
   item: PortfolioItem;
   onFullscreenClick: (url: string) => void;
   onMediaLoaded: () => void;
-  onPlayerReady: (player: any) => void;
+  playerRef: React.MutableRefObject<any | null>;
 }) => {
 
   useEffect(() => {
@@ -62,7 +62,7 @@ const PortfolioMedia = ({
             source={mediaUrl} 
             poster={item.useVideoFrameAsPoster ? undefined : item.thumbnailUrl}
             autoPlay={true}
-            onPlayerReady={onPlayerReady}
+            playerRef={playerRef}
           />
         )}
       </div>
@@ -660,7 +660,7 @@ export default function WorkPage() {
                                 item={selectedItem}
                                 onFullscreenClick={setFullscreenImageUrl}
                                 onMediaLoaded={() => setIsDialogMediaLoading(false)}
-                                onPlayerReady={(player) => playerInstanceRef.current = player}
+                                playerRef={playerInstanceRef}
                               />
                             )}
                           </div>

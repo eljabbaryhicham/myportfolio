@@ -18,7 +18,7 @@ interface CdnClapprPlayerProps {
   source: string;
   poster?: string;
   autoPlay?: boolean;
-  onPlayerReady?: (player: any) => void;
+  playerRef: React.MutableRefObject<any | null>;
 }
 
 const loadScript = (src: string, id: string) => {
@@ -49,9 +49,8 @@ const loadStylesheet = (href: string, id: string) => {
 };
 
 
-export default function CdnClapprPlayer({ source, poster, autoPlay = true, onPlayerReady }: CdnClapprPlayerProps) {
-  const playerRef = useRef<HTMLDivElement>(null);
-  const playerInstanceRef = useRef<any>(null);
+export default function CdnClapprPlayer({ source, poster, autoPlay = true, playerRef: parentPlayerRef }: CdnClapprPlayerProps) {
+  const playerContainerRef = useRef<HTMLDivElement>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [scriptsLoaded, setScriptsLoaded] = useState(false);
   const { toast } = useToast();
@@ -75,20 +74,17 @@ export default function CdnClapprPlayer({ source, poster, autoPlay = true, onPla
   }, [toast]);
 
   useEffect(() => {
-    if (!scriptsLoaded || !playerRef.current) {
+    if (!scriptsLoaded || !playerContainerRef.current) {
       return;
     }
 
-    // Small delay to ensure scripts are fully available on the window object
     const timer = setTimeout(() => {
-      // Guard clause to ensure Clappr is initialized
       if (typeof window.Clappr === 'undefined') {
         return;
       }
       
-      // Destroy any existing player instance to prevent duplicates
-      if (playerInstanceRef.current) {
-        playerInstanceRef.current.destroy();
+      if (parentPlayerRef.current) {
+        parentPlayerRef.current.destroy();
       }
       
       const plugins = [];
@@ -99,15 +95,15 @@ export default function CdnClapprPlayer({ source, poster, autoPlay = true, onPla
         plugins.push(window.HlsjsPlayback);
       }
 
-      playerInstanceRef.current = new window.Clappr.Player({
+      const player = new window.Clappr.Player({
           source,
           poster,
-          parentId: `#${playerRef.current.id}`,
+          parentId: `#${playerContainerRef.current.id}`,
           width: '100%',
           height: '100%',
           autoPlay: autoPlay,
           playsInline: true,
-          playinline: true, // Explicitly set for maximum iOS compatibility
+          playinline: true,
           volume: 20,
           plugins: plugins,
           shakaConfiguration: {
@@ -115,36 +111,28 @@ export default function CdnClapprPlayer({ source, poster, autoPlay = true, onPla
               rebufferingGoal: 15
             }
           },
-          shakaOnBeforeLoad: function(shaka_player: any) {
-            // shaka_player.getNetworkingEngine().registerRequestFilter() ...
-          },
+          shakaOnBeforeLoad: function(shaka_player: any) {},
           events: {
-            onReady: () => {
-              setIsLoading(false);
-              if (onPlayerReady) {
-                onPlayerReady(playerInstanceRef.current);
-              }
-            },
+            onReady: () => setIsLoading(false),
             onPlay: () => setIsLoading(false),
             onError: () => setIsLoading(false),
           }
       });
-    }, 100); // 100ms delay
+      
+      parentPlayerRef.current = player;
 
-    // Cleanup function
+    }, 100);
+
     return () => {
       clearTimeout(timer);
-      if (playerInstanceRef.current) {
-        playerInstanceRef.current.destroy();
-        if (onPlayerReady) {
-          onPlayerReady(null);
-        }
+      if (parentPlayerRef.current) {
+        parentPlayerRef.current.destroy();
+        parentPlayerRef.current = null;
       }
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [source, poster, autoPlay, scriptsLoaded]); // Re-run the effect if these props change
+  }, [source, poster, autoPlay, scriptsLoaded, parentPlayerRef]); 
 
-  // Use a static ID or generate one that's consistent across renders
   return (
     <div className="w-full h-full relative bg-black">
       {isLoading && (
@@ -154,7 +142,7 @@ export default function CdnClapprPlayer({ source, poster, autoPlay = true, onPla
       )}
       <div 
         id="cdn-clappr-player" 
-        ref={playerRef} 
+        ref={playerContainerRef} 
         className={cn("w-full h-full transition-opacity duration-300", isLoading ? 'opacity-0' : 'opacity-100')} 
       />
     </div>
