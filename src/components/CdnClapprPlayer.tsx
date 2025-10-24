@@ -109,9 +109,6 @@ export default function CdnClapprPlayer({ source, poster, autoPlay = true }: Cdn
           playinline: true, // Explicitly set for maximum iOS compatibility
           volume: 20,
           plugins: plugins,
-          clapprColors: {
-              main: '#e61e53', // Red theme for the player
-          },
           shakaConfiguration: {
             streaming: {
               rebufferingGoal: 15
