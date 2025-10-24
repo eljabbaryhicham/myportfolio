@@ -1,3 +1,4 @@
+
 'use client';
 import { useEffect, useRef, useState } from 'react';
 import Preloader from './preloader';
@@ -113,7 +114,9 @@ export default function CdnClapprPlayer({ source, poster, autoPlay = true, playe
             }
         });
         
-        playerRef.current = player;
+        if (playerRef) {
+          playerRef.current = player;
+        }
 
       } catch (error: any) {
         console.error(error);
