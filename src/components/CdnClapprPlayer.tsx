@@ -10,7 +10,6 @@ declare global {
     interface Window {
         Clappr: any;
         DashShakaPlayback: any;
-        HlsjsPlayback: any;
     }
 }
 
@@ -37,18 +36,6 @@ const loadScript = (src: string, id: string) => {
   });
 };
 
-const loadStylesheet = (href: string, id: string) => {
-  if (document.getElementById(id)) {
-    return;
-  }
-  const link = document.createElement('link');
-  link.id = id;
-  link.rel = 'stylesheet';
-  link.href = href;
-  document.head.appendChild(link);
-};
-
-
 export default function CdnClapprPlayer({ source, poster, autoPlay = true, playerRef: parentPlayerRef }: CdnClapprPlayerProps) {
   const playerContainerRef = useRef<HTMLDivElement>(null);
   const internalPlayerRef = useRef<any>(null);
@@ -59,16 +46,11 @@ export default function CdnClapprPlayer({ source, poster, autoPlay = true, playe
   const { toast } = useToast();
 
   useEffect(() => {
-    loadStylesheet('https://cdn.jsdelivr.net/npm/@clappr/player@latest/dist/clappr.min.css', 'clappr-stylesheet');
-
     Promise.all([
         loadScript('https://cdn.jsdelivr.net/npm/clappr@latest/dist/clappr.min.js', 'clappr-script'),
         loadScript('https://cdn.jsdelivr.net/gh/clappr/dash-shaka-playback@latest/dist/dash-shaka-playback.js', 'clappr-shaka-playback'),
         loadScript('https://cdn.jsdelivr.net/npm/hls.js@latest/dist/hls.min.js', 'hls-script'),
     ])
-    .then(() => {
-        return loadScript('https://cdn.jsdelivr.net/npm/clappr-hlsjs-playback@latest/dist/hlsjs-playback.min.js', 'clappr-hls-playback');
-    })
     .then(() => setScriptsLoaded(true))
     .catch(error => {
       console.error(error)
@@ -97,9 +79,6 @@ export default function CdnClapprPlayer({ source, poster, autoPlay = true, playe
       const plugins = [];
       if (window.DashShakaPlayback) {
         plugins.push(window.DashShakaPlayback);
-      }
-      if (window.HlsjsPlayback) {
-        plugins.push(window.HlsjsPlayback);
       }
 
       const player = new window.Clappr.Player({
