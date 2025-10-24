@@ -1,3 +1,4 @@
+
 'use client';
 import { useEffect, useRef, useState } from 'react';
 import Preloader from './preloader';
@@ -17,6 +18,7 @@ interface CdnClapprPlayerProps {
   source: string;
   poster?: string;
   autoPlay?: boolean;
+  onPlayerReady?: (player: any) => void;
 }
 
 const loadScript = (src: string, id: string) => {
@@ -47,7 +49,7 @@ const loadStylesheet = (href: string, id: string) => {
 };
 
 
-export default function CdnClapprPlayer({ source, poster, autoPlay = true }: CdnClapprPlayerProps) {
+export default function CdnClapprPlayer({ source, poster, autoPlay = true, onPlayerReady }: CdnClapprPlayerProps) {
   const playerRef = useRef<HTMLDivElement>(null);
   const playerInstanceRef = useRef<any>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -117,7 +119,12 @@ export default function CdnClapprPlayer({ source, poster, autoPlay = true }: Cdn
             // shaka_player.getNetworkingEngine().registerRequestFilter() ...
           },
           events: {
-            onReady: () => setIsLoading(false),
+            onReady: () => {
+              setIsLoading(false);
+              if (onPlayerReady) {
+                onPlayerReady(playerInstanceRef.current);
+              }
+            },
             onPlay: () => setIsLoading(false),
             onError: () => setIsLoading(false),
           }
@@ -129,8 +136,12 @@ export default function CdnClapprPlayer({ source, poster, autoPlay = true }: Cdn
       clearTimeout(timer);
       if (playerInstanceRef.current) {
         playerInstanceRef.current.destroy();
+        if (onPlayerReady) {
+          onPlayerReady(null);
+        }
       }
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [source, poster, autoPlay, scriptsLoaded]); // Re-run the effect if these props change
 
   // Use a static ID or generate one that's consistent across renders

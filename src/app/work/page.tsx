@@ -39,10 +39,12 @@ const PortfolioMedia = ({
   item,
   onFullscreenClick,
   onMediaLoaded,
+  onPlayerReady,
 }: {
   item: PortfolioItem;
   onFullscreenClick: (url: string) => void;
   onMediaLoaded: () => void;
+  onPlayerReady: (player: any) => void;
 }) => {
 
   useEffect(() => {
@@ -60,6 +62,7 @@ const PortfolioMedia = ({
             source={mediaUrl} 
             poster={item.useVideoFrameAsPoster ? undefined : item.thumbnailUrl}
             autoPlay={true}
+            onPlayerReady={onPlayerReady}
           />
         )}
       </div>
@@ -216,6 +219,9 @@ export default function WorkPage() {
   const [direction, setDirection] = useState<'next' | 'prev' | null>(null);
   const [isDialogMediaLoading, setIsDialogMediaLoading] = useState(true);
   
+  const playerInstanceRef = useRef<any>(null);
+  const [wasVideoPlaying, setWasVideoPlaying] = useState(false);
+
   const allItems = useMemo(() => {
     return portfolioItems?.filter(item => item.isVisible !== false) || [];
   }, [portfolioItems]);
@@ -285,6 +291,7 @@ export default function WorkPage() {
     } else {
       setSelectedItem(null);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedSlug, portfolioItems]);
   
   const updateUrl = (slug: string | null) => {
@@ -331,6 +338,18 @@ export default function WorkPage() {
 
   const handleDetailsOpenChange = (open: boolean) => {
     setDetailsModalOpen(open);
+    if (!open && playerInstanceRef.current && wasVideoPlaying) {
+      playerInstanceRef.current.play();
+      setWasVideoPlaying(false);
+    }
+  };
+  
+  const handleShowDetailsClick = () => {
+    if (playerInstanceRef.current && playerInstanceRef.current.isPlaying()) {
+      setWasVideoPlaying(true);
+      playerInstanceRef.current.pause();
+    }
+    setDetailsModalOpen(true);
   };
 
   const handleNextProject = useCallback(() => {
@@ -641,6 +660,7 @@ export default function WorkPage() {
                                 item={selectedItem}
                                 onFullscreenClick={setFullscreenImageUrl}
                                 onMediaLoaded={() => setIsDialogMediaLoading(false)}
+                                onPlayerReady={(player) => playerInstanceRef.current = player}
                               />
                             )}
                           </div>
@@ -649,7 +669,7 @@ export default function WorkPage() {
                             {selectedItem.details && (
                                 <Button
                                   variant="default"
-                                  onClick={() => setDetailsModalOpen(true)}
+                                  onClick={handleShowDetailsClick}
                                 >
                                   <FontAwesomeIcon icon={faUpDown} className="mr-2" />
                                   Show Project Details
