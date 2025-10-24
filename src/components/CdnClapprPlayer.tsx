@@ -10,6 +10,7 @@ declare global {
     interface Window {
         Clappr: any;
         DashShakaPlayback: any;
+        LevelSelector: any;
     }
 }
 
@@ -79,6 +80,9 @@ export default function CdnClapprPlayer({ source, poster, autoPlay = true, playe
       if (window.DashShakaPlayback) {
         plugins.push(window.DashShakaPlayback);
       }
+      if (window.Clappr.LevelSelector) {
+        plugins.push(window.Clappr.LevelSelector);
+      }
 
       const player = new window.Clappr.Player({
           source,
@@ -99,6 +103,14 @@ export default function CdnClapprPlayer({ source, poster, autoPlay = true, playe
           mediacontrol: {
             seekbar: "hsl(347 86% 52%)",
             buttons: "#FFFFFF"
+          },
+          levelSelectorConfig: {
+            title: 'Quality',
+            labels: {
+                2: 'High', // 1080p
+                1: 'Med', // 720p
+                0: 'Low', // 360p
+            },
           },
           shakaOnBeforeLoad: function(shaka_player: any) {},
           events: {
