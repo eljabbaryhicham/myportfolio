@@ -49,6 +49,8 @@ const MediaFileCard = ({
   onMediaSelect,
   isSelectionMode,
   canDelete,
+  canEditContact,
+  canEditHome,
 }: {
   file: MediaAsset;
   onDelete: (publicId: string, id: string, resourceType: string, libraryId: 'primary' | 'extented') => void;
@@ -60,6 +62,8 @@ const MediaFileCard = ({
   onMediaSelect: (url: string, type: 'image' | 'video', filename: string) => void;
   isSelectionMode: boolean;
   canDelete: boolean;
+  canEditContact: boolean;
+  canEditHome: boolean;
 }) => {
   
   const handleDelete = () => {
@@ -111,10 +115,12 @@ const MediaFileCard = ({
                 <Button size="icon" variant="default" onClick={() => onMediaSelect(file.url, file.resource_type === 'video' ? 'video' : 'image', file.filename)} title="Create Project" className="h-8 w-8 md:h-10 md:w-10 glass-effect">
                   <FontAwesomeIcon icon={faPlus} />
                 </Button>
-                <Button size="icon" variant="secondary" onClick={() => onSetBackground(file)} title="Set as Background" className="h-8 w-8 md:h-10 md:w-10 glass-effect">
-                  <FontAwesomeIcon icon={faPhotoFilm} />
-                </Button>
-                {file.resource_type === 'image' && (
+                {canEditHome && (
+                  <Button size="icon" variant="secondary" onClick={() => onSetBackground(file)} title="Set as Background" className="h-8 w-8 md:h-10 md:w-10 glass-effect">
+                    <FontAwesomeIcon icon={faPhotoFilm} />
+                  </Button>
+                )}
+                {file.resource_type === 'image' && canEditContact && (
                   <Button size="icon" variant="secondary" onClick={() => onSetLogo(file.url)} title="Set as Logo" className="h-8 w-8 md:h-10 md:w-10 glass-effect">
                     <FontAwesomeIcon icon={faStar} />
                   </Button>
@@ -219,6 +225,8 @@ export default function MediaAdmin(props: MediaAdminProps) {
   const isSuperAdmin = typedUser?.email === 'eljabbaryhicham@example.com';
   const canUpload = isSuperAdmin || (typedUser?.permissions?.canUploadMedia ?? true);
   const canDelete = isSuperAdmin || (typedUser?.permissions?.canDeleteMedia ?? true);
+  const canEditHome = isSuperAdmin || (typedUser?.permissions?.canEditHome ?? true);
+  const canEditContact = isSuperAdmin || (typedUser?.permissions?.canEditContact ?? true);
 
 
   // Fetch media assets from Firestore
@@ -394,7 +402,7 @@ export default function MediaAdmin(props: MediaAdminProps) {
   };
 
   const handleSetLogo = (url: string) => {
-    if (!firestore) return;
+    if (!firestore || !canEditContact) return;
     const contactDocRef = doc(firestore, 'contact', 'details');
     setDocumentNonBlocking(contactDocRef, { logoUrl: url }, { merge: true });
     toast({
@@ -424,12 +432,13 @@ export default function MediaAdmin(props: MediaAdminProps) {
   };
 
   const handleOpenSetBackgroundDialog = (file: MediaAsset) => {
+    if (!canEditHome) return;
     setBackgroundFile(file);
     setIsSetBackgroundOpen(true);
   };
   
   const handleConfirmSetBackground = async () => {
-    if (!firestore || !backgroundFile) return;
+    if (!firestore || !backgroundFile || !canEditHome) return;
 
     let mediaIdForDb = backgroundFile.id;
     const mediaTypeForDb = backgroundFile.resource_type === 'video' ? 'video' : 'image';
@@ -514,6 +523,8 @@ export default function MediaAdmin(props: MediaAdminProps) {
                   onMediaSelect={handleMediaSelect}
                   isSelectionMode={!!(props.isDialog && props.isSelectionMode)}
                   canDelete={canDelete}
+                  canEditContact={canEditContact}
+                  canEditHome={canEditHome}
                 />
             ))}
         </div>
