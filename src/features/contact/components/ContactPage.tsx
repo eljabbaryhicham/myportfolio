@@ -1,4 +1,3 @@
-
 'use client';
 
 import Link from 'next/link';
@@ -95,7 +94,7 @@ export default function ContactPage() {
           <Separator className="bg-white/10" />
         </div>
       </div>
-      <div className="flex-1 min-h-0 overflow-y-auto no-scrollbar">
+      <div className="flex-1 min-h-0 overflow-y-auto">
         <div className="p-8 pt-0 flex items-start justify-center">
             <div className="container mx-auto px-0">
               {isLoading ? (
