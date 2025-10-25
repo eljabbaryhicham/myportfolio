@@ -83,16 +83,21 @@ export default function ContactPage() {
 
 
   return (
-    <div className="flex-1 min-h-0 overflow-y-auto">
-        <div className="p-8 flex items-center justify-center min-h-full">
+    <div className="h-full w-full flex flex-col">
+      <div className="p-8 flex-shrink-0">
+        <div className="container mx-auto px-0">
+          <div className="mb-8 text-center">
+            <h1 className="text-3xl md:text-4xl font-headline tracking-tight">Contact Us</h1>
+            <p className="mt-2 max-w-2xl mx-auto text-base md:text-lg text-foreground/70">
+              Let&apos;s get in touch! Fill out the form below to send me a message.
+            </p>
+          </div>
+          <Separator className="bg-white/10" />
+        </div>
+      </div>
+      <div className="flex-1 min-h-0 overflow-y-auto no-scrollbar">
+        <div className="p-8 pt-0 flex items-start justify-center">
             <div className="container mx-auto px-0">
-              <div className="mb-8 text-center">
-                <h1 className="text-3xl md:text-4xl font-headline tracking-tight">Contact Us</h1>
-                <p className="mt-2 max-w-2xl mx-auto text-base md:text-lg text-foreground/70">
-                  Let&apos;s get in touch! Fill out the form below to send me a message.
-                </p>
-                <Separator className="bg-white/10 mt-8" />
-              </div>
               {isLoading ? (
                 <div className="flex justify-center items-center h-64">
                   <Preloader />
@@ -199,6 +204,7 @@ export default function ContactPage() {
               )}
             </div>
         </div>
+    </div>
     </div>
   );
 }
