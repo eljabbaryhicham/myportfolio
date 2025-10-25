@@ -18,31 +18,31 @@ const PlyrPlayer: React.FC<PlyrPlayerProps> = ({ source, poster, watermark }) =>
 
   useEffect(() => {
     const videoElement = ref.current?.media;
+    let hlsInstance: Hls | null = null;
 
     if (videoElement) {
-      // For HLS (m3u8) streams
       if (source.includes('.m3u8')) {
         if (Hls.isSupported()) {
-          hls.current = new Hls();
-          hls.current.loadSource(source);
-          hls.current.attachMedia(videoElement);
-        } else {
-          console.error("HLS is not supported in this browser.");
+          hlsInstance = new Hls();
+          hlsInstance.loadSource(source);
+          hlsInstance.attachMedia(videoElement);
+          hls.current = hlsInstance;
+        } else if (videoElement.canPlayType('application/vnd.apple.mpegurl')) {
           videoElement.src = source;
         }
       } else {
-        // For standard video files like MP4
         videoElement.src = source;
       }
     }
 
     return () => {
-      if (hls.current) {
-        hls.current.destroy();
+      if (hlsInstance) {
+        hlsInstance.destroy();
         hls.current = null;
       }
     };
-  }, [source]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Empty dependency array ensures this runs only once on mount
 
   const plyrOptions = {
     controls: ['play-large', 'play', 'progress', 'current-time', 'mute', 'volume', 'fullscreen'],
