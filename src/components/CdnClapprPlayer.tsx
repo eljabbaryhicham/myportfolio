@@ -88,7 +88,7 @@ export default function CdnClapprPlayer({ source, poster, autoPlay = true, playe
             width: '100%',
             height: '100%',
             autoPlay: autoPlay,
-            volume: 20,
+            volume: 10,
             watermark: watermark || '',
             watermarkLink: undefined,
             playsInline: true,
