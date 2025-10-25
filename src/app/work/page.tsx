@@ -680,7 +680,6 @@ export default function WorkPage() {
                           <div className={cn("w-full transition-opacity duration-300", isDialogMediaLoading && "opacity-0")}>
                             {isClient && (
                               <PortfolioMedia
-                                key={selectedItem.id}
                                 item={selectedItem}
                                 onFullscreenClick={setFullscreenImageUrl}
                                 onMediaLoaded={() => setIsDialogMediaLoading(false)}

@@ -18,31 +18,24 @@ const PlyrPlayer: React.FC<PlyrPlayerProps> = ({ source, poster, watermark }) =>
 
   useEffect(() => {
     const videoElement = ref.current?.media;
-    let hlsInstance: Hls | null = null;
+    if (!videoElement) return;
 
-    if (videoElement) {
-      if (source.includes('.m3u8')) {
-        if (Hls.isSupported()) {
-          hlsInstance = new Hls();
-          hlsInstance.loadSource(source);
-          hlsInstance.attachMedia(videoElement);
-          hls.current = hlsInstance;
-        } else if (videoElement.canPlayType('application/vnd.apple.mpegurl')) {
-          videoElement.src = source;
+    if (source.includes('.m3u8')) {
+      if (Hls.isSupported()) {
+        if (hls.current) {
+          hls.current.destroy();
         }
-      } else {
+        const newHls = new Hls();
+        hls.current = newHls;
+        newHls.loadSource(source);
+        newHls.attachMedia(videoElement);
+      } else if (videoElement.canPlayType('application/vnd.apple.mpegurl')) {
         videoElement.src = source;
       }
+    } else {
+      videoElement.src = source;
     }
-
-    return () => {
-      if (hlsInstance) {
-        hlsInstance.destroy();
-        hls.current = null;
-      }
-    };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Empty dependency array ensures this runs only once on mount
+  }, [source]); // Re-run effect only when the source URL changes
 
   const plyrOptions = {
     controls: ['play-large', 'play', 'progress', 'current-time', 'mute', 'volume', 'fullscreen'],
