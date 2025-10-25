@@ -150,8 +150,8 @@ export default function ContactPage() {
                         {contactInfo.whatsApp && (
                           <>
                             <Separator className="my-4 bg-white/20" />
-                            <Button asChild className="bg-gradient-to-r from-green-500 to-emerald-600 w-full animate-shake">
-                                <Link href={`https://wa.me/${contactInfo.whatsApp.replace(/\\D/g, '')}`} target="_blank" rel="noopener noreferrer" className="py-4 px-4 md:py-6 md:px-6 flex flex-col items-center md:flex-row">
+                            <Button asChild className="bg-gradient-to-r from-green-500 to-emerald-600 animate-shake w-full">
+                                <Link href={`https://wa.me/${contactInfo.whatsApp.replace(/\\D/g, '')}`} target="_blank" rel="noopener noreferrer" className="py-4 px-4 md:py-6 md:px-6 flex flex-col items-center justify-center md:flex-row">
                                     <FontAwesomeIcon icon={faWhatsapp} className="h-5 w-5 md:h-6 md:h-6" />
                                     <div className="mt-2 md:mt-0 md:ml-3 text-center md:text-left">
                                         <p className="text-xs md:text-sm font-light">WhatsApp</p>
