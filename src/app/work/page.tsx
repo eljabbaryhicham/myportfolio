@@ -38,7 +38,7 @@ const MemoizedImage = memo(Image);
 const MemoizedPlyrPlayer = memo(PlyrPlayer);
 const MemoizedCdnClapprPlayer = memo(CdnClapprPlayer);
 
-const PortfolioMedia = memo(({
+const MemoizedPortfolioMedia = memo(({
   item,
   onFullscreenClick,
   onMediaLoaded,
@@ -64,7 +64,8 @@ const PortfolioMedia = memo(({
       <div className="relative aspect-video bg-black flex items-center justify-center w-full">
         {mediaUrl && (
           playerType === 'clappr' ? (
-              <MemoizedCdnClapprPlayer 
+              <MemoizedCdnClapprPlayer
+                  key={item.id} // Force re-mount for Clappr
                   playerRef={playerRef}
                   source={mediaUrl} 
                   poster={item.useVideoFrameAsPoster ? undefined : item.thumbnailUrl}
@@ -72,7 +73,8 @@ const PortfolioMedia = memo(({
               />
           ) : (
               <MemoizedPlyrPlayer 
-                  ref={playerRef}
+                  ref={playerRef} // Use ref for stable Plyr instance
+                  key={item.id} // Force re-mount to ensure clean state
                   source={mediaUrl} 
                   poster={item.useVideoFrameAsPoster ? undefined : item.thumbnailUrl}
                   watermark={watermark}
@@ -104,7 +106,8 @@ const PortfolioMedia = memo(({
       </div>
     );
 });
-PortfolioMedia.displayName = 'PortfolioMedia';
+MemoizedPortfolioMedia.displayName = 'MemoizedPortfolioMedia';
+
 
 const PortfolioGridItem = ({ item, onClick, onEditClick, isAdmin }: { item: PortfolioItem, onClick: () => void, onEditClick: () => void, isAdmin: boolean }) => {
   const [isLoaded, setIsLoaded] = useState(false);
@@ -251,6 +254,7 @@ export default function WorkPage() {
   const [isDialogMediaLoading, setIsDialogMediaLoading] = useState(true);
   
   const playerRef = useRef<any>(null);
+  const wasPlayingRef = useRef(false);
 
   const allItems = useMemo(() => {
     return portfolioItems?.filter(item => item.isVisible !== false) || [];
@@ -368,17 +372,33 @@ export default function WorkPage() {
 
   const handleDetailsOpenChange = (open: boolean) => {
     setDetailsModalOpen(open);
+    if (!open && wasPlayingRef.current) {
+        playerRef.current?.play();
+        wasPlayingRef.current = false;
+    }
   };
   
   const handleShowDetailsClick = () => {
+    if (playerRef.current && playerRef.current.playing) {
+        wasPlayingRef.current = true;
+        playerRef.current.pause();
+    }
     setDetailsModalOpen(true);
   };
   
   const handleContactOpenChange = (open: boolean) => {
     setIsContactFormOpen(open);
+     if (!open && wasPlayingRef.current) {
+        playerRef.current?.play();
+        wasPlayingRef.current = false;
+    }
   };
 
   const handleAskAboutClick = () => {
+    if (playerRef.current && playerRef.current.playing) {
+        wasPlayingRef.current = true;
+        playerRef.current.pause();
+    }
     setIsContactFormOpen(true);
   };
 
@@ -688,7 +708,7 @@ export default function WorkPage() {
                         <div className="relative flex flex-col justify-center h-full">
                           <div className={cn("w-full transition-opacity duration-300", isDialogMediaLoading && "opacity-0")}>
                             {isClient && (
-                              <PortfolioMedia
+                              <MemoizedPortfolioMedia
                                 item={selectedItem}
                                 onFullscreenClick={setFullscreenImageUrl}
                                 onMediaLoaded={() => setIsDialogMediaLoading(false)}
