@@ -32,12 +32,6 @@ interface ContactInfo {
   twitterUrl?: string;
 }
 
-const FiverrIcon = (props: React.SVGProps<SVGSVGElement>) => (
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="currentColor" {...props}>
-        <path d="M18.882.022V6.01h-4.227v-.04s.013.04.04.04h-1.428V0H6.012v10.63H9.9v-4.14h3.01v4.14h3.882c.005 0 .008-.002.012-.002.045 0 .09.012.13.024.972.28 1.637 1.252 1.524 2.296-.11 1.02-.95 1.77-1.92 1.832-.13.007-.26.01-.39.01-.58 0-1.13-.24-1.53-.66l-1.04-1.06v-3.02H9.932v6.07H6.012v5.33h12.87c.042-2.906.63-8.875 3.12-11.39C24.195 2.943 21.668.07 18.882.02Zm.13 12.01c.46 0 .83.37.83.83 0 .46-.37.83-.83-.83s-.83-.37-.83-.83c0-.45.37-.83.83-.83Z"/>
-    </svg>
-)
-
 const containerVariants = {
   hidden: { opacity: 0 },
   visible: {
@@ -73,7 +67,6 @@ export default function ContactPage() {
     { icon: faEnvelope, label: 'Email', value: contactInfo.email, href: `mailto:${contactInfo.email}`, color: 'hover:text-blue-300' },
     { icon: faBehance, label: 'Behance', value: '@BeLofted', href: contactInfo.behanceUrl, color: 'hover:text-purple-300' },
     { icon: faLinkedin, label: 'LinkedIn', value: 'Hicham Eljabbary', href: contactInfo.linkedinUrl, color: 'hover:text-sky-300' },
-    { icon: FiverrIcon, label: 'Fiverr', value: '@BeLofted', href: contactInfo.fiverrUrl, color: 'hover:text-green-300' },
   ] : [];
 
   const socialLinks = contactInfo ? [
