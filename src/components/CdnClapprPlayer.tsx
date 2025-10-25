@@ -20,7 +20,6 @@ interface CdnClapprPlayerProps {
   source: string;
   poster?: string;
   autoPlay?: boolean;
-  playerRef?: React.MutableRefObject<any | null>;
   watermark?: string;
 }
 
@@ -40,10 +39,9 @@ const loadScript = (src: string, id: string): Promise<void> => {
     });
 };
 
-export default function CdnClapprPlayer({ source, poster, autoPlay = true, playerRef: parentPlayerRef, watermark }: CdnClapprPlayerProps) {
+export default function CdnClapprPlayer({ source, poster, autoPlay = true, watermark }: CdnClapprPlayerProps) {
   const playerContainerRef = useRef<HTMLDivElement>(null);
-  const internalPlayerRef = useRef<any>(null);
-  const playerRef = parentPlayerRef || internalPlayerRef;
+  const playerRef = useRef<any>(null);
   
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
@@ -132,9 +130,7 @@ export default function CdnClapprPlayer({ source, poster, autoPlay = true, playe
             }
         });
         
-        if (playerRef) {
-          playerRef.current = player;
-        }
+        playerRef.current = player;
 
       } catch (error: any) {
         console.error(error);
@@ -161,6 +157,18 @@ export default function CdnClapprPlayer({ source, poster, autoPlay = true, playe
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [source]); 
+
+  // Effect to control playback based on autoPlay prop
+  useEffect(() => {
+    const player = playerRef.current;
+    if (player) {
+      if (autoPlay) {
+        player.play();
+      } else {
+        player.pause();
+      }
+    }
+  }, [autoPlay]);
 
   return (
     <div className="w-full h-full relative bg-black">

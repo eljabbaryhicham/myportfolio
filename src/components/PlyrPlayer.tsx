@@ -1,7 +1,7 @@
 
 'use client';
 
-import React, { useEffect, useRef, forwardRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import Plyr from 'plyr-react';
 import 'plyr/dist/plyr.css';
 import Hls from 'hls.js';
@@ -10,9 +10,11 @@ interface PlyrPlayerProps {
   source: string;
   poster?: string;
   watermark?: string;
+  autoPlay?: boolean;
 }
 
-const PlyrPlayer = forwardRef<any, PlyrPlayerProps>(({ source, poster, watermark }, ref) => {
+const PlyrPlayer = ({ source, poster, watermark, autoPlay = true }: PlyrPlayerProps) => {
+  const ref = useRef<any>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
@@ -32,16 +34,26 @@ const PlyrPlayer = forwardRef<any, PlyrPlayerProps>(({ source, poster, watermark
         videoElement.src = source;
     }
 
+    // Effect to control playback based on autoPlay prop
+    if (ref.current?.player) {
+        if (autoPlay) {
+            ref.current.player.play();
+        } else {
+            ref.current.player.pause();
+        }
+    }
+
+
     return () => {
       if (hls) {
         hls.destroy();
       }
     };
-  }, [source]);
-
+  }, [source, autoPlay]);
+  
   const plyrOptions = {
     controls: ['play-large', 'play', 'progress', 'current-time', 'mute', 'volume', 'fullscreen'],
-    autoplay: true,
+    autoplay: autoPlay,
     playsinline: true,
     clickToPlay: true,
   };
@@ -95,7 +107,6 @@ const PlyrPlayer = forwardRef<any, PlyrPlayerProps>(({ source, poster, watermark
         `}
       </style>
       <div className="relative w-full h-full">
-        {/* Pass the ref directly to the Plyr component */}
         <Plyr ref={ref} source={plyrSource} options={plyrOptions} />
         {watermark && (
             <div className="plyr__watermark">
@@ -105,8 +116,6 @@ const PlyrPlayer = forwardRef<any, PlyrPlayerProps>(({ source, poster, watermark
       </div>
     </>
   );
-});
-
-PlyrPlayer.displayName = 'PlyrPlayer';
+};
 
 export default PlyrPlayer;

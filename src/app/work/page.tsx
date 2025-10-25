@@ -1,4 +1,3 @@
-
 'use client';
 
 import Image from 'next/image';
@@ -43,41 +42,21 @@ const MemoizedPortfolioMedia = memo(({
   onFullscreenClick,
   onMediaLoaded,
   watermark,
-  playerRef,
   playerType,
-  isPaused
+  autoPlay,
 }: {
   item: PortfolioItem;
   onFullscreenClick: (url: string) => void;
   onMediaLoaded: () => void;
   watermark?: string;
-  playerRef: React.MutableRefObject<any>;
   playerType?: 'plyr' | 'clappr';
-  isPaused: boolean;
+  autoPlay: boolean;
 }) => {
   const mediaUrl = item.sourceUrl || item.thumbnailUrl;
 
   useEffect(() => {
     onMediaLoaded();
   }, [item.id, onMediaLoaded]);
-
-  useEffect(() => {
-    const player = playerRef.current;
-    if (!player) return;
-
-    // Universal play/pause logic
-    try {
-      if (isPaused) {
-        if (typeof player.pause === 'function') player.pause();
-      } else {
-        if (typeof player.play === 'function') player.play();
-      }
-    } catch (e) {
-      console.error("Failed to control player:", e);
-    }
-
-  }, [isPaused, playerRef]);
-
 
   if (item.type === 'video') {
     return (
@@ -86,18 +65,18 @@ const MemoizedPortfolioMedia = memo(({
           playerType === 'clappr' ? (
               <MemoizedCdnClapprPlayer
                   key={item.id} // Force re-mount for Clappr
-                  playerRef={playerRef}
                   source={mediaUrl} 
                   poster={item.useVideoFrameAsPoster ? undefined : item.thumbnailUrl}
                   watermark={watermark}
+                  autoPlay={autoPlay}
               />
           ) : (
-              <MemoizedPlyrPlayer 
-                  ref={playerRef} // Use ref for stable Plyr instance
+              <MemoizedPlyrPlayer
                   key={item.id} // Force re-mount to ensure clean state
                   source={mediaUrl} 
                   poster={item.useVideoFrameAsPoster ? undefined : item.thumbnailUrl}
                   watermark={watermark}
+                  autoPlay={autoPlay}
               />
           )
         )}
@@ -271,9 +250,6 @@ export default function WorkPage() {
   const [visibleItemsCount, setVisibleItemsCount] = useState<number | null>(null);
   const [itemsPerLoad, setItemsPerLoad] = useState<number>(12);
 
-  const [detailsModalOpen, setDetailsModalOpen] = useState(false);
-  const [isContactFormOpen, setIsContactFormOpen] = useState(false);
-  const [filter, setFilter] = useState<'all' | 'image' | 'video'>('all');
   const [fullscreenImageUrl, setFullscreenImageUrl] = useState<string | null>(null);
   const [isClient, setIsClient] = useState(false);
   const [isDescriptionLong, setIsDescriptionLong] = useState(false);
@@ -289,9 +265,11 @@ export default function WorkPage() {
   const [dialogActiveLibrary, setDialogActiveLibrary] = useState<'primary' | 'extented'>('primary');
   const [direction, setDirection] = useState<'next' | 'prev' | null>(null);
   const [isDialogMediaLoading, setIsDialogMediaLoading] = useState(true);
-  
-  const playerRef = useRef<any>(null);
-  const [isPlayerPaused, setIsPlayerPaused] = useState(false);
+  const [filter, setFilter] = useState<'all' | 'image' | 'video'>('all');
+
+  const [isDetailsModalOpen, setDetailsModalOpen] = useState(false);
+  const [isContactFormOpen, setIsContactFormOpen] = useState(false);
+  const isDialogOpen = isDetailsModalOpen || isContactFormOpen;
 
   const allItems = useMemo(() => {
     return portfolioItems?.filter(item => item.isVisible !== false) || [];
@@ -387,13 +365,10 @@ export default function WorkPage() {
     return Math.min(...portfolioItems.map(i => i.order || 0));
   }, [portfolioItems]);
 
-  const handleOpenChange = (open: boolean) => {
+  const handleMainDialogOpenChange = (open: boolean) => {
     if (!open) {
       setSelectedItem(null);
       updateUrl(null);
-      setIsPlayerPaused(true); // Pause when main dialog closes
-    } else {
-      setIsPlayerPaused(false); // Play when main dialog opens
     }
   };
 
@@ -408,27 +383,6 @@ export default function WorkPage() {
       setIsDescriptionLong(false);
     }
   }, [selectedItem]);
-
-
-  const handleDetailsOpenChange = (open: boolean) => {
-    setDetailsModalOpen(open);
-    setIsPlayerPaused(open);
-  };
-  
-  const handleShowDetailsClick = () => {
-    setDetailsModalOpen(true);
-    setIsPlayerPaused(true);
-  };
-  
-  const handleContactOpenChange = (open: boolean) => {
-    setIsContactFormOpen(open);
-    setIsPlayerPaused(open);
-  };
-
-  const handleAskAboutClick = () => {
-    setIsContactFormOpen(true);
-    setIsPlayerPaused(true);
-  };
 
   const handleNextProject = useCallback(() => {
     if (!selectedItem || !filteredItems) return;
@@ -675,7 +629,7 @@ export default function WorkPage() {
         </ScrollArea>
       </div>
 
-      <Dialog open={!!selectedItem} onOpenChange={handleOpenChange}>
+      <Dialog open={!!selectedItem} onOpenChange={handleMainDialogOpenChange}>
           <DialogContent
             className={cn(
               "glass-effect p-0 flex flex-col group overflow-hidden",
@@ -756,9 +710,8 @@ export default function WorkPage() {
                                 onFullscreenClick={setFullscreenImageUrl}
                                 onMediaLoaded={() => setIsDialogMediaLoading(false)}
                                 watermark={logoUrl}
-                                playerRef={playerRef}
                                 playerType={workPagePlayer}
-                                isPaused={isPlayerPaused}
+                                autoPlay={!isDialogOpen}
                               />
                             )}
                           </div>
@@ -767,7 +720,7 @@ export default function WorkPage() {
                             {selectedItem.details && (
                                 <Button
                                   variant="default"
-                                  onClick={handleShowDetailsClick}
+                                  onClick={() => setDetailsModalOpen(true)}
                                 >
                                   <FontAwesomeIcon icon={faUpDown} className="mr-2" />
                                   Show Project Details
@@ -775,7 +728,7 @@ export default function WorkPage() {
                             )}
                             <Button
                               variant="secondary"
-                              onClick={handleAskAboutClick}
+                              onClick={() => setIsContactFormOpen(true)}
                               className="h-auto py-2 px-4 leading-tight text-center"
                             >
                               Ask About
@@ -799,7 +752,7 @@ export default function WorkPage() {
       </Dialog>
       
       {/* Nested Dialog for Details */}
-      <Dialog open={detailsModalOpen} onOpenChange={handleDetailsOpenChange}>
+      <Dialog open={isDetailsModalOpen} onOpenChange={setDetailsModalOpen}>
         <DialogContent className="w-[80vw] h-[90vh] glass-effect p-0 flex flex-col group"
           onMouseMove={handleDialogMouseMove}
           onMouseEnter={handleDialogMouseEnter}
@@ -828,7 +781,7 @@ export default function WorkPage() {
       </Dialog>
       
       {/* Contact Form Dialog */}
-      <Dialog open={isContactFormOpen} onOpenChange={handleContactOpenChange}>
+      <Dialog open={isContactFormOpen} onOpenChange={setIsContactFormOpen}>
         <DialogContent className="w-[80vw] max-w-xl glass-effect">
             <DialogHeader>
               <DialogTitle className="font-headline">Contact Us</DialogTitle>
@@ -837,7 +790,7 @@ export default function WorkPage() {
               </DialogDescription>
             </DialogHeader>
             <ContactForm
-                onSuccess={() => handleContactOpenChange(false)}
+                onSuccess={() => setIsContactFormOpen(false)}
                 defaultMessage={selectedItem ? `I'm contacting you about discuss a similar project of "${selectedItem.title}"` : ''}
             />
             <DialogClose className={cn(
