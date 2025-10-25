@@ -119,12 +119,12 @@ export default function ContactPage() {
                   <motion.div className="w-full md:w-1/2 flex justify-center" variants={itemVariants}>
                     <Card className="glass-effect p-6 flex flex-col h-full w-full max-w-md">
                       <CardContent className="flex flex-col items-center text-center p-0">
-                        <Avatar className="border-2 border-white mb-4" style={{ width: '80px', height: '80px' }}>
+                        <Avatar className="border-2 border-white mb-4 w-16 h-16 md:w-20 md:h-20">
                           <AvatarImage src={contactInfo.avatarUrl} alt={contactInfo.name} />
                           <AvatarFallback>{contactInfo.name?.substring(0, 2)}</AvatarFallback>
                         </Avatar>
-                        <h3 className="text-xl font-headline">{contactInfo.name}</h3>
-                        <p className="text-foreground/70">{contactInfo.title}</p>
+                        <h3 className="text-lg md:text-xl font-headline">{contactInfo.name}</h3>
+                        <p className="text-sm md:text-base text-foreground/70">{contactInfo.title}</p>
                         
                         <Separator className="my-4 bg-white/20" />
                         
@@ -133,12 +133,12 @@ export default function ContactPage() {
                               {contactLinks.map((link) => (
                               link.href && link.value && (
                                   <Link href={link.href} key={link.label} className="flex items-center group text-white" target="_blank" rel="noopener noreferrer">
-                                      <div className={cn("w-12 h-12 flex-shrink-0 rounded-full flex items-center justify-center glass-effect transition-colors duration-300 text-white", link.color)}>
-                                          <Icon icon={link.icon} className="w-6 h-6" />
+                                      <div className={cn("w-10 h-10 md:w-12 md:h-12 flex-shrink-0 rounded-full flex items-center justify-center glass-effect transition-colors duration-300 text-white", link.color)}>
+                                          <Icon icon={link.icon} className="w-5 h-5 md:w-6 md:h-6" />
                                       </div>
                                       <div className="ml-4 text-left">
-                                          <p className="text-sm text-foreground/70">{link.label}</p>
-                                          <p className="font-medium group-hover:text-primary transition-colors">{link.value}</p>
+                                          <p className="text-xs md:text-sm text-foreground/70">{link.label}</p>
+                                          <p className="text-sm md:text-base font-medium group-hover:text-primary transition-colors">{link.value}</p>
                                       </div>
                                   </Link>
                               )
@@ -150,11 +150,11 @@ export default function ContactPage() {
                           <>
                             <Separator className="my-4 bg-white/20" />
                             <Button asChild className="bg-gradient-to-r from-green-500 to-emerald-600 w-[80%] animate-shake">
-                                <Link href={`https://wa.me/${contactInfo.whatsApp.replace(/\\D/g, '')}`} target="_blank" rel="noopener noreferrer" className="py-6 px-6">
-                                    <FontAwesomeIcon icon={faWhatsapp} className="mr-3 h-6 w-6" />
+                                <Link href={`https://wa.me/${contactInfo.whatsApp.replace(/\\D/g, '')}`} target="_blank" rel="noopener noreferrer" className="py-4 px-4 md:py-6 md:px-6">
+                                    <FontAwesomeIcon icon={faWhatsapp} className="mr-2 md:mr-3 h-5 w-5 md:h-6 md:h-6" />
                                     <div>
-                                        <p className="text-sm font-light">WhatsApp</p>
-                                        <p className="font-semibold text-base">{contactInfo.whatsApp}</p>
+                                        <p className="text-xs md:text-sm font-light">WhatsApp</p>
+                                        <p className="font-semibold text-sm md:text-base">{contactInfo.whatsApp}</p>
                                     </div>
                                 </Link>
                             </Button>
@@ -182,13 +182,13 @@ export default function ContactPage() {
                         href={social.href} 
                         key={social.id} 
                         className={cn(
-                          "w-12 h-12 rounded-full flex items-center justify-center text-white transition-all duration-300 hover:scale-110 glass-effect",
+                          "w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center text-white transition-all duration-300 hover:scale-110 glass-effect",
                           social.hoverColor
                         )}
                         target="_blank" 
                         rel="noopener noreferrer"
                       >
-                        <FontAwesomeIcon icon={social.icon} className="w-6 h-6" />
+                        <FontAwesomeIcon icon={social.icon} className="w-5 h-5 md:w-6 md:h-6" />
                       </Link>
                     )
                   ))}
@@ -200,3 +200,5 @@ export default function ContactPage() {
     </div>
   );
 }
+
+    

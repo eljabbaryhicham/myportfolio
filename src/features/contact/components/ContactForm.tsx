@@ -142,7 +142,7 @@ export default function ContactForm({ onSuccess, defaultMessage = '' }: ContactF
   return (
     <div className='w-full'>
         <div className="flex flex-col items-center mb-8">
-            <p className="font-handwriting text-2xl text-white transform -rotate-6">send a message we are always avalaible</p>
+            <p className="font-handwriting text-xl md:text-2xl text-white transform -rotate-6">send a message we are always avalaible</p>
             <svg className="w-12 h-12 md:w-20 md:h-20 text-white" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M50 10 C51 30, 51 50, 50 70" stroke="currentColor" strokeWidth="2" strokeLinecap="round" fill="none"/>
               <path d="M45 65 L50 75 L55 65" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
@@ -198,3 +198,5 @@ export default function ContactForm({ onSuccess, defaultMessage = '' }: ContactF
     </div>
   );
 }
+
+    
