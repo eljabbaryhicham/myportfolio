@@ -83,21 +83,16 @@ export default function ContactPage() {
 
 
   return (
-    <div className="w-full h-full flex flex-col">
-       <div className="p-8 flex-shrink-0">
-          <div className="container mx-auto px-0">
+    <div className="flex-1 min-h-0 overflow-y-auto">
+        <div className="p-8 flex items-center justify-center min-h-full">
+            <div className="container mx-auto px-0">
               <div className="mb-8 text-center">
                 <h1 className="text-3xl md:text-4xl font-headline tracking-tight">Contact Us</h1>
                 <p className="mt-2 max-w-2xl mx-auto text-base md:text-lg text-foreground/70">
                   Let&apos;s get in touch! Fill out the form below to send me a message.
                 </p>
+                <Separator className="bg-white/10 mt-8" />
               </div>
-          </div>
-       </div>
-       <Separator className="bg-white/10 flex-shrink-0" />
-       <div className="flex-1 min-h-0 overflow-y-auto">
-        <div className="p-8 flex items-center justify-center min-h-full">
-            <div className="container mx-auto px-0">
               {isLoading ? (
                 <div className="flex justify-center items-center h-64">
                   <Preloader />
@@ -135,14 +130,14 @@ export default function ContactPage() {
                                   <Link
                                     href={link.href}
                                     key={link.label}
-                                    className="flex flex-col md:flex-row items-center group text-white"
+                                    className="flex flex-col items-center text-center md:flex-row md:text-left group text-white"
                                     target="_blank"
                                     rel="noopener noreferrer"
                                   >
                                       <div className={cn("w-10 h-10 md:w-12 md:h-12 flex-shrink-0 rounded-full flex items-center justify-center glass-effect transition-colors duration-300 text-white", link.color)}>
                                           <Icon icon={link.icon} className="w-5 h-5 md:w-6 md:h-6" />
                                       </div>
-                                      <div className="mt-2 md:mt-0 md:ml-4 text-center md:text-left break-words">
+                                      <div className="mt-2 md:mt-0 md:ml-4 break-words">
                                           <p className="text-xs md:text-sm text-foreground/70">{link.label}</p>
                                           <p className="text-sm md:text-base font-medium group-hover:text-primary transition-colors">{link.value}</p>
                                       </div>
@@ -156,9 +151,9 @@ export default function ContactPage() {
                           <>
                             <Separator className="my-4 bg-white/20" />
                             <Button asChild className="bg-gradient-to-r from-green-500 to-emerald-600 w-[80%] animate-shake">
-                                <Link href={`https://wa.me/${contactInfo.whatsApp.replace(/\\D/g, '')}`} target="_blank" rel="noopener noreferrer" className="py-4 px-4 md:py-6 md:px-6">
-                                    <FontAwesomeIcon icon={faWhatsapp} className="mr-2 md:mr-3 h-5 w-5 md:h-6 md:h-6" />
-                                    <div>
+                                <Link href={`https://wa.me/${contactInfo.whatsApp.replace(/\\D/g, '')}`} target="_blank" rel="noopener noreferrer" className="py-4 px-4 md:py-6 md:px-6 flex flex-col items-center md:flex-row">
+                                    <FontAwesomeIcon icon={faWhatsapp} className="h-5 w-5 md:h-6 md:h-6" />
+                                    <div className="mt-2 md:mt-0 md:ml-3 text-center md:text-left">
                                         <p className="text-xs md:text-sm font-light">WhatsApp</p>
                                         <p className="font-semibold text-sm md:text-base">{contactInfo.whatsApp}</p>
                                     </div>
@@ -202,7 +197,6 @@ export default function ContactPage() {
               )}
             </div>
         </div>
-       </div>
     </div>
   );
 }
