@@ -104,7 +104,7 @@ export default function AboutPage() {
   
   const [emblaRef] = useEmblaCarousel({ loop: true, align: 'start' }, [
     Autoplay({
-      delay: 2000,
+      delay: 1000,
       stopOnInteraction: false,
       stopOnMouseEnter: true,
     }),
