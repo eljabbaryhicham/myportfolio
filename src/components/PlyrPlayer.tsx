@@ -3,7 +3,7 @@
 
 import React, { useEffect, useRef } from 'react';
 import Plyr from 'plyr-react';
-import 'plyr-react/dist/plyr.css';
+import 'plyr/dist/plyr.css';
 import Hls from 'hls.js';
 
 interface PlyrPlayerProps {
