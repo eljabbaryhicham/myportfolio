@@ -11,6 +11,7 @@ declare global {
         Clappr: any;
         DashShakaPlayback: any;
         LevelSelector: any;
+        HlsJsPlayback: any;
     }
 }
 
@@ -81,6 +82,7 @@ export default function CdnClapprPlayer({ source, poster, autoPlay = true, playe
         await Promise.all([
             loadScript('https://cdn.jsdelivr.net/gh/clappr/dash-shaka-playback@latest/dist/dash-shaka-playback.js', 'clappr-shaka-playback', 'DashShakaPlayback'),
             loadScript('https://cdn.jsdelivr.net/gh/clappr/clappr-level-selector-plugin@latest/dist/level-selector.min.js', 'clappr-level-selector', 'LevelSelector'),
+            loadScript('https://cdn.jsdelivr.net/npm/@clappr/hlsjs-playback@latest/dist/hlsjs-playback.min.js', 'clappr-hls-playback', 'HlsJsPlayback'),
         ]);
 
         if (!isMounted || !playerContainerRef.current) return;
@@ -88,6 +90,7 @@ export default function CdnClapprPlayer({ source, poster, autoPlay = true, playe
         const plugins = [];
         if (window.DashShakaPlayback) plugins.push(window.DashShakaPlayback);
         if (window.LevelSelector) plugins.push(window.LevelSelector);
+        if (window.HlsJsPlayback) plugins.push(window.HlsJsPlayback);
 
         player = new window.Clappr.Player({
             parentId: `#${playerContainerRef.current.id}`,
@@ -105,6 +108,9 @@ export default function CdnClapprPlayer({ source, poster, autoPlay = true, playe
               streaming: {
                 rebufferingGoal: 15
               }
+            },
+            hlsjsConfig: {
+              // HLS.js configuration options
             },
             mediacontrol: {
               seekbar: "hsl(var(--destructive))",
