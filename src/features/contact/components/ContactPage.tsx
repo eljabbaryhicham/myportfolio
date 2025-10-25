@@ -95,7 +95,7 @@ export default function ContactPage() {
           </div>
        </div>
        <Separator className="bg-white/10 flex-shrink-0" />
-      <div className="flex-1 min-h-0 overflow-y-auto">
+       <div className="flex-1 min-h-0 overflow-y-auto">
         <div className="p-8 flex items-center justify-center min-h-full">
             <div className="container mx-auto px-0">
               {isLoading ? (
@@ -136,7 +136,7 @@ export default function ContactPage() {
                                       <div className={cn("w-10 h-10 md:w-12 md:h-12 flex-shrink-0 rounded-full flex items-center justify-center glass-effect transition-colors duration-300 text-white", link.color)}>
                                           <Icon icon={link.icon} className="w-5 h-5 md:w-6 md:h-6" />
                                       </div>
-                                      <div className="ml-4 text-left">
+                                      <div className="ml-4 text-left break-words">
                                           <p className="text-xs md:text-sm text-foreground/70">{link.label}</p>
                                           <p className="text-sm md:text-base font-medium group-hover:text-primary transition-colors">{link.value}</p>
                                       </div>
@@ -196,7 +196,7 @@ export default function ContactPage() {
               )}
             </div>
         </div>
-      </div>
+       </div>
     </div>
   );
 }
