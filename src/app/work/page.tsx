@@ -250,7 +250,6 @@ export default function WorkPage() {
   const [isDialogMediaLoading, setIsDialogMediaLoading] = useState(true);
   
   const playerRef = useRef<any>(null);
-  const [wasVideoPlaying, setWasVideoPlaying] = useState(false);
 
   const allItems = useMemo(() => {
     return portfolioItems?.filter(item => item.isVisible !== false) || [];
@@ -368,33 +367,17 @@ export default function WorkPage() {
 
   const handleDetailsOpenChange = (open: boolean) => {
     setDetailsModalOpen(open);
-    if (!open && playerRef.current && wasVideoPlaying) {
-      playerRef.current.play();
-      setWasVideoPlaying(false);
-    }
   };
   
   const handleShowDetailsClick = () => {
-    if (playerRef.current && playerRef.current.playing) {
-      setWasVideoPlaying(true);
-      playerRef.current.pause();
-    }
     setDetailsModalOpen(true);
   };
   
   const handleContactOpenChange = (open: boolean) => {
     setIsContactFormOpen(open);
-    if (!open && playerRef.current && wasVideoPlaying) {
-        playerRef.current.play();
-        setWasVideoPlaying(false);
-    }
   };
 
   const handleAskAboutClick = () => {
-    if (playerRef.current && playerRef.current.playing) {
-        setWasVideoPlaying(true);
-        playerRef.current.pause();
-    }
     setIsContactFormOpen(true);
   };
 
