@@ -1,3 +1,4 @@
+
 'use client';
 
 import Link from 'next/link';
@@ -91,11 +92,11 @@ export default function ContactPage() {
               Let&apos;s get in touch! Fill out the form below to send me a message.
             </p>
           </div>
-          <Separator className="bg-white/10" />
         </div>
       </div>
+      <Separator className="bg-white/10 flex-shrink-0" />
       <div className="flex-1 min-h-0 overflow-y-auto">
-        <div className="p-8 pt-0 flex items-start justify-center">
+        <div className="p-8 pt-4 flex items-start justify-center">
             <div className="container mx-auto px-0">
               {isLoading ? (
                 <div className="flex justify-center items-center h-64">
