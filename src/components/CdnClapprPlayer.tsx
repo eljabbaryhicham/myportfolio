@@ -91,8 +91,10 @@ export default function CdnClapprPlayer({ source, poster, autoPlay = true, playe
             volume: 10,
             watermark: watermark || '',
             watermarkLink: undefined,
-            playsInline: true,
-            clickToToggle: false,
+            clickToToggle: true,
+            playback: {
+              playInline: true,
+            },
             plugins: plugins,
             shakaConfiguration: {
               streaming: {
