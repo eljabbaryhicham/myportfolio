@@ -34,9 +34,9 @@ import PlyrPlayer from '@/components/PlyrPlayer';
 import CdnClapprPlayer from '@/components/CdnClapprPlayer';
 
 const MemoizedImage = memo(Image);
-
 const MemoizedPlyrPlayer = memo(PlyrPlayer);
 const MemoizedCdnClapprPlayer = memo(CdnClapprPlayer);
+
 
 const MemoizedPortfolioMedia = memo(({
   item,
@@ -379,9 +379,15 @@ export default function WorkPage() {
   };
   
   const handleShowDetailsClick = () => {
-    if (playerRef.current && playerRef.current.playing) {
-        wasPlayingRef.current = true;
-        playerRef.current.pause();
+    if (playerRef.current) {
+        const isPlaying = workPagePlayer === 'clappr'
+          ? playerRef.current.isPlaying()
+          : playerRef.current.playing;
+        
+        if (isPlaying) {
+            wasPlayingRef.current = true;
+            playerRef.current.pause();
+        }
     }
     setDetailsModalOpen(true);
   };
@@ -395,9 +401,15 @@ export default function WorkPage() {
   };
 
   const handleAskAboutClick = () => {
-    if (playerRef.current && playerRef.current.playing) {
-        wasPlayingRef.current = true;
-        playerRef.current.pause();
+    if (playerRef.current) {
+        const isPlaying = workPagePlayer === 'clappr'
+          ? playerRef.current.isPlaying()
+          : playerRef.current.playing;
+          
+        if (isPlaying) {
+            wasPlayingRef.current = true;
+            playerRef.current.pause();
+        }
     }
     setIsContactFormOpen(true);
   };
