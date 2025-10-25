@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import Preloader from './preloader';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 // Make Clappr and its plugins available on the window object for type safety
 declare global {
@@ -46,6 +47,7 @@ export default function CdnClapprPlayer({ source, poster, autoPlay = true, playe
   
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     let isMounted = true;
@@ -75,6 +77,10 @@ export default function CdnClapprPlayer({ source, poster, autoPlay = true, playe
         if (window.LevelSelector) plugins.push(window.LevelSelector);
         if (window.HlsJsPlayback) plugins.push(window.HlsJsPlayback);
 
+        const playerButtons = isMobile
+          ? ['play', 'pip', 'fullscreen']
+          : ['play', 'volume', 'pip', 'fullscreen'];
+
         player = new window.Clappr.Player({
             parentId: `#${playerContainerRef.current.id}`,
             source,
@@ -97,7 +103,7 @@ export default function CdnClapprPlayer({ source, poster, autoPlay = true, playe
             },
             mediacontrol: {
               seekbar: "hsl(var(--destructive))",
-              buttons: ['play', 'volume', 'pip', 'fullscreen']
+              buttons: playerButtons,
             },
             levelSelectorConfig: {
               title: 'Quality',
@@ -151,7 +157,7 @@ export default function CdnClapprPlayer({ source, poster, autoPlay = true, playe
       }
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [source]); 
+  }, [source, isMobile]); 
 
   return (
     <div className="w-full h-full relative bg-black">
