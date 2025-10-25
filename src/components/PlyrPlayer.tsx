@@ -10,26 +10,18 @@ interface PlyrPlayerProps {
   source: string;
   poster?: string;
   watermark?: string;
-  playerRef: React.MutableRefObject<any>;
 }
 
-const PlyrPlayer = ({ source, poster, watermark, playerRef }: PlyrPlayerProps) => {
+const PlyrPlayer = forwardRef(({ source, poster, watermark }: PlyrPlayerProps, ref) => {
+  const internalRef = useRef<any>(null);
   const hls = useRef<Hls | null>(null);
+  
+  useImperativeHandle(ref, () => internalRef.current?.plyr);
 
   useEffect(() => {
-    const player = playerRef.current?.plyr;
-    const videoElement = playerRef.current?.media;
+    const videoElement = internalRef.current?.media;
+    if (!videoElement) return;
 
-    if (!player || !videoElement) return;
-
-    // Update source when it changes
-    const newSource = {
-        type: 'video' as 'video',
-        poster: poster,
-        sources: [{ src: source, type: source.includes('.m3u8') ? 'application/x-mpegURL' : 'video/mp4' }],
-    };
-
-    // Use HLS.js for HLS streams
     if (source.includes('.m3u8')) {
         if (Hls.isSupported()) {
             if (hls.current) {
@@ -39,14 +31,13 @@ const PlyrPlayer = ({ source, poster, watermark, playerRef }: PlyrPlayerProps) =
             hls.current = newHls;
             newHls.loadSource(source);
             newHls.attachMedia(videoElement);
-            player.source = newSource;
         } else if (videoElement.canPlayType('application/vnd.apple.mpegurl')) {
             videoElement.src = source;
         }
     } else {
-        player.source = newSource;
+        videoElement.src = source;
     }
-  }, [source, poster, playerRef]);
+  }, [source]);
 
   const plyrOptions = {
     controls: ['play-large', 'play', 'progress', 'current-time', 'mute', 'volume', 'fullscreen'],
@@ -104,7 +95,7 @@ const PlyrPlayer = ({ source, poster, watermark, playerRef }: PlyrPlayerProps) =
         `}
       </style>
       <div className="relative w-full h-full">
-        <Plyr ref={playerRef} source={plyrSource} options={plyrOptions} />
+        <Plyr ref={internalRef} source={plyrSource} options={plyrOptions} />
         {watermark && (
             <div className="plyr__watermark">
                 <img src={watermark} alt="Watermark" />
@@ -113,8 +104,8 @@ const PlyrPlayer = ({ source, poster, watermark, playerRef }: PlyrPlayerProps) =
       </div>
     </>
   );
-};
+});
+
+PlyrPlayer.displayName = 'PlyrPlayer';
 
 export default PlyrPlayer;
-
-    

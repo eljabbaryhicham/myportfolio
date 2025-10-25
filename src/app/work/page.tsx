@@ -61,10 +61,10 @@ const PortfolioMedia = ({
       <div className="relative aspect-video bg-black flex items-center justify-center w-full">
         {mediaUrl && (
           <PlyrPlayer 
+            ref={playerRef}
             source={mediaUrl} 
             poster={item.useVideoFrameAsPoster ? undefined : item.thumbnailUrl}
             watermark={watermark}
-            playerRef={playerRef}
           />
         )}
       </div>
@@ -228,7 +228,7 @@ export default function WorkPage() {
   const [direction, setDirection] = useState<'next' | 'prev' | null>(null);
   const [isDialogMediaLoading, setIsDialogMediaLoading] = useState(true);
   
-  const playerInstanceRef = useRef<any>(null);
+  const playerRef = useRef<any>(null);
   const [wasVideoPlaying, setWasVideoPlaying] = useState(false);
 
   const allItems = useMemo(() => {
@@ -347,32 +347,32 @@ export default function WorkPage() {
 
   const handleDetailsOpenChange = (open: boolean) => {
     setDetailsModalOpen(open);
-    if (!open && playerInstanceRef.current && wasVideoPlaying) {
-      playerInstanceRef.current.play();
+    if (!open && playerRef.current && wasVideoPlaying) {
+      playerRef.current.play();
       setWasVideoPlaying(false);
     }
   };
   
   const handleShowDetailsClick = () => {
-    if (playerInstanceRef.current && playerInstanceRef.current.playing) {
+    if (playerRef.current && playerRef.current.playing) {
       setWasVideoPlaying(true);
-      playerInstanceRef.current.pause();
+      playerRef.current.pause();
     }
     setDetailsModalOpen(true);
   };
   
   const handleContactOpenChange = (open: boolean) => {
     setIsContactFormOpen(open);
-    if (!open && playerInstanceRef.current && wasVideoPlaying) {
-        playerInstanceRef.current.play();
+    if (!open && playerRef.current && wasVideoPlaying) {
+        playerRef.current.play();
         setWasVideoPlaying(false);
     }
   };
 
   const handleAskAboutClick = () => {
-    if (playerInstanceRef.current && playerInstanceRef.current.playing) {
+    if (playerRef.current && playerRef.current.playing) {
         setWasVideoPlaying(true);
-        playerInstanceRef.current.pause();
+        playerRef.current.pause();
     }
     setIsContactFormOpen(true);
   };
@@ -687,7 +687,7 @@ export default function WorkPage() {
                                 onFullscreenClick={setFullscreenImageUrl}
                                 onMediaLoaded={() => setIsDialogMediaLoading(false)}
                                 watermark={logoUrl}
-                                playerRef={playerInstanceRef}
+                                playerRef={playerRef}
                               />
                             )}
                           </div>
@@ -856,5 +856,3 @@ export default function WorkPage() {
     </>
   );
 }
-
-    
