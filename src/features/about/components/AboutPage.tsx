@@ -18,6 +18,7 @@ import useEmblaCarousel from 'embla-carousel-react'
 import Autoplay from 'embla-carousel-autoplay'
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
+import { ScrollIndicator } from '@/components/ScrollIndicator';
 
 
 interface Client {
@@ -118,6 +119,7 @@ export default function AboutPage() {
 
   return (
     <div className="h-full w-full flex flex-col">
+      <ScrollIndicator />
       <div className="p-8 flex-shrink-0">
         <div className="container mx-auto px-0">
             <div className="mb-8 text-center">

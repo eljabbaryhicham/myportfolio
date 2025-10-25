@@ -16,6 +16,7 @@ import { motion } from 'framer-motion';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import ContactForm from './ContactForm';
+import { ScrollIndicator } from '@/components/ScrollIndicator';
 
 interface ContactInfo {
   avatarUrl?: string;
@@ -84,6 +85,7 @@ export default function ContactPage() {
 
   return (
     <div className="h-full w-full flex flex-col">
+      <ScrollIndicator />
       <div className="p-8 flex-shrink-0">
         <div className="container mx-auto px-0">
           <div className="mb-8 text-center">
