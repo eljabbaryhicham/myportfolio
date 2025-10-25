@@ -14,7 +14,7 @@ export function ScrollIndicator() {
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsVisible(false);
-    }, 4000); // Animation is visible for 4 seconds
+    }, 3500); // Animation is visible for 3.5 seconds
 
     return () => clearTimeout(timer);
   }, []);
