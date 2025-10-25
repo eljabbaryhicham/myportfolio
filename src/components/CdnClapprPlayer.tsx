@@ -88,7 +88,7 @@ export default function CdnClapprPlayer({ source, poster, autoPlay = true, playe
             width: '100%',
             height: '100%',
             autoPlay: autoPlay,
-            mute: true,
+            volume: 20,
             watermark: watermark || '',
             watermarkLink: undefined,
             playsInline: true,
@@ -157,7 +157,7 @@ export default function CdnClapprPlayer({ source, poster, autoPlay = true, playe
       }
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [source, isMobile]); 
+  }, [source]); 
 
   return (
     <div className="w-full h-full relative bg-black">
