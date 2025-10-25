@@ -611,7 +611,7 @@ export default function WorkPage() {
           <DialogContent
             className={cn(
               "glass-effect p-0 flex flex-col group overflow-hidden",
-              "w-[80vw] max-w-7xl",
+              "w-[90vw] max-w-7xl",
               isExtraWide || isDescriptionLong ? "h-[90vh]" : "max-h-[90vh]"
             )}
             onMouseMove={handleDialogMouseMove}
