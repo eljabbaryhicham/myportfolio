@@ -119,7 +119,7 @@ export default function AboutPage() {
 
   return (
     <div className="h-full w-full flex flex-col">
-      <ScrollIndicator />
+      {!isLoading && <ScrollIndicator />}
       <div className="p-8 flex-shrink-0">
         <div className="container mx-auto px-0">
             <div className="mb-8 text-center">
