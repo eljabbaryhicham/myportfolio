@@ -151,12 +151,14 @@ export default function ContactPage() {
                           <>
                             <Separator className="my-4 bg-white/20" />
                             <div className="flex justify-center">
-                              <Button asChild className="bg-gradient-to-r from-green-500 to-emerald-600 animate-shake">
-                                  <Link href={`https://wa.me/${contactInfo.whatsApp.replace(/\\D/g, '')}`} target="_blank" rel="noopener noreferrer" className="py-4 px-4 md:py-6 md:px-6 flex flex-col items-center justify-center md:flex-row">
-                                      <FontAwesomeIcon icon={faWhatsapp} className="h-5 w-5 md:h-6 md:h-6" />
-                                      <div className="mt-2 md:mt-0 md:ml-3 text-center md:text-left">
-                                          <p className="text-xs md:text-sm font-light">WhatsApp</p>
-                                          <p className="font-semibold text-sm md:text-base">{contactInfo.whatsApp}</p>
+                              <Button asChild className="bg-gradient-to-r from-green-500 to-emerald-600 animate-shake" size="lg">
+                                  <Link href={`https://wa.me/${contactInfo.whatsApp.replace(/\\D/g, '')}`} target="_blank" rel="noopener noreferrer">
+                                      <div className="flex flex-col items-center justify-center md:flex-row py-2 px-2">
+                                        <FontAwesomeIcon icon={faWhatsapp} className="h-5 w-5 md:h-6 md:h-6" />
+                                        <div className="mt-2 md:mt-0 md:ml-3 text-center md:text-left">
+                                            <p className="text-xs md:text-sm font-light">WhatsApp</p>
+                                            <p className="font-semibold text-sm md:text-base">{contactInfo.whatsApp}</p>
+                                        </div>
                                       </div>
                                   </Link>
                               </Button>
