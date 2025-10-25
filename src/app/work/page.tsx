@@ -31,7 +31,7 @@ import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import ContactForm from '@/features/contact/components/ContactForm';
 import type { AppUser } from '@/firebase/auth/use-user';
 import PlyrPlayer from '@/components/PlyrPlayer';
-
+import CdnClapprPlayer from '@/components/CdnClapprPlayer';
 
 const MemoizedImage = memo(Image);
 
@@ -40,13 +40,15 @@ const PortfolioMedia = ({
   onFullscreenClick,
   onMediaLoaded,
   watermark,
-  playerRef
+  playerRef,
+  playerType
 }: {
   item: PortfolioItem;
   onFullscreenClick: (url: string) => void;
   onMediaLoaded: () => void;
   watermark?: string;
   playerRef: React.MutableRefObject<any>;
+  playerType?: 'plyr' | 'clappr';
 }) => {
 
   useEffect(() => {
@@ -60,12 +62,21 @@ const PortfolioMedia = ({
     return (
       <div className="relative aspect-video bg-black flex items-center justify-center w-full">
         {mediaUrl && (
-          <PlyrPlayer 
-            ref={playerRef}
-            source={mediaUrl} 
-            poster={item.useVideoFrameAsPoster ? undefined : item.thumbnailUrl}
-            watermark={watermark}
-          />
+          playerType === 'clappr' ? (
+              <CdnClapprPlayer 
+                  playerRef={playerRef}
+                  source={mediaUrl} 
+                  poster={item.useVideoFrameAsPoster ? undefined : item.thumbnailUrl}
+                  watermark={watermark}
+              />
+          ) : (
+              <PlyrPlayer 
+                  ref={playerRef}
+                  source={mediaUrl} 
+                  poster={item.useVideoFrameAsPoster ? undefined : item.thumbnailUrl}
+                  watermark={watermark}
+              />
+          )
         )}
       </div>
     );
@@ -171,6 +182,10 @@ const PortfolioGridItem = ({ item, onClick, onEditClick, isAdmin }: { item: Port
   );
 };
 
+interface HomePageSettings {
+    workPagePlayer?: 'plyr' | 'clappr';
+}
+
 const slugify = (text: string) => text.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, '');
 
 export default function WorkPage() {
@@ -199,7 +214,13 @@ export default function WorkPage() {
     [firestore]
   );
   const { data: contactInfo } = useDoc(contactDocRef);
-  
+
+  const settingsDocRef = useMemoFirebase(
+    () => (firestore ? doc(firestore, 'homepage', 'settings') : null),
+    [firestore]
+  );
+  const { data: homeSettings } = useDoc<HomePageSettings>(settingsDocRef);
+
   const selectedSlug = searchParams.get('id');
 
   const [selectedItem, setSelectedItem] = useState<PortfolioItem | null>(null);
@@ -519,6 +540,7 @@ export default function WorkPage() {
     : { gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))' };
 
   const logoUrl = contactInfo?.logoUrl;
+  const workPagePlayer = homeSettings?.workPagePlayer || 'plyr';
 
   return (
     <>
@@ -688,6 +710,7 @@ export default function WorkPage() {
                                 onMediaLoaded={() => setIsDialogMediaLoading(false)}
                                 watermark={logoUrl}
                                 playerRef={playerRef}
+                                playerType={workPagePlayer}
                               />
                             )}
                           </div>

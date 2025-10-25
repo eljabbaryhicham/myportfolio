@@ -40,6 +40,7 @@ interface HomePageSettings {
     websiteBackgroundMediaId?: string;
     isHomePageVideoEnabled?: boolean; // Kept for backwards compatibility if only video is selected
     isWebsiteVideoEnabled?: boolean; // Kept for backwards compatibility if only video is selected
+    workPagePlayer?: 'plyr' | 'clappr';
 }
 
 const settingsSchema = z.object({
@@ -49,6 +50,7 @@ const settingsSchema = z.object({
   websiteBackgroundMediaId: z.string().optional(),
   isHomePageVideoEnabled: z.boolean().optional(),
   isWebsiteVideoEnabled: z.boolean().optional(),
+  workPagePlayer: z.enum(['plyr', 'clappr']).optional(),
 });
 
 type SettingsFormValues = z.infer<typeof settingsSchema>;
@@ -94,6 +96,7 @@ export default function HomeAdmin() {
       websiteBackgroundMediaId: '',
       isHomePageVideoEnabled: true,
       isWebsiteVideoEnabled: true,
+      workPagePlayer: 'plyr',
     },
   });
 
@@ -108,6 +111,7 @@ export default function HomeAdmin() {
         websiteBackgroundMediaId: homeSettings.websiteBackgroundMediaId || '',
         isHomePageVideoEnabled: homeSettings.isHomePageVideoEnabled ?? true,
         isWebsiteVideoEnabled: homeSettings.isWebsiteVideoEnabled ?? true,
+        workPagePlayer: homeSettings.workPagePlayer || 'plyr',
       });
     }
   }, [homeSettings, form]);
@@ -305,6 +309,40 @@ export default function HomeAdmin() {
                                             )}
                                         />
                                     )}
+                                </div>
+                                <Separator />
+
+                                {/* Player Settings */}
+                                <div className="space-y-4 p-4 rounded-lg border glass-effect">
+                                     <h3 className="font-headline text-lg">Player Settings</h3>
+                                    <FormField
+                                      control={control}
+                                      name="workPagePlayer"
+                                      render={({ field }) => (
+                                        <FormItem className="space-y-3">
+                                          <FormLabel>Work Page Video Player</FormLabel>
+                                           <FormDescription>
+                                            Choose which player to use for videos on the public "Work" page.
+                                          </FormDescription>
+                                          <FormControl>
+                                            <RadioGroup
+                                              onValueChange={field.onChange}
+                                              value={field.value}
+                                              className="flex items-center space-x-4"
+                                            >
+                                              <FormItem className="flex items-center space-x-2 space-y-0">
+                                                <FormControl><RadioGroupItem value="plyr" /></FormControl>
+                                                <FormLabel className="font-normal">Plyr (Optimized)</FormLabel>
+                                              </FormItem>
+                                              <FormItem className="flex items-center space-x-2 space-y-0">
+                                                <FormControl><RadioGroupItem value="clappr" /></FormControl>
+                                                <FormLabel className="font-normal">Clappr (Feature-rich)</FormLabel>
+                                              </FormItem>
+                                            </RadioGroup>
+                                          </FormControl>
+                                        </FormItem>
+                                      )}
+                                    />
                                 </div>
                             </fieldset>
                         </div>

@@ -151,6 +151,11 @@
         "isWebsiteVideoEnabled": {
           "type": "boolean",
           "description": "Controls whether the video background for other pages is enabled."
+        },
+        "workPagePlayer": {
+          "type": "string",
+          "enum": ["plyr", "clappr"],
+          "description": "The video player to use on the Work page."
         }
       }
     },
