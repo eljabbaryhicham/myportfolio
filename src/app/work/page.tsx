@@ -18,7 +18,7 @@ import { useCollection, useFirestore, useMemoFirebase, useUser, setDocumentNonBl
 import { collection, query, orderBy, doc } from 'firebase/firestore';
 import type { PortfolioItem } from '@/features/portfolio/data/portfolio-data';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faUpDown, faXmark, faExpand, faPalette, faFilm, faArrowLeft, faArrowRight, faPencilAlt, faEnvelope, faPlus, faArrowDown } from '@fortawesome/free-solid-svg-icons';
+import { faUpDown, faXmark, faExpand, faPalette, faFilm, faArrowLeft, faArrowRight, faPencilAlt, faEnvelope, faPlus, faArrowDown, faSyncAlt } from '@fortawesome/free-solid-svg-icons';
 import { Separator } from '@/components/ui/separator';
 import Preloader from '@/components/preloader';
 import { useIsExtraWide } from '@/hooks/use-is-extra-wide';
@@ -44,7 +44,8 @@ const MemoizedPortfolioMedia = memo(({
   onMediaLoaded,
   watermark,
   playerRef,
-  playerType
+  playerType,
+  isPaused
 }: {
   item: PortfolioItem;
   onFullscreenClick: (url: string) => void;
@@ -52,12 +53,31 @@ const MemoizedPortfolioMedia = memo(({
   watermark?: string;
   playerRef: React.MutableRefObject<any>;
   playerType?: 'plyr' | 'clappr';
+  isPaused: boolean;
 }) => {
   const mediaUrl = item.sourceUrl || item.thumbnailUrl;
 
   useEffect(() => {
     onMediaLoaded();
   }, [item.id, onMediaLoaded]);
+
+  useEffect(() => {
+    const player = playerRef.current;
+    if (!player) return;
+
+    // Universal play/pause logic
+    try {
+      if (isPaused) {
+        if (typeof player.pause === 'function') player.pause();
+      } else {
+        if (typeof player.play === 'function') player.play();
+      }
+    } catch (e) {
+      console.error("Failed to control player:", e);
+    }
+
+  }, [isPaused, playerRef]);
+
 
   if (item.type === 'video') {
     return (
@@ -109,12 +129,17 @@ const MemoizedPortfolioMedia = memo(({
 MemoizedPortfolioMedia.displayName = 'MemoizedPortfolioMedia';
 
 
-const PortfolioGridItem = ({ item, onClick, onEditClick, isAdmin }: { item: PortfolioItem, onClick: () => void, onEditClick: () => void, isAdmin: boolean }) => {
+const PortfolioGridItem = ({ item, onClick, onEditClick, isAdmin, isSuperAdmin, onSwitchPlayer }: { item: PortfolioItem, onClick: () => void, onEditClick: () => void, isAdmin: boolean, isSuperAdmin: boolean, onSwitchPlayer: () => void }) => {
   const [isLoaded, setIsLoaded] = useState(false);
 
   const handleEditClick = (e: React.MouseEvent) => {
     e.stopPropagation(); // Prevent the main onClick from firing
     onEditClick();
+  };
+
+  const handleSwitchPlayerClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onSwitchPlayer();
   };
 
   return (
@@ -181,6 +206,18 @@ const PortfolioGridItem = ({ item, onClick, onEditClick, isAdmin }: { item: Port
             <span className="sr-only">Edit Project</span>
           </Button>
         )}
+        {isSuperAdmin && item.type === 'video' && isLoaded && (
+            <Button
+              variant="destructive"
+              size="sm"
+              className="absolute bottom-4 left-4 h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+              onClick={handleSwitchPlayerClick}
+              title="Switch Default Player"
+            >
+              <FontAwesomeIcon icon={faSyncAlt} className="h-4 w-4" />
+              <span className="sr-only">Switch Player</span>
+            </Button>
+          )}
       </div>
     </div>
   );
@@ -254,7 +291,7 @@ export default function WorkPage() {
   const [isDialogMediaLoading, setIsDialogMediaLoading] = useState(true);
   
   const playerRef = useRef<any>(null);
-  const wasPlayingRef = useRef(false);
+  const [isPlayerPaused, setIsPlayerPaused] = useState(false);
 
   const allItems = useMemo(() => {
     return portfolioItems?.filter(item => item.isVisible !== false) || [];
@@ -354,6 +391,9 @@ export default function WorkPage() {
     if (!open) {
       setSelectedItem(null);
       updateUrl(null);
+      setIsPlayerPaused(true); // Pause when main dialog closes
+    } else {
+      setIsPlayerPaused(false); // Play when main dialog opens
     }
   };
 
@@ -372,46 +412,20 @@ export default function WorkPage() {
 
   const handleDetailsOpenChange = (open: boolean) => {
     setDetailsModalOpen(open);
-    if (!open && wasPlayingRef.current) {
-        playerRef.current?.play();
-        wasPlayingRef.current = false;
-    }
+    setIsPlayerPaused(open);
   };
   
   const handleShowDetailsClick = () => {
-    if (playerRef.current) {
-        const isPlaying = workPagePlayer === 'clappr'
-          ? playerRef.current.isPlaying()
-          : playerRef.current.playing;
-        
-        if (isPlaying) {
-            wasPlayingRef.current = true;
-            playerRef.current.pause();
-        }
-    }
-    setDetailsModalOpen(true);
+    handleDetailsOpenChange(true);
   };
   
   const handleContactOpenChange = (open: boolean) => {
     setIsContactFormOpen(open);
-     if (!open && wasPlayingRef.current) {
-        playerRef.current?.play();
-        wasPlayingRef.current = false;
-    }
+    setIsPlayerPaused(open);
   };
 
   const handleAskAboutClick = () => {
-    if (playerRef.current) {
-        const isPlaying = workPagePlayer === 'clappr'
-          ? playerRef.current.isPlaying()
-          : playerRef.current.playing;
-          
-        if (isPlaying) {
-            wasPlayingRef.current = true;
-            playerRef.current.pause();
-        }
-    }
-    setIsContactFormOpen(true);
+    handleContactOpenChange(true);
   };
 
   const handleNextProject = useCallback(() => {
@@ -503,6 +517,19 @@ export default function WorkPage() {
     } else if (info.offset.x < -swipeThreshold && info.velocity.x < -swipeVelocityThreshold) {
       handleNextProject();
     }
+  };
+
+  const handleSwitchPlayer = () => {
+    if (!settingsDocRef || !isSuperAdmin) return;
+    const newPlayer =
+      homeSettings?.workPagePlayer === 'plyr' ? 'clappr' : 'plyr';
+    setDocumentNonBlocking(settingsDocRef, { workPagePlayer: newPlayer }, { merge: true });
+    toast({
+      title: 'Player Switched',
+      description: `Work page will now use the ${
+        newPlayer.charAt(0).toUpperCase() + newPlayer.slice(1)
+      } player.`,
+    });
   };
   
   const effectiveItemsCount = visibleItemsCount || 0;
@@ -613,6 +640,8 @@ export default function WorkPage() {
                               onClick={() => handleItemClick(item)}
                               onEditClick={() => handleEditItem(item)}
                               isAdmin={!!user}
+                              isSuperAdmin={isSuperAdmin}
+                              onSwitchPlayer={handleSwitchPlayer}
                             />
                           </motion.div>
                         ))}
@@ -727,6 +756,7 @@ export default function WorkPage() {
                                 watermark={logoUrl}
                                 playerRef={playerRef}
                                 playerType={workPagePlayer}
+                                isPaused={isPlayerPaused}
                               />
                             )}
                           </div>
