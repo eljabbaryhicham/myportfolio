@@ -1,7 +1,7 @@
 
 'use client';
 
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, forwardRef, useImperativeHandle } from 'react';
 import Plyr from 'plyr-react';
 import 'plyr/dist/plyr.css';
 import Hls from 'hls.js';
@@ -10,32 +10,43 @@ interface PlyrPlayerProps {
   source: string;
   poster?: string;
   watermark?: string;
+  playerRef: React.MutableRefObject<any>;
 }
 
-const PlyrPlayer: React.FC<PlyrPlayerProps> = ({ source, poster, watermark }) => {
-  const ref = useRef<any>(null);
+const PlyrPlayer = ({ source, poster, watermark, playerRef }: PlyrPlayerProps) => {
   const hls = useRef<Hls | null>(null);
 
   useEffect(() => {
-    const videoElement = ref.current?.media;
-    if (!videoElement) return;
+    const player = playerRef.current?.plyr;
+    const videoElement = playerRef.current?.media;
 
+    if (!player || !videoElement) return;
+
+    // Update source when it changes
+    const newSource = {
+        type: 'video' as 'video',
+        poster: poster,
+        sources: [{ src: source, type: source.includes('.m3u8') ? 'application/x-mpegURL' : 'video/mp4' }],
+    };
+
+    // Use HLS.js for HLS streams
     if (source.includes('.m3u8')) {
-      if (Hls.isSupported()) {
-        if (hls.current) {
-          hls.current.destroy();
+        if (Hls.isSupported()) {
+            if (hls.current) {
+                hls.current.destroy();
+            }
+            const newHls = new Hls();
+            hls.current = newHls;
+            newHls.loadSource(source);
+            newHls.attachMedia(videoElement);
+            player.source = newSource;
+        } else if (videoElement.canPlayType('application/vnd.apple.mpegurl')) {
+            videoElement.src = source;
         }
-        const newHls = new Hls();
-        hls.current = newHls;
-        newHls.loadSource(source);
-        newHls.attachMedia(videoElement);
-      } else if (videoElement.canPlayType('application/vnd.apple.mpegurl')) {
-        videoElement.src = source;
-      }
     } else {
-      videoElement.src = source;
+        player.source = newSource;
     }
-  }, [source]); // Re-run effect only when the source URL changes
+  }, [source, poster, playerRef]);
 
   const plyrOptions = {
     controls: ['play-large', 'play', 'progress', 'current-time', 'mute', 'volume', 'fullscreen'],
@@ -93,7 +104,7 @@ const PlyrPlayer: React.FC<PlyrPlayerProps> = ({ source, poster, watermark }) =>
         `}
       </style>
       <div className="relative w-full h-full">
-        <Plyr ref={ref} source={plyrSource} options={plyrOptions} />
+        <Plyr ref={playerRef} source={plyrSource} options={plyrOptions} />
         {watermark && (
             <div className="plyr__watermark">
                 <img src={watermark} alt="Watermark" />
@@ -105,3 +116,5 @@ const PlyrPlayer: React.FC<PlyrPlayerProps> = ({ source, poster, watermark }) =>
 };
 
 export default PlyrPlayer;
+
+    

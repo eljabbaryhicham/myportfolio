@@ -40,11 +40,13 @@ const PortfolioMedia = ({
   onFullscreenClick,
   onMediaLoaded,
   watermark,
+  playerRef
 }: {
   item: PortfolioItem;
   onFullscreenClick: (url: string) => void;
   onMediaLoaded: () => void;
   watermark?: string;
+  playerRef: React.MutableRefObject<any>;
 }) => {
 
   useEffect(() => {
@@ -62,6 +64,7 @@ const PortfolioMedia = ({
             source={mediaUrl} 
             poster={item.useVideoFrameAsPoster ? undefined : item.thumbnailUrl}
             watermark={watermark}
+            playerRef={playerRef}
           />
         )}
       </div>
@@ -351,7 +354,7 @@ export default function WorkPage() {
   };
   
   const handleShowDetailsClick = () => {
-    if (playerInstanceRef.current && playerInstanceRef.current.isPlaying()) {
+    if (playerInstanceRef.current && playerInstanceRef.current.playing) {
       setWasVideoPlaying(true);
       playerInstanceRef.current.pause();
     }
@@ -367,7 +370,7 @@ export default function WorkPage() {
   };
 
   const handleAskAboutClick = () => {
-    if (playerInstanceRef.current && playerInstanceRef.current.isPlaying()) {
+    if (playerInstanceRef.current && playerInstanceRef.current.playing) {
         setWasVideoPlaying(true);
         playerInstanceRef.current.pause();
     }
@@ -684,6 +687,7 @@ export default function WorkPage() {
                                 onFullscreenClick={setFullscreenImageUrl}
                                 onMediaLoaded={() => setIsDialogMediaLoading(false)}
                                 watermark={logoUrl}
+                                playerRef={playerInstanceRef}
                               />
                             )}
                           </div>
@@ -852,3 +856,5 @@ export default function WorkPage() {
     </>
   );
 }
+
+    
