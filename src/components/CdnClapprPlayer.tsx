@@ -92,6 +92,7 @@ export default function CdnClapprPlayer({ source, poster, autoPlay = true, playe
             watermark: watermark || '',
             watermarkLink: undefined,
             playsInline: true,
+            clickToToggle: false,
             plugins: plugins,
             shakaConfiguration: {
               streaming: {
