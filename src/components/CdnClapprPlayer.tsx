@@ -88,10 +88,10 @@ export default function CdnClapprPlayer({ source, poster, autoPlay = true, playe
             width: '100%',
             height: '100%',
             autoPlay: autoPlay,
+            mute: true,
             watermark: watermark || '',
             watermarkLink: undefined,
             playsInline: true,
-            volume: 20,
             plugins: plugins,
             shakaConfiguration: {
               streaming: {
