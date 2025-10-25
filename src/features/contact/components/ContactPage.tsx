@@ -132,11 +132,17 @@ export default function ContactPage() {
                           <div className="space-y-4">
                               {contactLinks.map((link) => (
                               link.href && link.value && (
-                                  <Link href={link.href} key={link.label} className="flex items-center group text-white" target="_blank" rel="noopener noreferrer">
+                                  <Link
+                                    href={link.href}
+                                    key={link.label}
+                                    className="flex flex-col md:flex-row items-center group text-white"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                  >
                                       <div className={cn("w-10 h-10 md:w-12 md:h-12 flex-shrink-0 rounded-full flex items-center justify-center glass-effect transition-colors duration-300 text-white", link.color)}>
                                           <Icon icon={link.icon} className="w-5 h-5 md:w-6 md:h-6" />
                                       </div>
-                                      <div className="ml-4 text-left break-words">
+                                      <div className="mt-2 md:mt-0 md:ml-4 text-center md:text-left break-words">
                                           <p className="text-xs md:text-sm text-foreground/70">{link.label}</p>
                                           <p className="text-sm md:text-base font-medium group-hover:text-primary transition-colors">{link.value}</p>
                                       </div>
