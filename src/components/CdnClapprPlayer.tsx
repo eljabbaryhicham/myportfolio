@@ -23,39 +23,20 @@ interface CdnClapprPlayerProps {
   watermark?: string;
 }
 
-const loadScript = (src: string, id: string, globalVar: string): Promise<void> => {
-  return new Promise((resolve, reject) => {
-    if (document.getElementById(id)) {
-      const checkVar = () => {
-        if ((window as any)[globalVar]) {
-          resolve();
-        } else {
-          setTimeout(checkVar, 100);
+const loadScript = (src: string, id: string): Promise<void> => {
+    return new Promise((resolve, reject) => {
+        if (document.getElementById(id)) {
+            resolve();
+            return;
         }
-      };
-      checkVar();
-      return;
-    }
-
-    const script = document.createElement('script');
-    script.id = id;
-    script.src = src;
-    script.async = true;
-
-    script.onload = () => {
-      const checkVar = () => {
-        if ((window as any)[globalVar]) {
-          resolve();
-        } else {
-          setTimeout(checkVar, 100);
-        }
-      };
-      checkVar();
-    };
-
-    script.onerror = (e) => reject(new Error(`Failed to load script: ${src}.`));
-    document.head.appendChild(script);
-  });
+        const script = document.createElement('script');
+        script.id = id;
+        script.src = src;
+        script.async = true;
+        script.onload = () => resolve();
+        script.onerror = (e) => reject(new Error(`Failed to load script: ${src}.`));
+        document.head.appendChild(script);
+    });
 };
 
 export default function CdnClapprPlayer({ source, poster, autoPlay = true, playerRef: parentPlayerRef, watermark }: CdnClapprPlayerProps) {
@@ -75,14 +56,16 @@ export default function CdnClapprPlayer({ source, poster, autoPlay = true, playe
       setIsLoading(true);
 
       try {
-        await loadScript('https://cdn.jsdelivr.net/npm/@clappr/player@latest/dist/clappr.min.js', 'clappr-script', 'Clappr');
+        // Load Clappr first
+        await loadScript('https://cdn.jsdelivr.net/npm/@clappr/player@latest/dist/clappr.min.js', 'clappr-script');
         
         if (!isMounted) return;
 
+        // Then load all plugins in parallel
         await Promise.all([
-            loadScript('https://cdn.jsdelivr.net/gh/clappr/dash-shaka-playback@latest/dist/dash-shaka-playback.js', 'clappr-shaka-playback', 'DashShakaPlayback'),
-            loadScript('https://cdn.jsdelivr.net/gh/clappr/clappr-level-selector-plugin@latest/dist/level-selector.min.js', 'clappr-level-selector', 'LevelSelector'),
-            loadScript('https://cdn.jsdelivr.net/npm/@clappr/hlsjs-playback@latest/dist/hlsjs-playback.min.js', 'clappr-hls-playback', 'HlsJsPlayback'),
+            loadScript('https://cdn.jsdelivr.net/gh/clappr/dash-shaka-playback@latest/dist/dash-shaka-playback.js', 'clappr-shaka-playback'),
+            loadScript('https://cdn.jsdelivr.net/gh/clappr/clappr-level-selector-plugin@latest/dist/level-selector.min.js', 'clappr-level-selector'),
+            loadScript('https://cdn.jsdelivr.net/npm/@clappr/hlsjs-playback@latest/dist/hlsjs-playback.min.js', 'clappr-hls-playback'),
         ]);
 
         if (!isMounted || !playerContainerRef.current) return;
