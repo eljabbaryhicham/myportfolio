@@ -14,29 +14,32 @@ interface PlyrPlayerProps {
 
 const PlyrPlayer = forwardRef(({ source, poster, watermark }: PlyrPlayerProps, ref) => {
   const internalRef = useRef<any>(null);
-  const hls = useRef<Hls | null>(null);
   
+  // Expose the internal Plyr player instance to the parent component.
   useImperativeHandle(ref, () => internalRef.current?.plyr);
 
   useEffect(() => {
     const videoElement = internalRef.current?.media;
     if (!videoElement) return;
 
+    let hls: Hls | null = null;
     if (source.includes('.m3u8')) {
         if (Hls.isSupported()) {
-            if (hls.current) {
-                hls.current.destroy();
-            }
-            const newHls = new Hls();
-            hls.current = newHls;
-            newHls.loadSource(source);
-            newHls.attachMedia(videoElement);
+            hls = new Hls();
+            hls.loadSource(source);
+            hls.attachMedia(videoElement);
         } else if (videoElement.canPlayType('application/vnd.apple.mpegurl')) {
             videoElement.src = source;
         }
     } else {
         videoElement.src = source;
     }
+
+    return () => {
+      if (hls) {
+        hls.destroy();
+      }
+    };
   }, [source]);
 
   const plyrOptions = {
@@ -46,6 +49,7 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark }: PlyrPlayerProps, r
     clickToPlay: true,
   };
 
+  // We set a simple source object here because Hls.js will handle the actual streaming.
   const plyrSource = {
     type: 'video' as 'video',
     poster: poster,
@@ -95,6 +99,10 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark }: PlyrPlayerProps, r
         `}
       </style>
       <div className="relative w-full h-full">
+        {/*
+          The `ref` here is now the `internalRef`. `useImperativeHandle` connects this
+          to the `ref` from the parent component.
+        */}
         <Plyr ref={internalRef} source={plyrSource} options={plyrOptions} />
         {watermark && (
             <div className="plyr__watermark">
