@@ -416,7 +416,8 @@ export default function WorkPage() {
   };
   
   const handleShowDetailsClick = () => {
-    handleDetailsOpenChange(true);
+    setDetailsModalOpen(true);
+    setIsPlayerPaused(true);
   };
   
   const handleContactOpenChange = (open: boolean) => {
@@ -425,7 +426,8 @@ export default function WorkPage() {
   };
 
   const handleAskAboutClick = () => {
-    handleContactOpenChange(true);
+    setIsContactFormOpen(true);
+    setIsPlayerPaused(true);
   };
 
   const handleNextProject = useCallback(() => {
