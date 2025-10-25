@@ -3,7 +3,6 @@
 
 import Link from 'next/link';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { useDoc, useFirestore, useMemoFirebase } from '@/firebase';
 import { doc } from 'firebase/firestore';
 import { Separator } from '@/components/ui/separator';
@@ -96,8 +95,8 @@ export default function ContactPage() {
           </div>
        </div>
        <Separator className="bg-white/10 flex-shrink-0" />
-      <ScrollArea className="flex-1 min-h-0">
-        <div className="p-8">
+      <div className="flex-1 min-h-0 overflow-y-auto">
+        <div className="p-8 flex items-center justify-center min-h-full">
             <div className="container mx-auto px-0">
               {isLoading ? (
                 <div className="flex justify-center items-center h-64">
@@ -197,7 +196,7 @@ export default function ContactPage() {
               )}
             </div>
         </div>
-      </ScrollArea>
+      </div>
     </div>
   );
 }
