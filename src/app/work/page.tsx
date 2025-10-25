@@ -30,7 +30,7 @@ import { motion, AnimatePresence, PanInfo } from 'framer-motion';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import ContactForm from '@/features/contact/components/ContactForm';
 import type { AppUser } from '@/firebase/auth/use-user';
-import CdnClapprPlayer from '@/components/CdnClapprPlayer';
+import PlyrPlayer from '@/components/PlyrPlayer';
 
 
 const MemoizedImage = memo(Image);
@@ -39,13 +39,11 @@ const PortfolioMedia = ({
   item,
   onFullscreenClick,
   onMediaLoaded,
-  playerRef,
   watermark,
 }: {
   item: PortfolioItem;
   onFullscreenClick: (url: string) => void;
   onMediaLoaded: () => void;
-  playerRef: React.MutableRefObject<any | null>;
   watermark?: string;
 }) => {
 
@@ -60,11 +58,9 @@ const PortfolioMedia = ({
     return (
       <div className="relative aspect-video bg-black flex items-center justify-center w-full">
         {mediaUrl && (
-          <CdnClapprPlayer 
+          <PlyrPlayer 
             source={mediaUrl} 
             poster={item.useVideoFrameAsPoster ? undefined : item.thumbnailUrl}
-            autoPlay={true}
-            playerRef={playerRef}
             watermark={watermark}
           />
         )}
@@ -688,7 +684,6 @@ export default function WorkPage() {
                                 item={selectedItem}
                                 onFullscreenClick={setFullscreenImageUrl}
                                 onMediaLoaded={() => setIsDialogMediaLoading(false)}
-                                playerRef={playerInstanceRef}
                                 watermark={logoUrl}
                               />
                             )}
