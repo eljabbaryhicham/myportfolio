@@ -35,7 +35,10 @@ import CdnClapprPlayer from '@/components/CdnClapprPlayer';
 
 const MemoizedImage = memo(Image);
 
-const PortfolioMedia = ({
+const MemoizedPlyrPlayer = memo(PlyrPlayer);
+const MemoizedCdnClapprPlayer = memo(CdnClapprPlayer);
+
+const PortfolioMedia = memo(({
   item,
   onFullscreenClick,
   onMediaLoaded,
@@ -50,27 +53,25 @@ const PortfolioMedia = ({
   playerRef: React.MutableRefObject<any>;
   playerType?: 'plyr' | 'clappr';
 }) => {
+  const mediaUrl = item.sourceUrl || item.thumbnailUrl;
 
   useEffect(() => {
     onMediaLoaded();
-  }, [item, onMediaLoaded]);
-
-
-  const mediaUrl = item.sourceUrl || item.thumbnailUrl;
+  }, [item.id, onMediaLoaded]);
 
   if (item.type === 'video') {
     return (
       <div className="relative aspect-video bg-black flex items-center justify-center w-full">
         {mediaUrl && (
           playerType === 'clappr' ? (
-              <CdnClapprPlayer 
+              <MemoizedCdnClapprPlayer 
                   playerRef={playerRef}
                   source={mediaUrl} 
                   poster={item.useVideoFrameAsPoster ? undefined : item.thumbnailUrl}
                   watermark={watermark}
               />
           ) : (
-              <PlyrPlayer 
+              <MemoizedPlyrPlayer 
                   ref={playerRef}
                   source={mediaUrl} 
                   poster={item.useVideoFrameAsPoster ? undefined : item.thumbnailUrl}
@@ -102,7 +103,7 @@ const PortfolioMedia = ({
         </Button>
       </div>
     );
-};
+});
 PortfolioMedia.displayName = 'PortfolioMedia';
 
 const PortfolioGridItem = ({ item, onClick, onEditClick, isAdmin }: { item: PortfolioItem, onClick: () => void, onEditClick: () => void, isAdmin: boolean }) => {
