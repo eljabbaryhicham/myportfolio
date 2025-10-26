@@ -296,7 +296,7 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true }: P
              display: none !important;
            }
           .plyr__progress input[type=range] {
-              height: 5px;
+              height: 2px;
           }
 
            /* Material Icons Override */
@@ -357,5 +357,3 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true }: P
 
 PlyrPlayer.displayName = 'PlyrPlayer';
 export default PlyrPlayer;
-
-    
