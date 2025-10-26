@@ -1,6 +1,7 @@
+
 'use client';
 
-import { useState, useEffect, type RefObject } from 'react';
+import { useState, useEffect, type RefObject, useRef } from 'react';
 import Lottie from 'lottie-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import animationData from '@/lib/arrow-animation.json';
@@ -13,6 +14,7 @@ interface ScrollIndicatorProps {
 export function ScrollIndicator({ scrollRef }: ScrollIndicatorProps) {
   const [isVisible, setIsVisible] = useState(true);
   const isMobile = useIsMobile();
+  const inactivityTimer = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     const scrollElement = scrollRef.current;
@@ -21,32 +23,46 @@ export function ScrollIndicator({ scrollRef }: ScrollIndicatorProps) {
       return;
     }
 
+    const resetTimer = () => {
+      if (inactivityTimer.current) {
+        clearTimeout(inactivityTimer.current);
+      }
+      inactivityTimer.current = setTimeout(() => {
+        setIsVisible(false);
+      }, 5000);
+    };
+
     const handleScroll = () => {
       // Check if user is at the bottom of the scrollable element.
-      // A small buffer (e.g., 5px) can help with rounding issues.
       const isAtBottom =
         scrollElement.scrollTop + scrollElement.clientHeight >= scrollElement.scrollHeight - 5;
       
-      if (isAtBottom && isVisible) {
+      if (isAtBottom) {
         setIsVisible(false);
-      } else if (!isAtBottom && !isVisible) {
+        if (inactivityTimer.current) clearTimeout(inactivityTimer.current);
+      } else {
         setIsVisible(true);
+        resetTimer();
       }
     };
     
-    // Initial check in case the content is not scrollable.
+    // Initial setup
     if (scrollElement.scrollHeight <= scrollElement.clientHeight) {
         setIsVisible(false);
     } else {
-        handleScroll(); // Run once to set initial state correctly
+        setIsVisible(true);
+        resetTimer(); // Start the timer on initial load
     }
 
     scrollElement.addEventListener('scroll', handleScroll, { passive: true });
 
     return () => {
       scrollElement.removeEventListener('scroll', handleScroll);
+      if (inactivityTimer.current) {
+        clearTimeout(inactivityTimer.current);
+      }
     };
-  }, [isMobile, isVisible, scrollRef]);
+  }, [isMobile, scrollRef]);
 
   // Don't render anything on the server or if not mobile.
   if (isMobile !== true) {
