@@ -12,7 +12,8 @@ export function ScrollIndicator() {
   const isMobile = useIsMobile();
 
   useEffect(() => {
-    if (typeof window === 'undefined' || isMobile === false) {
+    // If not on mobile, do nothing.
+    if (isMobile === false) {
       return;
     }
 
@@ -24,16 +25,26 @@ export function ScrollIndicator() {
       // Check if user is at the bottom of the page (with a 10px buffer)
       const atBottom = scrollTop + clientHeight >= scrollHeight - 10;
       
-      setIsVisible(!atBottom);
+      // Use functional update to avoid needing isVisible in dependency array
+      setIsVisible(prevIsVisible => {
+        if (atBottom && prevIsVisible) {
+          return false; // Hide if at bottom
+        } else if (!atBottom && !prevIsVisible) {
+          return true; // Show if not at bottom
+        }
+        return prevIsVisible; // No change
+      });
     };
     
+    // Initial check in case the page is not scrollable from the start
+    handleScroll();
+
     window.addEventListener('scroll', handleScroll, { passive: true });
-    handleScroll(); // Initial check
 
     return () => {
       window.removeEventListener('scroll', handleScroll);
     };
-  }, [isMobile]);
+  }, [isMobile]); // Effect now only depends on isMobile status
 
   // Don't render the component at all on non-mobile devices.
   if (isMobile === false) {
