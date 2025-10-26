@@ -12,31 +12,38 @@ export function ScrollIndicator() {
   const isMobile = useIsMobile();
 
   useEffect(() => {
+    // This effect should only manage scroll logic on the client-side
+    // and only if it's determined to be a mobile device.
+    if (typeof window === 'undefined' || isMobile === false) {
+      return;
+    }
+
     const handleScroll = () => {
-      // Check if the user has scrolled to the bottom of the page
       const scrollHeight = document.documentElement.scrollHeight;
       const clientHeight = document.documentElement.clientHeight;
       const scrollTop = window.scrollY;
       
       // Hide when user is at the bottom of the page (with a small 10px buffer)
       if (scrollTop + clientHeight >= scrollHeight - 10) {
-        setIsVisible(false);
+        if (isVisible) setIsVisible(false);
       } else {
-        setIsVisible(true);
+        if (!isVisible) setIsVisible(true);
       }
     };
     
+    // Add the event listener for scroll events
     window.addEventListener('scroll', handleScroll, { passive: true });
 
-    // Initial check in case the page content is shorter than the viewport
+    // Perform an initial check in case the page is not scrollable on load
     handleScroll();
 
-    // Cleanup
+    // Cleanup: remove the event listener when the component unmounts
     return () => {
       window.removeEventListener('scroll', handleScroll);
     };
-  }, []);
+  }, [isMobile, isVisible]); // Dependency on isVisible to re-evaluate if needed
 
+  // Don't render the component at all on non-mobile devices.
   if (isMobile === false) {
     return null;
   }
