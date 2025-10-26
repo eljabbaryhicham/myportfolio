@@ -72,8 +72,7 @@ export function AppNav() {
             "group relative flex items-center justify-center rounded-full transition-all duration-300 aspect-square",
             isMobile ? 'h-[clamp(2.5rem,10vw,3rem)] w-[clamp(2.5rem,10vw,3rem)]' : "h-10 w-10",
             "text-white glass-effect",
-            // Apply blue background if it's the admin button and it's not active
-            isAdminButton && !isActive && "bg-blue-900/50"
+            (isAdminButton || isTestButton) && !isActive && "bg-blue-900/50"
           )}
         >
           {isActive && (
@@ -173,5 +172,3 @@ export function AppNav() {
     </motion.aside>
   );
 }
-
-    
