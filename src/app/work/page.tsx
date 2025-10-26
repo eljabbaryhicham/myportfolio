@@ -552,7 +552,7 @@ export default function WorkPage() {
     : { gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))' };
 
   const logoUrl = contactInfo?.logoUrl;
-  const workPagePlayer = homeSettings?.workPagePlayer || 'plyr';
+  const workPagePlayer = homeSettings?.workPagePlayer || 'clappr';
 
   return (
     <>

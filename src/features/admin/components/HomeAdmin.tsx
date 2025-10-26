@@ -96,7 +96,7 @@ export default function HomeAdmin() {
       websiteBackgroundMediaId: '',
       isHomePageVideoEnabled: true,
       isWebsiteVideoEnabled: true,
-      workPagePlayer: 'plyr',
+      workPagePlayer: 'clappr',
     },
   });
 
@@ -111,7 +111,7 @@ export default function HomeAdmin() {
         websiteBackgroundMediaId: homeSettings.websiteBackgroundMediaId || '',
         isHomePageVideoEnabled: homeSettings.isHomePageVideoEnabled ?? true,
         isWebsiteVideoEnabled: homeSettings.isWebsiteVideoEnabled ?? true,
-        workPagePlayer: homeSettings.workPagePlayer || 'plyr',
+        workPagePlayer: homeSettings.workPagePlayer || 'clappr',
       });
     }
   }, [homeSettings, form]);
