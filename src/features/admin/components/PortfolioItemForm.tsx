@@ -102,8 +102,6 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onCho
       name: 'sourceUrl',
     });
 
-    const isVimeo = sourceUrl?.includes('vimeo.com');
-  
     useEffect(() => {
       if (isOpen) {
         const defaultValues = item ? {
@@ -302,22 +300,20 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onCho
                                       </FormItem>
                                   )}
                               />
-                               {!isVimeo && (
-                                <FormField
-                                  control={form.control}
-                                  name="thumbnailVttUrl"
-                                  render={({ field }) => (
-                                      <FormItem>
-                                      <FormLabel>Preview Thumbnails VTT URL</FormLabel>
-                                      <FormControl>
-                                          <Input placeholder="https://example.com/thumbnails.vtt" {...field} />
-                                      </FormControl>
-                                      <FormDescription>The URL for the WebVTT file containing timeline preview thumbnails. (Not supported for Vimeo videos)</FormDescription>
-                                      <FormMessage />
-                                      </FormItem>
-                                  )}
-                                  />
-                               )}
+                              <FormField
+                                control={form.control}
+                                name="thumbnailVttUrl"
+                                render={({ field }) => (
+                                    <FormItem>
+                                    <FormLabel>Preview Thumbnails VTT URL</FormLabel>
+                                    <FormControl>
+                                        <Input placeholder="https://example.com/thumbnails.vtt" {...field} />
+                                    </FormControl>
+                                    <FormDescription>The URL for the WebVTT file containing timeline preview thumbnails.</FormDescription>
+                                    <FormMessage />
+                                    </FormItem>
+                                )}
+                                />
                             </>
                           )}
                           <FormField
