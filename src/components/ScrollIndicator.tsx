@@ -12,8 +12,9 @@ export function ScrollIndicator() {
   const isMobile = useIsMobile();
 
   useEffect(() => {
-    // If not on mobile, do nothing.
     if (isMobile === false) {
+      // If we know it's not mobile, ensure it's not visible and do nothing else.
+      setIsVisible(false);
       return;
     }
 
@@ -21,22 +22,16 @@ export function ScrollIndicator() {
       const scrollHeight = document.documentElement.scrollHeight;
       const clientHeight = document.documentElement.clientHeight;
       const scrollTop = window.scrollY;
-      
-      // Check if user is at the bottom of the page (with a 10px buffer)
-      const atBottom = scrollTop + clientHeight >= scrollHeight - 10;
-      
-      // Use functional update to avoid needing isVisible in dependency array
-      setIsVisible(prevIsVisible => {
-        if (atBottom && prevIsVisible) {
-          return false; // Hide if at bottom
-        } else if (!atBottom && !prevIsVisible) {
-          return true; // Show if not at bottom
-        }
-        return prevIsVisible; // No change
-      });
+
+      // Hide when user is at the bottom (with a 10px buffer)
+      if (scrollTop + clientHeight >= scrollHeight - 10) {
+        setIsVisible(false);
+      } else {
+        setIsVisible(true);
+      }
     };
-    
-    // Initial check in case the page is not scrollable from the start
+
+    // Run the check once in case the page isn't scrollable
     handleScroll();
 
     window.addEventListener('scroll', handleScroll, { passive: true });
@@ -44,28 +39,26 @@ export function ScrollIndicator() {
     return () => {
       window.removeEventListener('scroll', handleScroll);
     };
-  }, [isMobile]); // Effect now only depends on isMobile status
+  }, [isMobile]); // Only re-run if isMobile status changes.
 
-  // Don't render the component at all on non-mobile devices.
-  if (isMobile === false) {
+  // Render nothing if it's not supposed to be visible.
+  if (!isVisible) {
     return null;
   }
 
   return (
     <AnimatePresence>
-      {isVisible && (
-        <motion.div
-          className="fixed bottom-16 right-4 z-50 pointer-events-none"
-          initial={{ opacity: 0, x: 100 }}
-          animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: 100 }}
-          transition={{ type: 'spring', stiffness: 100, damping: 20 }}
-        >
-          <div className="w-24 h-24">
-            <Lottie animationData={animationData} loop={true} />
-          </div>
-        </motion.div>
-      )}
+      <motion.div
+        className="fixed bottom-16 right-4 z-50 pointer-events-none"
+        initial={{ opacity: 0, x: 100 }}
+        animate={{ opacity: 1, x: 0 }}
+        exit={{ opacity: 0, x: 100 }}
+        transition={{ type: 'spring', stiffness: 100, damping: 20 }}
+      >
+        <div className="w-24 h-24">
+          <Lottie animationData={animationData} loop={true} />
+        </div>
+      </motion.div>
     </AnimatePresence>
   );
 }
