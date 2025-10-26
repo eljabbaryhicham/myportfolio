@@ -49,9 +49,10 @@ export default function CdnClapprPlayer({ source, poster, autoPlay = true, water
 
   useEffect(() => {
     let isMounted = true;
+    const container = playerContainerRef.current;
 
     const initPlayer = async () => {
-      if (!playerContainerRef.current) return;
+      if (!container) return;
       setIsLoading(true);
 
       try {
@@ -65,7 +66,7 @@ export default function CdnClapprPlayer({ source, poster, autoPlay = true, water
             loadScript('https://cdn.jsdelivr.net/npm/@clappr/hlsjs-playback@latest/dist/hlsjs-playback.min.js', 'clappr-hls-playback'),
         ]);
 
-        if (!isMounted || !playerContainerRef.current) return;
+        if (!isMounted || !container) return;
         
         const plugins = [];
         if (window.DashShakaPlayback) plugins.push(window.DashShakaPlayback);
@@ -77,7 +78,7 @@ export default function CdnClapprPlayer({ source, poster, autoPlay = true, water
           : ['play', 'volume', 'pip', 'fullscreen'];
 
         const newPlayer = new window.Clappr.Player({
-            parentId: `#${playerContainerRef.current.id}`,
+            parentId: `#${container.id}`,
             source,
             poster,
             width: '100%',
@@ -147,14 +148,15 @@ export default function CdnClapprPlayer({ source, poster, autoPlay = true, water
 
     return () => {
       isMounted = false;
-      if (playerRef.current) {
+      const player = playerRef.current;
+      if (player && container && document.body.contains(container)) {
         try {
-          playerRef.current.destroy();
+          player.destroy();
         } catch (e) {
           console.error("Error destroying Clappr player:", e);
         }
-        playerRef.current = null;
       }
+      playerRef.current = null;
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [source]); 
@@ -186,3 +188,4 @@ export default function CdnClapprPlayer({ source, poster, autoPlay = true, water
     </div>
   );
 }
+

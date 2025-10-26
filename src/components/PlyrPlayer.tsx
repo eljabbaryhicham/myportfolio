@@ -91,8 +91,10 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true, thu
   // Effect for setting up and tearing down the player
   useEffect(() => {
     let isMounted = true;
+    const container = containerRef.current;
+    
     const initPlayer = async () => {
-        if (!containerRef.current) return;
+        if (!container) return;
         setIsLoading(true);
 
         const isYoutube = source.includes('youtube.com') || source.includes('youtu.be');
@@ -137,7 +139,7 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true, thu
                 });
             }
 
-            containerRef.current.appendChild(element);
+            container.appendChild(element);
             
             let player: any;
 
@@ -167,6 +169,10 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true, thu
             }
 
             if (isYoutube || isVimeo) {
+                playerConfig.previewThumbnails = {
+                    enabled: true,
+                    src: thumbnailVttUrl,
+                };
                 player = new window.Plyr(element, playerConfig);
                 player.on('ready', () => {
                     if (isMounted) setIsLoading(false);
@@ -241,22 +247,23 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true, thu
 
     return () => {
         isMounted = false;
-        if (hlsRef.current) {
-            hlsRef.current.destroy();
+        const hls = hlsRef.current;
+        if (hls) {
+            hls.destroy();
             hlsRef.current = null;
         }
-        if (playerRef.current) {
+        
+        const player = playerRef.current;
+        if (player && container && document.body.contains(container)) {
             try {
-                playerRef.current.destroy();
+                player.destroy();
             } catch (e) {
+                // This catch block helps prevent the "removeChild" error
+                // by gracefully handling cases where the DOM node might already be gone.
                 console.error("Error destroying Plyr player:", e);
             }
-            playerRef.current = null;
         }
-        // Check if containerRef.current is still part of the DOM before clearing
-        if (containerRef.current && document.body.contains(containerRef.current)) {
-            containerRef.current.innerHTML = '';
-        }
+        playerRef.current = null;
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [source, poster, isMobile]); // Re-run if source, poster, or isMobile changes
@@ -376,6 +383,9 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true, thu
           .plyr__poster + .plyr__controls {
             z-index: 1; /* Ensure controls are above the poster */
           }
+          .plyr__poster.plyr__poster-loading {
+              z-index: 0;
+          }
         `}
       </style>
       <div ref={containerRef} className={cn("relative w-full h-full", isLoading ? 'opacity-0' : 'opacity-100')}>
@@ -397,3 +407,4 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true, thu
 
 PlyrPlayer.displayName = 'PlyrPlayer';
 export default PlyrPlayer;
+
