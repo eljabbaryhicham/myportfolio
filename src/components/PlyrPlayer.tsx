@@ -295,7 +295,7 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true }: P
           .plyr__spinner-container {
              display: none !important;
            }
-          .plyr__progress input[type=range] {
+          .plyr__progress input[type=range], .plyr__volume input[type=range] {
               height: 2px;
           }
 
@@ -357,3 +357,5 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true }: P
 
 PlyrPlayer.displayName = 'PlyrPlayer';
 export default PlyrPlayer;
+
+    
