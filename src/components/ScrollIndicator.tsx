@@ -12,11 +12,34 @@ export function ScrollIndicator() {
   const isMobile = useIsMobile();
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsVisible(false);
-    }, 2000); // Animation is visible for 2 seconds
+    // Hide after 2 seconds initially to avoid it staying on short pages
+    const initialTimer = setTimeout(() => {
+        // If user hasn't scrolled far enough, it will be hidden by this.
+        // If they have, the scroll listener will have already taken over.
+        handleScroll();
+    }, 2000);
 
-    return () => clearTimeout(timer);
+    const handleScroll = () => {
+      // Check if the user has scrolled to the bottom of the page
+      const scrollHeight = document.documentElement.scrollHeight;
+      const clientHeight = document.documentElement.clientHeight;
+      const scrollTop = window.scrollY;
+      
+      // Hide when user is near the bottom of the page (within 100px)
+      if (scrollHeight - (scrollTop + clientHeight) < 100) {
+        setIsVisible(false);
+      } else {
+        setIsVisible(true);
+      }
+    };
+    
+    window.addEventListener('scroll', handleScroll);
+
+    // Cleanup
+    return () => {
+      clearTimeout(initialTimer);
+      window.removeEventListener('scroll', handleScroll);
+    };
   }, []);
 
   if (!isMobile) {
