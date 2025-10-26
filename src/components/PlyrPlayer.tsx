@@ -2,8 +2,7 @@
 'use client';
 
 import React, { useEffect, useRef, forwardRef, useImperativeHandle, useState } from 'react';
-import 'plyr/dist/plyr.css';
-import { useIsMobile } from '@/hooks/use-mobile';
+import { useIsMobile } from '@/hooks/use-is-mobile';
 import Preloader from './preloader';
 import { cn } from '@/lib/utils';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -40,6 +39,23 @@ const loadScript = (src: string, id: string): Promise<void> => {
         document.head.appendChild(script);
     });
 };
+
+const loadStylesheet = (href: string, id: string): Promise<void> => {
+    return new Promise((resolve, reject) => {
+        if (document.getElementById(id)) {
+            resolve();
+            return;
+        }
+        const link = document.createElement('link');
+        link.id = id;
+        link.rel = 'stylesheet';
+        link.href = href;
+        link.onload = () => resolve();
+        link.onerror = (e) => reject(new Error(`Failed to load stylesheet: ${href}.`));
+        document.head.appendChild(link);
+    });
+};
+
 
 const waitForGlobal = (name: string, timeout = 2000): Promise<void> => {
     return new Promise((resolve, reject) => {
@@ -83,6 +99,7 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true, thu
         const isVimeo = source.includes('vimeo.com');
 
         try {
+            await loadStylesheet('https://cdn.plyr.io/3.8.3/plyr.css', 'plyr-css');
             await loadScript('https://cdn.plyr.io/3.8.3/plyr.js', 'plyr-script');
             await waitForGlobal('Plyr');
             
