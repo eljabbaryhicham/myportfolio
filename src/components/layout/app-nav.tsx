@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { useUser, useDoc, useFirestore, useMemoFirebase } from "@/firebase";
 import { motion } from "framer-motion";
-import React, { useState } from "react";
+import React from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faHouse, faImage, faCircleInfo, faEnvelope, faShieldHalved, faVial } from "@fortawesome/free-solid-svg-icons";
@@ -29,7 +29,6 @@ export function AppNav() {
   const { user } = useUser();
   const firestore = useFirestore();
   const isMobile = useIsMobile();
-  const [hoveredItem, setHoveredItem] = useState<string | null>(null);
 
   const contactDocRef = useMemoFirebase(
     () => (firestore ? doc(firestore, 'contact', 'details') : null),
@@ -41,6 +40,17 @@ export function AppNav() {
 
   const accessibleNavItems = navItems.filter(item => item.public || user);
   
+  const navButtonVariants = {
+    rest: {
+      scale: 1,
+      rotate: 0,
+    },
+    hover: {
+      scale: 1.2,
+      rotate: 15,
+    }
+  };
+
   const renderNavItem = (item: (typeof navItems)[0]) => {
     const isActive = item.href === "/" ? pathname === item.href : pathname.startsWith(item.href);
     const isAdminButton = item.label === 'Admin';
@@ -48,7 +58,10 @@ export function AppNav() {
 
     const navButtonContent = (
        <motion.div
-        whileHover={{ scale: 1.2, rotate: 15 }}
+        variants={navButtonVariants}
+        initial="rest"
+        whileHover="hover"
+        animate="rest"
         transition={{ type: 'spring', stiffness: 300, damping: 15 }}
       >
         <Link
