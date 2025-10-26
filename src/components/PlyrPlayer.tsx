@@ -256,8 +256,6 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true }: P
     <div className="relative w-full h-full bg-black">
       <style>
         {`
-          @import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css");
-
           :root {
             --plyr-color-main: hsl(var(--destructive));
             --plyr-control-radius: 8px;
@@ -298,32 +296,36 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true }: P
              display: none !important;
            }
 
-           /* Font Awesome Icon Overrides */
+           /* Material Icons Override */
           .plyr__controls .plyr__control svg {
             display: none;
           }
           .plyr__controls .plyr__control::before {
-            font-family: "Font Awesome 6 Free";
-            font-weight: 900;
-            font-size: 18px;
-            line-height: 1;
-            -moz-osx-font-smoothing: grayscale;
-            -webkit-font-smoothing: antialiased;
-            display: inline-block;
+            font-family: 'Material Icons';
+            font-weight: normal;
             font-style: normal;
-            font-variant: normal;
-            text-rendering: auto;
+            font-size: 24px;
+            line-height: 1;
+            letter-spacing: normal;
+            text-transform: none;
+            display: inline-block;
+            white-space: nowrap;
+            word-wrap: normal;
+            direction: ltr;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            font-feature-settings: 'liga';
           }
           
-          .plyr__controls button[data-plyr="play"]::before { content: "\\f04b"; } /* fa-play */
-          .plyr__controls button[data-plyr="pause"]::before { content: "\\f04c"; } /* fa-pause */
-          .plyr__controls button[data-plyr="mute"]::before { content: "\\f028"; } /* fa-volume-high */
-          .plyr__controls button[data-plyr="unmute"]::before { content: "\\f6a9"; } /* fa-volume-xmark */
-          .plyr__controls button[data-plyr="pip"]::before { content: "\\f2d0"; } /* fa-clone */
-          .plyr__controls button[data-plyr="fullscreen"]::before { content: "\\f065"; } /* fa-expand */
-          .plyr__controls button[data-plyr="exit-fullscreen"]::before { content: "\\f066"; } /* fa-compress */
-          .plyr__controls button[data-plyr="settings"]::before { content: "\\f013"; } /* fa-gear */
-          .plyr--settings-active .plyr__controls button[data-plyr="settings"]::before { content: "\\f013"; } /* fa-gear, keep it the same */
+          .plyr__controls button[data-plyr="play"]::before { content: 'play_arrow'; }
+          .plyr__controls button[data-plyr="pause"]::before { content: 'pause'; }
+          .plyr__controls button[data-plyr="mute"]::before { content: 'volume_up'; }
+          .plyr__controls button.plyr__control--pressed[data-plyr="mute"]::before { content: 'volume_off'; }
+          .plyr__controls button[data-plyr="pip"]::before { content: 'picture_in_picture_alt'; }
+          .plyr__controls button[data-plyr="fullscreen"]::before { content: 'fullscreen'; }
+          .plyr__controls button.plyr__control--pressed[data-plyr="fullscreen"]::before { content: 'fullscreen_exit'; }
+          .plyr__controls button[data-plyr="settings"]::before { content: 'settings'; }
+          .plyr--settings-active .plyr__controls button[data-plyr="settings"]::before { content: 'settings'; }
         `}
       </style>
         {(isLoading || isBuffering) && (
