@@ -320,8 +320,15 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true }: P
             font-feature-settings: 'liga';
           }
           
-          .plyr__controls button[data-plyr="play"]::before { content: 'play_circle'; }
-          .plyr__controls button[data-plyr="pause"]::before { content: 'pause_circle'; }
+          /* Default state (paused): show play icon */
+          .plyr__controls button[data-plyr="play"]::before { 
+            content: 'play_circle';
+          }
+          /* When playing: show pause icon */
+          .plyr--playing .plyr__controls button[data-plyr="play"]::before {
+             content: 'pause_circle';
+          }
+
           .plyr__controls button[data-plyr="mute"]::before { content: 'volume_up'; }
           .plyr__controls button.plyr__control--pressed[data-plyr="mute"]::before { content: 'volume_off'; }
           .plyr__controls button[data-plyr="pip"]::before { content: 'picture_in_picture_alt'; }
@@ -350,5 +357,3 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true }: P
 
 PlyrPlayer.displayName = 'PlyrPlayer';
 export default PlyrPlayer;
-
-    
