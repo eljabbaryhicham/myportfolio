@@ -283,7 +283,7 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true }: P
             background: hsl(var(--destructive));
           }
           .plyr--full-ui.plyr--video .plyr__control--overlaid {
-            display: none; // Hide central play button when controls are visible
+            display: none !important;
           }
            .plyr__watermark {
             position: absolute;
@@ -306,7 +306,7 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true }: P
               height: 2px !important;
           }
 
-           /* Font Awesome Icons Override */
+          /* Font Awesome Icons Override */
           .plyr__controls .plyr__control svg {
             display: none !important;
           }
@@ -320,14 +320,14 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true }: P
             -moz-osx-font-smoothing: grayscale;
           }
           
-          button[data-plyr="play"]::before { content: '\\f144'; } /* play */
-          .plyr--playing button[data-plyr="play"]::before { content: '\\f28b'; } /* pause */
-          button[data-plyr="mute"]::before { content: '\\f028'; } /* volume-high */
-          button[data-plyr="mute"][aria-pressed="true"]::before { content: '\\f6a9'; } /* volume-xmark */
-          button[data-plyr="pip"]::before { content: '\\f2d0'; } /* clone */
-          button[data-plyr="fullscreen"]::before { content: '\\f065'; } /* expand */
-          button[data-plyr="fullscreen"][aria-pressed="true"]::before { content: '\\f066'; } /* compress */
-          button[data-plyr="settings"]::before { content: '\\f013'; } /* gear */
+          button[data-plyr="play"]::before { content: '\\f144' !important; }
+          .plyr--playing button[data-plyr="play"]::before { content: '\\f28b' !important; }
+          button[data-plyr="mute"]::before { content: '\\f028' !important; }
+          .plyr__control--pressed[data-plyr="mute"]::before { content: '\\f6a9' !important; }
+          button[data-plyr="pip"]::before { content: '\\f2d0' !important; }
+          button[data-plyr="fullscreen"]::before { content: '\\f065' !important; }
+          .plyr__control--pressed[data-plyr="fullscreen"]::before { content: '\\f066' !important; }
+          button[data-plyr="settings"]::before { content: '\\f013' !important; }
         `}
       </style>
         {(isLoading || isBuffering) && (
