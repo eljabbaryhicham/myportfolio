@@ -88,7 +88,6 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true }: P
                     enabled: true,
                     fallback: true,
                     iosNative: false,
-                    container: 'body', // Use the body as the fullscreen container
                 },
             });
 
