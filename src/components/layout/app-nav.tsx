@@ -46,37 +46,35 @@ export function AppNav() {
     const isAdminButton = item.label === 'Admin';
     const isTestButton = item.label === 'Test';
 
-    const isHovered = hoveredItem === item.href;
-
     const navButtonContent = (
-      <Link
-        href={item.href}
-        className={cn(
-          "group relative flex items-center justify-center rounded-full transition-all duration-300 aspect-square",
-          isMobile ? 'h-[clamp(2.5rem,10vw,3rem)] w-[clamp(2.5rem,10vw,3rem)]' : "h-10 w-10",
-          "text-white",
-          isActive
-            ? isTestButton 
-              ? "bg-blue-500"
-              : isAdminButton
-                ? "bg-green-500"
-                : "bg-destructive text-destructive-foreground shadow-[0_0_15px_hsl(var(--primary)/0.8),_0_0_20px_hsl(var(--primary)/0.6)]"
-            : isTestButton
-              ? "bg-blue-500/80 hover:bg-blue-500"
-              : isAdminButton
-                ? "bg-green-500/80 hover:bg-green-500"
-                : "text-foreground/70 glass-effect",
-           isActive && isAdminButton && "shadow-[0_0_15px_#22c55e80,_0_0_20px_#22c55e60]",
-           isActive && isTestButton && "shadow-[0_0_15px_#3b82f680,_0_0_20px_#3b82f660]",
-        )}
+       <motion.div
+        whileHover={{ scale: 1.2, rotate: 15 }}
+        transition={{ type: 'spring', stiffness: 300, damping: 15 }}
       >
-        <motion.div
-          animate={{ rotate: isHovered ? 15 : 0 }}
-          transition={{ type: 'spring', stiffness: 300, damping: 15 }}
+        <Link
+          href={item.href}
+          className={cn(
+            "group relative flex items-center justify-center rounded-full transition-all duration-300 aspect-square",
+            isMobile ? 'h-[clamp(2.5rem,10vw,3rem)] w-[clamp(2.5rem,10vw,3rem)]' : "h-10 w-10",
+            "text-white",
+            isActive
+              ? isTestButton 
+                ? "bg-blue-500"
+                : isAdminButton
+                  ? "bg-green-500"
+                  : "bg-destructive text-destructive-foreground shadow-[0_0_15px_hsl(var(--primary)/0.8),_0_0_20px_hsl(var(--primary)/0.6)]"
+              : isTestButton
+                ? "bg-blue-500/80 hover:bg-blue-500"
+                : isAdminButton
+                  ? "bg-green-500/80 hover:bg-green-500"
+                  : "text-foreground/70 glass-effect",
+            isActive && isAdminButton && "shadow-[0_0_15px_#22c55e80,_0_0_20px_#22c55e60]",
+            isActive && isTestButton && "shadow-[0_0_15px_#3b82f680,_0_0_20px_#3b82f660]",
+          )}
         >
-          <FontAwesomeIcon icon={item.icon} className={cn("h-[50%] w-[50%]")} />
-        </motion.div>
-      </Link>
+            <FontAwesomeIcon icon={item.icon} className={cn("h-[50%] w-[50%]")} />
+        </Link>
+      </motion.div>
     );
 
     if (isMobile) {
@@ -91,13 +89,7 @@ export function AppNav() {
       <TooltipProvider key={item.href}>
         <Tooltip>
           <TooltipTrigger asChild>
-            <motion.div
-              onMouseEnter={() => setHoveredItem(item.href)}
-              animate={{ scale: isHovered ? 1.2 : 1 }}
-              transition={{ type: 'spring', stiffness: 300, damping: 15 }}
-            >
-              {navButtonContent}
-            </motion.div>
+            {navButtonContent}
           </TooltipTrigger>
           <TooltipContent side="right" className="glass-effect rounded-md">
             <p>{item.label}</p>
@@ -147,7 +139,6 @@ export function AppNav() {
         </Link>
         <nav 
           className="flex flex-row md:flex-col items-center justify-around md:justify-center w-full md:w-auto md:gap-10"
-          onMouseLeave={() => setHoveredItem(null)}
         >
            {accessibleNavItems.map(renderNavItem)}
         </nav>
