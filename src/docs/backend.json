@@ -161,6 +161,10 @@
           "type": "string",
           "enum": ["plyr", "clappr"],
           "description": "The video player to use on the Work page."
+        },
+        "isTestPageEnabled": {
+          "type": "boolean",
+          "description": "Controls whether the test page link is visible in the navigation."
         }
       }
     },
@@ -444,3 +448,5 @@
     ]
   }
 }
+
+    

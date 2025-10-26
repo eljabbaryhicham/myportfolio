@@ -20,9 +20,13 @@ const navItems = [
   { href: "/work", label: "Work", icon: faImage, public: true },
   { href: "/about", label: "About", icon: faCircleInfo, public: true },
   { href: "/contact", label: "Contact", icon: faEnvelope, public: true },
-  { href: "/admin", label: "Admin", icon: faShieldHalved, public: false },
-  { href: "/test", label: "Test", icon: faVial, public: false },
+  { href: "/admin", label: "Admin", icon: faShieldHalved, public: false, adminOnly: true },
+  { href: "/test", label: "Test", icon: faVial, public: false, adminOnly: true },
 ];
+
+interface HomePageSettings {
+    isTestPageEnabled?: boolean;
+}
 
 export function AppNav() {
   const pathname = usePathname();
@@ -36,9 +40,24 @@ export function AppNav() {
   );
   const { data: contactInfo } = useDoc(contactDocRef);
 
+  const settingsDocRef = useMemoFirebase(
+    () => (firestore ? doc(firestore, 'homepage', 'settings') : null),
+    [firestore]
+  );
+  const { data: homeSettings } = useDoc<HomePageSettings>(settingsDocRef);
+
+
   const logoUrl = contactInfo?.logoUrl || "https://i.imgur.com/N9c8oEJ.png";
 
-  const accessibleNavItems = navItems.filter(item => item.public || user);
+  const accessibleNavItems = navItems.filter(item => {
+    if (item.href === '/test') {
+        return homeSettings?.isTestPageEnabled && user;
+    }
+    if(item.adminOnly) {
+        return user;
+    }
+    return item.public;
+  });
   
   const renderNavItem = (item: (typeof navItems)[0]) => {
     const isActive = item.href === "/" ? pathname === item.href : pathname.startsWith(item.href);
@@ -46,39 +65,36 @@ export function AppNav() {
     const isTestButton = item.label === 'Test';
 
     const navButtonContent = (
-       <div
-        className="relative"
-      >
+      <div className="relative">
         <Link
           href={item.href}
           className={cn(
             "group relative flex items-center justify-center rounded-full transition-all duration-300 aspect-square",
             isMobile ? 'h-[clamp(2.5rem,10vw,3rem)] w-[clamp(2.5rem,10vw,3rem)]' : "h-10 w-10",
             "text-white glass-effect",
-            isActive
-              ? "text-destructive-foreground"
-              : isTestButton
-                ? "bg-blue-500/80 hover:bg-blue-500"
-                : isAdminButton
-                  ? "bg-green-500/80 hover:bg-green-500"
-                  : "text-foreground/70",
           )}
         >
-            {isActive && (
-              <motion.div
-                layoutId="active-nav-highlight"
-                className={cn(
-                    "absolute inset-0 rounded-full",
-                    isTestButton
-                      ? "bg-blue-500 shadow-[0_0_15px_#3b82f680,_0_0_20px_#3b82f660]"
-                      : isAdminButton
-                        ? "bg-green-500 shadow-[0_0_15px_#22c55e80,_0_0_20px_#22c55e60]"
-                        : "bg-destructive shadow-[0_0_15px_hsl(var(--primary)/0.8),_0_0_20px_hsl(var(--primary)/0.6)]"
-                )}
-                transition={{ type: "spring", stiffness: 300, damping: 25 }}
-              />
+          {isActive && (
+            <motion.div
+              layoutId="active-nav-highlight"
+              className={cn(
+                "absolute inset-0 rounded-full",
+                isTestButton
+                  ? "bg-blue-500 shadow-[0_0_15px_#3b82f680,_0_0_20px_#3b82f660]"
+                  : isAdminButton
+                    ? "bg-green-500 shadow-[0_0_15px_#22c55e80,_0_0_20px_#22c55e60]"
+                    : "bg-destructive shadow-[0_0_15px_hsl(var(--primary)/0.8),_0_0_20px_hsl(var(--primary)/0.6)]"
+              )}
+              transition={{ type: "spring", stiffness: 300, damping: 25 }}
+            />
+          )}
+          <FontAwesomeIcon
+            icon={item.icon}
+            className={cn(
+              "h-[50%] w-[50%] relative z-10 transition-colors",
+              isActive ? "text-white" : "text-white/70 group-hover:text-white"
             )}
-            <FontAwesomeIcon icon={item.icon} className={cn("h-[50%] w-[50%] relative z-10")} />
+          />
         </Link>
       </div>
     );
@@ -155,3 +171,5 @@ export function AppNav() {
     </motion.aside>
   );
 }
+
+    

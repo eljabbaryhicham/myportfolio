@@ -41,6 +41,7 @@ interface HomePageSettings {
     isHomePageVideoEnabled?: boolean; // Kept for backwards compatibility if only video is selected
     isWebsiteVideoEnabled?: boolean; // Kept for backwards compatibility if only video is selected
     workPagePlayer?: 'plyr' | 'clappr';
+    isTestPageEnabled?: boolean;
 }
 
 const settingsSchema = z.object({
@@ -51,6 +52,7 @@ const settingsSchema = z.object({
   isHomePageVideoEnabled: z.boolean().optional(),
   isWebsiteVideoEnabled: z.boolean().optional(),
   workPagePlayer: z.enum(['plyr', 'clappr']).optional(),
+  isTestPageEnabled: z.boolean().optional(),
 });
 
 type SettingsFormValues = z.infer<typeof settingsSchema>;
@@ -97,6 +99,7 @@ export default function HomeAdmin() {
       isHomePageVideoEnabled: true,
       isWebsiteVideoEnabled: true,
       workPagePlayer: 'clappr',
+      isTestPageEnabled: false,
     },
   });
 
@@ -112,6 +115,7 @@ export default function HomeAdmin() {
         isHomePageVideoEnabled: homeSettings.isHomePageVideoEnabled ?? true,
         isWebsiteVideoEnabled: homeSettings.isWebsiteVideoEnabled ?? true,
         workPagePlayer: homeSettings.workPagePlayer || 'clappr',
+        isTestPageEnabled: homeSettings.isTestPageEnabled ?? false,
       });
     }
   }, [homeSettings, form]);
@@ -314,7 +318,7 @@ export default function HomeAdmin() {
 
                                 {/* Player Settings */}
                                 <div className="space-y-4 p-4 rounded-lg border glass-effect">
-                                     <h3 className="font-headline text-lg">Player Settings</h3>
+                                     <h3 className="font-headline text-lg">Global Settings</h3>
                                     <FormField
                                       control={control}
                                       name="workPagePlayer"
@@ -343,6 +347,24 @@ export default function HomeAdmin() {
                                         </FormItem>
                                       )}
                                     />
+                                    <Separator />
+                                     <FormField
+                                        control={control}
+                                        name="isTestPageEnabled"
+                                        render={({ field }) => (
+                                            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
+                                                <div className="space-y-0.5">
+                                                    <FormLabel>Enable Test Page</FormLabel>
+                                                     <FormDescription>
+                                                        Show or hide the "Test" page link in the main navigation.
+                                                    </FormDescription>
+                                                </div>
+                                                <FormControl>
+                                                    <Switch checked={field.value} onCheckedChange={field.onChange} />
+                                                </FormControl>
+                                            </FormItem>
+                                        )}
+                                    />
                                 </div>
                             </fieldset>
                         </div>
@@ -353,3 +375,5 @@ export default function HomeAdmin() {
     </div>
   );
 }
+
+    
