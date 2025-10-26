@@ -78,6 +78,7 @@ function SiteBackground() {
                         loop
                         muted
                         playsInline
+                        controls
                     >
                         <source src={mediaUrl} type="video/mp4" />
                     </video>
@@ -98,6 +99,7 @@ function SiteBackground() {
                         loop
                         muted
                         playsInline
+                        controls
                     >
                         <source src="https://res.cloudinary.com/da1srnoer/video/upload/f_auto:video,q_auto/v1/wbmz1rkepnqeotpcx9tp" type="video/mp4" />
                     </video>
