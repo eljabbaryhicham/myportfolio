@@ -329,8 +329,10 @@ export default function WorkPage() {
 
   useEffect(() => {
     const player = plyrRef.current?.plyr;
-    if (isDialogOpen && player) {
-      player.pause();
+    if (player) {
+        if (isDialogOpen) {
+            player.pause();
+        }
     }
   }, [isDialogOpen]);
 
@@ -722,7 +724,7 @@ export default function WorkPage() {
                                 onMediaLoaded={() => setIsDialogMediaLoading(false)}
                                 watermark={logoUrl}
                                 playerType={workPagePlayer}
-                                autoPlay={!isDialogOpen}
+                                autoPlay={!isDialogOpen && !!selectedItem}
                                 plyrRef={plyrRef}
                               />
                             )}

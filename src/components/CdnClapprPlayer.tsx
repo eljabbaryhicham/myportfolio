@@ -49,19 +49,16 @@ export default function CdnClapprPlayer({ source, poster, autoPlay = true, water
 
   useEffect(() => {
     let isMounted = true;
-    let player: any = null;
 
     const initPlayer = async () => {
       if (!playerContainerRef.current) return;
       setIsLoading(true);
 
       try {
-        // Load Clappr first
         await loadScript('https://cdn.jsdelivr.net/npm/@clappr/player@latest/dist/clappr.min.js', 'clappr-script');
         
         if (!isMounted) return;
 
-        // Then load all plugins in parallel
         await Promise.all([
             loadScript('https://cdn.jsdelivr.net/gh/clappr/dash-shaka-playback@latest/dist/dash-shaka-playback.js', 'clappr-shaka-playback'),
             loadScript('https://cdn.jsdelivr.net/gh/clappr/clappr-level-selector-plugin@latest/dist/level-selector.min.js', 'clappr-level-selector'),
@@ -79,7 +76,7 @@ export default function CdnClapprPlayer({ source, poster, autoPlay = true, water
           ? ['play', 'pip', 'fullscreen']
           : ['play', 'volume', 'pip', 'fullscreen'];
 
-        player = new window.Clappr.Player({
+        const newPlayer = new window.Clappr.Player({
             parentId: `#${playerContainerRef.current.id}`,
             source,
             poster,
@@ -130,7 +127,7 @@ export default function CdnClapprPlayer({ source, poster, autoPlay = true, water
             }
         });
         
-        playerRef.current = player;
+        playerRef.current = newPlayer;
 
       } catch (error: any) {
         console.error(error);
@@ -150,10 +147,15 @@ export default function CdnClapprPlayer({ source, poster, autoPlay = true, water
 
     return () => {
       isMounted = false;
-      if (playerRef.current) {
-        playerRef.current.destroy();
-        playerRef.current = null;
+      const playerToDestroy = playerRef.current;
+      if (playerToDestroy && playerContainerRef.current && document.body.contains(playerContainerRef.current)) {
+        try {
+          playerToDestroy.destroy();
+        } catch(e) {
+            console.error("Error destroying Clappr player:", e);
+        }
       }
+      playerRef.current = null;
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [source]); 
