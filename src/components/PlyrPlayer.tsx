@@ -57,6 +57,7 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true }: P
             const videoElement = document.createElement('video');
             videoElement.setAttribute('playsinline', '');
             videoElement.setAttribute('controls', '');
+            videoElement.setAttribute('pip', 'true');
             if (poster) {
                 videoElement.setAttribute('poster', poster);
             }
@@ -122,17 +123,17 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true }: P
                     hlsRef.current = hls;
 
                 } else {
-                    // Fallback for browsers that support HLS natively but not Media Source Extensions
+                    // Fallback for browsers that support HLS natively but not Media Source Extensions (like Safari on iOS)
                     videoElement.src = source;
                      player = new window.Plyr(videoElement, {
                         autoplay: autoPlay,
                         playsinline: true,
+                        pip: true,
                         fullscreen: {
                             enabled: true,
                             fallback: true,
                             iosNative: true,
                         },
-                        pip: true,
                      });
                 }
             } else {
