@@ -7,12 +7,14 @@ import { Separator } from '@/components/ui/separator';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPlay } from '@fortawesome/free-solid-svg-icons';
-import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
+import { faPlay, faSyncAlt } from '@fortawesome/free-solid-svg-icons';
+import { useUser, useFirestore, useDoc, useMemoFirebase, setDocumentNonBlocking } from '@/firebase';
 import { useRouter } from 'next/navigation';
 import Preloader from '@/components/preloader';
 import { doc } from 'firebase/firestore';
 import PlyrPlayer from '@/components/PlyrPlayer';
+import type { AppUser } from '@/firebase/auth/use-user';
+import { useToast } from '@/hooks/use-toast';
 
 interface HomePageSettings {
     workPagePlayer?: 'plyr' | 'clappr';
@@ -22,10 +24,14 @@ export default function TestPage() {
   const { user, isUserLoading } = useUser();
   const firestore = useFirestore();
   const router = useRouter();
+  const { toast } = useToast();
   
   const defaultUrl = 'https://res.cloudinary.com/da1srnoer/video/upload/sp_auto/v1761114792/u7h3zjwcglk5vzlxwiaq.m3u8';
   const [source, setSource] = useState(defaultUrl);
   const [inputValue, setInputValue] = useState(defaultUrl);
+
+  const typedUser = user as AppUser | null;
+  const isSuperAdmin = typedUser?.email === 'eljabbaryhicham@example.com';
 
   const settingsDocRef = useMemoFirebase(
     () => (firestore ? doc(firestore, 'homepage', 'settings') : null),
@@ -46,6 +52,19 @@ export default function TestPage() {
     setSource(inputValue);
   };
   
+  const handleSwitchPlayer = () => {
+    if (!settingsDocRef || !isSuperAdmin) return;
+    const newPlayer =
+      homeSettings?.workPagePlayer === 'plyr' ? 'clappr' : 'plyr';
+    setDocumentNonBlocking(settingsDocRef, { workPagePlayer: newPlayer }, { merge: true });
+    toast({
+      title: 'Player Switched',
+      description: `Default player is now ${
+        newPlayer.charAt(0).toUpperCase() + newPlayer.slice(1)
+      }.`,
+    });
+  };
+
   if (isUserLoading || !user) {
     return (
       <div className="flex h-full w-full items-center justify-center">
@@ -76,7 +95,23 @@ export default function TestPage() {
             </Button>
           </div>
         </div>
+        
+        {isSuperAdmin && (
+          <div className="mb-4">
+             <Button
+                variant="destructive"
+                size="sm"
+                onClick={handleSwitchPlayer}
+                title="Switch Default Player"
+              >
+                <FontAwesomeIcon icon={faSyncAlt} className="mr-2 h-4 w-4" />
+                Switch Player
+              </Button>
+          </div>
+        )}
+
         <Separator className="bg-white/10 w-full max-w-4xl mb-8" />
+
         <div className="w-full max-w-4xl aspect-video bg-black">
           {workPagePlayer === 'clappr' ? (
               <CdnClapprPlayer key={source} source={source} autoPlay={true} />
@@ -88,5 +123,3 @@ export default function TestPage() {
     </div>
   );
 }
-
-    
