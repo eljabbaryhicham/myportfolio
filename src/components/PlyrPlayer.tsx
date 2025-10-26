@@ -351,7 +351,7 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true, thu
           button.plyr__control[data-plyr="pip"]::before { content: '\\f2d0' !important; }
           button.plyr__control[data-plyr="fullscreen"]::before { content: '\\f065' !important; }
           button.plyr__control[data-plyr="fullscreen"].plyr__control--pressed::before { content: '\\f066' !important; }
-          button.plyr__control[data-plyr="settings"]::before { content: '\\f013' !important; }
+          button.plyr__control[data-plyr="settings"]::before { content: '\\f052' !important; }
           
           /* Expandable volume on desktop */
           @media (min-width: 768px) {
@@ -407,4 +407,3 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true, thu
 
 PlyrPlayer.displayName = 'PlyrPlayer';
 export default PlyrPlayer;
-
