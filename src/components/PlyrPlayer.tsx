@@ -294,7 +294,7 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true }: P
           .plyr__spinner-container {
              display: none !important;
            }
-          .plyr__progress input[type=range], .plyr__volume input[type=range] {
+          .plyr__progress input[type=range] {
               height: 2px !important;
           }
 
@@ -329,14 +329,21 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true }: P
             .plyr__controls .plyr__volume {
               display: flex;
               align-items: center;
-              width: auto;
+              width: 38px; /* Width of the button */
+              transition: width 0.3s ease;
+              overflow: hidden;
+            }
+
+            .plyr__controls .plyr__volume:hover {
+              width: 120px; /* Expanded width */
             }
 
             .plyr__controls .plyr__volume input[type=range] {
+              height: 2px !important;
               max-width: 0;
               opacity: 0;
               margin-left: 0;
-              transition: max-width 0.3s ease, opacity 0.3s ease, margin-left 0.3s ease;
+              transition: max-width 0.3s ease 0.1s, opacity 0.3s ease 0.1s;
             }
 
             .plyr__controls .plyr__volume:hover input[type=range] {
@@ -366,5 +373,3 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true }: P
 
 PlyrPlayer.displayName = 'PlyrPlayer';
 export default PlyrPlayer;
-
-    
