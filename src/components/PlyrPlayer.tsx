@@ -6,6 +6,9 @@ import 'plyr/dist/plyr.css';
 import { useIsMobile } from '@/hooks/use-mobile';
 import Preloader from './preloader';
 import { cn } from '@/lib/utils';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faSpinner } from '@fortawesome/free-solid-svg-icons';
+
 
 // Make Plyr and Hls available on the window object for type safety
 declare global {
@@ -64,6 +67,7 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true }: P
   const hlsRef = useRef<any>(null);
   const isMobile = useIsMobile();
   const [isLoading, setIsLoading] = useState(true);
+  const [isBuffering, setIsBuffering] = useState(false);
 
   // Expose the player instance via the passed ref
   useImperativeHandle(ref, () => playerRef.current, []);
@@ -73,10 +77,11 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true }: P
     let isMounted = true;
     const initPlayer = async () => {
         if (!containerRef.current) return;
+        setIsLoading(true);
 
         try {
             await loadScript('https://cdn.jsdelivr.net/npm/plyr@3.7.8/dist/plyr.min.js', 'plyr-script');
-            await waitForGlobal('Plyr'); // Wait for Plyr to be ready
+            await waitForGlobal('Plyr');
             
             if (!isMounted) return;
 
@@ -88,15 +93,25 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true }: P
             }
             containerRef.current.appendChild(videoElement);
             
-            videoElement.addEventListener('canplay', () => {
+             videoElement.addEventListener('canplay', () => {
               if (isMounted) setIsLoading(false);
             });
              videoElement.addEventListener('playing', () => {
-              if (isMounted) setIsLoading(false);
+              if (isMounted) {
+                setIsLoading(false);
+                setIsBuffering(false);
+              }
             });
              videoElement.addEventListener('waiting', () => {
-              if (isMounted) setIsLoading(true);
+              if (isMounted) setIsBuffering(true);
             });
+             videoElement.addEventListener('stalled', () => {
+              if (isMounted) setIsBuffering(true);
+            });
+            videoElement.addEventListener('loadstart', () => {
+              if(isMounted) setIsLoading(true);
+            });
+
 
             let player: any;
 
@@ -106,7 +121,7 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true }: P
 
             if (source.includes('.m3u8')) {
                 await loadScript('https://cdn.jsdelivr.net/npm/hls.js@latest', 'hls-script');
-                await waitForGlobal('Hls'); // Wait for HLS.js to be ready
+                await waitForGlobal('Hls');
 
                 if (!isMounted) return;
 
@@ -241,6 +256,8 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true }: P
     <div className="relative w-full h-full bg-black">
       <style>
         {`
+          @import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css");
+
           :root {
             --plyr-color-main: hsl(var(--destructive));
             --plyr-control-radius: 8px;
@@ -280,11 +297,38 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true }: P
           .plyr__spinner-container {
              display: none !important;
            }
+
+           /* Font Awesome Icon Overrides */
+          .plyr__controls .plyr__control svg {
+            display: none;
+          }
+          .plyr__controls .plyr__control::before {
+            font-family: "Font Awesome 6 Free";
+            font-weight: 900;
+            font-size: 18px;
+            line-height: 1;
+            -moz-osx-font-smoothing: grayscale;
+            -webkit-font-smoothing: antialiased;
+            display: inline-block;
+            font-style: normal;
+            font-variant: normal;
+            text-rendering: auto;
+          }
+          
+          .plyr__controls button[data-plyr="play"]::before { content: "\\f04b"; } /* fa-play */
+          .plyr__controls button[data-plyr="pause"]::before { content: "\\f04c"; } /* fa-pause */
+          .plyr__controls button[data-plyr="mute"]::before { content: "\\f028"; } /* fa-volume-high */
+          .plyr__controls button[data-plyr="unmute"]::before { content: "\\f6a9"; } /* fa-volume-xmark */
+          .plyr__controls button[data-plyr="pip"]::before { content: "\\f2d0"; } /* fa-clone */
+          .plyr__controls button[data-plyr="fullscreen"]::before { content: "\\f065"; } /* fa-expand */
+          .plyr__controls button[data-plyr="exit-fullscreen"]::before { content: "\\f066"; } /* fa-compress */
+          .plyr__controls button[data-plyr="settings"]::before { content: "\\f013"; } /* fa-gear */
+          .plyr--settings-active .plyr__controls button[data-plyr="settings"]::before { content: "\\f013"; } /* fa-gear, keep it the same */
         `}
       </style>
-        {isLoading && (
-            <div className="absolute inset-0 z-20 flex items-center justify-center">
-                <Preloader />
+        {(isLoading || isBuffering) && (
+            <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/20">
+                <FontAwesomeIcon icon={faSpinner} className="text-white h-10 w-10 animate-spin"/>
             </div>
         )}
       <div ref={containerRef} className={cn("relative w-full h-full", isLoading ? 'opacity-0' : 'opacity-100')}>
