@@ -44,10 +44,12 @@ export function AppNav() {
     rest: {
       scale: 1,
       rotate: 0,
+      transition: { type: 'spring', stiffness: 300, damping: 20 }
     },
     hover: {
       scale: 1.2,
       rotate: 15,
+      transition: { type: 'spring', stiffness: 300, damping: 15 }
     }
   };
 
@@ -61,8 +63,6 @@ export function AppNav() {
         variants={navButtonVariants}
         initial="rest"
         whileHover="hover"
-        animate="rest"
-        transition={{ type: 'spring', stiffness: 300, damping: 15 }}
       >
         <Link
           href={item.href}
