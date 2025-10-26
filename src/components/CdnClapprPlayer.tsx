@@ -1,10 +1,9 @@
-
 'use client';
 import { useEffect, useRef, useState } from 'react';
 import Preloader from './preloader';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
-import { useIsMobile } from '@/hooks/use-is-mobile';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 // Make Clappr and its plugins available on the window object for type safety
 declare global {
