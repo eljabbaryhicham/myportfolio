@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { useUser, useDoc, useFirestore, useMemoFirebase } from "@/firebase";
 import { motion } from "framer-motion";
-import React from "react";
+import React, { useState } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faHouse, faImage, faCircleInfo, faEnvelope, faShieldHalved, faVial } from "@fortawesome/free-solid-svg-icons";
@@ -29,6 +29,7 @@ export function AppNav() {
   const { user } = useUser();
   const firestore = useFirestore();
   const isMobile = useIsMobile();
+  const [hoveredItem, setHoveredItem] = useState<string | null>(null);
 
   const contactDocRef = useMemoFirebase(
     () => (firestore ? doc(firestore, 'contact', 'details') : null),
@@ -44,6 +45,8 @@ export function AppNav() {
     const isActive = item.href === "/" ? pathname === item.href : pathname.startsWith(item.href);
     const isAdminButton = item.label === 'Admin';
     const isTestButton = item.label === 'Test';
+
+    const isHovered = hoveredItem === item.href;
 
     const navButtonContent = (
       <Link
@@ -67,7 +70,10 @@ export function AppNav() {
            isActive && isTestButton && "shadow-[0_0_15px_#3b82f680,_0_0_20px_#3b82f660]",
         )}
       >
-        <motion.div whileHover={{ rotate: 15 }}>
+        <motion.div
+          animate={{ rotate: isHovered ? 15 : 0 }}
+          transition={{ type: 'spring', stiffness: 300, damping: 15 }}
+        >
           <FontAwesomeIcon icon={item.icon} className={cn("h-[50%] w-[50%]")} />
         </motion.div>
       </Link>
@@ -86,8 +92,9 @@ export function AppNav() {
         <Tooltip>
           <TooltipTrigger asChild>
             <motion.div
-                whileHover={{ scale: 1.2 }}
-                transition={{ type: 'spring', stiffness: 300, damping: 15 }}
+              onMouseEnter={() => setHoveredItem(item.href)}
+              animate={{ scale: isHovered ? 1.2 : 1 }}
+              transition={{ type: 'spring', stiffness: 300, damping: 15 }}
             >
               {navButtonContent}
             </motion.div>
@@ -122,13 +129,13 @@ export function AppNav() {
 
   return (
     <motion.aside
-      className="w-full md:w-auto flex-shrink-0 md:p-2"
+      className="w-full md:w-auto flex-shrink-0 p-2"
       initial={{ x: '100%' }}
       animate={{ x: 0 }}
       transition={{ type: 'spring', stiffness: 80, damping: 20 }}
     >
       <div className={cn(
-        "flex h-full flex-row md:flex-col items-center justify-between rounded-lg border border-border/50 px-2 py-2 md:p-4 glass-effect"
+        "flex h-full flex-row md:flex-col items-center justify-between rounded-lg border border-border/50 px-2 py-4 md:p-4 glass-effect"
         )}>
         <Link href="/" className="hidden md:block relative group mt-4">
             <div className="relative w-12 h-12 flex items-center justify-center">
@@ -138,7 +145,10 @@ export function AppNav() {
                 </div>
             </div>
         </Link>
-        <nav className="flex flex-row md:flex-col items-center justify-around md:justify-center w-full md:w-auto md:gap-10">
+        <nav 
+          className="flex flex-row md:flex-col items-center justify-around md:justify-center w-full md:w-auto md:gap-10"
+          onMouseLeave={() => setHoveredItem(null)}
+        >
            {accessibleNavItems.map(renderNavItem)}
         </nav>
         <div className="flex flex-col items-center gap-4">
