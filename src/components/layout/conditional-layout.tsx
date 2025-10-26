@@ -33,7 +33,7 @@ export function ConditionalLayout({ children }: { children: React.ReactNode }) {
   return (
     <AnimatePresence>
       <motion.div
-        className="flex h-full flex-col md:flex-row md:gap-2 md:p-2"
+        className="flex h-full flex-col md:flex-row md:p-2"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
