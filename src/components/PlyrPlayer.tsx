@@ -296,7 +296,7 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true }: P
              display: none !important;
            }
           .plyr__progress input[type=range], .plyr__volume input[type=range] {
-              height: 2px;
+              height: 2px !important;
           }
 
            /* Material Icons Override */
