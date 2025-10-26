@@ -177,29 +177,33 @@ const PortfolioGridItem = ({ item, onClick, onEditClick, isAdmin, isSuperAdmin, 
                 <FontAwesomeIcon icon={faPalette} className="h-1/2 w-1/2 text-white/80" />
             </div>
         )}
-         {isAdmin && isLoaded && (
-          <Button
-            variant="default"
-            size="sm"
-            className="absolute top-4 left-4 h-8 w-8 p-0 opacity-0 md:group-hover:opacity-100 transition-opacity"
-            onClick={handleEditClick}
-          >
-            <FontAwesomeIcon icon={faPencilAlt} className="h-4 w-4" />
-            <span className="sr-only">Edit Project</span>
-          </Button>
+        {(isAdmin || (isSuperAdmin && item.type === 'video')) && isLoaded && (
+          <div className="absolute top-4 left-4 flex gap-2 opacity-0 md:group-hover:opacity-100 transition-opacity">
+            {isAdmin && (
+              <Button
+                variant="default"
+                size="sm"
+                className="h-8 w-8 p-0"
+                onClick={handleEditClick}
+              >
+                <FontAwesomeIcon icon={faPencilAlt} className="h-4 w-4" />
+                <span className="sr-only">Edit Project</span>
+              </Button>
+            )}
+            {isSuperAdmin && item.type === 'video' && (
+              <Button
+                variant="destructive"
+                size="sm"
+                className="h-8 w-8 p-0"
+                onClick={handleSwitchPlayerClick}
+                title="Switch Default Player"
+              >
+                <FontAwesomeIcon icon={faSyncAlt} className="h-4 w-4" />
+                <span className="sr-only">Switch Player</span>
+              </Button>
+            )}
+          </div>
         )}
-        {isSuperAdmin && item.type === 'video' && isLoaded && (
-            <Button
-              variant="destructive"
-              size="sm"
-              className="absolute bottom-4 left-4 h-8 w-8 p-0 opacity-0 md:group-hover:opacity-100 transition-opacity"
-              onClick={handleSwitchPlayerClick}
-              title="Switch Default Player"
-            >
-              <FontAwesomeIcon icon={faSyncAlt} className="h-4 w-4" />
-              <span className="sr-only">Switch Player</span>
-            </Button>
-          )}
       </div>
     </div>
   );
