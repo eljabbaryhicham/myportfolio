@@ -83,7 +83,7 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true, thu
         const isVimeo = source.includes('vimeo.com');
 
         try {
-            await loadScript('https://cdn.plyr.io/3.8.3/plyr.min.js', 'plyr-script');
+            await loadScript('https://cdn.plyr.io/3.8.3/plyr.js', 'plyr-script');
             await waitForGlobal('Plyr');
             
             if (!isMounted) return;
@@ -378,5 +378,3 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true, thu
 
 PlyrPlayer.displayName = 'PlyrPlayer';
 export default PlyrPlayer;
-
-    
