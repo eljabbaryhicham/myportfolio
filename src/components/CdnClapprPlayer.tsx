@@ -148,7 +148,7 @@ export default function CdnClapprPlayer({ source, poster, autoPlay = true, water
     return () => {
       isMounted = false;
       const playerToDestroy = playerRef.current;
-      if (playerToDestroy && playerContainerRef.current && document.body.contains(playerContainerRef.current)) {
+      if (playerToDestroy) {
         try {
           playerToDestroy.destroy();
         } catch(e) {
