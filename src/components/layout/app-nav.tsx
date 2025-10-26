@@ -73,7 +73,7 @@ export function AppNav() {
             "group relative flex items-center justify-center rounded-full transition-all duration-300 aspect-square",
             isMobile ? 'h-[clamp(2.5rem,10vw,3rem)] w-[clamp(2.5rem,10vw,3rem)]' : "h-10 w-10",
             "text-white",
-            isSpecialButton && !isActive ? "bg-yellow-500/50" : "glass-effect",
+            isSpecialButton && !isActive ? "bg-yellow-400/80" : "glass-effect",
           )}
         >
           {isActive && (
