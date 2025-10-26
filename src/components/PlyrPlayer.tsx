@@ -295,6 +295,9 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true }: P
           .plyr__spinner-container {
              display: none !important;
            }
+          .plyr__progress input[type=range] {
+              height: 5px;
+          }
 
            /* Material Icons Override */
           .plyr__controls .plyr__control svg {
@@ -317,8 +320,8 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true }: P
             font-feature-settings: 'liga';
           }
           
-          .plyr__controls button[data-plyr="play"]::before { content: 'play_arrow'; }
-          .plyr__controls button[data-plyr="pause"]::before { content: 'pause'; }
+          .plyr__controls button[data-plyr="play"]::before { content: 'play_circle'; }
+          .plyr__controls button[data-plyr="pause"]::before { content: 'pause_circle'; }
           .plyr__controls button[data-plyr="mute"]::before { content: 'volume_up'; }
           .plyr__controls button.plyr__control--pressed[data-plyr="mute"]::before { content: 'volume_off'; }
           .plyr__controls button[data-plyr="pip"]::before { content: 'picture_in_picture_alt'; }
