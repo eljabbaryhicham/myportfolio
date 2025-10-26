@@ -23,7 +23,7 @@ export default function TestPage() {
   const firestore = useFirestore();
   const router = useRouter();
   
-  const defaultUrl = 'https://live-hls-abr-cdn.livepush.io/live/bigbuckbunnyclip/index.m3u8';
+  const defaultUrl = 'https://res.cloudinary.com/da1srnoer/video/upload/sp_auto/v1761114792/u7h3zjwcglk5vzlxwiaq.m3u8';
   const [source, setSource] = useState(defaultUrl);
   const [inputValue, setInputValue] = useState(defaultUrl);
 
