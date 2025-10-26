@@ -75,7 +75,6 @@ function SiteBackground() {
                         loop
                         muted
                         playsInline
-                        controls
                     >
                         <source src={mediaUrl} type="video/mp4" />
                     </video>
@@ -87,20 +86,7 @@ function SiteBackground() {
                       className="object-cover"
                       priority
                     />
-                ) : (
-                    // Fallback to default video
-                    <video
-                        key="default-video"
-                        className="w-full h-full object-cover"
-                        autoPlay
-                        loop
-                        muted
-                        playsInline
-                        controls
-                    >
-                        <source src="https://res.cloudinary.com/da1srnoer/video/upload/f_auto:video,q_auto/v1/wbmz1rkepnqeotpcx9tp" type="video/mp4" />
-                    </video>
-                )}
+                ) : null}
             </div>
             <div className={cn("absolute inset-0", isHomePage ? "bg-black/60" : "bg-black/70")}></div>
         </div>
