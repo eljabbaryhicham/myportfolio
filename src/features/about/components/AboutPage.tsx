@@ -1,3 +1,4 @@
+
 'use client';
 
 import { memo, useState, useEffect, useRef, useMemo } from 'react';
@@ -171,7 +172,7 @@ export default function AboutPage() {
                         </div>
                     </div>
                     <div className="md:w-1/2 flex flex-col justify-center">
-                       <h2 className="text-2xl md:text-3xl font-headline tracking-tight mb-6 text-center">What We Do?</h2>
+                       <h2 className="text-2xl md:text-3xl font-headline tracking-tight mb-6 text-center">What You'll Get?</h2>
                        <div className="grid grid-cols-6 grid-rows-2 gap-4 h-full">
                         {services.map((service, index) => {
                             let gridClasses = '';
