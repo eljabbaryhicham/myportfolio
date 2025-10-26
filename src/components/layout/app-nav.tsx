@@ -40,30 +40,14 @@ export function AppNav() {
 
   const accessibleNavItems = navItems.filter(item => item.public || user);
   
-  const navButtonVariants = {
-    rest: {
-      scale: 1,
-      rotate: 0,
-      transition: { type: 'spring', stiffness: 300, damping: 20 }
-    },
-    hover: {
-      scale: 1.2,
-      rotate: 15,
-      transition: { type: 'spring', stiffness: 300, damping: 15 }
-    }
-  };
-
   const renderNavItem = (item: (typeof navItems)[0]) => {
     const isActive = item.href === "/" ? pathname === item.href : pathname.startsWith(item.href);
     const isAdminButton = item.label === 'Admin';
     const isTestButton = item.label === 'Test';
 
     const navButtonContent = (
-       <motion.div
+       <div
         className="relative"
-        variants={navButtonVariants}
-        initial="rest"
-        whileHover="hover"
       >
         <Link
           href={item.href}
@@ -96,7 +80,7 @@ export function AppNav() {
             )}
             <FontAwesomeIcon icon={item.icon} className={cn("h-[50%] w-[50%] relative z-10")} />
         </Link>
-      </motion.div>
+      </div>
     );
 
     if (isMobile) {
