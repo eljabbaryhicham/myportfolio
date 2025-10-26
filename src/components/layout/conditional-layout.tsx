@@ -21,7 +21,7 @@ export function ConditionalLayout({ children }: { children: React.ReactNode }) {
           transition={{ duration: 0.5 }}
         >
           <main className="h-full w-full glass-effect rounded-lg border border-border/50 overflow-hidden">
-            <div className={cn("h-full w-full overflow-auto no-scrollbar")}>
+            <div className={cn("h-full w-full overflow-auto")}>
               {children}
             </div>
           </main>
@@ -41,7 +41,7 @@ export function ConditionalLayout({ children }: { children: React.ReactNode }) {
       >
         <main className="flex-1 w-full min-h-0 p-2 md:p-0 md:pr-2 flex flex-col">
             <div className="flex-1 w-full min-h-0 glass-effect rounded-lg border border-border/50 flex flex-col overflow-hidden">
-                <div className={cn("h-full w-full overflow-auto no-scrollbar")}>
+                <div className={cn("h-full w-full overflow-auto")}>
                     {children}
                 </div>
             </div>
