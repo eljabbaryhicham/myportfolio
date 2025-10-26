@@ -1,7 +1,7 @@
 
 'use client';
 
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, forwardRef, useImperativeHandle } from 'react';
 import Plyr from 'plyr-react';
 import 'plyr/dist/plyr.css';
 import Hls from 'hls.js';
@@ -13,9 +13,11 @@ interface PlyrPlayerProps {
   autoPlay?: boolean;
 }
 
-const PlyrPlayer = ({ source, poster, watermark, autoPlay = true }: PlyrPlayerProps) => {
-  const ref = useRef<any>(null);
+const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true }: PlyrPlayerProps, ref) => {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const plyrRef = useRef<any>(null);
+
+  useImperativeHandle(ref, () => plyrRef.current, []);
 
   useEffect(() => {
     const videoElement = videoRef.current;
@@ -35,11 +37,12 @@ const PlyrPlayer = ({ source, poster, watermark, autoPlay = true }: PlyrPlayerPr
     }
 
     // Effect to control playback based on autoPlay prop
-    if (ref.current?.player) {
+    const playerInstance = plyrRef.current?.plyr;
+    if (playerInstance) {
         if (autoPlay) {
-            ref.current.player.play();
+            playerInstance.play();
         } else {
-            ref.current.player.pause();
+            playerInstance.pause();
         }
     }
 
@@ -52,10 +55,17 @@ const PlyrPlayer = ({ source, poster, watermark, autoPlay = true }: PlyrPlayerPr
   }, [source, autoPlay]);
   
   const plyrOptions = {
-    controls: ['play-large', 'play', 'progress', 'current-time', 'mute', 'volume', 'fullscreen'],
+    controls: ['play-large', 'play', 'progress', 'current-time', 'mute', 'volume', 'settings', 'pip', 'fullscreen'],
     autoplay: autoPlay,
     playsinline: true,
     clickToPlay: true,
+    settings: ['quality', 'speed'],
+    fullscreen: {
+      enabled: true,
+      fallback: true,
+      iosNative: false,
+      container: 'body', // Use the body as the fullscreen container
+    },
   };
   
   const plyrSource = {
@@ -107,7 +117,7 @@ const PlyrPlayer = ({ source, poster, watermark, autoPlay = true }: PlyrPlayerPr
         `}
       </style>
       <div className="relative w-full h-full">
-        <Plyr ref={ref} source={plyrSource} options={plyrOptions} />
+        <Plyr ref={plyrRef} source={plyrSource} options={plyrOptions} />
         {watermark && (
             <div className="plyr__watermark">
                 <img src={watermark} alt="Watermark" />
@@ -116,6 +126,7 @@ const PlyrPlayer = ({ source, poster, watermark, autoPlay = true }: PlyrPlayerPr
       </div>
     </>
   );
-};
+});
 
+PlyrPlayer.displayName = 'PlyrPlayer';
 export default PlyrPlayer;

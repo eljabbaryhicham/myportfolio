@@ -1,3 +1,4 @@
+
 'use client';
 
 import Image from 'next/image';
@@ -44,6 +45,7 @@ const MemoizedPortfolioMedia = memo(({
   watermark,
   playerType,
   autoPlay,
+  plyrRef,
 }: {
   item: PortfolioItem;
   onFullscreenClick: (url: string) => void;
@@ -51,8 +53,8 @@ const MemoizedPortfolioMedia = memo(({
   watermark?: string;
   playerType?: 'plyr' | 'clappr';
   autoPlay: boolean;
+  plyrRef: React.Ref<any>;
 }) => {
-  const mediaUrl = item.sourceUrl || item.thumbnailUrl;
 
   useEffect(() => {
     onMediaLoaded();
@@ -61,19 +63,20 @@ const MemoizedPortfolioMedia = memo(({
   if (item.type === 'video') {
     return (
       <div className="relative aspect-video bg-black flex items-center justify-center w-full">
-        {mediaUrl && (
+        {item.sourceUrl && (
           playerType === 'clappr' ? (
               <MemoizedCdnClapprPlayer
                   key={item.id} // Force re-mount for Clappr
-                  source={mediaUrl} 
+                  source={item.sourceUrl} 
                   poster={item.useVideoFrameAsPoster ? undefined : item.thumbnailUrl}
                   watermark={watermark}
                   autoPlay={autoPlay}
               />
           ) : (
               <MemoizedPlyrPlayer
+                  ref={plyrRef}
                   key={item.id} // Force re-mount to ensure clean state
-                  source={mediaUrl} 
+                  source={item.sourceUrl} 
                   poster={item.useVideoFrameAsPoster ? undefined : item.thumbnailUrl}
                   watermark={watermark}
                   autoPlay={autoPlay}
@@ -87,7 +90,7 @@ const MemoizedPortfolioMedia = memo(({
   return (
       <div className="relative aspect-video bg-black flex justify-center items-center group w-full">
         <MemoizedImage
-          src={mediaUrl}
+          src={item.sourceUrl || item.thumbnailUrl}
           alt={item.title}
           fill
           className="object-contain"
@@ -97,7 +100,7 @@ const MemoizedPortfolioMedia = memo(({
             variant="ghost"
             size="icon"
             className="absolute inset-0 m-auto z-10 h-12 w-12 md:h-16 md:w-16 text-white bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity"
-            onClick={() => onFullscreenClick(mediaUrl)}
+            onClick={() => onFullscreenClick(item.sourceUrl || item.thumbnailUrl)}
           >
             <FontAwesomeIcon icon={faExpand} className="h-6 w-6 md:h-8 md:w-8" />
             <span className="sr-only">Fullscreen</span>
@@ -258,6 +261,7 @@ export default function WorkPage() {
   const inactivityTimer = useRef<NodeJS.Timeout | null>(null);
   const isMobile = useIsMobile();
   const gridRef = useRef<HTMLDivElement>(null);
+  const plyrRef = useRef<any>(null);
   
   const [isLibraryOpen, setIsLibraryOpen] = useState(false);
   const [librarySelectionConfig, setLibrarySelectionConfig] = useState<{ onSelect: (url: string, type: 'image' | 'video', filename: string) => void } | null>(null);
@@ -322,6 +326,13 @@ export default function WorkPage() {
   useEffect(() => {
     setVisibleItemsCount(prev => (prev === null ? null : itemsPerLoad -1));
   }, [filter, itemsPerLoad]);
+
+  useEffect(() => {
+    const player = plyrRef.current?.plyr;
+    if (isDialogOpen && player) {
+      player.pause();
+    }
+  }, [isDialogOpen]);
 
 
   const showMoreItems = () => {
@@ -712,6 +723,7 @@ export default function WorkPage() {
                                 watermark={logoUrl}
                                 playerType={workPagePlayer}
                                 autoPlay={!isDialogOpen}
+                                plyrRef={plyrRef}
                               />
                             )}
                           </div>
