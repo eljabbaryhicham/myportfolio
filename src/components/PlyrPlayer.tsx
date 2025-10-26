@@ -78,47 +78,75 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true }: P
         if (!containerRef.current) return;
         setIsLoading(true);
 
+        const isYoutube = source.includes('youtube.com') || source.includes('youtu.be');
+
         try {
             await loadScript('https://cdn.jsdelivr.net/npm/plyr@3.7.8/dist/plyr.min.js', 'plyr-script');
             await waitForGlobal('Plyr');
             
             if (!isMounted) return;
 
-            const videoElement = document.createElement('video');
-            videoElement.setAttribute('playsinline', '');
-            videoElement.setAttribute('controls', '');
-            if (poster) {
-                videoElement.setAttribute('poster', poster);
+            let element: HTMLVideoElement | HTMLDivElement;
+            if (isYoutube) {
+                element = document.createElement('div');
+                element.dataset.plyrProvider = 'youtube';
+                element.dataset.plyrEmbedId = source;
+            } else {
+                element = document.createElement('video');
+                element.setAttribute('playsinline', '');
+                element.setAttribute('controls', '');
+                if (poster) {
+                    element.setAttribute('poster', poster);
+                }
+                element.addEventListener('canplay', () => {
+                  if (isMounted) setIsLoading(false);
+                });
+                 element.addEventListener('playing', () => {
+                  if (isMounted) {
+                    setIsLoading(false);
+                    setIsBuffering(false);
+                  }
+                });
+                 element.addEventListener('waiting', () => {
+                  if (isMounted) setIsBuffering(true);
+                });
+                 element.addEventListener('stalled', () => {
+                  if (isMounted) setIsBuffering(true);
+                });
+                element.addEventListener('loadstart', () => {
+                  if(isMounted) setIsLoading(true);
+                });
             }
-            containerRef.current.appendChild(videoElement);
+
+            containerRef.current.appendChild(element);
             
-             videoElement.addEventListener('canplay', () => {
-              if (isMounted) setIsLoading(false);
-            });
-             videoElement.addEventListener('playing', () => {
-              if (isMounted) {
-                setIsLoading(false);
-                setIsBuffering(false);
-              }
-            });
-             videoElement.addEventListener('waiting', () => {
-              if (isMounted) setIsBuffering(true);
-            });
-             videoElement.addEventListener('stalled', () => {
-              if (isMounted) setIsBuffering(true);
-            });
-            videoElement.addEventListener('loadstart', () => {
-              if(isMounted) setIsLoading(true);
-            });
-
-
             let player: any;
 
             const mobileControls = ['play-large', 'play', 'progress', 'current-time', 'settings', 'pip', 'fullscreen'];
             const desktopControls = ['play-large', 'play', 'progress', 'current-time', 'mute', 'volume', 'settings', 'pip', 'fullscreen'];
             const controls = isMobile ? mobileControls : desktopControls;
 
-            if (source.includes('.m3u8')) {
+            const playerConfig = {
+                controls: controls,
+                autoplay: autoPlay,
+                playsinline: true,
+                clickToPlay: true,
+                settings: isYoutube ? ['quality', 'speed', 'loop'] : ['quality', 'speed'],
+                fullscreen: {
+                    enabled: true,
+                    fallback: true,
+                    iosNative: true,
+                },
+                pip: true,
+            };
+
+            if (isYoutube) {
+                player = new window.Plyr(element, playerConfig);
+                player.on('ready', () => {
+                    if (isMounted) setIsLoading(false);
+                });
+                if (isMounted) playerRef.current = player;
+            } else if (source.includes('.m3u8')) {
                 await loadScript('https://cdn.jsdelivr.net/npm/hls.js@latest', 'hls-script');
                 await waitForGlobal('Hls');
 
@@ -132,15 +160,10 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true }: P
                         if (!isMounted) return;
 
                         const availableQualities = hls.levels.map((l) => l.height);
-                        // Add 'Auto' quality option
                         availableQualities.unshift(0); // 0 will represent Auto
 
-                        player = new window.Plyr(videoElement, {
-                            controls: controls,
-                            autoplay: autoPlay,
-                            playsinline: true,
-                            clickToPlay: true,
-                            settings: ['quality', 'speed'],
+                        player = new window.Plyr(element, {
+                            ...playerConfig,
                             quality: {
                                 default: 0, // Default to Auto
                                 options: availableQualities,
@@ -156,51 +179,23 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true }: P
                                     0: 'Auto',
                                 },
                             },
-                            fullscreen: {
-                                enabled: true,
-                                fallback: true,
-                                iosNative: true,
-                            },
-                            pip: true,
                         });
                         
                         if(isMounted) playerRef.current = player;
                     });
                     
-                    hls.attachMedia(videoElement);
+                    hls.attachMedia(element as HTMLVideoElement);
                     hlsRef.current = hls;
 
                 } else {
-                    // Fallback for browsers that support HLS natively but not Media Source Extensions (like Safari on iOS)
-                    videoElement.src = source;
-                     player = new window.Plyr(videoElement, {
-                        controls: controls,
-                        autoplay: autoPlay,
-                        playsinline: true,
-                        pip: true,
-                        fullscreen: {
-                            enabled: true,
-                            fallback: true,
-                            iosNative: true,
-                        },
-                     });
+                    // Fallback for browsers that support HLS natively
+                    (element as HTMLVideoElement).src = source;
+                     player = new window.Plyr(element, playerConfig);
                      if (isMounted) playerRef.current = player;
                 }
             } else {
-                 player = new window.Plyr(videoElement, {
-                    controls: controls,
-                    autoplay: autoPlay,
-                    playsinline: true,
-                    clickToPlay: true,
-                    settings: ['speed'],
-                    fullscreen: {
-                        enabled: true,
-                        fallback: true,
-                        iosNative: true,
-                    },
-                    pip: true,
-                });
-                videoElement.src = source;
+                 player = new window.Plyr(element, playerConfig);
+                (element as HTMLVideoElement).src = source;
                 if (isMounted) playerRef.current = player;
             }
             
