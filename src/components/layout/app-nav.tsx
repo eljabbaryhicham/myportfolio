@@ -45,13 +45,13 @@ export function AppNav() {
     const isAdminButton = item.label === 'Admin';
     const isTestButton = item.label === 'Test';
 
-    const navButton = (
+    const navButtonContent = (
       <Link
         href={item.href}
         className={cn(
-          "group relative flex items-center justify-center rounded-full transition-all duration-300 hover:scale-110 aspect-square",
+          "group relative flex items-center justify-center rounded-full transition-all duration-300 aspect-square",
           isMobile ? 'h-[clamp(2.5rem,10vw,3rem)] w-[clamp(2.5rem,10vw,3rem)]' : "h-10 w-10",
-          "text-white", 
+          "text-white",
           isActive
             ? isTestButton 
               ? "bg-blue-500"
@@ -67,14 +67,16 @@ export function AppNav() {
            isActive && isTestButton && "shadow-[0_0_15px_#3b82f680,_0_0_20px_#3b82f660]",
         )}
       >
-        <FontAwesomeIcon icon={item.icon} className={cn("group-hover:animate-[icon-wobble_0.8s_ease-in-out_1] h-[50%] w-[50%]")} />
+        <motion.div whileHover={{ rotate: 15 }}>
+          <FontAwesomeIcon icon={item.icon} className={cn("h-[50%] w-[50%]")} />
+        </motion.div>
       </Link>
     );
 
     if (isMobile) {
       return (
         <div key={item.href} className="h-full flex flex-shrink-0 basis-auto items-center justify-center">
-            {navButton}
+            {navButtonContent}
         </div>
       );
     }
@@ -83,7 +85,12 @@ export function AppNav() {
       <TooltipProvider key={item.href}>
         <Tooltip>
           <TooltipTrigger asChild>
-            {navButton}
+            <motion.div
+                whileHover={{ scale: 1.2 }}
+                transition={{ type: 'spring', stiffness: 300, damping: 15 }}
+            >
+              {navButtonContent}
+            </motion.div>
           </TooltipTrigger>
           <TooltipContent side="right" className="glass-effect rounded-md">
             <p>{item.label}</p>
@@ -115,7 +122,7 @@ export function AppNav() {
 
   return (
     <motion.aside
-      className="w-full md:w-auto flex-shrink-0 p-2 md:p-0"
+      className="w-full md:w-auto flex-shrink-0 md:p-2"
       initial={{ x: '100%' }}
       animate={{ x: 0 }}
       transition={{ type: 'spring', stiffness: 80, damping: 20 }}

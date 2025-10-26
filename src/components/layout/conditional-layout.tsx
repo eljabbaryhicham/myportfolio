@@ -14,7 +14,7 @@ export function ConditionalLayout({ children }: { children: React.ReactNode }) {
     return (
       <AnimatePresence>
         <motion.div
-          className="h-full w-full p-2 md:p-4"
+          className="h-full w-full p-2"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -39,7 +39,7 @@ export function ConditionalLayout({ children }: { children: React.ReactNode }) {
         exit={{ opacity: 0 }}
         transition={{ duration: 0.5 }}
       >
-        <main className="flex-1 w-full min-h-0 p-2 md:p-0 flex flex-col">
+        <main className="flex-1 w-full min-h-0 md:p-2 flex flex-col">
             <div className="flex-1 w-full min-h-0 glass-effect rounded-lg border border-border/50 flex flex-col overflow-hidden">
                 <div className={cn("h-full w-full overflow-auto")}>
                     {children}
