@@ -99,7 +99,7 @@ export default function TestPage() {
         {isSuperAdmin && (
           <div className="mb-4">
              <Button
-                variant="destructive"
+                variant="default"
                 size="sm"
                 onClick={handleSwitchPlayer}
                 title="Switch Default Player"
