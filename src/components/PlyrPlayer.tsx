@@ -6,6 +6,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import Preloader from './preloader';
 import { cn } from '@/lib/utils';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faEject } from '@fortawesome/free-solid-svg-icons';
 
 
 // Make Plyr and Hls available on the window object for type safety
@@ -254,7 +255,8 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true, thu
         }
         
         const player = playerRef.current;
-        if (player && container && document.body.contains(container)) {
+        const currentContainer = containerRef.current;
+        if (player && currentContainer && document.body.contains(currentContainer)) {
             try {
                 player.destroy();
             } catch (e) {

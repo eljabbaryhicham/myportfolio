@@ -149,8 +149,10 @@ export default function CdnClapprPlayer({ source, poster, autoPlay = true, water
     return () => {
       isMounted = false;
       const player = playerRef.current;
-      if (player && container && document.body.contains(container)) {
+      const currentContainer = playerContainerRef.current;
+      if (player && currentContainer && document.body.contains(currentContainer)) {
         try {
+          player.stop();
           player.destroy();
         } catch (e) {
           console.error("Error destroying Clappr player:", e);
