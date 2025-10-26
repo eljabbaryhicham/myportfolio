@@ -1,29 +1,31 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, type RefObject } from 'react';
 import Lottie from 'lottie-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import animationData from '@/lib/arrow-animation.json';
 import { useIsMobile } from '@/hooks/use-mobile';
 
-export function ScrollIndicator() {
+interface ScrollIndicatorProps {
+    scrollRef: RefObject<HTMLDivElement>;
+}
+
+export function ScrollIndicator({ scrollRef }: ScrollIndicatorProps) {
   const [isVisible, setIsVisible] = useState(true);
   const isMobile = useIsMobile();
 
   useEffect(() => {
-    // If not mobile, don't show the indicator.
-    if (isMobile === false) {
-      if (isVisible) setIsVisible(false);
+    const scrollElement = scrollRef.current;
+    if (!scrollElement || isMobile === false) {
       return;
     }
 
     const handleScroll = () => {
-      // Check if user is at the bottom of the page.
+      // Check if user is at the bottom of the scrollable element.
       // A small buffer (e.g., 5px) can help with rounding issues.
-      const isAtBottom = 
-        window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 5;
-
-      // Hide if at bottom, show if not.
+      const isAtBottom =
+        scrollElement.scrollTop + scrollElement.clientHeight >= scrollElement.scrollHeight - 5;
+      
       if (isAtBottom && isVisible) {
         setIsVisible(false);
       } else if (!isAtBottom && !isVisible) {
@@ -31,15 +33,19 @@ export function ScrollIndicator() {
       }
     };
     
-    // Initial check in case the page is not scrollable at all.
-    handleScroll();
+    // Initial check in case the content is not scrollable.
+    if (scrollElement.scrollHeight <= scrollElement.clientHeight) {
+        setIsVisible(false);
+    } else {
+        handleScroll(); // Run once to set initial state correctly
+    }
 
-    window.addEventListener('scroll', handleScroll, { passive: true });
+    scrollElement.addEventListener('scroll', handleScroll, { passive: true });
 
     return () => {
-      window.removeEventListener('scroll', handleScroll);
+      scrollElement.removeEventListener('scroll', handleScroll);
     };
-  }, [isMobile, isVisible]); // Re-run when isMobile is determined or isVisible changes.
+  }, [isMobile, isVisible, scrollRef]);
 
   // Don't render anything on the server or if not mobile.
   if (isMobile !== true) {

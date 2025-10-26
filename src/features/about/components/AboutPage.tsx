@@ -1,4 +1,3 @@
-
 'use client';
 
 import { memo, useState, useEffect, useRef, useMemo } from 'react';
@@ -84,6 +83,7 @@ const itemVariants = {
 
 export default function AboutPage() {
   const firestore = useFirestore();
+  const scrollRef = useRef<HTMLDivElement>(null);
 
   const clientsQuery = useMemoFirebase(
     () => firestore ? query(collection(firestore, 'clients'), orderBy('order')) : null,
@@ -119,7 +119,7 @@ export default function AboutPage() {
 
   return (
     <div className="h-full w-full flex flex-col">
-      {!isLoading && <ScrollIndicator />}
+      {!isLoading && <ScrollIndicator scrollRef={scrollRef} />}
       <div className="p-8 flex-shrink-0">
         <div className="container mx-auto px-0">
             <div className="mb-8 text-center">
@@ -131,7 +131,7 @@ export default function AboutPage() {
         </div>
       </div>
       <Separator className="bg-white/10 flex-shrink-0" />
-      <div className="flex-1 min-h-0 overflow-y-auto">
+      <div ref={scrollRef} className="flex-1 min-h-0 overflow-y-auto no-scrollbar">
         <div className="p-8 pt-4 flex items-start justify-center">
           <div className="container mx-auto px-0 text-center">
             {isLoading ? (

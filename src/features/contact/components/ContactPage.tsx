@@ -1,4 +1,3 @@
-
 'use client';
 
 import Link from 'next/link';
@@ -17,6 +16,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import ContactForm from './ContactForm';
 import { ScrollIndicator } from '@/components/ScrollIndicator';
+import { useRef } from 'react';
 
 interface ContactInfo {
   avatarUrl?: string;
@@ -56,6 +56,7 @@ const itemVariants = {
 
 export default function ContactPage() {
   const firestore = useFirestore();
+  const scrollRef = useRef<HTMLDivElement>(null);
 
   const contactDocRef = useMemoFirebase(
     () => firestore ? doc(firestore, 'contact', 'details') : null,
@@ -78,7 +79,7 @@ export default function ContactPage() {
 
   return (
     <div className="h-full w-full flex flex-col">
-      {!isLoading && <ScrollIndicator />}
+      {!isLoading && <ScrollIndicator scrollRef={scrollRef} />}
       <div className="p-8 flex-shrink-0">
         <div className="container mx-auto px-0">
           <div className="mb-8 text-center">
@@ -90,7 +91,7 @@ export default function ContactPage() {
         </div>
       </div>
       <Separator className="bg-white/10 flex-shrink-0" />
-      <div className="flex-1 min-h-0 overflow-y-auto">
+      <div ref={scrollRef} className="flex-1 min-h-0 overflow-y-auto no-scrollbar">
         <div className="p-8 pt-4 flex items-start justify-center">
             <div className="container mx-auto px-0">
               {isLoading ? (
