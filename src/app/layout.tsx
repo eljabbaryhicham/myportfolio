@@ -63,8 +63,6 @@ function SiteBackground() {
     const mediaUrl = backgroundType === 'video' 
       ? backgroundProject?.sourceUrl
       : backgroundMedia?.url;
-      
-    const posterUrl = backgroundType === 'video' ? backgroundProject?.thumbnailUrl : undefined;
 
     return (
         <div className="absolute inset-0 -z-10 w-full h-full">
@@ -73,7 +71,6 @@ function SiteBackground() {
                     <video
                         key={mediaUrl}
                         className="w-full h-full object-cover"
-                        poster={posterUrl}
                         autoPlay
                         loop
                         muted
