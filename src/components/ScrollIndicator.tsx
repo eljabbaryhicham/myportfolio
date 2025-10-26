@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -12,20 +11,19 @@ export function ScrollIndicator() {
   const isMobile = useIsMobile();
 
   useEffect(() => {
-    // If it's not mobile (or check is still pending), don't run the scroll logic.
-    if (!isMobile) {
-      // Ensure it's hidden if we switch from mobile to desktop view.
+    // If not mobile, don't show the indicator.
+    if (isMobile === false) {
       if (isVisible) setIsVisible(false);
       return;
     }
 
     const handleScroll = () => {
-      // Check if user is at the bottom of the page
-      // Using document.body.offsetHeight is often more reliable than scrollHeight
-      const isAtBottom =
-        window.innerHeight + window.scrollY >= document.body.offsetHeight;
+      // Check if user is at the bottom of the page.
+      // A small buffer (e.g., 5px) can help with rounding issues.
+      const isAtBottom = 
+        window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 5;
 
-      // Hide if at bottom, show if not
+      // Hide if at bottom, show if not.
       if (isAtBottom && isVisible) {
         setIsVisible(false);
       } else if (!isAtBottom && !isVisible) {
@@ -33,19 +31,18 @@ export function ScrollIndicator() {
       }
     };
     
-    // Initial check in case the page is not scrollable at all
+    // Initial check in case the page is not scrollable at all.
     handleScroll();
 
     window.addEventListener('scroll', handleScroll, { passive: true });
 
-    // Cleanup listener on component unmount
     return () => {
       window.removeEventListener('scroll', handleScroll);
     };
-  }, [isMobile, isVisible]); // isVisible is needed to avoid stale state in the condition checks inside handleScroll
+  }, [isMobile, isVisible]); // Re-run when isMobile is determined or isVisible changes.
 
-  // Only render the component if on a mobile device
-  if (!isMobile) {
+  // Don't render anything on the server or if not mobile.
+  if (isMobile !== true) {
     return null;
   }
 
