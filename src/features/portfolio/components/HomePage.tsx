@@ -27,7 +27,7 @@ export default function HomePageContent() {
   const logoUrl = contactInfo?.logoUrl || "https://i.imgur.com/N9c8oEJ.png";
 
   return (
-    <div className="relative h-full w-full flex flex-col items-center justify-center gap-8 p-4">
+    <div className="relative h-full w-full flex flex-col items-center justify-center p-4">
       {isLoadingContact && (
           <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/50">
               <Preloader />

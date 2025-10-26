@@ -61,10 +61,22 @@ const MemoizedPortfolioMedia = memo(({
   }, [item.id, onMediaLoaded]);
 
   if (item.type === 'video') {
+    const isVimeo = item.sourceUrl?.includes('vimeo.com');
+    const isYoutube = item.sourceUrl?.includes('youtube.com') || item.sourceUrl?.includes('youtu.be');
+
     return (
       <div className="relative aspect-video bg-black flex items-center justify-center w-full">
         {item.sourceUrl && (
-          playerType === 'clappr' ? (
+          (isVimeo || isYoutube) ? (
+            <MemoizedPlyrPlayer
+                ref={plyrRef}
+                key={item.id}
+                source={item.sourceUrl}
+                poster={item.useVideoFrameAsPoster ? undefined : item.thumbnailUrl}
+                watermark={watermark}
+                autoPlay={autoPlay}
+            />
+          ) : playerType === 'clappr' ? (
               <MemoizedCdnClapprPlayer
                   key={item.id} // Force re-mount for Clappr
                   source={item.sourceUrl} 
@@ -561,7 +573,7 @@ export default function WorkPage() {
   return (
     <>
       <div className="h-full w-full flex flex-col">
-        <div className="p-[5%] pb-4">
+        <div className="p-8 pb-4">
           <div className="container mx-auto px-0">
             <div className="mb-8 text-center">
               <h1 className="text-3xl md:text-4xl font-headline tracking-tight">Our Work</h1>
@@ -588,7 +600,7 @@ export default function WorkPage() {
         <Separator className="bg-white/10" />
 
         <ScrollArea className="flex-1">
-          <div className="p-[5%] pt-4">
+          <div className="p-8 pt-4 flex items-center justify-center min-h-full">
             <div className="container mx-auto px-0">
               <AnimatePresence>
                 <motion.div
