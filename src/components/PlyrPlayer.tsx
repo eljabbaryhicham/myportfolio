@@ -76,17 +76,8 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true }: P
                         if (!isMounted) return;
 
                         const availableQualities = hls.levels.map((l) => l.height);
-                        
-                        const sourceConfig = {
-                            type: 'video',
-                            sources: [
-                                {
-                                    src: source,
-                                    type: 'application/x-mpegURL',
-                                    size: availableQualities.sort((a, b) => b - a)[0] // Default to highest quality
-                                },
-                            ],
-                        };
+                        // Add 'Auto' quality option
+                        availableQualities.unshift(0); // 0 will represent Auto
 
                         player = new window.Plyr(videoElement, {
                             controls: ['play-large', 'play', 'progress', 'current-time', 'mute', 'volume', 'settings', 'pip', 'fullscreen'],
@@ -95,15 +86,25 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true }: P
                             clickToPlay: true,
                             settings: ['quality', 'speed'],
                             quality: {
-                                default: availableQualities.sort((a, b) => b - a)[0],
+                                default: 0, // Default to Auto
                                 options: availableQualities,
                                 forced: true,
                                 onChange: (quality: number) => {
-                                    hls.levels.forEach((level, levelIndex) => {
-                                        if (level.height === quality) {
-                                            hls.currentLevel = levelIndex;
-                                        }
-                                    });
+                                    if (quality === 0) {
+                                        // Set to -1 for automatic level selection
+                                        hls.currentLevel = -1;
+                                    } else {
+                                        hls.levels.forEach((level, levelIndex) => {
+                                            if (level.height === quality) {
+                                                hls.currentLevel = levelIndex;
+                                            }
+                                        });
+                                    }
+                                },
+                            },
+                            i18n: {
+                                qualityLabel: {
+                                    0: 'Auto',
                                 },
                             },
                             fullscreen: {
