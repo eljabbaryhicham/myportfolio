@@ -87,7 +87,7 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true }: P
                 fullscreen: {
                     enabled: true,
                     fallback: true,
-                    iosNative: false,
+                    iosNative: true,
                 },
             });
 
@@ -124,7 +124,7 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true }: P
         playerRef.current = null;
         hlsRef.current = null;
     };
-  }, [source, poster]); // Only re-run if source or poster changes
+  }, [source, poster, autoPlay]); // Re-run if source or poster changes, also including autoplay to re-init if needed.
 
   // Effect for controlling playback based on autoPlay prop
   useEffect(() => {
