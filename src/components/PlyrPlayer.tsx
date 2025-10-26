@@ -154,7 +154,9 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true }: P
                 if (!isMounted) return;
 
                 if (window.Hls.isSupported()) {
-                    const hls = new window.Hls();
+                    const hls = new window.Hls({
+                      startLevel: -1 // -1 means automatic level selection
+                    });
                     hls.loadSource(source);
                     
                     hls.on(window.Hls.Events.MANIFEST_PARSED, (event: any, data: any) => {
@@ -368,5 +370,3 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true }: P
 
 PlyrPlayer.displayName = 'PlyrPlayer';
 export default PlyrPlayer;
-
-    
