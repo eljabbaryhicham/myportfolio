@@ -150,7 +150,7 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true, thu
                 autoplay: autoPlay,
                 playsinline: true,
                 clickToPlay: true,
-                settings: isYoutube || isVimeo ? ['quality', 'speed', 'loop'] : ['quality', 'speed'],
+                settings: ['quality', 'speed', 'loop'],
                 fullscreen: {
                     enabled: true,
                     fallback: true,
@@ -374,15 +374,18 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true, thu
               margin-left: 8px;
             }
           }
+          .plyr__poster + .plyr__controls {
+            z-index: 1; /* Ensure controls are above the poster */
+          }
         `}
       </style>
+      <div ref={containerRef} className={cn("relative w-full h-full", isLoading ? 'opacity-0' : 'opacity-100')}>
+         {/* Plyr will be injected here */}
         {(isLoading || isBuffering) && (
-            <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/20">
+            <div className="plyr__poster absolute inset-0 z-0 flex items-center justify-center bg-black/20 pointer-events-none">
                 <Preloader />
             </div>
         )}
-      <div ref={containerRef} className={cn("relative w-full h-full", isLoading ? 'opacity-0' : 'opacity-100')}>
-         {/* Plyr will be injected here */}
         {watermark && (
             <div className="plyr__watermark">
                 <img src={watermark} alt="Watermark" />
@@ -395,5 +398,3 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true, thu
 
 PlyrPlayer.displayName = 'PlyrPlayer';
 export default PlyrPlayer;
-
-    
