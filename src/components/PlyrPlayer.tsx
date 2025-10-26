@@ -124,7 +124,7 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true }: P
         playerRef.current = null;
         hlsRef.current = null;
     };
-  }, [source, poster, autoPlay]); // Re-run if source or poster changes, also including autoplay to re-init if needed.
+  }, [source, poster]); // Re-run only if source or poster changes.
 
   // Effect for controlling playback based on autoPlay prop
   useEffect(() => {
