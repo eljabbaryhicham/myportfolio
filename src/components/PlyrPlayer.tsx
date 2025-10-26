@@ -3,6 +3,7 @@
 
 import React, { useEffect, useRef, forwardRef, useImperativeHandle } from 'react';
 import 'plyr/dist/plyr.css';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 // Make Plyr and Hls available on the window object for type safety
 declare global {
@@ -40,6 +41,7 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true }: P
   const containerRef = useRef<HTMLDivElement>(null);
   const playerRef = useRef<any>(null);
   const hlsRef = useRef<any>(null);
+  const isMobile = useIsMobile();
 
   // Expose the player instance via the passed ref
   useImperativeHandle(ref, () => playerRef.current, []);
@@ -57,13 +59,16 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true }: P
             const videoElement = document.createElement('video');
             videoElement.setAttribute('playsinline', '');
             videoElement.setAttribute('controls', '');
-            videoElement.setAttribute('pip', 'true');
             if (poster) {
                 videoElement.setAttribute('poster', poster);
             }
             containerRef.current.appendChild(videoElement);
 
             let player: any;
+
+            const mobileControls = ['play-large', 'play', 'progress', 'current-time', 'settings', 'pip', 'fullscreen'];
+            const desktopControls = ['play-large', 'play', 'progress', 'current-time', 'mute', 'volume', 'settings', 'pip', 'fullscreen'];
+            const controls = isMobile ? mobileControls : desktopControls;
 
             if (source.includes('.m3u8')) {
                 await loadScript('https://cdn.jsdelivr.net/npm/hls.js@latest', 'hls-script');
@@ -81,7 +86,7 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true }: P
                         availableQualities.unshift(0); // 0 will represent Auto
 
                         player = new window.Plyr(videoElement, {
-                            controls: ['play-large', 'play', 'progress', 'current-time', 'mute', 'volume', 'settings', 'pip', 'fullscreen'],
+                            controls: controls,
                             autoplay: autoPlay,
                             playsinline: true,
                             clickToPlay: true,
@@ -91,15 +96,8 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true }: P
                                 options: availableQualities,
                                 forced: true,
                                 onChange: (quality: number) => {
-                                    if (quality === 0) {
-                                        // Set to -1 for automatic level selection
-                                        hls.currentLevel = -1;
-                                    } else {
-                                        hls.levels.forEach((level, levelIndex) => {
-                                            if (level.height === quality) {
-                                                hls.currentLevel = levelIndex;
-                                            }
-                                        });
+                                    if (hls) {
+                                      hls.currentLevel = quality === 0 ? -1 : hls.levels.findIndex(level => level.height === quality);
                                     }
                                 },
                             },
@@ -126,6 +124,7 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true }: P
                     // Fallback for browsers that support HLS natively but not Media Source Extensions (like Safari on iOS)
                     videoElement.src = source;
                      player = new window.Plyr(videoElement, {
+                        controls: controls,
                         autoplay: autoPlay,
                         playsinline: true,
                         pip: true,
@@ -135,10 +134,11 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true }: P
                             iosNative: true,
                         },
                      });
+                     if (isMounted) playerRef.current = player;
                 }
             } else {
                  player = new window.Plyr(videoElement, {
-                    controls: ['play-large', 'play', 'progress', 'current-time', 'mute', 'volume', 'settings', 'pip', 'fullscreen'],
+                    controls: controls,
                     autoplay: autoPlay,
                     playsinline: true,
                     clickToPlay: true,
@@ -151,12 +151,11 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true }: P
                     pip: true,
                 });
                 videoElement.src = source;
+                if (isMounted) playerRef.current = player;
             }
             
-            if (isMounted) {
-                if (player) playerRef.current = player;
-            } else {
-                if (player) player.destroy();
+            if (!isMounted && player) {
+              player.destroy();
             }
 
         } catch (error) {
@@ -187,7 +186,7 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true }: P
         hlsRef.current = null;
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [source, poster]); // Re-run only if source or poster changes.
+  }, [source, poster, isMobile]); // Re-run if source, poster, or isMobile changes
 
   // Effect for controlling playback based on autoPlay prop
   useEffect(() => {
