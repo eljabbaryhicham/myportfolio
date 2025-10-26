@@ -60,6 +60,7 @@ export function AppNav() {
 
     const navButtonContent = (
        <motion.div
+        className="relative"
         variants={navButtonVariants}
         initial="rest"
         whileHover="hover"
@@ -71,11 +72,7 @@ export function AppNav() {
             isMobile ? 'h-[clamp(2.5rem,10vw,3rem)] w-[clamp(2.5rem,10vw,3rem)]' : "h-10 w-10",
             "text-white",
             isActive
-              ? isTestButton 
-                ? "" // Active state for Test is handled by highlight
-                : isAdminButton
-                  ? "" // Active state for Admin is handled by highlight
-                  : "text-destructive-foreground"
+              ? "text-destructive-foreground"
               : isTestButton
                 ? "bg-blue-500/80 hover:bg-blue-500"
                 : isAdminButton
