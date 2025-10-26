@@ -724,7 +724,7 @@ export default function WorkPage() {
                                 onMediaLoaded={() => setIsDialogMediaLoading(false)}
                                 watermark={logoUrl}
                                 playerType={workPagePlayer}
-                                autoPlay={!isDialogOpen && !!selectedItem}
+                                autoPlay={!isDialogOpen}
                                 plyrRef={plyrRef}
                               />
                             )}
