@@ -2,9 +2,15 @@
 'use client';
 
 import React, { useEffect, useRef, forwardRef, useImperativeHandle } from 'react';
-import Plyr from 'plyr-react';
 import 'plyr/dist/plyr.css';
-import Hls from 'hls.js';
+
+// Make Plyr and Hls available on the window object for type safety
+declare global {
+    interface Window {
+        Plyr: any;
+        Hls: any;
+    }
+}
 
 interface PlyrPlayerProps {
   source: string;
@@ -13,66 +19,125 @@ interface PlyrPlayerProps {
   autoPlay?: boolean;
 }
 
+const loadScript = (src: string, id: string): Promise<void> => {
+    return new Promise((resolve, reject) => {
+        if (document.getElementById(id)) {
+            resolve();
+            return;
+        }
+        const script = document.createElement('script');
+        script.id = id;
+        script.src = src;
+        script.async = true;
+        script.onload = () => resolve();
+        script.onerror = (e) => reject(new Error(`Failed to load script: ${src}.`));
+        document.head.appendChild(script);
+    });
+};
+
+
 const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true }: PlyrPlayerProps, ref) => {
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const plyrRef = useRef<any>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const playerRef = useRef<any>(null);
+  const hlsRef = useRef<any>(null);
 
-  useImperativeHandle(ref, () => plyrRef.current, []);
+  // Expose the player instance via the passed ref
+  useImperativeHandle(ref, () => playerRef.current, []);
 
+  // Effect for setting up and tearing down the player
   useEffect(() => {
-    const videoElement = videoRef.current;
-    if (!videoElement) return;
+    let isMounted = true;
+    const initPlayer = async () => {
+        if (!containerRef.current) return;
 
-    let hls: Hls | null = null;
-    if (source.includes('.m3u8')) {
-        if (Hls.isSupported()) {
-            hls = new Hls();
-            hls.loadSource(source);
-            hls.attachMedia(videoElement);
-        } else if (videoElement.canPlayType('application/vnd.apple.mpegurl')) {
-            videoElement.src = source;
+        try {
+            // Load Plyr and HLS.js from CDN
+            await loadScript('https://cdn.jsdelivr.net/npm/plyr@3.7.8/dist/plyr.min.js', 'plyr-script');
+            if (!isMounted) return;
+
+            if (source.includes('.m3u8')) {
+                await loadScript('https://cdn.jsdelivr.net/npm/hls.js@latest', 'hls-script');
+                if (!isMounted) return;
+            }
+
+            const videoElement = document.createElement('video');
+            videoElement.setAttribute('playsinline', '');
+            videoElement.setAttribute('controls', '');
+            if (poster) {
+                videoElement.setAttribute('poster', poster);
+            }
+            containerRef.current.appendChild(videoElement);
+
+            // Setup HLS.js if needed
+            if (source.includes('.m3u8') && window.Hls.isSupported()) {
+                const hls = new window.Hls();
+                hls.loadSource(source);
+                hls.attachMedia(videoElement);
+                hlsRef.current = hls;
+            } else {
+                videoElement.src = source;
+            }
+            
+            const player = new window.Plyr(videoElement, {
+                controls: ['play-large', 'play', 'progress', 'current-time', 'mute', 'volume', 'settings', 'pip', 'fullscreen'],
+                autoplay: autoPlay,
+                playsinline: true,
+                clickToPlay: true,
+                settings: ['quality', 'speed'],
+                fullscreen: {
+                    enabled: true,
+                    fallback: true,
+                    iosNative: false,
+                    container: 'body', // Use the body as the fullscreen container
+                },
+            });
+
+            if (isMounted) {
+                playerRef.current = player;
+            } else {
+                player.destroy();
+            }
+
+        } catch (error) {
+            console.error("Error initializing Plyr player:", error);
         }
-    } else {
-        videoElement.src = source;
-    }
-
-    // Effect to control playback based on autoPlay prop
-    const playerInstance = plyrRef.current?.plyr;
-    if (playerInstance) {
-        if (autoPlay) {
-            playerInstance.play();
-        } else {
-            playerInstance.pause();
-        }
-    }
-
+    };
+    
+    initPlayer();
 
     return () => {
-      if (hls) {
-        hls.destroy();
-      }
+        isMounted = false;
+        const player = playerRef.current;
+        const hls = hlsRef.current;
+        if (hls) {
+            hls.destroy();
+        }
+        if (player) {
+            try {
+                player.destroy();
+            } catch (e) {
+                console.error("Error destroying Plyr player:", e);
+            }
+        }
+        if (containerRef.current) {
+            containerRef.current.innerHTML = '';
+        }
+        playerRef.current = null;
+        hlsRef.current = null;
     };
-  }, [source, autoPlay]);
-  
-  const plyrOptions = {
-    controls: ['play-large', 'play', 'progress', 'current-time', 'mute', 'volume', 'settings', 'pip', 'fullscreen'],
-    autoplay: autoPlay,
-    playsinline: true,
-    clickToPlay: true,
-    settings: ['quality', 'speed'],
-    fullscreen: {
-      enabled: true,
-      fallback: true,
-      iosNative: false,
-      container: 'body', // Use the body as the fullscreen container
-    },
-  };
-  
-  const plyrSource = {
-    type: 'video' as 'video',
-    poster: poster,
-    sources: [{ src: source, type: source.includes('.m3u8') ? 'application/x-mpegURL' : 'video/mp4' }],
-  };
+  }, [source, poster]); // Only re-run if source or poster changes
+
+  // Effect for controlling playback based on autoPlay prop
+  useEffect(() => {
+    const player = playerRef.current;
+    if (player) {
+      if (autoPlay) {
+        player.play();
+      } else {
+        player.pause();
+      }
+    }
+  }, [autoPlay]);
 
   return (
     <>
@@ -116,8 +181,8 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true }: P
           }
         `}
       </style>
-      <div className="relative w-full h-full">
-        <Plyr ref={plyrRef} source={plyrSource} options={plyrOptions} />
+      <div ref={containerRef} className="relative w-full h-full">
+         {/* Plyr will be injected here */}
         {watermark && (
             <div className="plyr__watermark">
                 <img src={watermark} alt="Watermark" />
