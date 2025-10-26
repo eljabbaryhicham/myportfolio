@@ -75,6 +75,7 @@ const MemoizedPortfolioMedia = memo(({
                 poster={item.useVideoFrameAsPoster ? undefined : item.thumbnailUrl}
                 watermark={watermark}
                 autoPlay={autoPlay}
+                thumbnailVttUrl={item.thumbnailVttUrl}
             />
           ) : playerType === 'clappr' ? (
               <MemoizedCdnClapprPlayer
@@ -92,6 +93,7 @@ const MemoizedPortfolioMedia = memo(({
                   poster={item.useVideoFrameAsPoster ? undefined : item.thumbnailUrl}
                   watermark={watermark}
                   autoPlay={autoPlay}
+                  thumbnailVttUrl={item.thumbnailVttUrl}
               />
           )
         )}
@@ -601,12 +603,12 @@ export default function WorkPage() {
 
         <ScrollArea className="flex-1">
           <div className="p-8 pt-4 flex items-center justify-center min-h-full">
-            <div className="container mx-auto px-0">
+            <div className="container mx-auto px-0 min-h-full flex items-center justify-center">
               <AnimatePresence>
                 <motion.div
                     key={filter}
                     ref={gridRef}
-                    className="grid gap-4"
+                    className="grid gap-4 w-full"
                     style={gridStyle}
                     variants={containerVariants}
                     initial="hidden"

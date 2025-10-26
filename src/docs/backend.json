@@ -28,6 +28,11 @@
           "format": "uri",
           "description": "URL of the project's thumbnail image for the grid view."
         },
+        "thumbnailVttUrl": {
+          "type": "string",
+          "format": "uri",
+          "description": "URL of the VTT file for video timeline thumbnails."
+        },
         "sourceUrl": {
           "type": "string",
           "format": "uri",

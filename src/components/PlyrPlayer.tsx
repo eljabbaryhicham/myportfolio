@@ -22,6 +22,7 @@ interface PlyrPlayerProps {
   poster?: string;
   watermark?: string;
   autoPlay?: boolean;
+  thumbnailVttUrl?: string;
 }
 
 const loadScript = (src: string, id: string): Promise<void> => {
@@ -60,7 +61,7 @@ const waitForGlobal = (name: string, timeout = 2000): Promise<void> => {
 };
 
 
-const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true }: PlyrPlayerProps, ref) => {
+const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true, thumbnailVttUrl }: PlyrPlayerProps, ref) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const playerRef = useRef<any>(null);
   const hlsRef = useRef<any>(null);
@@ -127,7 +128,7 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true }: P
             const desktopControls = ['play-large', 'play', 'progress', 'current-time', 'mute', 'volume', 'settings', 'pip', 'fullscreen'];
             const controls = isMobile ? mobileControls : desktopControls;
 
-            const playerConfig = {
+            const playerConfig: any = {
                 controls: controls,
                 autoplay: autoPlay,
                 playsinline: true,
@@ -140,6 +141,13 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true }: P
                 },
                 pip: true,
             };
+            
+            if (thumbnailVttUrl) {
+                playerConfig.previewThumbnails = {
+                    enabled: true,
+                    src: thumbnailVttUrl,
+                };
+            }
 
             if (isYoutube || isVimeo) {
                 player = new window.Plyr(element, playerConfig);
@@ -155,7 +163,7 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true }: P
 
                 if (window.Hls.isSupported()) {
                     const hls = new window.Hls({
-                      startLevel: -1 // -1 means automatic level selection
+                      startLevel: isMobile ? 0 : -1, // Start with lower quality on mobile
                     });
                     hls.loadSource(source);
                     
@@ -168,7 +176,7 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true }: P
                         player = new window.Plyr(element, {
                             ...playerConfig,
                             quality: {
-                                default: 0, // Default to Auto
+                                default: isMobile ? 480 : 0, // Default to a lower quality or Auto on mobile
                                 options: availableQualities,
                                 forced: true,
                                 onChange: (quality: number) => {

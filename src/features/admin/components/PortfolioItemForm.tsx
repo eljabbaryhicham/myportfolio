@@ -50,6 +50,7 @@ const formSchema = z.object({
   }),
   type: z.enum(['image', 'video']),
   thumbnailUrl: z.string().url({ message: 'Please enter a valid URL for the grid thumbnail.' }),
+  thumbnailVttUrl: z.string().url({ message: 'Please enter a valid VTT URL.' }).optional().or(z.literal('')),
   sourceUrl: z.string().url({ message: 'Please enter a valid URL for the main media.' }).optional().or(z.literal('')),
   details: z.string().optional(),
   thumbnailHint: z.string().optional(),
@@ -80,6 +81,7 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onCho
         description: '',
         type: 'image',
         thumbnailUrl: '',
+        thumbnailVttUrl: '',
         sourceUrl: '',
         thumbnailHint: '',
         featured: false,
@@ -103,6 +105,7 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onCho
             thumbnailHint: item.thumbnailHint || '',
             details: item.details || '',
             sourceUrl: item.sourceUrl || '',
+            thumbnailVttUrl: item.thumbnailVttUrl || '',
             order: item.order ?? 0,
             isVisible: item.isVisible ?? true,
             useVideoFrameAsPoster: item.useVideoFrameAsPoster || false,
@@ -111,6 +114,7 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onCho
             description: '',
             type: 'image' as 'image' | 'video',
             thumbnailUrl: '',
+            thumbnailVttUrl: '',
             sourceUrl: '',
             thumbnailHint: '',
             featured: false,
@@ -268,28 +272,44 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onCho
                           )}
                           />
                            {itemType === 'video' && (
-                            <FormField
+                            <>
+                              <FormField
+                                  control={form.control}
+                                  name="useVideoFrameAsPoster"
+                                  render={({ field }) => (
+                                      <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4 glass-effect">
+                                          <div className="space-y-0.5">
+                                              <FormLabel className="text-base">
+                                                  Use video frame as poster
+                                              </FormLabel>
+                                              <FormDescription>
+                                                  If enabled, the player generates a thumbnail from the video. If disabled, it uses the Grid Thumbnail URL.
+                                              </FormDescription>
+                                          </div>
+                                          <FormControl>
+                                              <Switch
+                                                  checked={field.value}
+                                                  onCheckedChange={field.onChange}
+                                              />
+                                          </FormControl>
+                                      </FormItem>
+                                  )}
+                              />
+                               <FormField
                                 control={form.control}
-                                name="useVideoFrameAsPoster"
+                                name="thumbnailVttUrl"
                                 render={({ field }) => (
-                                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4 glass-effect">
-                                        <div className="space-y-0.5">
-                                            <FormLabel className="text-base">
-                                                Use video frame as poster
-                                            </FormLabel>
-                                            <FormDescription>
-                                                If enabled, the player generates a thumbnail from the video. If disabled, it uses the Grid Thumbnail URL.
-                                            </FormDescription>
-                                        </div>
-                                        <FormControl>
-                                            <Switch
-                                                checked={field.value}
-                                                onCheckedChange={field.onChange}
-                                            />
-                                        </FormControl>
+                                    <FormItem>
+                                    <FormLabel>Preview Thumbnails VTT URL</FormLabel>
+                                    <FormControl>
+                                        <Input placeholder="https://example.com/thumbnails.vtt" {...field} />
+                                    </FormControl>
+                                    <FormDescription>The URL for the WebVTT file containing timeline preview thumbnails.</FormDescription>
+                                    <FormMessage />
                                     </FormItem>
                                 )}
-                            />
+                                />
+                            </>
                           )}
                           <FormField
                           control={form.control}

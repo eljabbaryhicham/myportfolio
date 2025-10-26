@@ -5,6 +5,7 @@ export interface PortfolioItem {
   title: string;
   description: string;
   thumbnailUrl: string;
+  thumbnailVttUrl?: string; // For video preview thumbnails
   thumbnailHint?: string;
   sourceUrl?: string; // For images or single-source videos
   details?: string;
