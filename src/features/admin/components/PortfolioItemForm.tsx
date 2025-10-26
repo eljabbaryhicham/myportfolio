@@ -97,11 +97,6 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onCho
       name: 'type',
     });
 
-    const sourceUrl = useWatch({
-      control: form.control,
-      name: 'sourceUrl',
-    });
-
     useEffect(() => {
       if (isOpen) {
         const defaultValues = item ? {
@@ -309,7 +304,7 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onCho
                                     <FormControl>
                                         <Input placeholder="https://example.com/thumbnails.vtt" {...field} />
                                     </FormControl>
-                                    <FormDescription>The URL for the WebVTT file containing timeline preview thumbnails.</FormDescription>
+                                    <FormDescription>The URL for the WebVTT file containing timeline preview thumbnails for this video.</FormDescription>
                                     <FormMessage />
                                     </FormItem>
                                 )}
