@@ -256,6 +256,14 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true }: P
     <div className="relative w-full h-full bg-black">
       <style>
         {`
+          @font-face {
+            font-family: 'Font Awesome 6 Free';
+            font-style: normal;
+            font-weight: 900;
+            font-display: block;
+            src: url("https://cdn.jsdelivr.net/gh/hung1001/font-awesome-pro@4cac180/webfonts/fa-solid-900.woff2") format("woff2");
+          }
+
           :root {
             --plyr-color-main: hsl(var(--destructive));
             --plyr-control-radius: 8px;
@@ -299,43 +307,28 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true }: P
               height: 2px !important;
           }
 
-           /* Material Icons Override */
+           /* Font Awesome Icons Override */
           .plyr__controls .plyr__control svg {
             display: none !important;
           }
           .plyr__controls .plyr__control::before {
-            font-family: 'Material Icons';
-            font-weight: normal;
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
             font-style: normal;
-            font-size: 24px;
+            font-size: 20px;
             line-height: 1;
-            letter-spacing: normal;
-            text-transform: none;
-            display: inline-block;
-            white-space: nowrap;
-            word-wrap: normal;
-            direction: ltr;
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
-            font-feature-settings: 'liga';
           }
           
-          /* Default state (paused): show play icon */
-          .plyr__controls button[data-plyr="play"]::before { 
-            content: 'play_circle';
-          }
-          /* When playing: show pause icon */
-          .plyr--playing .plyr__controls button[data-plyr="play"]::before {
-             content: 'pause_circle';
-          }
-
-          .plyr__controls button[data-plyr="mute"]::before { content: 'volume_up'; }
-          .plyr__controls button.plyr__control--pressed[data-plyr="mute"]::before { content: 'volume_off'; }
-          .plyr__controls button[data-plyr="pip"]::before { content: 'picture_in_picture_alt'; }
-          .plyr__controls button[data-plyr="fullscreen"]::before { content: 'fullscreen'; }
-          .plyr__controls button.plyr__control--pressed[data-plyr="fullscreen"]::before { content: 'fullscreen_exit'; }
-          .plyr__controls button[data-plyr="settings"]::before { content: 'settings'; }
-          .plyr--settings-active .plyr__controls button[data-plyr="settings"]::before { content: 'settings'; }
+          button[data-plyr="play"]::before { content: '\\f144'; } /* play */
+          .plyr--playing button[data-plyr="play"]::before { content: '\\f28b'; } /* pause */
+          button[data-plyr="mute"]::before { content: '\\f028'; } /* volume-high */
+          button[data-plyr="mute"][aria-pressed="true"]::before { content: '\\f6a9'; } /* volume-xmark */
+          button[data-plyr="pip"]::before { content: '\\f2d0'; } /* clone */
+          button[data-plyr="fullscreen"]::before { content: '\\f065'; } /* expand */
+          button[data-plyr="fullscreen"][aria-pressed="true"]::before { content: '\\f066'; } /* compress */
+          button[data-plyr="settings"]::before { content: '\\f013'; } /* gear */
         `}
       </style>
         {(isLoading || isBuffering) && (
@@ -357,3 +350,5 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true }: P
 
 PlyrPlayer.displayName = 'PlyrPlayer';
 export default PlyrPlayer;
+
+    
