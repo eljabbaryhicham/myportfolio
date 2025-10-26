@@ -29,7 +29,7 @@ export function ScrollIndicator({ scrollRef }: ScrollIndicatorProps) {
       }
       inactivityTimer.current = setTimeout(() => {
         setIsVisible(false);
-      }, 5000);
+      }, 3000);
     };
 
     const handleScroll = () => {
