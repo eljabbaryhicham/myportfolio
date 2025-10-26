@@ -165,7 +165,7 @@ const PortfolioGridItem = ({ item, onClick, onEditClick, isAdmin, isSuperAdmin, 
           onLoad={() => setIsLoaded(true)}
         />
         <div className={cn(
-          "absolute inset-0 bg-gradient-to-t from-black/70 to-transparent md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-2 md:p-4",
+          "absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-2 md:p-4",
           !isLoaded && "opacity-100 bg-none" // Show overlay content while loading
         )}>
           {isLoaded ? (
@@ -192,7 +192,7 @@ const PortfolioGridItem = ({ item, onClick, onEditClick, isAdmin, isSuperAdmin, 
             </div>
         )}
         {(isAdmin || (isSuperAdmin && item.type === 'video')) && isLoaded && (
-          <div className="absolute top-4 left-4 flex gap-2 opacity-0 md:group-hover:opacity-100 transition-opacity">
+          <div className="absolute top-4 left-4 flex gap-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
             {isAdmin && (
               <Button
                 variant="default"
