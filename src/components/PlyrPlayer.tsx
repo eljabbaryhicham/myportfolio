@@ -255,14 +255,6 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true }: P
     <div className="relative w-full h-full bg-black">
       <style>
         {`
-          @font-face {
-            font-family: 'Font Awesome 6 Free';
-            font-style: normal;
-            font-weight: 900;
-            font-display: block;
-            src: url("https://cdn.jsdelivr.net/gh/hung1001/font-awesome-pro@4cac180/webfonts/fa-solid-900.woff2") format("woff2");
-          }
-
           :root {
             --plyr-color-main: hsl(var(--destructive));
             --plyr-control-radius: 8px;
