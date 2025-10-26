@@ -127,6 +127,12 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true }: P
                      player = new window.Plyr(videoElement, {
                         autoplay: autoPlay,
                         playsinline: true,
+                        fullscreen: {
+                            enabled: true,
+                            fallback: true,
+                            iosNative: true,
+                        },
+                        pip: true,
                      });
                 }
             } else {
@@ -250,5 +256,3 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true }: P
 
 PlyrPlayer.displayName = 'PlyrPlayer';
 export default PlyrPlayer;
-
-    
