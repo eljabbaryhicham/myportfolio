@@ -79,6 +79,7 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true }: P
         setIsLoading(true);
 
         const isYoutube = source.includes('youtube.com') || source.includes('youtu.be');
+        const isVimeo = source.includes('vimeo.com');
 
         try {
             await loadScript('https://cdn.jsdelivr.net/npm/plyr@3.7.8/dist/plyr.min.js', 'plyr-script');
@@ -87,9 +88,9 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true }: P
             if (!isMounted) return;
 
             let element: HTMLVideoElement | HTMLDivElement;
-            if (isYoutube) {
+            if (isYoutube || isVimeo) {
                 element = document.createElement('div');
-                element.dataset.plyrProvider = 'youtube';
+                element.dataset.plyrProvider = isYoutube ? 'youtube' : 'vimeo';
                 element.dataset.plyrEmbedId = source;
             } else {
                 element = document.createElement('video');
@@ -131,7 +132,7 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true }: P
                 autoplay: autoPlay,
                 playsinline: true,
                 clickToPlay: true,
-                settings: isYoutube ? ['quality', 'speed', 'loop'] : ['quality', 'speed'],
+                settings: isYoutube || isVimeo ? ['quality', 'speed', 'loop'] : ['quality', 'speed'],
                 fullscreen: {
                     enabled: true,
                     fallback: true,
@@ -140,7 +141,7 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true }: P
                 pip: true,
             };
 
-            if (isYoutube) {
+            if (isYoutube || isVimeo) {
                 player = new window.Plyr(element, playerConfig);
                 player.on('ready', () => {
                     if (isMounted) setIsLoading(false);
@@ -289,7 +290,7 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true }: P
           .plyr__spinner-container {
              display: none !important;
            }
-          .plyr__progress input[type=range] {
+          .plyr__progress input[type="range"], .plyr__volume input[type=range] {
               height: 2px !important;
           }
 
@@ -334,7 +335,6 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true }: P
             }
 
             .plyr__controls .plyr__volume input[type=range] {
-              height: 2px !important;
               max-width: 0;
               opacity: 0;
               margin-left: 0;
@@ -368,3 +368,5 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true }: P
 
 PlyrPlayer.displayName = 'PlyrPlayer';
 export default PlyrPlayer;
+
+    
