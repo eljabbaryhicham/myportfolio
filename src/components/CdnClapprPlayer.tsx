@@ -49,9 +49,9 @@ export default function CdnClapprPlayer({ source, poster, autoPlay = true, water
 
   useEffect(() => {
     let isMounted = true;
-    const container = playerContainerRef.current;
 
     const initPlayer = async () => {
+      const container = playerContainerRef.current;
       if (!container) return;
       setIsLoading(true);
 
@@ -117,8 +117,12 @@ export default function CdnClapprPlayer({ source, poster, autoPlay = true, water
                 rates: [0.5, 1.0, 1.5, 2.0]
             },
             events: {
-              onReady: () => isMounted && setIsLoading(false),
-              onPlay: () => isMounted && setIsLoading(false),
+              onReady: () => {
+                if (isMounted) setIsLoading(false)
+              },
+              onPlay: () => {
+                if (isMounted) setIsLoading(false)
+              },
               onError: (e: any) => {
                 if (isMounted) {
                   setIsLoading(false);
@@ -150,10 +154,12 @@ export default function CdnClapprPlayer({ source, poster, autoPlay = true, water
       isMounted = false;
       const player = playerRef.current;
       const currentContainer = playerContainerRef.current;
+
       if (player && currentContainer && document.body.contains(currentContainer)) {
         try {
-          player.stop();
-          player.destroy();
+           player.stop();
+           currentContainer.innerHTML = '';
+           player.destroy();
         } catch (e) {
           console.error("Error destroying Clappr player:", e);
         }
@@ -166,14 +172,14 @@ export default function CdnClapprPlayer({ source, poster, autoPlay = true, water
   // Effect to control playback based on autoPlay prop
   useEffect(() => {
     const player = playerRef.current;
-    if (player) {
+    if (player && player.core) { // Ensure player core is available
       if (autoPlay) {
         player.play();
       } else {
         player.pause();
       }
     }
-  }, [autoPlay]);
+  }, [autoPlay, isLoading]); // Re-run when isLoading changes to ensure play is called after ready
 
   return (
     <div className="w-full h-full relative bg-black">

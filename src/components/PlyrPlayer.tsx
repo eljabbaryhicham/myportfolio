@@ -91,9 +91,9 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true, thu
   // Effect for setting up and tearing down the player
   useEffect(() => {
     let isMounted = true;
-    const container = containerRef.current;
     
     const initPlayer = async () => {
+        const container = containerRef.current;
         if (!container) return;
         setIsLoading(true);
 
@@ -107,6 +107,9 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true, thu
             
             if (!isMounted) return;
 
+            // Clear previous player if any
+            container.innerHTML = '';
+
             let element: HTMLVideoElement | HTMLDivElement;
             if (isYoutube || isVimeo) {
                 element = document.createElement('div');
@@ -119,22 +122,11 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true, thu
                 if (poster) {
                     element.setAttribute('poster', poster);
                 }
+                element.addEventListener('loadstart', () => {
+                  if (isMounted) setIsLoading(true);
+                });
                 element.addEventListener('canplay', () => {
                   if (isMounted) setIsLoading(false);
-                });
-                 element.addEventListener('playing', () => {
-                  if (isMounted) {
-                    setIsLoading(false);
-                  }
-                });
-                 element.addEventListener('waiting', () => {
-                  // Buffer event, do not set loading to true here
-                });
-                 element.addEventListener('stalled', () => {
-                  // Buffer event, do not set loading to true here
-                });
-                element.addEventListener('loadstart', () => {
-                  if(isMounted) setIsLoading(true);
                 });
             }
 
@@ -254,12 +246,13 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true, thu
         
         const player = playerRef.current;
         const currentContainer = containerRef.current;
+
         if (player && currentContainer && document.body.contains(currentContainer)) {
             try {
+                player.stop();
+                currentContainer.innerHTML = '';
                 player.destroy();
             } catch (e) {
-                // This catch block helps prevent the "removeChild" error
-                // by gracefully handling cases where the DOM node might already be gone.
                 console.error("Error destroying Plyr player:", e);
             }
         }
@@ -271,14 +264,14 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true, thu
   // Effect for controlling playback based on autoPlay prop
   useEffect(() => {
     const player = playerRef.current;
-    if (player) {
+    if (player && player.ready) {
       if (autoPlay) {
         player.play();
       } else {
         player.pause();
       }
     }
-  }, [autoPlay]);
+  }, [autoPlay, isLoading]); // Re-run when isLoading changes to ensure play is called after ready
 
   return (
     <div className="relative w-full h-full bg-black">
@@ -388,13 +381,13 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true, thu
           }
         `}
       </style>
-      <div ref={containerRef} className={cn("relative w-full h-full", isLoading ? 'opacity-0' : 'opacity-100')}>
+      {isLoading && (
+          <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/20 pointer-events-none">
+              <Preloader />
+          </div>
+      )}
+      <div ref={containerRef} className={cn("relative w-full h-full transition-opacity duration-300", isLoading ? 'opacity-0' : 'opacity-100')}>
          {/* Plyr will be injected here */}
-        {isLoading && (
-            <div className="plyr__poster absolute inset-0 z-0 flex items-center justify-center bg-black/20 pointer-events-none">
-                <Preloader />
-            </div>
-        )}
         {watermark && (
             <div className="plyr__watermark">
                 <img src={watermark} alt="Watermark" />
