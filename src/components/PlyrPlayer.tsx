@@ -395,3 +395,5 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true, thu
 
 PlyrPlayer.displayName = 'PlyrPlayer';
 export default PlyrPlayer;
+
+    
