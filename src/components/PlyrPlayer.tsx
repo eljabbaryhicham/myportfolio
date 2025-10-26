@@ -54,7 +54,10 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true }: P
 
         try {
             await loadScript('https://cdn.jsdelivr.net/npm/plyr@3.7.8/dist/plyr.min.js', 'plyr-script');
-            if (!isMounted) return;
+            if (!isMounted || !window.Plyr) {
+                console.error("Plyr script loaded but window.Plyr is not available.");
+                return;
+            }
 
             const videoElement = document.createElement('video');
             videoElement.setAttribute('playsinline', '');
@@ -72,7 +75,10 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true }: P
 
             if (source.includes('.m3u8')) {
                 await loadScript('https://cdn.jsdelivr.net/npm/hls.js@latest', 'hls-script');
-                if (!isMounted) return;
+                if (!isMounted || !window.Hls) {
+                    console.error("HLS.js script loaded but window.Hls is not available.");
+                    return;
+                }
 
                 if (window.Hls.isSupported()) {
                     const hls = new window.Hls();
