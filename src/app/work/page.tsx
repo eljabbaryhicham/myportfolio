@@ -309,7 +309,7 @@ export default function WorkPage() {
     }
 
     if (gridRef.current) {
-        const itemMinWidth = 250; // Corresponds to `minmax(250px, 1fr)`
+        const itemMinWidth = 300; // Corresponds to `minmax(300px, 1fr)`
         const gridGap = 16; // Corresponds to `gap-4`
 
         const gridWidth = gridRef.current.offsetWidth;
@@ -565,7 +565,7 @@ export default function WorkPage() {
   
   const gridStyle = isMobile 
     ? { gridTemplateColumns: 'repeat(2, 1fr)' } 
-    : { gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))' };
+    : { gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))' };
 
   const logoUrl = contactInfo?.logoUrl;
   const workPagePlayer = homeSettings?.workPagePlayer || 'clappr';
