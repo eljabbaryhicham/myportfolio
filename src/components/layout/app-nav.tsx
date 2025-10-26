@@ -70,14 +70,14 @@ export function AppNav() {
           className={cn(
             "group relative flex items-center justify-center rounded-full transition-all duration-300 aspect-square",
             isMobile ? 'h-[clamp(2.5rem,10vw,3rem)] w-[clamp(2.5rem,10vw,3rem)]' : "h-10 w-10",
-            "text-white",
+            "text-white glass-effect",
             isActive
               ? "text-destructive-foreground"
               : isTestButton
                 ? "bg-blue-500/80 hover:bg-blue-500"
                 : isAdminButton
                   ? "bg-green-500/80 hover:bg-green-500"
-                  : "text-foreground/70 glass-effect",
+                  : "text-foreground/70",
           )}
         >
             {isActive && (
