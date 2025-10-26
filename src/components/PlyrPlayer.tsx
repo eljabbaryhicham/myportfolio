@@ -89,6 +89,8 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true }: P
                     fallback: true,
                     iosNative: true,
                 },
+                // Add this to ensure PiP is enabled
+                pip: true,
             });
 
             if (isMounted) {
@@ -124,6 +126,7 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true }: P
         playerRef.current = null;
         hlsRef.current = null;
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [source, poster]); // Re-run only if source or poster changes.
 
   // Effect for controlling playback based on autoPlay prop
