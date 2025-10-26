@@ -301,7 +301,7 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true }: P
 
            /* Material Icons Override */
           .plyr__controls .plyr__control svg {
-            display: none;
+            display: none !important;
           }
           .plyr__controls .plyr__control::before {
             font-family: 'Material Icons';
