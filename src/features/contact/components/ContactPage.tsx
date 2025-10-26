@@ -93,7 +93,7 @@ export default function ContactPage() {
       </div>
       <Separator className="bg-white/10 flex-shrink-0" />
       <div ref={scrollRef} className="flex-1 min-h-0 overflow-y-auto no-scrollbar">
-        <div className="p-8 flex items-start justify-center">
+        <div className="p-8 flex items-center justify-center">
             <div className="container mx-auto px-0">
               {isLoading ? (
                 <div className="flex justify-center items-center h-64">
