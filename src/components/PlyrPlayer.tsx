@@ -51,14 +51,8 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true }: P
         if (!containerRef.current) return;
 
         try {
-            // Load Plyr and HLS.js from CDN
             await loadScript('https://cdn.jsdelivr.net/npm/plyr@3.7.8/dist/plyr.min.js', 'plyr-script');
             if (!isMounted) return;
-
-            if (source.includes('.m3u8')) {
-                await loadScript('https://cdn.jsdelivr.net/npm/hls.js@latest', 'hls-script');
-                if (!isMounted) return;
-            }
 
             const videoElement = document.createElement('video');
             videoElement.setAttribute('playsinline', '');
@@ -68,35 +62,93 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true }: P
             }
             containerRef.current.appendChild(videoElement);
 
-            // Setup HLS.js if needed
-            if (source.includes('.m3u8') && window.Hls.isSupported()) {
-                const hls = new window.Hls();
-                hls.loadSource(source);
-                hls.attachMedia(videoElement);
-                hlsRef.current = hls;
+            let player: any;
+
+            if (source.includes('.m3u8')) {
+                await loadScript('https://cdn.jsdelivr.net/npm/hls.js@latest', 'hls-script');
+                if (!isMounted) return;
+
+                if (window.Hls.isSupported()) {
+                    const hls = new window.Hls();
+                    hls.loadSource(source);
+                    
+                    hls.on(window.Hls.Events.MANIFEST_PARSED, (event: any, data: any) => {
+                        if (!isMounted) return;
+
+                        const availableQualities = hls.levels.map((l) => l.height);
+                        
+                        const sourceConfig = {
+                            type: 'video',
+                            sources: [
+                                {
+                                    src: source,
+                                    type: 'application/x-mpegURL',
+                                    size: availableQualities.sort((a, b) => b - a)[0] // Default to highest quality
+                                },
+                            ],
+                        };
+
+                        player = new window.Plyr(videoElement, {
+                            controls: ['play-large', 'play', 'progress', 'current-time', 'mute', 'volume', 'settings', 'pip', 'fullscreen'],
+                            autoplay: autoPlay,
+                            playsinline: true,
+                            clickToPlay: true,
+                            settings: ['quality', 'speed'],
+                            quality: {
+                                default: availableQualities.sort((a, b) => b - a)[0],
+                                options: availableQualities,
+                                forced: true,
+                                onChange: (quality: number) => {
+                                    hls.levels.forEach((level, levelIndex) => {
+                                        if (level.height === quality) {
+                                            hls.currentLevel = levelIndex;
+                                        }
+                                    });
+                                },
+                            },
+                            fullscreen: {
+                                enabled: true,
+                                fallback: true,
+                                iosNative: true,
+                            },
+                            pip: true,
+                        });
+                        
+                        if(isMounted) playerRef.current = player;
+                    });
+                    
+                    hls.attachMedia(videoElement);
+                    hlsRef.current = hls;
+
+                } else {
+                    // Fallback for browsers that support HLS natively but not Media Source Extensions
+                    videoElement.src = source;
+                     player = new window.Plyr(videoElement, {
+                        autoplay: autoPlay,
+                        playsinline: true,
+                     });
+                }
             } else {
+                 player = new window.Plyr(videoElement, {
+                    controls: ['play-large', 'play', 'progress', 'current-time', 'mute', 'volume', 'settings', 'pip', 'fullscreen'],
+                    autoplay: autoPlay,
+                    playsinline: true,
+                    clickToPlay: true,
+                    settings: ['speed'],
+                    fullscreen: {
+                        enabled: true,
+                        fallback: true,
+                        iosNative: true,
+                    },
+                    pip: true,
+                });
                 videoElement.src = source;
             }
             
-            const player = new window.Plyr(videoElement, {
-                controls: ['play-large', 'play', 'progress', 'current-time', 'mute', 'volume', 'settings', 'pip', 'fullscreen'],
-                autoplay: autoPlay,
-                playsinline: true,
-                clickToPlay: true,
-                settings: ['quality', 'speed'],
-                fullscreen: {
-                    enabled: true,
-                    fallback: true,
-                    iosNative: true,
-                },
-                // Add this to ensure PiP is enabled
-                pip: true,
-            });
-
             if (isMounted) {
-                playerRef.current = player;
+                if (player) playerRef.current = player;
             } else {
-                player.destroy();
+                if (player) player.destroy();
             }
 
         } catch (error) {
