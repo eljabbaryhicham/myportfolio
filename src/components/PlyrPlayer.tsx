@@ -83,7 +83,7 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true, thu
         const isVimeo = source.includes('vimeo.com');
 
         try {
-            await loadScript('https://cdn.jsdelivr.net/npm/plyr@3.7.8/dist/plyr.min.js', 'plyr-script');
+            await loadScript('https://cdn.plyr.io/3.8.3/plyr.min.js', 'plyr-script');
             await waitForGlobal('Plyr');
             
             if (!isMounted) return;
@@ -176,7 +176,7 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true, thu
                         player = new window.Plyr(element, {
                             ...playerConfig,
                             quality: {
-                                default: isMobile ? 480 : 0, // Default to a lower quality or Auto on mobile
+                                default: 0,
                                 options: availableQualities,
                                 forced: true,
                                 onChange: (quality: number) => {
