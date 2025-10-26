@@ -1,9 +1,11 @@
 
 'use client';
 
-import React, { useEffect, useRef, forwardRef, useImperativeHandle } from 'react';
+import React, { useEffect, useRef, forwardRef, useImperativeHandle, useState } from 'react';
 import 'plyr/dist/plyr.css';
 import { useIsMobile } from '@/hooks/use-mobile';
+import Preloader from './preloader';
+import { cn } from '@/lib/utils';
 
 // Make Plyr and Hls available on the window object for type safety
 declare global {
@@ -36,12 +38,32 @@ const loadScript = (src: string, id: string): Promise<void> => {
     });
 };
 
+const waitForGlobal = (name: string, timeout = 2000): Promise<void> => {
+    return new Promise((resolve, reject) => {
+        let waited = 0;
+        const interval = 100;
+
+        const check = () => {
+            if ((window as any)[name]) {
+                resolve();
+            } else if (waited >= timeout) {
+                reject(new Error(`Timed out waiting for global variable '${name}'`));
+            } else {
+                waited += interval;
+                setTimeout(check, interval);
+            }
+        };
+        check();
+    });
+};
+
 
 const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true }: PlyrPlayerProps, ref) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const playerRef = useRef<any>(null);
   const hlsRef = useRef<any>(null);
   const isMobile = useIsMobile();
+  const [isLoading, setIsLoading] = useState(true);
 
   // Expose the player instance via the passed ref
   useImperativeHandle(ref, () => playerRef.current, []);
@@ -54,10 +76,9 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true }: P
 
         try {
             await loadScript('https://cdn.jsdelivr.net/npm/plyr@3.7.8/dist/plyr.min.js', 'plyr-script');
-            if (!isMounted || !window.Plyr) {
-                console.error("Plyr script loaded but window.Plyr is not available.");
-                return;
-            }
+            await waitForGlobal('Plyr'); // Wait for Plyr to be ready
+            
+            if (!isMounted) return;
 
             const videoElement = document.createElement('video');
             videoElement.setAttribute('playsinline', '');
@@ -66,6 +87,16 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true }: P
                 videoElement.setAttribute('poster', poster);
             }
             containerRef.current.appendChild(videoElement);
+            
+            videoElement.addEventListener('canplay', () => {
+              if (isMounted) setIsLoading(false);
+            });
+             videoElement.addEventListener('playing', () => {
+              if (isMounted) setIsLoading(false);
+            });
+             videoElement.addEventListener('waiting', () => {
+              if (isMounted) setIsLoading(true);
+            });
 
             let player: any;
 
@@ -75,10 +106,9 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true }: P
 
             if (source.includes('.m3u8')) {
                 await loadScript('https://cdn.jsdelivr.net/npm/hls.js@latest', 'hls-script');
-                if (!isMounted || !window.Hls) {
-                    console.error("HLS.js script loaded but window.Hls is not available.");
-                    return;
-                }
+                await waitForGlobal('Hls'); // Wait for HLS.js to be ready
+
+                if (!isMounted) return;
 
                 if (window.Hls.isSupported()) {
                     const hls = new window.Hls();
@@ -166,6 +196,7 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true }: P
 
         } catch (error) {
             console.error("Error initializing Plyr player:", error);
+            if (isMounted) setIsLoading(false);
         }
     };
     
@@ -207,7 +238,7 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true }: P
   }, [autoPlay]);
 
   return (
-    <>
+    <div className="relative w-full h-full bg-black">
       <style>
         {`
           :root {
@@ -246,9 +277,17 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true }: P
           .plyr__watermark:hover {
             opacity: 0.5;
           }
+          .plyr__spinner-container {
+             display: none !important;
+           }
         `}
       </style>
-      <div ref={containerRef} className="relative w-full h-full">
+        {isLoading && (
+            <div className="absolute inset-0 z-20 flex items-center justify-center">
+                <Preloader />
+            </div>
+        )}
+      <div ref={containerRef} className={cn("relative w-full h-full", isLoading ? 'opacity-0' : 'opacity-100')}>
          {/* Plyr will be injected here */}
         {watermark && (
             <div className="plyr__watermark">
@@ -256,7 +295,7 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true }: P
             </div>
         )}
       </div>
-    </>
+    </div>
   );
 });
 
