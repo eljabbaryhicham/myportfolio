@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -11,40 +12,46 @@ export function ScrollIndicator() {
   const isMobile = useIsMobile();
 
   useEffect(() => {
-    // Only run this logic on mobile devices
-    if (isMobile) {
-      const handleScroll = () => {
-        // A small buffer to ensure it triggers slightly before the absolute end
-        const bottomOffset = 10; 
-        const isAtBottom = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - bottomOffset;
-        
-        // Hide if at the bottom, show if not
-        if (isAtBottom) {
-          setIsVisible(false);
-        } else {
-          setIsVisible(true);
-        }
-      };
-
-      // Initial check in case the page is not scrollable at all
-      handleScroll(); 
-
-      window.addEventListener('scroll', handleScroll, { passive: true });
-
-      // Cleanup listener on component unmount
-      return () => {
-        window.removeEventListener('scroll', handleScroll);
-      };
-    } else {
-      // If not mobile, always ensure it's not visible
-      setIsVisible(false);
+    // If it's not mobile (or check is still pending), don't run the scroll logic.
+    if (!isMobile) {
+      // Ensure it's hidden if we switch from mobile to desktop view.
+      if (isVisible) setIsVisible(false);
+      return;
     }
-  }, [isMobile]); // Rerun the effect if the mobile status changes
 
-  // We use AnimatePresence to smoothly fade the indicator in and out.
+    const handleScroll = () => {
+      // Check if user is at the bottom of the page
+      // Using document.body.offsetHeight is often more reliable than scrollHeight
+      const isAtBottom =
+        window.innerHeight + window.scrollY >= document.body.offsetHeight;
+
+      // Hide if at bottom, show if not
+      if (isAtBottom && isVisible) {
+        setIsVisible(false);
+      } else if (!isAtBottom && !isVisible) {
+        setIsVisible(true);
+      }
+    };
+    
+    // Initial check in case the page is not scrollable at all
+    handleScroll();
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+
+    // Cleanup listener on component unmount
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, [isMobile, isVisible]); // isVisible is needed to avoid stale state in the condition checks inside handleScroll
+
+  // Only render the component if on a mobile device
+  if (!isMobile) {
+    return null;
+  }
+
   return (
     <AnimatePresence>
-      {isVisible && isMobile && (
+      {isVisible && (
         <motion.div
           className="fixed bottom-16 right-4 z-50 pointer-events-none"
           initial={{ opacity: 0, x: 100 }}
