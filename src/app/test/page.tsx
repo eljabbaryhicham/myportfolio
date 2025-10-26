@@ -1,24 +1,39 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import CdnClapprPlayer from '@/components/CdnClapprPlayer';
 import { Separator } from '@/components/ui/separator';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlay } from '@fortawesome/free-solid-svg-icons';
-import { useUser } from '@/firebase';
+import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
 import { useRouter } from 'next/navigation';
 import Preloader from '@/components/preloader';
+import { doc } from 'firebase/firestore';
+import PlyrPlayer from '@/components/PlyrPlayer';
+
+interface HomePageSettings {
+    workPagePlayer?: 'plyr' | 'clappr';
+}
 
 export default function TestPage() {
   const { user, isUserLoading } = useUser();
+  const firestore = useFirestore();
   const router = useRouter();
   
   const defaultUrl = 'https://live-hls-abr-cdn.livepush.io/live/bigbuckbunnyclip/index.m3u8';
   const [source, setSource] = useState(defaultUrl);
   const [inputValue, setInputValue] = useState(defaultUrl);
+
+  const settingsDocRef = useMemoFirebase(
+    () => (firestore ? doc(firestore, 'homepage', 'settings') : null),
+    [firestore]
+  );
+  const { data: homeSettings } = useDoc<HomePageSettings>(settingsDocRef);
+  const workPagePlayer = homeSettings?.workPagePlayer || 'clappr';
+
 
   useEffect(() => {
     if (!isUserLoading && !user) {
@@ -45,7 +60,7 @@ export default function TestPage() {
         <div className="text-center mb-8 w-full max-w-4xl">
           <h1 className="text-3xl md:text-4xl font-headline tracking-tight">Streaming Test</h1>
           <p className="mt-2 text-base md:text-lg text-foreground/70">
-            Enter a video URL (DASH or HLS) below to test playback.
+            The active player is <span className='font-bold text-primary'>{workPagePlayer.charAt(0).toUpperCase() + workPagePlayer.slice(1)}</span>. Enter a video URL to test playback.
           </p>
           <div className="mt-4 flex w-full items-center space-x-2">
             <Input
@@ -63,7 +78,11 @@ export default function TestPage() {
         </div>
         <Separator className="bg-white/10 w-full max-w-4xl mb-8" />
         <div className="w-full max-w-4xl aspect-video bg-black">
-          <CdnClapprPlayer key={source} source={source} autoPlay={true} />
+          {workPagePlayer === 'clappr' ? (
+              <CdnClapprPlayer key={source} source={source} autoPlay={true} />
+          ) : (
+              <PlyrPlayer key={source} source={source} autoPlay={true} />
+          )}
         </div>
       </div>
     </div>
