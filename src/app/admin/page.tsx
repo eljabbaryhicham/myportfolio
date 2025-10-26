@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -186,8 +187,8 @@ function AdminPage() {
 
   return (
     <>
-      <div className="p-[5%] h-full flex flex-col">
-        <div className="container mx-auto px-0 flex flex-col h-full min-h-0">
+      <div className="flex h-full w-full items-center justify-center min-h-full p-4">
+        <div className="container mx-auto px-0 flex flex-col h-full min-h-0 w-full">
           <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4 text-center">
             <div className="text-center md:text-left">
               <h1 className="text-2xl md:text-4xl font-headline tracking-tight">Admin Panel</h1>
@@ -282,5 +283,7 @@ function AdminPage() {
 }
 
 export default AdminPage;
+
+    
 
     

@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -39,30 +40,34 @@ export default function TestPage() {
   }
 
   return (
-    <div className="h-full w-full flex flex-col items-center justify-center p-4 md:p-8">
-      <div className="text-center mb-8 w-full max-w-4xl">
-        <h1 className="text-3xl md:text-4xl font-headline tracking-tight">Streaming Test</h1>
-        <p className="mt-2 text-base md:text-lg text-foreground/70">
-          Enter a video URL (DASH or HLS) below to test playback.
-        </p>
-        <div className="mt-4 flex w-full items-center space-x-2">
-          <Input
-            type="url"
-            placeholder="Enter video URL..."
-            value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
-            className="text-base"
-          />
-          <Button type="submit" onClick={handleLoadClick}>
-            <FontAwesomeIcon icon={faPlay} className="mr-2 h-4 w-4" />
-            Load
-          </Button>
+    <div className="h-full w-full flex items-center justify-center p-4 md:p-8">
+      <div className='w-full flex flex-col items-center justify-center'>
+        <div className="text-center mb-8 w-full max-w-4xl">
+          <h1 className="text-3xl md:text-4xl font-headline tracking-tight">Streaming Test</h1>
+          <p className="mt-2 text-base md:text-lg text-foreground/70">
+            Enter a video URL (DASH or HLS) below to test playback.
+          </p>
+          <div className="mt-4 flex w-full items-center space-x-2">
+            <Input
+              type="url"
+              placeholder="Enter video URL..."
+              value={inputValue}
+              onChange={(e) => setInputValue(e.target.value)}
+              className="text-base"
+            />
+            <Button type="submit" onClick={handleLoadClick}>
+              <FontAwesomeIcon icon={faPlay} className="mr-2 h-4 w-4" />
+              Load
+            </Button>
+          </div>
         </div>
-      </div>
-      <Separator className="bg-white/10 w-full max-w-4xl mb-8" />
-      <div className="w-full max-w-4xl aspect-video bg-black">
-        <CdnClapprPlayer key={source} source={source} autoPlay={true} />
+        <Separator className="bg-white/10 w-full max-w-4xl mb-8" />
+        <div className="w-full max-w-4xl aspect-video bg-black">
+          <CdnClapprPlayer key={source} source={source} autoPlay={true} />
+        </div>
       </div>
     </div>
   );
 }
+
+    

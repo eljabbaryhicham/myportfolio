@@ -111,7 +111,7 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="flex h-full w-full items-center justify-center p-4">
+    <div className="flex h-full min-h-full w-full items-center justify-center p-4">
       <Card className="w-full md:w-1/2 glass-effect">
         <CardHeader>
             <CardTitle className="text-2xl font-headline">Create Admin Account</CardTitle>
@@ -176,3 +176,5 @@ export default function RegisterPage() {
     </div>
   );
 }
+
+    
