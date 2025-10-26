@@ -63,6 +63,7 @@ export function AppNav() {
     const isActive = item.href === "/" ? pathname === item.href : pathname.startsWith(item.href);
     const isAdminButton = item.label === 'Admin';
     const isTestButton = item.label === 'Test';
+    const isSpecialButton = isAdminButton || isTestButton;
 
     const navButtonContent = (
       <div className="relative">
@@ -71,8 +72,8 @@ export function AppNav() {
           className={cn(
             "group relative flex items-center justify-center rounded-full transition-all duration-300 aspect-square",
             isMobile ? 'h-[clamp(2.5rem,10vw,3rem)] w-[clamp(2.5rem,10vw,3rem)]' : "h-10 w-10",
-            "text-white glass-effect",
-            (isAdminButton || isTestButton) && !isActive && "bg-blue-900/50"
+            "text-white",
+            isSpecialButton ? (isActive ? "glass-effect" : "bg-blue-900/50") : "glass-effect",
           )}
         >
           {isActive && (
