@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from "next/link";
@@ -114,7 +115,7 @@ export function AppNav() {
 
   return (
     <motion.aside
-      className="w-full md:w-auto flex-shrink-0 p-0 md:p-2"
+      className="w-full md:w-auto flex-shrink-0 p-2 md:p-0"
       initial={{ x: '100%' }}
       animate={{ x: 0 }}
       transition={{ type: 'spring', stiffness: 80, damping: 20 }}
