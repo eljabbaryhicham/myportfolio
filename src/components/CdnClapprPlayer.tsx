@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import Preloader from './preloader';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
-import { useIsMobile } from '@/hooks/use-mobile';
+import { useIsMobile } from '@/hooks/use-is-mobile';
 
 // Make Clappr and its plugins available on the window object for type safety
 declare global {
@@ -147,15 +147,14 @@ export default function CdnClapprPlayer({ source, poster, autoPlay = true, water
 
     return () => {
       isMounted = false;
-      const playerToDestroy = playerRef.current;
-      if (playerToDestroy) {
+      if (playerRef.current) {
         try {
-          playerToDestroy.destroy();
-        } catch(e) {
-            console.error("Error destroying Clappr player:", e);
+          playerRef.current.destroy();
+        } catch (e) {
+          console.error("Error destroying Clappr player:", e);
         }
+        playerRef.current = null;
       }
-      playerRef.current = null;
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [source]); 

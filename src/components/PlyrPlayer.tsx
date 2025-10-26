@@ -2,7 +2,7 @@
 'use client';
 
 import React, { useEffect, useRef, forwardRef, useImperativeHandle, useState } from 'react';
-import { useIsMobile } from '@/hooks/use-mobile';
+import { useIsMobile } from '@/hooks/use-is-mobile';
 import Preloader from './preloader';
 import { cn } from '@/lib/utils';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -241,23 +241,22 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true, thu
 
     return () => {
         isMounted = false;
-        const player = playerRef.current;
-        const hls = hlsRef.current;
-        if (hls) {
-            hls.destroy();
+        if (hlsRef.current) {
+            hlsRef.current.destroy();
+            hlsRef.current = null;
         }
-        if (player) {
+        if (playerRef.current) {
             try {
-                player.destroy();
+                playerRef.current.destroy();
             } catch (e) {
                 console.error("Error destroying Plyr player:", e);
             }
+            playerRef.current = null;
         }
-        if (containerRef.current) {
+        // Check if containerRef.current is still part of the DOM before clearing
+        if (containerRef.current && document.body.contains(containerRef.current)) {
             containerRef.current.innerHTML = '';
         }
-        playerRef.current = null;
-        hlsRef.current = null;
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [source, poster, isMobile]); // Re-run if source, poster, or isMobile changes
