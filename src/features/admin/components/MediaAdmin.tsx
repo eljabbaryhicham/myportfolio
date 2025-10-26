@@ -9,7 +9,7 @@ import { useToast } from '@/hooks/use-toast';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import Image from 'next/image';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCloudUploadAlt, faCopy, faTrash, faFilm, faFileImage, faImages, faXmark, faPlus, faEye, faFolderOpen, faLink, faUniversity, faStar, faPhotoFilm } from '@fortawesome/free-solid-svg-icons';
+import { faCloudUploadAlt, faCopy, faTrash, faFilm, faFileImage, faImages, faXmark, faPlus, faEye, faFolderOpen, faLink, faUniversity, faStar, faPhotoFilm, faFileLines } from '@fortawesome/free-solid-svg-icons';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
@@ -59,7 +59,7 @@ const MediaFileCard = ({
   onSetLogo: (url: string) => void;
   onSetBackground: (file: MediaAsset) => void;
   isNewlyUploaded: boolean;
-  onMediaSelect: (url: string, type: 'image' | 'video', filename: string) => void;
+  onMediaSelect: (url: string, type: 'image' | 'video' | 'raw', filename: string) => void;
   isSelectionMode: boolean;
   canDelete: boolean;
   canEditContact: boolean;
@@ -71,7 +71,7 @@ const MediaFileCard = ({
   };
 
   const handleSelect = () => {
-    onMediaSelect(file.url, file.resource_type === 'video' ? 'video' : 'image', file.filename);
+    onMediaSelect(file.url, file.resource_type, file.filename);
   };
 
   const fileName = file.filename || file.public_id.split('/').pop() || 'Untitled';
@@ -88,12 +88,16 @@ const MediaFileCard = ({
         <div className="relative w-full h-full rounded-md overflow-hidden">
           {file.resource_type === 'image' ? (
             <Image src={file.url} alt={file.public_id} fill className="object-cover" />
-          ) : (
+          ) : file.resource_type === 'video' ? (
             <div className="w-full h-full bg-black flex items-center justify-center">
               <Image src={file.url.replace(/\.(webm|m3u8)$/, '.jpg').replace(/\.mp4$/, '.jpg')} alt={file.public_id} fill className="object-cover" />
               <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
                 <FontAwesomeIcon icon={faFilm} className="h-8 w-8 text-white/70" />
               </div>
+            </div>
+          ) : (
+            <div className="w-full h-full bg-gray-800 flex items-center justify-center">
+              <FontAwesomeIcon icon={faFileLines} className="h-8 w-8 text-white/70" />
             </div>
           )}
         </div>
@@ -112,9 +116,11 @@ const MediaFileCard = ({
                 <Button size="icon" variant="ghost" onClick={() => onPreview(file)} title="Preview" className="h-8 w-8 md:h-10 md:w-10 text-white glass-effect">
                   <FontAwesomeIcon icon={faEye} />
                 </Button>
-                <Button size="icon" variant="default" onClick={() => onMediaSelect(file.url, file.resource_type === 'video' ? 'video' : 'image', file.filename)} title="Create Project" className="h-8 w-8 md:h-10 md:w-10 glass-effect">
-                  <FontAwesomeIcon icon={faPlus} />
-                </Button>
+                {file.resource_type !== 'raw' && (
+                  <Button size="icon" variant="default" onClick={() => onMediaSelect(file.url, file.resource_type, file.filename)} title="Create Project" className="h-8 w-8 md:h-10 md:w-10 glass-effect">
+                    <FontAwesomeIcon icon={faPlus} />
+                  </Button>
+                )}
                 {canEditHome && (
                   <Button size="icon" variant="secondary" onClick={() => onSetBackground(file)} title="Set as Background" className="h-8 w-8 md:h-10 md:w-10 glass-effect">
                     <FontAwesomeIcon icon={faPhotoFilm} />
@@ -162,8 +168,8 @@ const MediaFileCard = ({
 
 interface StandaloneMediaAdminProps {
   isDialog?: false;
-  onMediaSelect: (url: string, type: 'image' | 'video', filename: string) => void;
-  onUploadComplete: (docId: string, resourceType: 'image' | 'video', libraryId: 'primary' | 'extented') => void;
+  onMediaSelect: (url: string, type: 'image' | 'video' | 'raw', filename: string) => void;
+  onUploadComplete: (docId: string, resourceType: 'image' | 'video' | 'raw', libraryId: 'primary' | 'extented') => void;
   onLibraryOpenRequest: () => void;
   isOpen?: never;
   onOpenChange?: never;
@@ -180,11 +186,11 @@ interface DialogMediaAdminProps {
   isDialog: true;
   isOpen: boolean;
   onOpenChange: (isOpen: boolean) => void;
-  onMediaSelect: (url: string, type: 'image' | 'video', filename: string) => void;
+  onMediaSelect: (url: string, type: 'image' | 'video' | 'raw', filename: string) => void;
   isSelectionMode: boolean;
   onSelectionComplete: () => void;
-  activeTab: 'images' | 'videos';
-  setActiveTab: (tab: 'images' | 'videos') => void;
+  activeTab: 'images' | 'videos' | 'files';
+  setActiveTab: (tab: 'images' | 'videos' | 'files') => void;
   activeLibrary: 'primary' | 'extented';
   setActiveLibrary: (library: 'primary' | 'extented') => void;
   newlyUploadedId: string | null;
@@ -233,9 +239,10 @@ export default function MediaAdmin(props: MediaAdminProps) {
   const mediaCollectionRef = useMemoFirebase(() => firestore ? query(collection(firestore, 'media'), orderBy('created_at', 'desc')) : null, [firestore]);
   const { data: mediaAssets, isLoading: isLoadingMedia } = useCollection<MediaAsset>(mediaCollectionRef);
 
-  const { imageAssets, videoAssets } = useMemo(() => {
+  const { imageAssets, videoAssets, otherAssets } = useMemo(() => {
     const images: MediaAsset[] = [];
     const videos: MediaAsset[] = [];
+    const others: MediaAsset[] = [];
     mediaAssets?.forEach(asset => {
         const libraryMatch = asset.libraryId === activeLibrary || (activeLibrary === 'primary' && !asset.libraryId);
         if (libraryMatch) {
@@ -243,10 +250,12 @@ export default function MediaAdmin(props: MediaAdminProps) {
                 images.push(asset);
             } else if (asset.resource_type === 'video') {
                 videos.push(asset);
+            } else {
+                others.push(asset);
             }
         }
     });
-    return { imageAssets: images, videoAssets: videos };
+    return { imageAssets: images, videoAssets: videos, otherAssets: others };
   }, [mediaAssets, activeLibrary]);
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
@@ -386,6 +395,7 @@ export default function MediaAdmin(props: MediaAdminProps) {
     accept: { 
       'image/*': ['.jpeg', '.jpg', '.png', '.gif', '.webp', '.svg'],
       'video/*': ['.mp4', '.mov', '.webm'],
+      'text/vtt': ['.vtt'],
     },
     disabled: !canUpload || isUploading,
   });
@@ -416,7 +426,7 @@ export default function MediaAdmin(props: MediaAdminProps) {
     toast({ title: "Copied!", description: "File URL copied to clipboard."});
   }
 
-  const handleMediaSelect = (url: string, type: 'image' | 'video', filename: string) => {
+  const handleMediaSelect = (url: string, type: 'image' | 'video' | 'raw', filename: string) => {
     if(props.isDialog) {
         props.onMediaSelect(url, type, filename);
         props.onSelectionComplete();
@@ -425,7 +435,7 @@ export default function MediaAdmin(props: MediaAdminProps) {
     }
   };
   
-  const handleUrlUploadComplete = (mediaId: string, resourceType: 'image' | 'video', libraryId: 'primary' | 'extented') => {
+  const handleUrlUploadComplete = (mediaId: string, resourceType: 'image' | 'video' | 'raw', libraryId: 'primary' | 'extented') => {
     if (!props.isDialog && props.onUploadComplete) {
       props.onUploadComplete(mediaId, resourceType, libraryId);
     }
@@ -490,7 +500,7 @@ export default function MediaAdmin(props: MediaAdminProps) {
   };
 
 
-  const renderLibrary = (assets: MediaAsset[], type: 'image' | 'video') => {
+  const renderLibrary = (assets: MediaAsset[], type: 'image' | 'video' | 'raw') => {
     if (isLoadingMedia) {
         return (
             <div className="flex justify-center items-center h-full min-h-[200px]">
@@ -500,10 +510,11 @@ export default function MediaAdmin(props: MediaAdminProps) {
     }
 
     if (!assets || assets.length === 0) {
+        const typeName = type === 'raw' ? 'files' : `${type}s`;
         return (
             <div className="text-center py-12 text-muted-foreground">
-                <FontAwesomeIcon icon={type === 'image' ? faFileImage : faFilm} className="h-12 w-12 mb-4" />
-                <p>No {type}s uploaded to this library yet.</p>
+                <FontAwesomeIcon icon={type === 'image' ? faFileImage : type === 'video' ? faFilm : faFileLines} className="h-12 w-12 mb-4" />
+                <p>No {typeName} uploaded to this library yet.</p>
             </div>
         );
     }
@@ -571,7 +582,7 @@ export default function MediaAdmin(props: MediaAdminProps) {
                 <TabsTrigger value="extented" className="py-2 px-4 text-base glass-effect data-[state=active]:bg-destructive">Library Extented</TabsTrigger>
             </TabsList>
         </Tabs>
-      <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'images' | 'videos')} className="flex-1 flex flex-col min-h-0">
+      <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'images' | 'videos' | 'files')} className="flex-1 flex flex-col min-h-0">
           <div className='px-4 pt-4'>
             <TabsList>
                 <TabsTrigger value="images" className="py-2 px-4 text-base glass-effect data-[state=active]:bg-destructive">
@@ -582,6 +593,10 @@ export default function MediaAdmin(props: MediaAdminProps) {
                     <FontAwesomeIcon icon={faFilm} className="mr-2" />
                     Videos
                 </TabsTrigger>
+                <TabsTrigger value="files" className="py-2 px-4 text-base glass-effect data-[state=active]:bg-destructive">
+                    <FontAwesomeIcon icon={faFileLines} className="mr-2" />
+                    Files
+                </TabsTrigger>
             </TabsList>
           </div>
           
@@ -591,6 +606,9 @@ export default function MediaAdmin(props: MediaAdminProps) {
               </TabsContent>
               <TabsContent value="videos" className="p-4 m-0">
                   {renderLibrary(videoAssets, 'video')}
+              </TabsContent>
+               <TabsContent value="files" className="p-4 m-0">
+                  {renderLibrary(otherAssets, 'raw')}
               </TabsContent>
           </ScrollArea>
       </Tabs>

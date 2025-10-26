@@ -122,7 +122,7 @@ const uploadMediaFromUrlFlow = ai.defineFlow(
         success: true,
         message: 'Media successfully added.',
         mediaId: docRef.id,
-        resource_type: uploadResult.resource_type === 'video' ? 'video' : uploadResult.resource_type === 'raw' ? 'raw' : 'image',
+        resource_type: uploadResult.resource_type as 'image' | 'video' | 'raw',
       };
     } catch (error: any) {
       console.error('Error in uploadMediaFromUrlFlow:', error);
