@@ -99,7 +99,7 @@ const MemoizedPortfolioMedia = memo(({
         <Button
             variant="ghost"
             size="icon"
-            className="absolute inset-0 m-auto z-10 h-12 w-12 md:h-16 md:w-16 text-white bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity"
+            className="absolute inset-0 m-auto z-10 h-12 w-12 md:h-16 md:w-16 text-white bg-black/50 opacity-0 md:group-hover:opacity-100 transition-opacity"
             onClick={() => onFullscreenClick(item.sourceUrl || item.thumbnailUrl)}
           >
             <FontAwesomeIcon icon={faExpand} className="h-6 w-6 md:h-8 md:w-8" />
@@ -128,7 +128,7 @@ const PortfolioGridItem = ({ item, onClick, onEditClick, isAdmin, isSuperAdmin, 
     <div className="p-[2px] rounded-lg glass-effect">
       <div
         className={cn(
-          'group relative cursor-pointer overflow-hidden rounded-md transition-all duration-300 hover:scale-[1.02] aspect-square',
+          'group relative cursor-pointer overflow-hidden rounded-md transition-all duration-300 md:hover:scale-[1.02] aspect-square',
           'bg-black/20'
         )}
         onClick={onClick}
@@ -144,14 +144,14 @@ const PortfolioGridItem = ({ item, onClick, onEditClick, isAdmin, isSuperAdmin, 
           fill
           className={cn(
             "object-cover transition-opacity duration-500",
-            isLoaded ? "opacity-100 group-hover:scale-105" : "opacity-0"
+            isLoaded ? "opacity-100 md:group-hover:scale-105" : "opacity-0"
           )}
           data-ai-hint={item.thumbnailHint}
           sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
           onLoad={() => setIsLoaded(true)}
         />
         <div className={cn(
-          "absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-2 md:p-4",
+          "absolute inset-0 bg-gradient-to-t from-black/70 to-transparent md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-2 md:p-4",
           !isLoaded && "opacity-100 bg-none" // Show overlay content while loading
         )}>
           {isLoaded ? (
@@ -181,7 +181,7 @@ const PortfolioGridItem = ({ item, onClick, onEditClick, isAdmin, isSuperAdmin, 
           <Button
             variant="default"
             size="sm"
-            className="absolute top-4 left-4 h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+            className="absolute top-4 left-4 h-8 w-8 p-0 opacity-0 md:group-hover:opacity-100 transition-opacity"
             onClick={handleEditClick}
           >
             <FontAwesomeIcon icon={faPencilAlt} className="h-4 w-4" />
@@ -192,7 +192,7 @@ const PortfolioGridItem = ({ item, onClick, onEditClick, isAdmin, isSuperAdmin, 
             <Button
               variant="destructive"
               size="sm"
-              className="absolute bottom-4 left-4 h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+              className="absolute bottom-4 left-4 h-8 w-8 p-0 opacity-0 md:group-hover:opacity-100 transition-opacity"
               onClick={handleSwitchPlayerClick}
               title="Switch Default Player"
             >
@@ -620,11 +620,11 @@ export default function WorkPage() {
                             className="p-[2px] rounded-lg glass-effect"
                           >
                             <div
-                              className="group relative cursor-pointer overflow-hidden rounded-md transition-all duration-300 hover:scale-[1.02] aspect-square bg-black/20"
+                              className="group relative cursor-pointer overflow-hidden rounded-md transition-all duration-300 md:hover:scale-[1.02] aspect-square bg-black/20"
                               onClick={showMoreItems}
                             >
-                              <div className="w-full h-full rounded-md flex flex-col items-center justify-center text-center p-4 transition-colors duration-300 group-hover:bg-black/40">
-                                <FontAwesomeIcon icon={faArrowDown} className="h-10 w-10 text-white/70 mb-4 transition-transform duration-300 group-hover:translate-y-1" />
+                              <div className="w-full h-full rounded-md flex flex-col items-center justify-center text-center p-4 transition-colors duration-300 md:group-hover:bg-black/40">
+                                <FontAwesomeIcon icon={faArrowDown} className="h-10 w-10 text-white/70 mb-4 transition-transform duration-300 md:group-hover:translate-y-1" />
                                 <h3 className="font-bold text-white text-lg">Show More</h3>
                                 <p className="text-white/60 text-sm">
                                   {filteredItems.length - itemsToShow.length} more projects
@@ -756,7 +756,7 @@ export default function WorkPage() {
             </AnimatePresence>
             </motion.div>
             <DialogClose className={cn(
-                "absolute right-4 top-4 z-30 h-8 w-8 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center ring-offset-background transition-opacity focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 hover:opacity-100",
+                "absolute right-4 top-4 z-30 h-8 w-8 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center ring-offset-background transition-opacity focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 md:hover:opacity-100",
                 isMobile ? "opacity-70" : (isCloseButtonVisible ? "opacity-70" : "opacity-0")
             )}>
               <FontAwesomeIcon icon={faXmark} className="h-4 w-4" />
@@ -783,7 +783,7 @@ export default function WorkPage() {
                     </div>
                 </ScrollArea>
                  <DialogClose className={cn(
-                    "absolute top-4 right-4 z-[101] h-8 w-8 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center hover:!opacity-100 ring-offset-background transition-opacity focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+                    "absolute top-4 right-4 z-[101] h-8 w-8 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center md:hover:!opacity-100 ring-offset-background transition-opacity focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
                     isMobile ? "opacity-70" : (isCloseButtonVisible ? "opacity-70" : "opacity-0")
                   )}>
                     <FontAwesomeIcon icon={faXmark} className="h-4 w-4" />
@@ -840,7 +840,7 @@ export default function WorkPage() {
             </div>
           )}
           <DialogClose className={cn(
-              "absolute top-4 right-4 z-[101] h-8 w-8 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center hover:!opacity-100 ring-offset-background transition-opacity focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+              "absolute top-4 right-4 z-[101] h-8 w-8 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center md:hover:!opacity-100 ring-offset-background transition-opacity focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
               isMobile ? "opacity-70" : (isCloseButtonVisible ? "opacity-70" : "opacity-0")
           )}>
               <FontAwesomeIcon icon={faXmark} className="h-4 w-4" />
