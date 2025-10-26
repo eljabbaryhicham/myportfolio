@@ -17,6 +17,7 @@ export function ScrollIndicator({ scrollRef }: ScrollIndicatorProps) {
   useEffect(() => {
     const scrollElement = scrollRef.current;
     if (!scrollElement || isMobile === false) {
+      setIsVisible(false);
       return;
     }
 
@@ -62,7 +63,7 @@ export function ScrollIndicator({ scrollRef }: ScrollIndicatorProps) {
           exit={{ opacity: 0, x: 100 }}
           transition={{ type: 'spring', stiffness: 100, damping: 20 }}
         >
-          <div className="w-24 h-24">
+          <div className="w-16 h-16">
             <Lottie animationData={animationData} loop={true} />
           </div>
         </motion.div>
