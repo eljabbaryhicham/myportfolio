@@ -72,20 +72,32 @@ export function AppNav() {
             "text-white",
             isActive
               ? isTestButton 
-                ? "bg-blue-500"
+                ? "" // Active state for Test is handled by highlight
                 : isAdminButton
-                  ? "bg-green-500"
-                  : "bg-destructive text-destructive-foreground shadow-[0_0_15px_hsl(var(--primary)/0.8),_0_0_20px_hsl(var(--primary)/0.6)]"
+                  ? "" // Active state for Admin is handled by highlight
+                  : "text-destructive-foreground"
               : isTestButton
                 ? "bg-blue-500/80 hover:bg-blue-500"
                 : isAdminButton
                   ? "bg-green-500/80 hover:bg-green-500"
                   : "text-foreground/70 glass-effect",
-            isActive && isAdminButton && "shadow-[0_0_15px_#22c55e80,_0_0_20px_#22c55e60]",
-            isActive && isTestButton && "shadow-[0_0_15px_#3b82f680,_0_0_20px_#3b82f660]",
           )}
         >
-            <FontAwesomeIcon icon={item.icon} className={cn("h-[50%] w-[50%]")} />
+            {isActive && (
+              <motion.div
+                layoutId="active-nav-highlight"
+                className={cn(
+                    "absolute inset-0 rounded-full",
+                    isTestButton
+                      ? "bg-blue-500 shadow-[0_0_15px_#3b82f680,_0_0_20px_#3b82f660]"
+                      : isAdminButton
+                        ? "bg-green-500 shadow-[0_0_15px_#22c55e80,_0_0_20px_#22c55e60]"
+                        : "bg-destructive shadow-[0_0_15px_hsl(var(--primary)/0.8),_0_0_20px_hsl(var(--primary)/0.6)]"
+                )}
+                transition={{ type: "spring", stiffness: 300, damping: 25 }}
+              />
+            )}
+            <FontAwesomeIcon icon={item.icon} className={cn("h-[50%] w-[50%] relative z-10")} />
         </Link>
       </motion.div>
     );
