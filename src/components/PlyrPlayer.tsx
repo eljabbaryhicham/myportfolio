@@ -324,22 +324,23 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true }: P
           button.plyr__control[data-plyr="fullscreen"].plyr__control--pressed::before { content: '\\f066' !important; }
           button.plyr__control[data-plyr="settings"]::before { content: '\\f013' !important; }
           
-           /* Expandable volume on desktop */
+          /* Expandable volume on desktop */
           @media (min-width: 768px) {
             .plyr__controls .plyr__volume {
               display: flex;
               align-items: center;
+              width: auto;
             }
 
             .plyr__controls .plyr__volume input[type=range] {
-              width: 0;
+              max-width: 0;
               opacity: 0;
               margin-left: 0;
-              transition: width 0.3s ease, opacity 0.3s ease, margin-left 0.3s ease;
+              transition: max-width 0.3s ease, opacity 0.3s ease, margin-left 0.3s ease;
             }
 
             .plyr__controls .plyr__volume:hover input[type=range] {
-              width: 80px;
+              max-width: 80px;
               opacity: 1;
               margin-left: 8px;
             }
@@ -365,3 +366,5 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true }: P
 
 PlyrPlayer.displayName = 'PlyrPlayer';
 export default PlyrPlayer;
+
+    
