@@ -298,28 +298,52 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true }: P
               height: 2px !important;
           }
 
-          /* Font Awesome Icons Override */
+          /* Hide original SVG icons */
           .plyr__controls .plyr__control svg {
             display: none !important;
           }
+          /* Style the ::before pseudo-element with Font Awesome */
           .plyr__controls .plyr__control::before {
-            font-family: 'Font Awesome 6 Free';
+            font-family: "Font Awesome 6 Free";
             font-weight: 900;
             font-style: normal;
             font-size: 20px;
             line-height: 1;
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
+            transform: translateY(1px); /* Vertical alignment */
           }
           
-          button[data-plyr="play"]::before { content: '\\f144' !important; }
-          .plyr--playing button[data-plyr="play"]::before { content: '\\f28b' !important; }
-          button[data-plyr="mute"]::before { content: '\\f028' !important; }
-          .plyr__control--pressed[data-plyr="mute"]::before { content: '\\f6a9' !important; }
-          button[data-plyr="pip"]::before { content: '\\f2d0' !important; }
-          button[data-plyr="fullscreen"]::before { content: '\\f065' !important; }
-          .plyr__control--pressed[data-plyr="fullscreen"]::before { content: '\\f066' !important; }
-          button[data-plyr="settings"]::before { content: '\\f013' !important; }
+          /* Icon mapping */
+          button.plyr__control[data-plyr="play"]::before { content: '\\f144' !important; }
+          .plyr--playing button.plyr__control[data-plyr="play"]::before { content: '\\f28b' !important; }
+          button.plyr__control[data-plyr="mute"]::before { content: '\\f028' !important; }
+          button.plyr__control[data-plyr="mute"].plyr__control--pressed::before { content: '\\f6a9' !important; }
+          button.plyr__control[data-plyr="pip"]::before { content: '\\f2d0' !important; }
+          button.plyr__control[data-plyr="fullscreen"]::before { content: '\\f065' !important; }
+          button.plyr__control[data-plyr="fullscreen"].plyr__control--pressed::before { content: '\\f066' !important; }
+          button.plyr__control[data-plyr="settings"]::before { content: '\\f013' !important; }
+          
+           /* Expandable volume on desktop */
+          @media (min-width: 768px) {
+            .plyr__controls .plyr__volume {
+              display: flex;
+              align-items: center;
+            }
+
+            .plyr__controls .plyr__volume input[type=range] {
+              width: 0;
+              opacity: 0;
+              margin-left: 0;
+              transition: width 0.3s ease, opacity 0.3s ease, margin-left 0.3s ease;
+            }
+
+            .plyr__controls .plyr__volume:hover input[type=range] {
+              width: 80px;
+              opacity: 1;
+              margin-left: 8px;
+            }
+          }
         `}
       </style>
         {(isLoading || isBuffering) && (
