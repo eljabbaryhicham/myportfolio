@@ -84,7 +84,6 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true, thu
   const hlsRef = useRef<any>(null);
   const isMobile = useIsMobile();
   const [isLoading, setIsLoading] = useState(true);
-  const [isBuffering, setIsBuffering] = useState(false);
 
   // Expose the player instance via the passed ref
   useImperativeHandle(ref, () => playerRef.current, []);
@@ -126,14 +125,13 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true, thu
                  element.addEventListener('playing', () => {
                   if (isMounted) {
                     setIsLoading(false);
-                    setIsBuffering(false);
                   }
                 });
                  element.addEventListener('waiting', () => {
-                  if (isMounted) setIsBuffering(true);
+                  // Buffer event, do not set loading to true here
                 });
                  element.addEventListener('stalled', () => {
-                  if (isMounted) setIsBuffering(true);
+                  // Buffer event, do not set loading to true here
                 });
                 element.addEventListener('loadstart', () => {
                   if(isMounted) setIsLoading(true);
@@ -392,7 +390,7 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true, thu
       </style>
       <div ref={containerRef} className={cn("relative w-full h-full", isLoading ? 'opacity-0' : 'opacity-100')}>
          {/* Plyr will be injected here */}
-        {(isLoading || isBuffering) && (
+        {isLoading && (
             <div className="plyr__poster absolute inset-0 z-0 flex items-center justify-center bg-black/20 pointer-events-none">
                 <Preloader />
             </div>

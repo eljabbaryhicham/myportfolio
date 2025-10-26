@@ -190,4 +190,3 @@ export default function CdnClapprPlayer({ source, poster, autoPlay = true, water
     </div>
   );
 }
-
