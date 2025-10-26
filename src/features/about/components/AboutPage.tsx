@@ -133,7 +133,7 @@ export default function AboutPage() {
       </div>
       <Separator className="bg-white/10 flex-shrink-0" />
       <div ref={scrollRef} className="flex-1 min-h-0 overflow-y-auto no-scrollbar">
-        <div className="p-8 pt-4 flex items-start justify-center">
+        <div className="p-8 flex items-start justify-center">
           <div className="container mx-auto px-0 text-center">
             {isLoading ? (
               <div className="flex justify-center items-center h-full min-h-[50vh]">
