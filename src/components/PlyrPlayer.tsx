@@ -7,7 +7,6 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import Preloader from './preloader';
 import { cn } from '@/lib/utils';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSpinner } from '@fortawesome/free-solid-svg-icons';
 
 
 // Make Plyr and Hls available on the window object for type safety
@@ -333,7 +332,7 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true }: P
       </style>
         {(isLoading || isBuffering) && (
             <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/20">
-                <FontAwesomeIcon icon={faSpinner} className="text-white h-10 w-10 animate-spin"/>
+                <Preloader />
             </div>
         )}
       <div ref={containerRef} className={cn("relative w-full h-full", isLoading ? 'opacity-0' : 'opacity-100')}>
@@ -350,5 +349,3 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true }: P
 
 PlyrPlayer.displayName = 'PlyrPlayer';
 export default PlyrPlayer;
-
-    
