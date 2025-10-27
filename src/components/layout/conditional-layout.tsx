@@ -12,14 +12,11 @@ export function ConditionalLayout({ children }: { children: React.ReactNode }) {
   const isHomePage = pathname === '/';
   const isMobile = useIsMobile();
 
-  // Apply GPU acceleration class only on Android devices
-  const forceGpuClass = isMobile && /Android/i.test(navigator.userAgent) ? 'force-gpu' : '';
-
   if (isHomePage) {
     return (
       <AnimatePresence>
         <motion.div
-          className={cn("h-full w-full p-2", forceGpuClass)}
+          className={cn("h-full w-full p-2", "force-gpu")}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -38,7 +35,7 @@ export function ConditionalLayout({ children }: { children: React.ReactNode }) {
   return (
     <AnimatePresence>
       <motion.div
-        className={cn("flex h-full flex-col md:flex-row md:p-2", forceGpuClass)}
+        className={cn("flex h-full flex-col md:flex-row md:p-2", "force-gpu")}
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
