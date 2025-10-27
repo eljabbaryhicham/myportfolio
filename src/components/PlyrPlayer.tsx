@@ -245,12 +245,9 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true, thu
         }
         
         const player = playerRef.current;
-        const currentContainer = containerRef.current;
-
-        if (player && currentContainer && document.body.contains(currentContainer)) {
+        if (player) {
             try {
                 player.stop();
-                currentContainer.innerHTML = '';
                 player.destroy();
             } catch (e) {
                 console.error("Error destroying Plyr player:", e);
