@@ -273,8 +273,10 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true, thu
     }
   }, [autoPlay, isLoading]); // Re-run when isLoading changes to ensure play is called after ready
 
+  const forceGpuClass = isMobile && /Android/i.test(navigator.userAgent) ? 'force-gpu' : '';
+
   return (
-    <div className="relative w-full h-full bg-black">
+    <div className={cn("relative w-full h-full bg-black", forceGpuClass)}>
       <style>
         {`
           :root {
