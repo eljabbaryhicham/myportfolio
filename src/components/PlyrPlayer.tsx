@@ -357,10 +357,10 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true, thu
             height: 20px;
           }
           .plyr__progress input[type=range]::-webkit-slider-runnable-track {
-            height: 2px;
+            height: 1px;
           }
           .plyr__progress input[type=range]::-moz-range-track {
-            height: 2px;
+            height: 1px;
           }
 
           /* Hide original SVG icons */
