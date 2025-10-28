@@ -24,7 +24,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useDoc, useFirestore, useMemoFirebase, setDocumentNonBlocking, useCollection, useUser } from '@/firebase';
 import { collection, doc } from 'firebase/firestore';
 import type { PortfolioItem } from '@/features/portfolio/data/portfolio-data';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import Preloader from '@/components/preloader';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import type { AppUser } from '@/firebase/auth/use-user';
@@ -33,18 +33,20 @@ import { Separator } from '@/components/ui/separator';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
+import { debounce } from 'lodash';
 
 interface HomePageSettings {
     homePageBackgroundType?: 'video' | 'image';
     homePageBackgroundMediaId?: string;
     websiteBackgroundType?: 'video' | 'image';
     websiteBackgroundMediaId?: string;
-    isHomePageVideoEnabled?: boolean; // Kept for backwards compatibility if only video is selected
-    isWebsiteVideoEnabled?: boolean; // Kept for backwards compatibility if only video is selected
+    isHomePageVideoEnabled?: boolean;
+    isWebsiteVideoEnabled?: boolean;
     workPagePlayer?: 'plyr' | 'clappr';
     isTestPageEnabled?: boolean;
     homePageLogoUrl?: string;
     isHomePageLogoVisible?: boolean;
+    themeColor?: string;
 }
 
 const settingsSchema = z.object({
@@ -58,6 +60,7 @@ const settingsSchema = z.object({
   isTestPageEnabled: z.boolean().optional(),
   homePageLogoUrl: z.string().url().optional().or(z.literal('')),
   isHomePageLogoVisible: z.boolean().optional(),
+  themeColor: z.string().optional(),
 });
 
 type SettingsFormValues = z.infer<typeof settingsSchema>;
@@ -74,6 +77,7 @@ export default function HomeAdmin() {
   const { toast } = useToast();
   const firestore = useFirestore();
   const { user } = useUser();
+  const [isMounted, setIsMounted] = useState(false);
 
   const typedUser = user as AppUser | null;
   const isSuperAdmin = typedUser?.email === 'eljabbaryhicham@example.com';
@@ -107,12 +111,14 @@ export default function HomeAdmin() {
       isTestPageEnabled: false,
       homePageLogoUrl: '',
       isHomePageLogoVisible: true,
+      themeColor: '#d81e38',
     },
   });
 
   const { watch, control, setValue } = form;
 
   useEffect(() => {
+    setIsMounted(true);
     if (homeSettings) {
       form.reset({
         homePageBackgroundType: homeSettings.homePageBackgroundType || 'video',
@@ -125,33 +131,41 @@ export default function HomeAdmin() {
         isTestPageEnabled: homeSettings.isTestPageEnabled ?? false,
         homePageLogoUrl: homeSettings.homePageLogoUrl || '',
         isHomePageLogoVisible: homeSettings.isHomePageLogoVisible ?? true,
+        themeColor: homeSettings.themeColor || '#d81e38',
       });
     }
   }, [homeSettings, form]);
 
   useEffect(() => {
-    if (!canEditHome) return;
+    if (!canEditHome || !isMounted) return;
+
+    const debouncedSave = debounce((fieldName, value) => {
+        if (settingsDocRef) {
+            const dataToSave = { [fieldName]: value };
+            setDocumentNonBlocking(settingsDocRef, dataToSave, { merge: true });
+            toast({
+                title: 'Setting Saved',
+                description: 'Your change has been saved automatically.',
+            });
+        }
+    }, 500);
 
     const subscription = watch((value, { name, type }) => {
-      if (type === 'change' && settingsDocRef) {
+      if (type === 'change' && name) {
         const fieldName = name as keyof SettingsFormValues;
-        const dataToSave = { [fieldName]: value[fieldName] };
-        
-        setDocumentNonBlocking(settingsDocRef, dataToSave, { merge: true });
-        
-        toast({
-          title: 'Setting Saved',
-          description: 'Your change has been saved automatically.',
-        });
+        debouncedSave(fieldName, value[fieldName]);
       }
     });
 
-    return () => subscription.unsubscribe();
-  }, [watch, settingsDocRef, canEditHome, toast]);
+    return () => {
+        subscription.unsubscribe();
+        debouncedSave.cancel();
+    };
+  }, [watch, settingsDocRef, canEditHome, toast, isMounted]);
 
   const isLoading = isLoadingSettings || isLoadingProjects || isLoadingMedia;
 
-  if (isLoading) {
+  if (isLoading && !isMounted) {
     return (
       <div className="flex justify-center items-center h-full">
         <Preloader />
@@ -360,6 +374,29 @@ export default function HomeAdmin() {
                                 {/* Player Settings */}
                                 <div className="space-y-4 p-4 rounded-lg border glass-effect">
                                      <h3 className="font-headline text-lg">Global Settings</h3>
+
+                                     <FormField
+                                        control={control}
+                                        name="themeColor"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>Theme Color</FormLabel>
+                                                <div className="flex items-center gap-4">
+                                                    <FormControl>
+                                                        <Input type="color" {...field} className="p-1 h-10 w-14 cursor-pointer" />
+                                                    </FormControl>
+                                                    <Input type="text" {...field} placeholder="#d81e38" />
+                                                </div>
+                                                <FormDescription>
+                                                    Set the primary color for the website theme.
+                                                </FormDescription>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                     />
+
+                                    <Separator />
+                                    
                                     <FormField
                                       control={control}
                                       name="workPagePlayer"

@@ -11,6 +11,7 @@ import { doc } from 'firebase/firestore';
 import type { PortfolioItem } from '@/features/portfolio/data/portfolio-data';
 import { usePathname } from 'next/navigation';
 import Image from 'next/image';
+import React from 'react';
 
 interface HomePageSettings {
     homePageBackgroundType?: 'video' | 'image';
@@ -19,6 +20,7 @@ interface HomePageSettings {
     websiteBackgroundMediaId?: string;
     isHomePageVideoEnabled?: boolean;
     isWebsiteVideoEnabled?: boolean;
+    themeColor?: string;
 }
 
 interface MediaAsset {
@@ -93,13 +95,82 @@ function SiteBackground() {
     );
 }
 
+function hexToHsl(hex: string): string | null {
+    if (!hex.startsWith('#') || (hex.length !== 4 && hex.length !== 7)) {
+        return null; // Invalid hex code
+    }
+
+    // Expand shorthand form (e.g. "03F") to full form (e.g. "0033FF")
+    const shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i;
+    hex = hex.replace(shorthandRegex, (m, r, g, b) => r + r + g + g + b + b);
+
+    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    if (!result) {
+        return null;
+    }
+
+    let r = parseInt(result[1], 16) / 255;
+    let g = parseInt(result[2], 16) / 255;
+    let b = parseInt(result[3], 16) / 255;
+
+    const max = Math.max(r, g, b);
+    const min = Math.min(r, g, b);
+    let h = 0, s = 0, l = (max + min) / 2;
+
+    if (max !== min) {
+        const d = max - min;
+        s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+        switch (max) {
+            case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+            case g: h = (b - r) / d + 2; break;
+            case b: h = (r - g) / d + 4; break;
+        }
+        h /= 6;
+    }
+
+    h = Math.round(h * 360);
+    s = Math.round(s * 100);
+    l = Math.round(l * 100);
+
+    return `${h} ${s}% ${l}%`;
+}
+
+
+function DynamicThemeStyles() {
+    const firestore = useFirestore();
+    const settingsDocRef = useMemoFirebase(
+      () => (firestore ? doc(firestore, 'homepage', 'settings') : null),
+      [firestore]
+    );
+    const { data: homeSettings } = useDoc<HomePageSettings>(settingsDocRef);
+    
+    const themeColor = homeSettings?.themeColor || '#d81e38'; // Default red
+    const primaryHsl = hexToHsl(themeColor);
+  
+    return primaryHsl ? (
+      <style>{`
+        :root {
+            --primary: ${primaryHsl};
+            --accent: ${primaryHsl};
+            --destructive: ${primaryHsl};
+            --ring: ${primaryHsl};
+        }
+        .dark {
+            --primary: ${primaryHsl};
+            --accent: ${primaryHsl};
+            --destructive: ${primaryHsl};
+            --ring: ${primaryHsl};
+        }
+      `}</style>
+    ) : null;
+  }
 
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  
+
   return (
     <html lang="en" className="dark h-full" suppressHydrationWarning>
       <head>
@@ -110,6 +181,9 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossOrigin="anonymous" referrerPolicy="no-referrer" />
         <title>Liquid Folio</title>
+        <FirebaseClientProvider>
+            <DynamicThemeStyles />
+        </FirebaseClientProvider>
       </head>
       <body className={cn('font-body antialiased text-center')} suppressHydrationWarning>
         <FirebaseClientProvider>
