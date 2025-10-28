@@ -2,7 +2,7 @@
 'use client';
 
 import React, { useEffect, useRef, forwardRef, useImperativeHandle, useState } from 'react';
-import { useIsMobile } from '@/hooks/use-mobile';
+import { useIsMobile } from '@/hooks/use-is-mobile';
 import Preloader from './preloader';
 import { cn } from '@/lib/utils';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -108,6 +108,18 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true, thu
             if (!isMounted) return;
 
             // Clear previous player if any
+            if (playerRef.current) {
+                try {
+                    playerRef.current.destroy();
+                } catch (e) {
+                    console.error("Error destroying previous Plyr player:", e);
+                }
+                playerRef.current = null;
+            }
+            if (hlsRef.current) {
+                hlsRef.current.destroy();
+                hlsRef.current = null;
+            }
             container.innerHTML = '';
 
             let element: HTMLVideoElement | HTMLDivElement;
@@ -315,8 +327,8 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true, thu
           .plyr__spinner-container {
              display: none !important;
            }
-          .plyr__progress input[type="range"], .plyr__volume input[type=range] {
-              height: 5px !important;
+          .plyr__progress input[type="range"] {
+            height: 5px;
           }
 
           /* Hide original SVG icons */
