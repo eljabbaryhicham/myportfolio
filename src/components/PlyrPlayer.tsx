@@ -272,25 +272,35 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true, thu
 
   // Effect for controlling playback based on autoPlay prop
   useEffect(() => {
+    let isMounted = true;
     const player = playerRef.current;
-    if (player && player.ready) {
-      if (autoPlay) {
-        player.play();
-      } else {
-        player.pause();
-      }
-    } else if (player && !player.ready && autoPlay) {
-        player.once('ready', () => {
-            if (isMounted) {
+    if (player) {
+        const handleReady = () => {
+            if (isMounted && autoPlay) {
                 player.play();
             }
-        });
-    } else if (player && !autoPlay) {
-        player.pause();
+        };
+
+        if (player.ready) {
+             if (autoPlay) {
+                player.play();
+            } else {
+                player.pause();
+            }
+        } else {
+            player.once('ready', handleReady);
+        }
+
+        return () => {
+            isMounted = false;
+            player.off('ready', handleReady);
+            if (player.playing) {
+                player.pause();
+            }
+        };
     }
-    let isMounted = true;
-    return () => { isMounted = false };
 }, [autoPlay, isLoading]);
+
 
   return (
     <div className={cn("relative w-full h-full bg-black", "force-gpu")}>
@@ -336,7 +346,7 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true, thu
              display: none !important;
            }
           .plyr__progress input[type="range"] {
-            height: 5px;
+            height: 15px;
           }
           .plyr__progress input[type=range]::-webkit-slider-runnable-track {
             height: 5px;
