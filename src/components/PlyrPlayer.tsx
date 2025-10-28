@@ -174,7 +174,7 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true, thu
             if (isYoutube || isVimeo) {
                 playerConfig.previewThumbnails = {
                     enabled: true,
-                    src: thumbnailVttUrl,
+src: thumbnailVttUrl,
                 };
                 player = new window.Plyr(element, playerConfig);
                 player.on('ready', () => {
@@ -366,6 +366,9 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true, thu
           .plyr__spinner-container {
              display: none !important;
            }
+          .plyr__progress {
+            height: 20px;
+          }
           .plyr__progress input[type="range"], .plyr__volume input[type="range"] {
             height: 20px;
           }
