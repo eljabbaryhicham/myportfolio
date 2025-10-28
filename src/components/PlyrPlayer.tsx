@@ -311,7 +311,7 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true, thu
 
 
   return (
-    <div className={cn("relative w-full h-full bg-black", "force-gpu")}>
+    <div className={cn("relative w-full h-full", "force-gpu")}>
       <style>
         {`
           :root {
@@ -361,6 +361,41 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true, thu
           }
           .plyr__progress input[type=range]::-moz-range-track {
             height: 1px;
+          }
+           .plyr__progress input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            height: 14px;
+            width: 14px;
+            background: transparent; /* Hide original thumb */
+            border: none;
+            box-shadow: none;
+            border-radius: 0;
+            margin-top: -7px;
+            position: relative;
+            cursor: pointer;
+          }
+          .plyr__progress input[type=range]::-webkit-slider-thumb::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 0;
+            height: 0;
+            border-left: 5px solid transparent;
+            border-right: 5px solid transparent;
+            border-bottom: 8px solid hsl(var(--destructive));
+          }
+          .plyr__progress input[type=range]:active::-webkit-slider-thumb::before {
+            border-bottom-color: white;
+          }
+          .plyr__progress input[type=range]::-moz-range-thumb {
+            height: 14px;
+            width: 14px;
+            background: hsl(var(--destructive)); /* Fallback for Firefox */
+            border: none;
+            border-radius: 50%;
           }
 
           /* Hide original SVG icons */
@@ -443,3 +478,5 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true, thu
 
 PlyrPlayer.displayName = 'PlyrPlayer';
 export default PlyrPlayer;
+
+    
