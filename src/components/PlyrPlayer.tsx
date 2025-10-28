@@ -2,7 +2,7 @@
 'use client';
 
 import React, { useEffect, useRef, forwardRef, useImperativeHandle, useState } from 'react';
-import { useIsMobile } from '@/hooks/use-is-mobile';
+import { useIsMobile } from '@/hooks/use-mobile';
 import Preloader from './preloader';
 import { cn } from '@/lib/utils';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -279,10 +279,18 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true, thu
       } else {
         player.pause();
       }
+    } else if (player && !player.ready && autoPlay) {
+        player.once('ready', () => {
+            if (isMounted) {
+                player.play();
+            }
+        });
     } else if (player && !autoPlay) {
         player.pause();
     }
-  }, [autoPlay, isLoading]); // Re-run when isLoading changes to ensure play is called after ready
+    let isMounted = true;
+    return () => { isMounted = false };
+}, [autoPlay, isLoading]);
 
   return (
     <div className={cn("relative w-full h-full bg-black", "force-gpu")}>
@@ -328,6 +336,12 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true, thu
              display: none !important;
            }
           .plyr__progress input[type="range"] {
+            height: 5px;
+          }
+          .plyr__progress input[type=range]::-webkit-slider-runnable-track {
+            height: 5px;
+          }
+          .plyr__progress input[type=range]::-moz-range-track {
             height: 5px;
           }
 
@@ -411,3 +425,5 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true, thu
 
 PlyrPlayer.displayName = 'PlyrPlayer';
 export default PlyrPlayer;
+
+    
