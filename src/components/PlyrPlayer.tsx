@@ -281,16 +281,27 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true, thu
     if (player) {
         const handleReady = () => {
             if (isMounted && autoPlay && !player.playing) {
-                player.play();
+                try {
+                    const playPromise = player.play();
+                    if (playPromise !== undefined) {
+                        playPromise.catch((e: any) => {
+                            // Autoplay was prevented. This is a common browser policy.
+                            // You might want to show a play button to the user.
+                            if (isMounted) setIsLoading(false);
+                        });
+                    }
+                } catch(e) {
+                     if (isMounted) setIsLoading(false);
+                }
+            } else if (!autoPlay && player.playing) {
+                 try {
+                   player.pause();
+                } catch(e) {/* ignore */}
             }
         };
 
         if (player.ready) {
-             if (autoPlay && !player.playing) {
-                player.play();
-            } else if (!autoPlay && player.playing) {
-                player.pause();
-            }
+             handleReady();
         } else {
             player.once('ready', handleReady);
         }
@@ -298,7 +309,7 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true, thu
         return () => {
             isMounted = false;
             player.off('ready', handleReady);
-            if (player.playing) {
+            if (player && player.playing) {
                 try {
                     player.pause();
                 } catch(e) {
@@ -306,6 +317,8 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true, thu
                 }
             }
         };
+    } else {
+        setIsLoading(false);
     }
 }, [autoPlay, isLoading]);
 
@@ -374,22 +387,23 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true, thu
             margin-top: -7px;
             position: relative;
             cursor: pointer;
+            color: hsl(var(--destructive));
+            font-family: "Font Awesome 6 Free";
+            font-weight: 900;
+            font-style: normal;
+            font-size: 16px; /* Adjust size of the icon */
+            line-height: 1;
+            text-align: center;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            content: '\\f0da'; /* Unicode for fa-caret-right */
+            transform: translateY(-1px);
           }
-          .plyr__progress input[type=range]::-webkit-slider-thumb::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 0;
-            height: 0;
-            border-left: 5px solid transparent;
-            border-right: 5px solid transparent;
-            border-bottom: 8px solid hsl(var(--destructive));
+
+          .plyr__progress input[type=range]:active::-webkit-slider-thumb {
+            color: white;
           }
-          .plyr__progress input[type=range]:active::-webkit-slider-thumb::before {
-            border-bottom-color: white;
-          }
+          
           .plyr__progress input[type=range]::-moz-range-thumb {
             height: 14px;
             width: 14px;
