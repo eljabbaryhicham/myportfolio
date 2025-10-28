@@ -156,7 +156,7 @@ export function AppNav() {
         <Link href="/" className="hidden md:block relative group mt-4">
             <div className="relative w-12 h-12 flex items-center justify-center">
                 <div className="absolute inset-0 rounded-full animate-spinning-circle-border bg-gradient-to-r from-primary via-transparent to-transparent"></div>
-                <div className="relative bg-white rounded-full p-1 w-10 h-10 flex items-center justify-center">
+                <div className="relative bg-transparent rounded-full p-1 w-10 h-10 flex items-center justify-center">
                     <Logo src={logoUrl} />
                 </div>
             </div>
