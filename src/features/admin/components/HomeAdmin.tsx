@@ -32,6 +32,7 @@ import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
 
 interface HomePageSettings {
     homePageBackgroundType?: 'video' | 'image';
@@ -42,6 +43,8 @@ interface HomePageSettings {
     isWebsiteVideoEnabled?: boolean; // Kept for backwards compatibility if only video is selected
     workPagePlayer?: 'plyr' | 'clappr';
     isTestPageEnabled?: boolean;
+    homePageLogoUrl?: string;
+    isHomePageLogoVisible?: boolean;
 }
 
 const settingsSchema = z.object({
@@ -53,6 +56,8 @@ const settingsSchema = z.object({
   isWebsiteVideoEnabled: z.boolean().optional(),
   workPagePlayer: z.enum(['plyr', 'clappr']).optional(),
   isTestPageEnabled: z.boolean().optional(),
+  homePageLogoUrl: z.string().url().optional().or(z.literal('')),
+  isHomePageLogoVisible: z.boolean().optional(),
 });
 
 type SettingsFormValues = z.infer<typeof settingsSchema>;
@@ -100,6 +105,8 @@ export default function HomeAdmin() {
       isWebsiteVideoEnabled: true,
       workPagePlayer: 'clappr',
       isTestPageEnabled: false,
+      homePageLogoUrl: '',
+      isHomePageLogoVisible: true,
     },
   });
 
@@ -116,6 +123,8 @@ export default function HomeAdmin() {
         isWebsiteVideoEnabled: homeSettings.isWebsiteVideoEnabled ?? true,
         workPagePlayer: homeSettings.workPagePlayer || 'clappr',
         isTestPageEnabled: homeSettings.isTestPageEnabled ?? false,
+        homePageLogoUrl: homeSettings.homePageLogoUrl || '',
+        isHomePageLogoVisible: homeSettings.isHomePageLogoVisible ?? true,
       });
     }
   }, [homeSettings, form]);
@@ -167,7 +176,39 @@ export default function HomeAdmin() {
                                 
                                 {/* Homepage Background Settings */}
                                 <div className="space-y-4 p-4 rounded-lg border glass-effect">
-                                    <h3 className="font-headline text-lg">Homepage Background</h3>
+                                    <h3 className="font-headline text-lg">Homepage</h3>
+                                    
+                                    <FormField
+                                        control={control}
+                                        name="homePageLogoUrl"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>Homepage Logo URL</FormLabel>
+                                                <FormControl>
+                                                    <Input placeholder="https://example.com/logo.png" {...field} />
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                    <FormField
+                                        control={control}
+                                        name="isHomePageLogoVisible"
+                                        render={({ field }) => (
+                                            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
+                                                <div className="space-y-0.5">
+                                                    <FormLabel>Show Homepage Logo</FormLabel>
+                                                </div>
+                                                <FormControl>
+                                                    <Switch checked={field.value} onCheckedChange={field.onChange} />
+                                                </FormControl>
+                                            </FormItem>
+                                        )}
+                                    />
+                                    
+                                    <Separator />
+                                    
+                                    <h3 className="font-headline text-lg pt-4">Homepage Background</h3>
                                     <FormField
                                       control={control}
                                       name="homePageBackgroundType"
@@ -375,5 +416,3 @@ export default function HomeAdmin() {
     </div>
   );
 }
-
-    

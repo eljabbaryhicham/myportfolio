@@ -15,6 +15,11 @@ interface ContactInfo {
     logoUrl?: string;
 }
 
+interface HomePageSettings {
+    homePageLogoUrl?: string;
+    isHomePageLogoVisible?: boolean;
+}
+
 export default function HomePageContent() {
   const firestore = useFirestore();
 
@@ -23,21 +28,34 @@ export default function HomePageContent() {
     [firestore]
   );
   const { data: contactInfo, isLoading: isLoadingContact } = useDoc<ContactInfo>(contactDocRef);
+
+  const settingsDocRef = useMemoFirebase(
+    () => (firestore ? doc(firestore, 'homepage', 'settings') : null),
+    [firestore]
+  );
+  const { data: homeSettings, isLoading: isLoadingSettings } = useDoc<HomePageSettings>(settingsDocRef);
   
-  const logoUrl = contactInfo?.logoUrl || "https://i.imgur.com/N9c8oEJ.png";
+  const isLoading = isLoadingContact || isLoadingSettings;
+
+  const siteLogoUrl = contactInfo?.logoUrl || "https://i.imgur.com/N9c8oEJ.png";
+  const homeLogoUrl = homeSettings?.homePageLogoUrl || siteLogoUrl;
+  const isLogoVisible = homeSettings?.isHomePageLogoVisible ?? true;
+
 
   return (
     <div className="relative h-full w-full flex flex-col items-center justify-center p-4">
-      {isLoadingContact && (
+      {isLoading && (
           <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/50">
               <Preloader />
           </div>
       )}
 
-      <div className={cn("relative z-10 flex flex-col items-center justify-center gap-8 transition-opacity duration-1000", isLoadingContact && "opacity-0")}>
-        <div className="w-full max-w-sm">
-          <Logo src={logoUrl} />
-        </div>
+      <div className={cn("relative z-10 flex flex-col items-center justify-center gap-8 transition-opacity duration-1000", isLoading && "opacity-0")}>
+        {isLogoVisible && (
+            <div className="w-full max-w-sm">
+                <Logo src={homeLogoUrl} />
+            </div>
+        )}
         <Button asChild size="lg" className="group">
           <Link href="/work">
             Explore Work

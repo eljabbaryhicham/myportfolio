@@ -165,6 +165,15 @@
         "isTestPageEnabled": {
           "type": "boolean",
           "description": "Controls whether the test page link is visible in the navigation."
+        },
+        "homePageLogoUrl": {
+            "type": "string",
+            "format": "uri",
+            "description": "URL for the homepage logo."
+        },
+        "isHomePageLogoVisible": {
+            "type": "boolean",
+            "description": "Controls whether the homepage logo is visible."
         }
       }
     },
@@ -448,5 +457,3 @@
     ]
   }
 }
-
-    
