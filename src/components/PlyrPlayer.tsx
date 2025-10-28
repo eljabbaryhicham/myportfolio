@@ -114,13 +114,13 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true, thu
                 } catch (e) {
                     console.error("Error destroying previous Plyr player:", e);
                 }
-                playerRef.current = null;
             }
             if (hlsRef.current) {
                 hlsRef.current.destroy();
-                hlsRef.current = null;
             }
             container.innerHTML = '';
+            playerRef.current = null;
+            hlsRef.current = null;
 
             let element: HTMLVideoElement | HTMLDivElement;
             if (isYoutube || isVimeo) {
@@ -146,8 +146,8 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true, thu
             
             let player: any;
 
-            const mobileControls = ['play-large', 'play', 'progress', 'current-time', 'settings', 'pip', 'fullscreen'];
-            const desktopControls = ['play-large', 'play', 'progress', 'current-time', 'mute', 'volume', 'settings', 'pip', 'fullscreen'];
+            const mobileControls = ['play-large', 'play', 'current-time', 'progress', 'settings', 'pip', 'fullscreen'];
+            const desktopControls = ['play-large', 'play', 'current-time', 'progress', 'mute', 'volume', 'settings', 'pip', 'fullscreen'];
             const controls = isMobile ? mobileControls : desktopControls;
 
             const playerConfig: any = {
