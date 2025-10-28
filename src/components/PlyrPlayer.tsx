@@ -379,37 +379,28 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true, thu
             -webkit-appearance: none;
             appearance: none;
             height: 14px;
-            width: 14px;
-            background: transparent; /* Hide original thumb */
+            width: 4px;
+            background: hsl(var(--destructive));
+            border-radius: 2px;
             border: none;
-            box-shadow: none;
-            border-radius: 0;
-            margin-top: -7px;
+            box-shadow: 0 1px 1px rgba(0,0,0,0.15), 0 0 0 1px rgba(0,0,0,0.2);
+            margin-top: -6.5px;
             position: relative;
             cursor: pointer;
-            color: hsl(var(--destructive));
-            font-family: "Font Awesome 6 Free";
-            font-weight: 900;
-            font-style: normal;
-            font-size: 16px; /* Adjust size of the icon */
-            line-height: 1;
-            text-align: center;
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
-            content: '\\f0da'; /* Unicode for fa-caret-right */
-            transform: translateY(-1px);
+            transition: all 0.2s ease;
           }
 
           .plyr__progress input[type=range]:active::-webkit-slider-thumb {
-            color: white;
+            transform: scale(1.2);
+            background: white;
           }
           
           .plyr__progress input[type=range]::-moz-range-thumb {
             height: 14px;
-            width: 14px;
-            background: hsl(var(--destructive)); /* Fallback for Firefox */
+            width: 4px;
+            background: hsl(var(--destructive));
+            border-radius: 2px;
             border: none;
-            border-radius: 50%;
           }
 
           /* Hide original SVG icons */
@@ -492,5 +483,3 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true, thu
 
 PlyrPlayer.displayName = 'PlyrPlayer';
 export default PlyrPlayer;
-
-    
