@@ -366,16 +366,16 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true, thu
           .plyr__spinner-container {
              display: none !important;
            }
-          .plyr__progress input[type="range"] {
+          .plyr__progress input[type="range"], .plyr__volume input[type="range"] {
             height: 20px;
           }
-          .plyr__progress input[type=range]::-webkit-slider-runnable-track {
+          .plyr__progress input[type=range]::-webkit-slider-runnable-track, .plyr__volume input[type=range]::-webkit-slider-runnable-track {
             height: 1px;
           }
-          .plyr__progress input[type=range]::-moz-range-track {
+          .plyr__progress input[type=range]::-moz-range-track, .plyr__volume input[type=range]::-moz-range-track {
             height: 1px;
           }
-           .plyr__progress input[type=range]::-webkit-slider-thumb {
+           .plyr__progress input[type=range]::-webkit-slider-thumb, .plyr__volume input[type=range]::-webkit-slider-thumb {
             -webkit-appearance: none;
             appearance: none;
             height: 14px;
@@ -390,12 +390,12 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true, thu
             transition: all 0.2s ease;
           }
 
-          .plyr__progress input[type=range]:active::-webkit-slider-thumb {
+          .plyr__progress input[type=range]:active::-webkit-slider-thumb, .plyr__volume input[type=range]:active::-webkit-slider-thumb {
             transform: scale(1.2);
             background: white;
           }
           
-          .plyr__progress input[type=range]::-moz-range-thumb {
+          .plyr__progress input[type=range]::-moz-range-thumb, .plyr__volume input[type=range]::-moz-range-thumb {
             height: 14px;
             width: 4px;
             background: hsl(var(--destructive));
@@ -483,3 +483,5 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true, thu
 
 PlyrPlayer.displayName = 'PlyrPlayer';
 export default PlyrPlayer;
+
+    
