@@ -236,9 +236,13 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true, thu
                 if (isMounted) playerRef.current = player;
             }
             
-            if (!isMounted && player) {
-              player.destroy();
-            }
+            player?.on('error', () => {
+                if(isMounted) setIsLoading(false);
+            });
+            
+            player?.on('ready', () => {
+                if(isMounted) setIsLoading(false);
+            });
 
         } catch (error) {
             console.error("Error initializing Plyr player:", error);
@@ -349,10 +353,10 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true, thu
             height: 15px;
           }
           .plyr__progress input[type=range]::-webkit-slider-runnable-track {
-            height: 5px;
+            height: 3px;
           }
           .plyr__progress input[type=range]::-moz-range-track {
-            height: 5px;
+            height: 3px;
           }
 
           /* Hide original SVG icons */
