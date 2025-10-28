@@ -369,6 +369,10 @@ src: thumbnailVttUrl,
           .plyr__progress {
             height: 20px;
           }
+          .plyr__progress__buffer {
+            height: 1px;
+            top: 9.5px;
+          }
           .plyr__progress input[type="range"], .plyr__volume input[type="range"] {
             height: 20px;
           }
@@ -486,5 +490,3 @@ src: thumbnailVttUrl,
 
 PlyrPlayer.displayName = 'PlyrPlayer';
 export default PlyrPlayer;
-
-    
