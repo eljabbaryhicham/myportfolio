@@ -370,6 +370,7 @@ src: thumbnailVttUrl,
             height: 20px;
           }
           .plyr__progress__buffer {
+            color: green;
             height: 1px;
             top: 9.5px;
           }
@@ -490,3 +491,5 @@ src: thumbnailVttUrl,
 
 PlyrPlayer.displayName = 'PlyrPlayer';
 export default PlyrPlayer;
+
+    
