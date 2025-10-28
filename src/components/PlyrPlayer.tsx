@@ -280,15 +280,15 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true, thu
     const player = playerRef.current;
     if (player) {
         const handleReady = () => {
-            if (isMounted && autoPlay) {
+            if (isMounted && autoPlay && !player.playing) {
                 player.play();
             }
         };
 
         if (player.ready) {
-             if (autoPlay) {
+             if (autoPlay && !player.playing) {
                 player.play();
-            } else {
+            } else if (!autoPlay && player.playing) {
                 player.pause();
             }
         } else {
@@ -299,7 +299,11 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true, thu
             isMounted = false;
             player.off('ready', handleReady);
             if (player.playing) {
-                player.pause();
+                try {
+                    player.pause();
+                } catch(e) {
+                    // It might already be destroyed
+                }
             }
         };
     }
@@ -350,13 +354,13 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true, thu
              display: none !important;
            }
           .plyr__progress input[type="range"] {
-            height: 15px;
+            height: 20px;
           }
           .plyr__progress input[type=range]::-webkit-slider-runnable-track {
-            height: 3px;
+            height: 2px;
           }
           .plyr__progress input[type=range]::-moz-range-track {
-            height: 3px;
+            height: 2px;
           }
 
           /* Hide original SVG icons */
