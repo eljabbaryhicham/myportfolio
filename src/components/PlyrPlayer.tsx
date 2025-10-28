@@ -267,6 +267,8 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true, thu
       } else {
         player.pause();
       }
+    } else if (player && !autoPlay) {
+        player.pause();
     }
   }, [autoPlay, isLoading]); // Re-run when isLoading changes to ensure play is called after ready
 
@@ -314,7 +316,7 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true, thu
              display: none !important;
            }
           .plyr__progress input[type="range"], .plyr__volume input[type=range] {
-              height: 2px !important;
+              height: 5px !important;
           }
 
           /* Hide original SVG icons */
