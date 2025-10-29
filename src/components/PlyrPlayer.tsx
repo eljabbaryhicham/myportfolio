@@ -174,7 +174,7 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true, thu
             if (isYoutube || isVimeo) {
                 playerConfig.previewThumbnails = {
                     enabled: true,
-src: thumbnailVttUrl,
+                    src: thumbnailVttUrl,
                 };
                 player = new window.Plyr(element, playerConfig);
                 player.on('ready', () => {
@@ -415,27 +415,34 @@ src: thumbnailVttUrl,
           .plyr__controls .plyr__control svg {
             display: none !important;
           }
-          /* Style the ::before pseudo-element with Font Awesome */
+          /* Style the ::before pseudo-element with Material Icons */
           .plyr__controls .plyr__control::before {
-            font-family: "Font Awesome 6 Free";
-            font-weight: 900;
+            font-family: 'Material Icons';
+            font-weight: normal;
             font-style: normal;
-            font-size: 20px;
+            font-size: 24px; /* Adjust size as needed */
             line-height: 1;
+            letter-spacing: normal;
+            text-transform: none;
+            display: inline-block;
+            white-space: nowrap;
+            word-wrap: normal;
+            direction: ltr;
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
+            font-feature-settings: 'liga';
             transform: translateY(1px); /* Vertical alignment */
           }
           
-          /* Icon mapping */
-          button.plyr__control[data-plyr="play"]::before { content: '\\f144' !important; }
-          .plyr--playing button.plyr__control[data-plyr="play"]::before { content: '\\f28b' !important; }
-          button.plyr__control[data-plyr="mute"]::before { content: '\\f028' !important; }
-          button.plyr__control[data-plyr="mute"].plyr__control--pressed::before { content: '\\f6a9' !important; }
-          button.plyr__control[data-plyr="pip"]::before { content: '\\f2d0' !important; }
-          button.plyr__control[data-plyr="fullscreen"]::before { content: '\\f065' !important; }
-          button.plyr__control[data-plyr="fullscreen"].plyr__control--pressed::before { content: '\\f066' !important; }
-          button.plyr__control[data-plyr="settings"]::before { content: '\\f052' !important; }
+          /* Icon mapping using Material Icons ligatures */
+          button.plyr__control[data-plyr="play"]::before { content: 'play_arrow' !important; }
+          .plyr--playing button.plyr__control[data-plyr="play"]::before { content: 'pause' !important; }
+          button.plyr__control[data-plyr="mute"]::before { content: 'volume_up' !important; }
+          button.plyr__control[data-plyr="mute"].plyr__control--pressed::before { content: 'volume_off' !important; }
+          button.plyr__control[data-plyr="pip"]::before { content: 'picture_in_picture_alt' !important; }
+          button.plyr__control[data-plyr="fullscreen"]::before { content: 'fullscreen' !important; }
+          button.plyr__control[data-plyr="fullscreen"].plyr__control--pressed::before { content: 'fullscreen_exit' !important; }
+          button.plyr__control[data-plyr="settings"]::before { content: 'settings' !important; }
           
           /* Expandable volume on desktop */
           @media (min-width: 768px) {
@@ -491,5 +498,3 @@ src: thumbnailVttUrl,
 
 PlyrPlayer.displayName = 'PlyrPlayer';
 export default PlyrPlayer;
-
-    
