@@ -34,6 +34,7 @@ interface AboutPageContent {
     content: string;
     imageUrl: string;
     logoUrl?: string;
+    logoScale?: number;
 }
 
 const services = [
@@ -102,6 +103,7 @@ export default function AboutPage() {
 
   const isLoading = isLoadingClients || isLoadingContent;
   const logoUrl = aboutContent?.logoUrl || "https://i.imgur.com/N9c8oEJ.png";
+  const logoScale = aboutContent?.logoScale || 1;
   
   const [emblaRef] = useEmblaCarousel({ loop: true, align: 'start' }, [
     Autoplay({
@@ -151,7 +153,7 @@ export default function AboutPage() {
                     className="flex flex-col md:flex-row gap-8 md:gap-12 items-center md:items-stretch"
                   >
                     <div className="md:w-1/2 text-center p-8 flex flex-col justify-center">
-                        <div className="w-32 mx-auto mb-4">
+                        <div className="w-32 mx-auto mb-4" style={{ transform: `scale(${logoScale})` }}>
                             <Logo src={logoUrl} />
                         </div>
                         <h2 className="text-2xl md:text-3xl font-headline tracking-tight mb-4">{aboutContent?.title}</h2>
@@ -251,3 +253,5 @@ export default function AboutPage() {
     </div>
   );
 }
+
+    

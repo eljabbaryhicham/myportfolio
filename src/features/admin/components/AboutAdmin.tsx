@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -35,12 +36,14 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import type { AppUser } from '@/firebase/auth/use-user';
+import { Slider } from '@/components/ui/slider';
 
 const formSchema = z.object({
   title: z.string().min(2, { message: 'Title must be at least 2 characters.' }),
   content: z.string().min(10, { message: 'Content must be at least 10 characters.' }),
   imageUrl: z.string().url({ message: 'Please enter a valid URL.' }),
   logoUrl: z.string().url({ message: 'Please enter a valid URL.' }).optional().or(z.literal('')),
+  logoScale: z.number().min(0.5).max(1.5).optional(),
 });
 
 type AboutFormValues = z.infer<typeof formSchema>;
@@ -73,6 +76,7 @@ export default function AboutAdmin() {
       content: '',
       imageUrl: '',
       logoUrl: '',
+      logoScale: 1,
     },
   });
 
@@ -83,6 +87,7 @@ export default function AboutAdmin() {
         content: aboutContent.content || '',
         imageUrl: aboutContent.imageUrl || '',
         logoUrl: aboutContent.logoUrl || '',
+        logoScale: aboutContent.logoScale || 1,
       });
     }
   }, [aboutContent, form]);
@@ -100,6 +105,7 @@ export default function AboutAdmin() {
     const dataToSave = {
       ...values,
       logoUrl: values.logoUrl || '', // Ensure logoUrl is not undefined
+      logoScale: values.logoScale || 1,
     };
     setDocumentNonBlocking(aboutContentRef, dataToSave, { merge: true });
     toast({
@@ -177,6 +183,28 @@ export default function AboutAdmin() {
                                       <FontAwesomeIcon icon={faImages} />
                                     </Button>
                                   </div>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                             <FormField
+                              control={form.control}
+                              name="logoScale"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Logo Scale ({Math.round((field.value || 1) * 100)}%)</FormLabel>
+                                  <FormControl>
+                                    <Slider
+                                      value={[field.value || 1]}
+                                      onValueChange={(value) => field.onChange(value[0])}
+                                      min={0.5}
+                                      max={1.5}
+                                      step={0.05}
+                                    />
+                                  </FormControl>
+                                   <FormDescription>
+                                    Adjust the size of the logo on the about page.
+                                  </FormDescription>
                                   <FormMessage />
                                 </FormItem>
                               )}
@@ -260,3 +288,5 @@ export default function AboutAdmin() {
     </>
   );
 }
+
+    
