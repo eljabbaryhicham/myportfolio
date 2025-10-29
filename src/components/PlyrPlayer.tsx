@@ -417,7 +417,7 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true, thu
           }
           /* Style the ::before pseudo-element with Material Icons */
           .plyr__controls .plyr__control::before {
-            font-family: 'Material Icons';
+            font-family: 'Material Icons Outlined';
             font-weight: normal;
             font-style: normal;
             font-size: 24px; /* Adjust size as needed */
