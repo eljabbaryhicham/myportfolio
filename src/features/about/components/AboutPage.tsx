@@ -9,6 +9,7 @@ import { useCollection, useDoc, useFirestore, useMemoFirebase } from '@/firebase
 import { collection, query, orderBy, doc } from 'firebase/firestore';
 import Preloader from '@/components/preloader';
 import Logo from '@/components/logo';
+import { DEFAULT_LOGO_URL } from '@/lib/constants';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -102,7 +103,7 @@ export default function AboutPage() {
   const clients = useMemo(() => allClients?.filter(c => c.isVisible !== false) || [], [allClients]);
 
   const isLoading = isLoadingClients || isLoadingContent;
-  const logoUrl = aboutContent?.logoUrl || "https://i.imgur.com/N9c8oEJ.png";
+  const logoUrl = aboutContent?.logoUrl || DEFAULT_LOGO_URL;
   const logoScale = aboutContent?.logoScale || 1;
   
   const [emblaRef] = useEmblaCarousel({ loop: true, align: 'start' }, [
@@ -128,7 +129,7 @@ export default function AboutPage() {
             <div className="mb-8 text-center">
               <h1 className="text-3xl md:text-4xl font-headline tracking-tight">About Us</h1>
               <p className="mt-2 max-w-2xl mx-auto text-base md:text-lg text-foreground/70">
-                Learn more about our mission and the brands we've worked with.
+                Learn more about our mission and the brands we&apos;ve worked with.
               </p>
             </div>
         </div>
@@ -157,7 +158,7 @@ export default function AboutPage() {
                             <Logo src={logoUrl} />
                         </div>
                         <h2 className="text-2xl md:text-3xl font-headline tracking-tight mb-4">{aboutContent?.title}</h2>
-                        <p className="text-foreground/70 leading-relaxed mb-6 text-center text-justify">{aboutContent?.content}</p>
+                        <p className="text-foreground/70 leading-relaxed mb-6 text-center">{aboutContent?.content}</p>
                         <div className="hidden sm:flex flex-col sm:flex-row gap-4 justify-center">
                             <Button asChild>
                                 <Link href="/contact">
@@ -174,7 +175,7 @@ export default function AboutPage() {
                         </div>
                     </div>
                     <div className="md:w-1/2 flex flex-col justify-center">
-                       <h2 className="text-2xl md:text-3xl font-headline tracking-tight mb-6 text-center">What You'll Get?</h2>
+                       <h2 className="text-2xl md:text-3xl font-headline tracking-tight mb-6 text-center">What You&apos;ll Get?</h2>
                        <div className="grid grid-cols-6 grid-rows-2 gap-4 h-full">
                         {services.map((service, index) => {
                             let gridClasses = '';

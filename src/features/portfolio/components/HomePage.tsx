@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowRight } from '@fortawesome/free-solid-svg-icons';
 import { cn } from "@/lib/utils";
+import { DEFAULT_LOGO_URL } from "@/lib/constants";
 import Preloader from "@/components/preloader";
 import Logo from "@/components/logo";
 import { useDoc, useFirestore, useMemoFirebase } from "@/firebase";
@@ -37,7 +38,7 @@ export default function HomePageContent() {
   
   const isLoading = isLoadingContact || isLoadingSettings;
 
-  const siteLogoUrl = contactInfo?.logoUrl || "https://i.imgur.com/N9c8oEJ.png";
+  const siteLogoUrl = contactInfo?.logoUrl || DEFAULT_LOGO_URL;
   const homeLogoUrl = homeSettings?.homePageLogoUrl || siteLogoUrl;
   const isLogoVisible = homeSettings?.isHomePageLogoVisible ?? true;
 
@@ -50,18 +51,29 @@ export default function HomePageContent() {
           </div>
       )}
 
-      <div className={cn("relative z-10 flex flex-col items-center justify-center gap-8 transition-opacity duration-1000", isLoading && "opacity-0")}>
+      <div className={cn("relative z-10 flex flex-col items-center justify-center gap-6 transition-opacity duration-1000", isLoading && "opacity-0")}>
         {isLogoVisible && (
             <div className="w-full max-w-sm">
                 <Logo src={homeLogoUrl} />
             </div>
         )}
+        <div className="text-center space-y-3 max-w-lg">
+            <h2 className="text-xl md:text-2xl font-headline tracking-tight text-white/90">
+                From Concept to Screen
+            </h2>
+            <p className="text-sm md:text-base text-foreground/60 leading-relaxed">
+                We craft compelling visual content — animation, graphics, sound, and strategy — to bring your brand&apos;s story to life.
+            </p>
+        </div>
         <Button asChild size="lg" className="group">
           <Link href="/work">
             Explore Work
             <FontAwesomeIcon icon={faArrowRight} className="ml-2 transition-transform group-hover:translate-x-1" />
           </Link>
         </Button>
+        <div className="pt-4 text-foreground/40 text-xs animate-pulse">
+            Scroll to explore
+        </div>
       </div>
     </div>
   );

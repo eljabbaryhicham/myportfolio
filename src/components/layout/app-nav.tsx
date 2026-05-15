@@ -11,6 +11,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faHouse, faImage, faCircleInfo, faEnvelope, faShieldHalved, faVial } from "@fortawesome/free-solid-svg-icons";
 import Logo from "../logo";
+import { DEFAULT_LOGO_URL } from "@/lib/constants";
 import { doc } from "firebase/firestore";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
@@ -47,7 +48,7 @@ export function AppNav() {
   const { data: homeSettings } = useDoc<HomePageSettings>(settingsDocRef);
 
 
-  const logoUrl = contactInfo?.logoUrl || "https://i.imgur.com/N9c8oEJ.png";
+  const logoUrl = contactInfo?.logoUrl || DEFAULT_LOGO_URL;
 
   const accessibleNavItems = navItems.filter(item => {
     if (item.href === '/test') {

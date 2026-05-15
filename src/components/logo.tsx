@@ -1,13 +1,14 @@
 import Image from 'next/image';
-import * as React from 'react';
+import { cn } from '@/lib/utils';
+import { DEFAULT_LOGO_URL } from '@/lib/constants';
 
 const Logo = (props: { src?: string; className?: string }) => (
     <Image
-      src={props.src || "https://i.imgur.com/N9c8oEJ.png"}
+      src={props.src || DEFAULT_LOGO_URL}
       alt="belofted logo"
       width={384}
       height={104}
-      className="w-full h-auto"
+      className={cn("w-full h-auto", props.className)}
       priority
     />
 );
