@@ -794,7 +794,7 @@ export default function WorkPage() {
       
       {/* Nested Dialog for Details */}
       <Dialog open={isDetailsModalOpen} onOpenChange={setDetailsModalOpen}>
-        <DialogContent className="w-[80vw] h-[90vh] glass-effect p-0 flex flex-col group"
+        <DialogContent className="w-[80vw] h-[80vh] md:h-[90vh] glass-effect p-0 flex flex-col group"
           onMouseMove={handleDialogMouseMove}
           onMouseEnter={handleDialogMouseEnter}
           onMouseLeave={handleDialogMouseLeave}
