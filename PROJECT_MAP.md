@@ -156,6 +156,7 @@ Firebase Firestore ← useDoc/useCollection hooks → React components
 | 2026-05-15 | M4.2: Fixed ESLint warning — wrapped `updateUrl` in `useCallback` | ✅ |
 | 2026-05-15 | Moved Google Fonts `<link>` → `@import` in globals.css (fix no-page-custom-font) | ✅ |
 | 2026-05-15 | Suppressed `@next/next/no-img-element` in PlyrPlayer watermark | ✅ |
+| 2026-05-15 | feat: add Vidstack player as third option in Work Page Video Player | ✅ |
 
 ## [ORPHANS & PENDING]
 
