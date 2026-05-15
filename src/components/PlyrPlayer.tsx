@@ -366,24 +366,61 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true, thu
           .plyr__spinner-container {
              display: none !important;
            }
+          .plyr__controls {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+          }
           .plyr__progress {
-            height: 20px;
+            flex: 1;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            position: relative;
           }
           .plyr__progress__buffer {
-            color: green;
-            height: 1px;
-            top: 9.5px;
+            height: 2px;
+            top: auto;
+            bottom: 0;
+            color: rgba(255,255,255,0.25);
           }
           .plyr__progress input[type="range"], .plyr__volume input[type="range"] {
-            height: 20px;
+            height: 28px;
           }
-          .plyr__progress input[type=range]::-webkit-slider-runnable-track, .plyr__volume input[type=range]::-webkit-slider-runnable-track {
-            height: 1px;
+          .plyr__progress input[type=range]::-webkit-slider-runnable-track {
+            height: 2px;
           }
-          .plyr__progress input[type=range]::-moz-range-track, .plyr__volume input[type=range]::-moz-range-track {
-            height: 1px;
+          .plyr__progress input[type=range]::-moz-range-track {
+            height: 2px;
           }
-           .plyr__progress input[type=range]::-webkit-slider-thumb, .plyr__volume input[type=range]::-webkit-slider-thumb {
+          .plyr__progress input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            height: 16px;
+            width: 4px;
+            background: hsl(var(--destructive));
+            border-radius: 2px;
+            border: none;
+            box-shadow: 0 1px 1px rgba(0,0,0,0.15), 0 0 0 1px rgba(0,0,0,0.2);
+            margin-top: -7px;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.2s ease;
+          }
+
+          .plyr__progress input[type=range]:active::-webkit-slider-thumb {
+            transform: scale(1.2);
+            background: white;
+          }
+          
+          .plyr__progress input[type=range]::-moz-range-thumb {
+            height: 16px;
+            width: 4px;
+            background: hsl(var(--destructive));
+            border-radius: 2px;
+            border: none;
+          }
+          .plyr__volume input[type=range]::-webkit-slider-thumb {
             -webkit-appearance: none;
             appearance: none;
             height: 14px;
@@ -392,23 +429,22 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true, thu
             border-radius: 2px;
             border: none;
             box-shadow: 0 1px 1px rgba(0,0,0,0.15), 0 0 0 1px rgba(0,0,0,0.2);
-            margin-top: -6.5px;
-            position: relative;
+            margin-top: -6px;
             cursor: pointer;
             transition: all 0.2s ease;
           }
-
-          .plyr__progress input[type=range]:active::-webkit-slider-thumb, .plyr__volume input[type=range]:active::-webkit-slider-thumb {
-            transform: scale(1.2);
-            background: white;
-          }
-          
-          .plyr__progress input[type=range]::-moz-range-thumb, .plyr__volume input[type=range]::-moz-range-thumb {
+          .plyr__volume input[type=range]::-moz-range-thumb {
             height: 14px;
             width: 4px;
             background: hsl(var(--destructive));
             border-radius: 2px;
             border: none;
+          }
+          .plyr__volume input[type=range]::-webkit-slider-runnable-track {
+            height: 2px;
+          }
+          .plyr__volume input[type=range]::-moz-range-track {
+            height: 2px;
           }
 
           /* Hide original SVG icons */
