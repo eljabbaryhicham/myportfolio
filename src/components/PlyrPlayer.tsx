@@ -382,7 +382,10 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true, thu
             height: 2px;
             top: auto;
             bottom: 0;
-            color: rgba(255,255,255,0.25);
+            color: hsl(var(--destructive) / 0.35);
+          }
+          .plyr__progress__played {
+            color: hsl(var(--destructive));
           }
           .plyr__progress input[type="range"], .plyr__volume input[type="range"] {
             height: 28px;
