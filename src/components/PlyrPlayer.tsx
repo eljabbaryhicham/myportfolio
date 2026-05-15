@@ -329,8 +329,10 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true, thu
         {`
           :root {
             --plyr-color-main: hsl(var(--destructive));
-            --plyr-control-radius: 8px;
+            --plyr-video-progress-buffered-bg: hsl(var(--destructive) / 0.35);
+            --plyr-range-track-height: 4px;
             --plyr-font-family: 'Quicksand', sans-serif;
+            --plyr-control-radius: 8px;
           }
           .plyr {
             width: 100%;
@@ -369,22 +371,8 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true, thu
           .plyr__progress {
             height: 20px;
           }
-          .plyr__progress__buffer {
-            color: hsl(var(--destructive) / 0.35);
-            height: 1px;
-            top: 9.5px;
-          }
-          .plyr__progress__played {
-            color: hsl(var(--destructive));
-          }
           .plyr__progress input[type="range"], .plyr__volume input[type="range"] {
             height: 20px;
-          }
-          .plyr__progress input[type=range]::-webkit-slider-runnable-track {
-            height: 1px;
-          }
-          .plyr__progress input[type=range]::-moz-range-track {
-            height: 1px;
           }
           .plyr__progress input[type=range]::-webkit-slider-thumb {
             -webkit-appearance: none;
