@@ -374,7 +374,7 @@ export default function WorkPage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedSlug, portfolioItems]);
   
-  const updateUrl = (slug: string | null) => {
+  const updateUrl = useCallback((slug: string | null) => {
     const params = new URLSearchParams(searchParams.toString());
     if (slug) {
       params.set('id', slug);
@@ -382,14 +382,14 @@ export default function WorkPage() {
       params.delete('id');
     }
     router.push(`${pathname}?${params.toString()}`, { scroll: false });
-  };
+  }, [router, pathname, searchParams]);
 
   const handleItemClick = useCallback((item: PortfolioItem) => {
     setIsDialogMediaLoading(true);
     setDirection(null); 
     setSelectedItem(item);
     updateUrl(slugify(item.title));
-  }, [router, pathname, searchParams]);
+  }, [updateUrl]);
   
   const minOrder = useMemo(() => {
     if (!portfolioItems || portfolioItems.length === 0) return 0;

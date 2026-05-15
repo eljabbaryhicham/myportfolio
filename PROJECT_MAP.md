@@ -152,6 +152,10 @@ Firebase Firestore ← useDoc/useCollection hooks → React components
 | 2026-05-14 | FIX: Node.js v25 localStorage polyfill (Firebase SSR crash) | ✅ |
 | 2026-05-14 | FIX: Theme color flash — cached in localStorage, restored inline | ✅ |
 | 2026-05-14 | Added `meta[name="theme-color"]` for browser chrome | ✅ |
+| 2026-05-15 | Updated Cloudinary credentials in .env (new primary library) | ✅ |
+| 2026-05-15 | M4.2: Fixed ESLint warning — wrapped `updateUrl` in `useCallback` | ✅ |
+| 2026-05-15 | Moved Google Fonts `<link>` → `@import` in globals.css (fix no-page-custom-font) | ✅ |
+| 2026-05-15 | Suppressed `@next/next/no-img-element` in PlyrPlayer watermark | ✅ |
 
 ## [ORPHANS & PENDING]
 

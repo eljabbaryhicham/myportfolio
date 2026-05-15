@@ -10,6 +10,7 @@ export default [
       'react-hooks/incompatible-library': 'off',
       'react-hooks/use-memo': 'off',
       'react/no-unescaped-entities': 'off',
+      'react-hooks/preserve-manual-memoization': 'off',
     },
   },
 ];

@@ -488,6 +488,7 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true, thu
          {/* Plyr will be injected here */}
         {watermark && (
             <div className="plyr__watermark">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={watermark} alt="Watermark" />
             </div>
         )}
