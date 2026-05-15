@@ -366,46 +366,36 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true, thu
           .plyr__spinner-container {
              display: none !important;
            }
-          .plyr__controls {
-            display: flex;
-            flex-wrap: wrap;
-            align-items: center;
-          }
           .plyr__progress {
-            flex: 1;
-            height: 28px;
-            display: flex;
-            align-items: center;
-            position: relative;
+            height: 20px;
           }
           .plyr__progress__buffer {
-            height: 2px;
-            top: auto;
-            bottom: 0;
             color: hsl(var(--destructive) / 0.35);
+            height: 1px;
+            top: 9.5px;
           }
           .plyr__progress__played {
             color: hsl(var(--destructive));
           }
           .plyr__progress input[type="range"], .plyr__volume input[type="range"] {
-            height: 28px;
+            height: 20px;
           }
           .plyr__progress input[type=range]::-webkit-slider-runnable-track {
-            height: 2px;
+            height: 1px;
           }
           .plyr__progress input[type=range]::-moz-range-track {
-            height: 2px;
+            height: 1px;
           }
           .plyr__progress input[type=range]::-webkit-slider-thumb {
             -webkit-appearance: none;
             appearance: none;
-            height: 16px;
+            height: 14px;
             width: 4px;
             background: hsl(var(--destructive));
             border-radius: 2px;
             border: none;
             box-shadow: 0 1px 1px rgba(0,0,0,0.15), 0 0 0 1px rgba(0,0,0,0.2);
-            margin-top: -7px;
+            margin-top: -6.5px;
             position: relative;
             cursor: pointer;
             transition: all 0.2s ease;
@@ -417,37 +407,11 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true, thu
           }
           
           .plyr__progress input[type=range]::-moz-range-thumb {
-            height: 16px;
-            width: 4px;
-            background: hsl(var(--destructive));
-            border-radius: 2px;
-            border: none;
-          }
-          .plyr__volume input[type=range]::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            appearance: none;
             height: 14px;
             width: 4px;
             background: hsl(var(--destructive));
             border-radius: 2px;
             border: none;
-            box-shadow: 0 1px 1px rgba(0,0,0,0.15), 0 0 0 1px rgba(0,0,0,0.2);
-            margin-top: -6px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-          }
-          .plyr__volume input[type=range]::-moz-range-thumb {
-            height: 14px;
-            width: 4px;
-            background: hsl(var(--destructive));
-            border-radius: 2px;
-            border: none;
-          }
-          .plyr__volume input[type=range]::-webkit-slider-runnable-track {
-            height: 2px;
-          }
-          .plyr__volume input[type=range]::-moz-range-track {
-            height: 2px;
           }
 
           /* Hide original SVG icons */
