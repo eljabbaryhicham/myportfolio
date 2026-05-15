@@ -32,10 +32,12 @@ import ContactForm from '@/features/contact/components/ContactForm';
 import type { AppUser } from '@/firebase/auth/use-user';
 import PlyrPlayer from '@/components/PlyrPlayer';
 import CdnClapprPlayer from '@/components/CdnClapprPlayer';
+import dynamic from 'next/dynamic';
 
 const MemoizedImage = memo(Image);
 const MemoizedPlyrPlayer = memo(PlyrPlayer);
 const MemoizedCdnClapprPlayer = memo(CdnClapprPlayer);
+const MemoizedVidstackPlayer = dynamic(() => import('@/components/VidstackPlayer'), { ssr: false });
 
 
 const MemoizedPortfolioMedia = memo(({
@@ -51,7 +53,7 @@ const MemoizedPortfolioMedia = memo(({
   onFullscreenClick: (url: string) => void;
   onMediaLoaded: () => void;
   watermark?: string;
-  playerType?: 'plyr' | 'clappr';
+  playerType?: 'plyr' | 'clappr' | 'vidstack';
   autoPlay: boolean;
   plyrRef: React.Ref<any>;
 }) => {
@@ -66,8 +68,7 @@ const MemoizedPortfolioMedia = memo(({
 
     return (
       <div className="relative aspect-video bg-black flex items-center justify-center w-full">
-        {item.sourceUrl && (
-          (isVimeo || isYoutube) ? (
+        {item.sourceUrl ? (isVimeo || isYoutube) ? (
             <MemoizedPlyrPlayer
                 ref={plyrRef}
                 key={item.id}
@@ -77,26 +78,32 @@ const MemoizedPortfolioMedia = memo(({
                 autoPlay={autoPlay}
                 thumbnailVttUrl={item.thumbnailVttUrl}
             />
-          ) : playerType === 'clappr' ? (
-              <MemoizedCdnClapprPlayer
-                  key={item.id} // Force re-mount for Clappr
-                  source={item.sourceUrl} 
-                  poster={item.useVideoFrameAsPoster ? undefined : item.thumbnailUrl}
-                  watermark={watermark}
-                  autoPlay={autoPlay}
-              />
-          ) : (
-              <MemoizedPlyrPlayer
-                  ref={plyrRef}
-                  key={item.id} // Force re-mount to ensure clean state
-                  source={item.sourceUrl} 
-                  poster={item.useVideoFrameAsPoster ? undefined : item.thumbnailUrl}
-                  watermark={watermark}
-                  autoPlay={autoPlay}
-                  thumbnailVttUrl={item.thumbnailVttUrl}
-              />
-          )
-        )}
+        ) : playerType === 'vidstack' ? (
+            <MemoizedVidstackPlayer
+                key={item.id}
+                source={item.sourceUrl}
+                poster={item.useVideoFrameAsPoster ? undefined : item.thumbnailUrl}
+                autoPlay={autoPlay}
+            />
+        ) : playerType === 'clappr' ? (
+            <MemoizedCdnClapprPlayer
+                key={item.id}
+                source={item.sourceUrl} 
+                poster={item.useVideoFrameAsPoster ? undefined : item.thumbnailUrl}
+                watermark={watermark}
+                autoPlay={autoPlay}
+            />
+        ) : (
+            <MemoizedPlyrPlayer
+                ref={plyrRef}
+                key={item.id}
+                source={item.sourceUrl} 
+                poster={item.useVideoFrameAsPoster ? undefined : item.thumbnailUrl}
+                watermark={watermark}
+                autoPlay={autoPlay}
+                thumbnailVttUrl={item.thumbnailVttUrl}
+            />
+        ) : null}
       </div>
     );
   }
@@ -224,7 +231,7 @@ const PortfolioGridItem = ({ item, onClick, onEditClick, isAdmin, isSuperAdmin, 
 };
 
 interface HomePageSettings {
-    workPagePlayer?: 'plyr' | 'clappr';
+    workPagePlayer?: 'plyr' | 'clappr' | 'vidstack';
 }
 
 const slugify = (text: string) => text.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, '');
@@ -508,8 +515,9 @@ export default function WorkPage() {
 
   const handleSwitchPlayer = () => {
     if (!settingsDocRef || !isSuperAdmin) return;
-    const newPlayer =
-      homeSettings?.workPagePlayer === 'plyr' ? 'clappr' : 'plyr';
+    const playerCycle: Array<'plyr' | 'clappr' | 'vidstack'> = ['plyr', 'clappr', 'vidstack'];
+    const currentIndex = playerCycle.indexOf(homeSettings?.workPagePlayer || 'clappr');
+    const newPlayer = playerCycle[(currentIndex + 1) % playerCycle.length];
     setDocumentNonBlocking(settingsDocRef, { workPagePlayer: newPlayer }, { merge: true });
     toast({
       title: 'Player Switched',

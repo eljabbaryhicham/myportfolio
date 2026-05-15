@@ -13,11 +13,12 @@ import { useRouter } from 'next/navigation';
 import Preloader from '@/components/preloader';
 import { doc } from 'firebase/firestore';
 import PlyrPlayer from '@/components/PlyrPlayer';
+import VidstackPlayer from '@/components/VidstackPlayer';
 import type { AppUser } from '@/firebase/auth/use-user';
 import { useToast } from '@/hooks/use-toast';
 
 interface HomePageSettings {
-    workPagePlayer?: 'plyr' | 'clappr';
+    workPagePlayer?: 'plyr' | 'clappr' | 'vidstack';
 }
 
 export default function TestPage() {
@@ -54,8 +55,9 @@ export default function TestPage() {
   
   const handleSwitchPlayer = () => {
     if (!settingsDocRef || !isSuperAdmin) return;
-    const newPlayer =
-      homeSettings?.workPagePlayer === 'plyr' ? 'clappr' : 'plyr';
+    const playerCycle: Array<'plyr' | 'clappr' | 'vidstack'> = ['plyr', 'clappr', 'vidstack'];
+    const currentIndex = playerCycle.indexOf(homeSettings?.workPagePlayer || 'clappr');
+    const newPlayer = playerCycle[(currentIndex + 1) % playerCycle.length];
     setDocumentNonBlocking(settingsDocRef, { workPagePlayer: newPlayer }, { merge: true });
     toast({
       title: 'Player Switched',
@@ -113,7 +115,9 @@ export default function TestPage() {
         <Separator className="bg-white/10 w-full max-w-4xl mb-8" />
 
         <div className="w-full max-w-4xl aspect-video bg-black">
-          {workPagePlayer === 'clappr' ? (
+          {workPagePlayer === 'vidstack' ? (
+              <VidstackPlayer key={source} source={source} autoPlay={true} />
+          ) : workPagePlayer === 'clappr' ? (
               <CdnClapprPlayer key={source} source={source} autoPlay={true} />
           ) : (
               <PlyrPlayer key={source} source={source} autoPlay={true} />

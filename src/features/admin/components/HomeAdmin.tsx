@@ -42,21 +42,11 @@ interface HomePageSettings {
     websiteBackgroundMediaId?: string;
     isHomePageVideoEnabled?: boolean;
     isWebsiteVideoEnabled?: boolean;
-    workPagePlayer?: 'plyr' | 'clappr';
-    isTestPageEnabled?: boolean;
-    homePageLogoUrl?: string;
-    isHomePageLogoVisible?: boolean;
-    themeColor?: string;
+    workPagePlayer?: 'plyr' | 'clappr' | 'vidstack';
 }
 
 const settingsSchema = z.object({
-  homePageBackgroundType: z.enum(['video', 'image']).optional(),
-  homePageBackgroundMediaId: z.string().optional(),
-  websiteBackgroundType: z.enum(['video', 'image']).optional(),
-  websiteBackgroundMediaId: z.string().optional(),
-  isHomePageVideoEnabled: z.boolean().optional(),
-  isWebsiteVideoEnabled: z.boolean().optional(),
-  workPagePlayer: z.enum(['plyr', 'clappr']).optional(),
+  workPagePlayer: z.enum(['plyr', 'clappr', 'vidstack']).optional(),
   isTestPageEnabled: z.boolean().optional(),
   homePageLogoUrl: z.string().url().optional().or(z.literal('')),
   isHomePageLogoVisible: z.boolean().optional(),
@@ -419,6 +409,10 @@ export default function HomeAdmin() {
                                               <FormItem className="flex items-center space-x-2 space-y-0">
                                                 <FormControl><RadioGroupItem value="clappr" /></FormControl>
                                                 <FormLabel className="font-normal">Clappr (Feature-rich)</FormLabel>
+                                              </FormItem>
+                                              <FormItem className="flex items-center space-x-2 space-y-0">
+                                                <FormControl><RadioGroupItem value="vidstack" /></FormControl>
+                                                <FormLabel className="font-normal">Vidstack (Modern)</FormLabel>
                                               </FormItem>
                                             </RadioGroup>
                                           </FormControl>
