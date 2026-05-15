@@ -9,7 +9,6 @@ import { useCollection, useDoc, useFirestore, useMemoFirebase } from '@/firebase
 import { collection, query, orderBy, doc } from 'firebase/firestore';
 import Preloader from '@/components/preloader';
 import Logo from '@/components/logo';
-import { DEFAULT_LOGO_URL } from '@/lib/constants';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -103,7 +102,7 @@ export default function AboutPage() {
   const clients = useMemo(() => allClients?.filter(c => c.isVisible !== false) || [], [allClients]);
 
   const isLoading = isLoadingClients || isLoadingContent;
-  const logoUrl = aboutContent?.logoUrl || DEFAULT_LOGO_URL;
+  const logoUrl = aboutContent?.logoUrl;
   const logoScale = aboutContent?.logoScale || 1;
   
   const [emblaRef] = useEmblaCarousel({ loop: true, align: 'start' }, [
@@ -154,9 +153,11 @@ export default function AboutPage() {
                     className="flex flex-col md:flex-row gap-8 md:gap-12 items-center md:items-stretch"
                   >
                     <div className="md:w-1/2 text-center p-8 flex flex-col justify-center">
-                        <div className="w-32 mx-auto mb-4" style={{ transform: `scale(${logoScale})` }}>
-                            <Logo src={logoUrl} />
-                        </div>
+                        {logoUrl && (
+                            <div className="w-32 mx-auto mb-4" style={{ transform: `scale(${logoScale})` }}>
+                                <Logo src={logoUrl} />
+                            </div>
+                        )}
                         <h2 className="text-2xl md:text-3xl font-headline tracking-tight mb-4">{aboutContent?.title}</h2>
                         <p className="text-foreground/70 leading-relaxed mb-6 text-center">{aboutContent?.content}</p>
                         <div className="hidden sm:flex flex-col sm:flex-row gap-4 justify-center">

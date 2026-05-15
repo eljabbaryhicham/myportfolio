@@ -1,10 +1,9 @@
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
-import { DEFAULT_LOGO_URL } from '@/lib/constants';
 
-const Logo = (props: { src?: string; className?: string }) => (
+const Logo = (props: { src: string; className?: string }) => (
     <Image
-      src={props.src || DEFAULT_LOGO_URL}
+      src={props.src}
       alt="belofted logo"
       width={384}
       height={104}

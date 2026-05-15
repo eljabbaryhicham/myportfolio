@@ -11,7 +11,6 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faHouse, faImage, faCircleInfo, faEnvelope, faShieldHalved, faVial } from "@fortawesome/free-solid-svg-icons";
 import Logo from "../logo";
-import { DEFAULT_LOGO_URL } from "@/lib/constants";
 import { doc } from "firebase/firestore";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
@@ -48,7 +47,7 @@ export function AppNav() {
   const { data: homeSettings } = useDoc<HomePageSettings>(settingsDocRef);
 
 
-  const logoUrl = contactInfo?.logoUrl || DEFAULT_LOGO_URL;
+  const logoUrl = contactInfo?.logoUrl;
 
   const accessibleNavItems = navItems.filter(item => {
     if (item.href === '/test') {
@@ -154,14 +153,16 @@ export function AppNav() {
       <div className={cn(
         "flex h-full flex-row md:flex-col items-center justify-between rounded-lg border border-border/50 px-2 py-4 md:p-4 glass-effect"
         )}>
-        <Link href="/" className="hidden md:block relative group mt-4">
-            <div className="relative w-12 h-12 flex items-center justify-center">
-                <div className="absolute inset-0 rounded-full animate-spinning-circle-border bg-gradient-to-r from-primary via-transparent to-transparent"></div>
-                <div className="relative bg-transparent rounded-full p-1 w-10 h-10 flex items-center justify-center">
-                    <Logo src={logoUrl} />
+        {logoUrl && (
+            <Link href="/" className="hidden md:block relative group mt-4">
+                <div className="relative w-12 h-12 flex items-center justify-center">
+                    <div className="absolute inset-0 rounded-full animate-spinning-circle-border bg-gradient-to-r from-primary via-transparent to-transparent"></div>
+                    <div className="relative bg-transparent rounded-full p-1 w-10 h-10 flex items-center justify-center">
+                        <Logo src={logoUrl} />
+                    </div>
                 </div>
-            </div>
-        </Link>
+            </Link>
+        )}
         <nav 
           className="flex flex-row md:flex-col items-center justify-around md:justify-center w-full md:w-auto md:gap-10"
         >

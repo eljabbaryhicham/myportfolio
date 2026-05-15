@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowRight } from '@fortawesome/free-solid-svg-icons';
 import { cn } from "@/lib/utils";
-import { DEFAULT_LOGO_URL } from "@/lib/constants";
+
 import Preloader from "@/components/preloader";
 import Logo from "@/components/logo";
 import { useDoc, useFirestore, useMemoFirebase } from "@/firebase";
@@ -38,7 +38,7 @@ export default function HomePageContent() {
   
   const isLoading = isLoadingContact || isLoadingSettings;
 
-  const siteLogoUrl = contactInfo?.logoUrl || DEFAULT_LOGO_URL;
+  const siteLogoUrl = contactInfo?.logoUrl;
   const homeLogoUrl = homeSettings?.homePageLogoUrl || siteLogoUrl;
   const isLogoVisible = homeSettings?.isHomePageLogoVisible ?? true;
 
@@ -52,7 +52,7 @@ export default function HomePageContent() {
       )}
 
       <div className={cn("relative z-10 flex flex-col items-center justify-center gap-6 transition-opacity duration-1000", isLoading && "opacity-0")}>
-        {isLogoVisible && (
+        {isLogoVisible && homeLogoUrl && (
             <div className="w-full max-w-sm">
                 <Logo src={homeLogoUrl} />
             </div>

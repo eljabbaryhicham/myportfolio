@@ -32,15 +32,15 @@ export function SiteBackground() {
       [firestore]
     );
     const { data: homeSettings } = useDoc<HomePageSettings>(settingsDocRef);
-    
-    const backgroundType = isHomePage
-        ? homeSettings?.homePageBackgroundType || 'video'
-        : homeSettings?.websiteBackgroundType || 'video';
 
-    const backgroundMediaId = isHomePage 
-        ? homeSettings?.homePageBackgroundMediaId 
-        : homeSettings?.websiteBackgroundMediaId;
-    
+    const backgroundType = homeSettings ? (isHomePage
+        ? homeSettings.homePageBackgroundType
+        : homeSettings.websiteBackgroundType) : null;
+
+    const backgroundMediaId = homeSettings ? (isHomePage 
+        ? homeSettings.homePageBackgroundMediaId 
+        : homeSettings.websiteBackgroundMediaId) : null;
+
     const backgroundProjectRef = useMemoFirebase(
         () => (firestore && backgroundMediaId && backgroundType === 'video' ? doc(firestore, 'projects', backgroundMediaId) : null),
         [firestore, backgroundMediaId, backgroundType]
@@ -53,18 +53,20 @@ export function SiteBackground() {
     );
     const { data: backgroundMedia } = useDoc<MediaAsset>(backgroundMediaRef);
 
-    const isVideoEnabled = isHomePage
-      ? homeSettings?.isHomePageVideoEnabled ?? true
-      : homeSettings?.isWebsiteVideoEnabled ?? true;
+    const isVideoEnabled = homeSettings ? (isHomePage
+      ? homeSettings.isHomePageVideoEnabled ?? true
+      : homeSettings.isWebsiteVideoEnabled ?? true) : true;
 
     const mediaUrl = backgroundType === 'video' 
       ? backgroundProject?.sourceUrl
       : backgroundMedia?.url;
 
+    if (!homeSettings || !backgroundType || !backgroundMediaId || !mediaUrl) return null;
+
     return (
         <div className="absolute inset-0 -z-10 w-full h-full">
             <div className="w-full h-full bg-black">
-                {backgroundType === 'video' && isVideoEnabled && mediaUrl ? (
+                {backgroundType === 'video' && isVideoEnabled ? (
                     <video
                         key={mediaUrl}
                         className="w-full h-full object-cover"
@@ -75,7 +77,7 @@ export function SiteBackground() {
                     >
                         <source src={mediaUrl} type="video/mp4" />
                     </video>
-                ) : backgroundType === 'image' && mediaUrl ? (
+                ) : backgroundType === 'image' ? (
                     <Image
                       src={mediaUrl}
                       alt="Background"
@@ -139,16 +141,18 @@ export function DynamicThemeStyles() {
     );
     const { data: homeSettings } = useDoc<HomePageSettings>(settingsDocRef);
     
-    const themeColor = homeSettings?.themeColor || '#d81e38';
-    const primaryHsl = hexToHsl(themeColor);
+    const themeColor = homeSettings?.themeColor;
+    const primaryHsl = themeColor ? hexToHsl(themeColor) : null;
 
     useEffect(() => {
       if (primaryHsl) {
         try { localStorage.setItem(STORAGE_KEY, primaryHsl); } catch {}
       }
     }, [primaryHsl]);
+
+    if (!primaryHsl) return null;
   
-    return primaryHsl ? (
+    return (
       <style>{`
         :root {
             --primary: ${primaryHsl};
@@ -163,5 +167,5 @@ export function DynamicThemeStyles() {
             --ring: ${primaryHsl};
         }
       `}</style>
-    ) : null;
+    );
 }

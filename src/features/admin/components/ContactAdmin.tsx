@@ -21,7 +21,6 @@ import { doc } from 'firebase/firestore';
 import { useEffect } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import Preloader from '@/components/preloader';
-import { DEFAULT_LOGO_URL } from '@/lib/constants';
 import type { AppUser } from '@/firebase/auth/use-user';
 
 const formSchema = z.object({
@@ -53,7 +52,7 @@ const defaultFormValues: ContactInfo = {
     instagramUrl: '',
     facebookUrl: '',
     twitterUrl: '',
-    logoUrl: DEFAULT_LOGO_URL,
+    logoUrl: '',
 };
 
 export default function ContactAdmin() {
@@ -90,7 +89,7 @@ export default function ContactAdmin() {
             instagramUrl: contactInfo.instagramUrl || '',
             facebookUrl: contactInfo.facebookUrl || '',
             twitterUrl: contactInfo.twitterUrl || '',
-            logoUrl: contactInfo.logoUrl || DEFAULT_LOGO_URL,
+            logoUrl: contactInfo.logoUrl || '',
         };
       form.reset(values);
     } else if (!isLoading) {
