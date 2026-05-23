@@ -159,13 +159,8 @@
         },
         "workPagePlayer": {
           "type": "string",
-          "enum": ["plyr", "clappr", "jwplayer"],
+          "enum": ["plyr", "clappr", "afterglow"],
           "description": "The video player to use on the Work page."
-        },
-        "jwPlayerLibraryUrl": {
-          "type": "string",
-          "format": "uri",
-          "description": "JW Player library script URL from the JW Player dashboard."
         },
         "isTestPageEnabled": {
           "type": "boolean",

@@ -15,11 +15,10 @@ import { doc } from 'firebase/firestore';
 import PlyrPlayer from '@/components/PlyrPlayer';
 import type { AppUser } from '@/firebase/auth/use-user';
 import { useToast } from '@/hooks/use-toast';
-import JWPlayer from '@/components/JWPlayer';
+import AfterglowPlayer from '@/components/AfterglowPlayer';
 
 interface HomePageSettings {
-    workPagePlayer?: 'plyr' | 'clappr' | 'jwplayer';
-    jwPlayerLibraryUrl?: string;
+    workPagePlayer?: 'plyr' | 'clappr' | 'afterglow';
 }
 
 export default function TestPage() {
@@ -41,7 +40,6 @@ export default function TestPage() {
   );
   const { data: homeSettings } = useDoc<HomePageSettings>(settingsDocRef);
   const workPagePlayer = homeSettings?.workPagePlayer || 'clappr';
-  const jwPlayerLibraryUrl = homeSettings?.jwPlayerLibraryUrl;
 
 
   useEffect(() => {
@@ -57,10 +55,10 @@ export default function TestPage() {
   
   const handleSwitchPlayer = () => {
     if (!settingsDocRef || !isSuperAdmin) return;
-    const cycle: Record<string, string> = { plyr: 'clappr', clappr: 'jwplayer', jwplayer: 'plyr' };
+    const cycle: Record<string, string> = { plyr: 'clappr', clappr: 'afterglow', afterglow: 'plyr' };
     const newPlayer = cycle[homeSettings?.workPagePlayer || 'clappr'] || 'plyr';
     setDocumentNonBlocking(settingsDocRef, { workPagePlayer: newPlayer }, { merge: true });
-    const names: Record<string, string> = { plyr: 'Plyr', clappr: 'Clappr', jwplayer: 'JW Player' };
+    const names: Record<string, string> = { plyr: 'Plyr', clappr: 'Clappr', afterglow: 'Afterglow' };
     toast({
       title: 'Player Switched',
       description: `Default player is now ${names[newPlayer] || newPlayer}.`,
@@ -81,7 +79,7 @@ export default function TestPage() {
         <div className="text-center mb-8 w-full max-w-4xl">
           <h1 className="text-3xl md:text-4xl font-headline tracking-tight">Streaming Test</h1>
           <p className="mt-2 text-base md:text-lg text-foreground/70">
-            The active player is <span className='font-bold text-primary'>{({ plyr: 'Plyr', clappr: 'Clappr', jwplayer: 'JW Player' })[workPagePlayer] || workPagePlayer}</span>. Enter a video URL to test playback.
+            The active player is <span className='font-bold text-primary'>{({ plyr: 'Plyr', clappr: 'Clappr', afterglow: 'Afterglow' })[workPagePlayer] || workPagePlayer}</span>. Enter a video URL to test playback.
           </p>
           <div className="mt-4 flex w-full items-center space-x-2">
             <Input
@@ -117,8 +115,8 @@ export default function TestPage() {
         <div className="w-full max-w-4xl aspect-video bg-black">
           {workPagePlayer === 'clappr' ? (
               <CdnClapprPlayer key={source} source={source} autoPlay={true} />
-          ) : workPagePlayer === 'jwplayer' && jwPlayerLibraryUrl ? (
-              <JWPlayer key={source} source={source} autoPlay={true} libraryUrl={jwPlayerLibraryUrl} />
+          ) : workPagePlayer === 'afterglow' ? (
+              <AfterglowPlayer key={source} source={source} autoPlay={true} />
           ) : (
               <PlyrPlayer key={source} source={source} autoPlay={true} />
           )}
