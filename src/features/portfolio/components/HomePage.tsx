@@ -11,6 +11,7 @@ import Preloader from "@/components/preloader";
 import Logo from "@/components/logo";
 import { useDoc, useFirestore, useMemoFirebase } from "@/firebase";
 import { doc } from "firebase/firestore";
+import { useTranslation } from "@/lib/i18n/useTranslation";
 
 interface ContactInfo {
     logoUrl?: string;
@@ -23,6 +24,7 @@ interface HomePageSettings {
 
 export default function HomePageContent() {
   const firestore = useFirestore();
+  const { t } = useTranslation();
 
   const contactDocRef = useMemoFirebase(
     () => (firestore ? doc(firestore, 'contact', 'details') : null),
@@ -59,20 +61,20 @@ export default function HomePageContent() {
         )}
         <div className="text-center space-y-3 max-w-lg">
             <h2 className="text-xl md:text-2xl font-headline tracking-tight text-white/90">
-                From Concept to Screen
+                {t('home.hero.heading')}
             </h2>
             <p className="text-sm md:text-base text-foreground/60 leading-relaxed">
-                We craft compelling visual content — animation, graphics, sound, and strategy — to bring your brand&apos;s story to life.
+                {t('home.hero.subtitle')}
             </p>
         </div>
         <Button asChild size="lg" className="group">
           <Link href="/work">
-            Explore Work
+            {t('home.hero.cta')}
             <FontAwesomeIcon icon={faArrowRight} className="ml-2 transition-transform group-hover:translate-x-1" />
           </Link>
         </Button>
         <div className="pt-4 text-foreground/40 text-xs animate-pulse">
-            Scroll to explore
+            {t('home.hero.scroll')}
         </div>
       </div>
     </div>

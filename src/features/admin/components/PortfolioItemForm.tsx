@@ -39,6 +39,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faXmark, faImages } from '@fortawesome/free-solid-svg-icons';
 import { useToast } from '@/hooks/use-toast';
 import { Switch } from '@/components/ui/switch';
+import { useTranslation } from '@/lib/i18n/useTranslation';
 
 
 const formSchema = z.object({
@@ -67,11 +68,12 @@ interface PortfolioItemFormProps {
   onSubmit: (values: PortfolioItem) => void;
   isOpen: boolean; 
   setIsOpen: (isOpen: boolean) => void;
-  onChooseFromLibrary: (onSelect: (url: string, type: 'image' | 'video', filename: string) => void) => void;
+  onChooseFromLibrary: (onSelect: (url: string, type: 'image' | 'video' | 'raw', filename: string) => void) => void;
   canEdit: boolean;
 }
 
 export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onChooseFromLibrary, canEdit}: PortfolioItemFormProps) {
+    const { t } = useTranslation();
     const { toast } = useToast();
 
     const form = useForm<PortfolioItemFormValues>({
@@ -148,9 +150,9 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onCho
     };
 
     const handleChooseThumbnail = () => {
-        onChooseFromLibrary((url, type) => {
+        onChooseFromLibrary((url, type: 'image' | 'video' | 'raw') => {
             if (type !== 'image') {
-              toast({ variant: 'destructive', title: 'Invalid Thumbnail', description: 'Thumbnails must be an image file.'});
+              toast({ variant: 'destructive', title: t('portfolioForm.toast.invalidThumbnail.title'), description: t('portfolioForm.toast.invalidThumbnail.description')});
               return;
             }
             form.setValue('thumbnailUrl', url, { shouldValidate: true });
@@ -160,7 +162,7 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onCho
     const handleChooseSource = () => {
         onChooseFromLibrary((url, type, filename) => {
             form.setValue('sourceUrl', url, { shouldValidate: true });
-            form.setValue('type', type, { shouldValidate: true });
+            form.setValue('type', type === 'raw' ? 'image' : type, { shouldValidate: true });
              // If it's a new item, set the title from the filename
             if (!item?.id) {
                 const title = filename.split('.').slice(0, -1).join('.');
@@ -173,10 +175,10 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onCho
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
             <DialogContent className="w-[80vw] h-[90vh] flex flex-col glass-effect p-0 rounded-lg">
                 <DialogHeader className="p-6 pb-0">
-                    <DialogTitle className="font-headline">{item ? 'Edit' : 'Add'} Portfolio Item</DialogTitle>
+                    <DialogTitle className="font-headline">{item ? t('portfolioForm.editTitle') : t('portfolioForm.addTitle')}</DialogTitle>
                     <DialogDescription>
-                        {item ? 'Update the details of your portfolio item.' : 'Add a new item to your portfolio.'}
-                        {!canEdit && <span className="text-destructive font-bold block mt-2"> (Read-only)</span>}
+                        {item ? t('portfolioForm.editDescription') : t('portfolioForm.addDescription')}
+                        {!canEdit && <span className="text-destructive font-bold block mt-2"> {t('portfolioForm.readonly')}</span>}
                     </DialogDescription>
                 </DialogHeader>
                 <ScrollArea className="flex-1 -mr-2">
@@ -189,9 +191,9 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onCho
                           name="title"
                           render={({ field }) => (
                               <FormItem>
-                              <FormLabel>Title</FormLabel>
+                              <FormLabel>{t('portfolioForm.title')}</FormLabel>
                               <FormControl>
-                                  <Input placeholder="Project Title" {...field} />
+                                  <Input placeholder={t('portfolioForm.titlePlaceholder')} {...field} />
                               </FormControl>
                               <FormMessage />
                               </FormItem>
@@ -202,9 +204,9 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onCho
                           name="description"
                           render={({ field }) => (
                               <FormItem>
-                              <FormLabel>Description</FormLabel>
+                              <FormLabel>{t('portfolioForm.description')}</FormLabel>
                               <FormControl>
-                                  <Textarea placeholder="A short description of the project" {...field} />
+                                  <Textarea placeholder={t('portfolioForm.descriptionPlaceholder')} {...field} />
                               </FormControl>
                               <FormMessage />
                               </FormItem>
@@ -215,16 +217,16 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onCho
                           name="details"
                           render={({ field }) => (
                               <FormItem>
-                              <FormLabel>Project Details</FormLabel>
+                              <FormLabel>{t('portfolioForm.details')}</FormLabel>
                               <FormControl>
                                   <Textarea
-                                  placeholder="Add rich details about the project. You can use Markdown for formatting."
+                                  placeholder={t('portfolioForm.detailsPlaceholder')}
                                   className="min-h-[150px]"
                                   {...field}
                                   />
                               </FormControl>
                               <FormDescription>
-                                Use Markdown for styling. Images: `![alt](url)`. Videos: `&lt;video src="url" controls /&gt;`.
+                                {t('portfolioForm.detailsHelp')}
                               </FormDescription>
                               <FormMessage />
                               </FormItem>
@@ -235,16 +237,16 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onCho
                           name="type"
                           render={({ field }) => (
                               <FormItem>
-                              <FormLabel>Type</FormLabel>
+                              <FormLabel>{t('portfolioForm.type')}</FormLabel>
                               <Select onValueChange={field.onChange} value={field.value}>
                                   <FormControl>
                                   <SelectTrigger>
-                                      <SelectValue placeholder="Select a type" />
+                                      <SelectValue placeholder={t('portfolioForm.typePlaceholder')} />
                                   </SelectTrigger>
                                   </FormControl>
                                   <SelectContent>
-                                  <SelectItem value="image">Image</SelectItem>
-                                  <SelectItem value="video">Video</SelectItem>
+                                  <SelectItem value="image">{t('portfolioForm.typeImage')}</SelectItem>
+                                  <SelectItem value="video">{t('portfolioForm.typeVideo')}</SelectItem>
                                   </SelectContent>
                               </Select>
                               <FormMessage />
@@ -256,17 +258,17 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onCho
                           name="thumbnailUrl"
                           render={({ field }) => (
                               <FormItem>
-                                <FormLabel>Grid Thumbnail URL</FormLabel>
+                                <FormLabel>{t('portfolioForm.thumbnailUrl')}</FormLabel>
                                 <div className="flex items-center gap-2">
                                   <FormControl>
-                                      <Input placeholder="https://example.com/thumbnail.jpg" {...field} />
+                                      <Input placeholder={t('portfolioForm.thumbnailUrlPlaceholder')} {...field} />
                                   </FormControl>
                                   <Button type="button" variant="outline" size="sm" onClick={handleChooseThumbnail}>
                                       <FontAwesomeIcon icon={faImages} />
-                                      <span className="ml-2 hidden sm:inline">Library</span>
+                                      <span className="ml-2 hidden sm:inline">{t('portfolioForm.library')}</span>
                                   </Button>
                                 </div>
-                                <FormDescription>Image shown in the main portfolio grid. Also used as video poster if enabled below.</FormDescription>
+                                <FormDescription>{t('portfolioForm.thumbnailDescription')}</FormDescription>
                                 <FormMessage />
                               </FormItem>
                           )}
@@ -280,10 +282,10 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onCho
                                       <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4 glass-effect">
                                           <div className="space-y-0.5">
                                               <FormLabel className="text-base">
-                                                  Use video frame as poster
+                                                  {t('portfolioForm.useVideoFrameAsPoster')}
                                               </FormLabel>
                                               <FormDescription>
-                                                  If enabled, the player generates a thumbnail from the video. If disabled, it uses the Grid Thumbnail URL.
+                                                  {t('portfolioForm.useVideoFrameAsPosterDescription')}
                                               </FormDescription>
                                           </div>
                                           <FormControl>
@@ -300,11 +302,11 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onCho
                                 name="thumbnailVttUrl"
                                 render={({ field }) => (
                                     <FormItem>
-                                    <FormLabel>Preview Thumbnails VTT URL</FormLabel>
+                                    <FormLabel>{t('portfolioForm.thumbnailsVttUrl')}</FormLabel>
                                     <FormControl>
-                                        <Input placeholder="https://example.com/thumbnails.vtt" {...field} />
+                                        <Input placeholder={t('portfolioForm.thumbnailsVttUrlPlaceholder')} {...field} />
                                     </FormControl>
-                                    <FormDescription>The URL for the WebVTT file containing timeline preview thumbnails for this video.</FormDescription>
+                                    <FormDescription>{t('portfolioForm.thumbnailsVttUrlDescription')}</FormDescription>
                                     <FormMessage />
                                     </FormItem>
                                 )}
@@ -316,12 +318,12 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onCho
                           name="thumbnailHint"
                           render={({ field }) => (
                               <FormItem>
-                              <FormLabel>Thumbnail Hint</FormLabel>
+                              <FormLabel>{t('portfolioForm.thumbnailHint')}</FormLabel>
                               <FormControl>
-                                  <Input placeholder="e.g. 'abstract art'" {...field} />
+                                  <Input placeholder={t('portfolioForm.thumbnailHintPlaceholder')} {...field} />
                               </FormControl>
                               <FormDescription>
-                                  AI hint for image generation (1-2 words).
+                                  {t('portfolioForm.thumbnailHintDescription')}
                               </FormDescription>
                               <FormMessage />
                               </FormItem>
@@ -332,17 +334,17 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onCho
                           name="sourceUrl"
                           render={({ field }) => (
                               <FormItem>
-                                <FormLabel>Source Media URL</FormLabel>
+                                <FormLabel>{t('portfolioForm.sourceMediaUrl')}</FormLabel>
                                 <div className="flex items-center gap-2">
                                   <FormControl>
-                                      <Input placeholder="https://example.com/full-image.jpg" {...field} />
+                                      <Input placeholder={t('portfolioForm.sourceMediaUrlPlaceholder')} {...field} />
                                   </FormControl>
                                    <Button type="button" variant="outline" size="sm" onClick={handleChooseSource}>
                                     <FontAwesomeIcon icon={faImages} />
-                                    <span className="ml-2 hidden sm:inline">Library</span>
+                                    <span className="ml-2 hidden sm:inline">{t('portfolioForm.library')}</span>
                                   </Button>
                                 </div>
-                                <FormDescription>The full-size image or the main video file.</FormDescription>
+                                <FormDescription>{t('portfolioForm.sourceMediaDescription')}</FormDescription>
                                 <FormMessage />
                               </FormItem>
                           )}
@@ -352,7 +354,7 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onCho
                             name="order"
                             render={({ field: { onChange, ...fieldProps } }) => (
                                 <FormItem>
-                                    <FormLabel>Order</FormLabel>
+                                    <FormLabel>{t('portfolioForm.order')}</FormLabel>
                                     <FormControl>
                                         <Input
                                             type="number"
@@ -365,7 +367,7 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onCho
                                             />
                                     </FormControl>
                                     <FormDescription>
-                                        The display order of the project. Leave blank for new items to be added to the start.
+                                        {t('portfolioForm.orderDescription')}
                                     </FormDescription>
                                     <FormMessage />
                                 </FormItem>
@@ -378,10 +380,10 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onCho
                                     <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4 glass-effect">
                                         <div className="space-y-0.5">
                                             <FormLabel className="text-base">
-                                                Visible
+                                                {t('portfolioForm.visible')}
                                             </FormLabel>
                                             <FormDescription>
-                                                Make this project visible on the public work page.
+                                                {t('portfolioForm.visibleDescription')}
                                             </FormDescription>
                                         </div>
                                         <FormControl>
@@ -394,8 +396,8 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onCho
                                 )}
                             />
                           <div className="flex justify-end space-x-4 pt-4">
-                              <Button type="button" variant="outline" onClick={() => setIsOpen(false)}>Cancel</Button>
-                              <Button type="submit">Save</Button>
+                              <Button type="button" variant="outline" onClick={() => setIsOpen(false)}>{t('portfolioForm.cancel')}</Button>
+                              <Button type="submit">{t('portfolioForm.save')}</Button>
                           </div>
                         </fieldset>
                       </form>
@@ -410,7 +412,7 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onCho
                   "disabled:pointer-events-none"
                 )}>
                     <FontAwesomeIcon icon={faXmark} className="h-4 w-4" />
-                    <span className="sr-only">Close</span>
+                    <span className="sr-only">{t('portfolioForm.close')}</span>
                 </DialogClose>
             </DialogContent>
         </Dialog>

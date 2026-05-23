@@ -2,6 +2,7 @@
 
 import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import { cn } from '@/lib/utils';
+import translations from '@/lib/i18n/translations';
 
 const STORAGE_KEY = 'belofted_lang';
 
@@ -45,6 +46,7 @@ export function useLanguage() {
 
 export function LanguageSwitcher({ className }: { className?: string }) {
   const { lang, setLang } = useLanguage();
+  const t = (key: string) => translations[lang]?.[key] ?? translations.en[key] ?? key;
 
   return (
     <button
@@ -53,9 +55,9 @@ export function LanguageSwitcher({ className }: { className?: string }) {
         "text-xs font-semibold tracking-wider text-white/60 hover:text-white transition-colors",
         className
       )}
-      title="Toggle language"
+      title={t('layout.toggleLang')}
     >
-      {lang === 'en' ? 'FR' : 'ENG'}
+      {lang === 'en' ? t('layout.fr') : t('layout.eng')}
     </button>
   );
 }

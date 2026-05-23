@@ -1,6 +1,7 @@
 
 'use client';
 
+import { useTranslation } from '@/lib/i18n/useTranslation';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import * as z from 'zod';
@@ -51,6 +52,7 @@ type AboutFormValues = z.infer<typeof formSchema>;
 interface AboutPageContent extends AboutFormValues {}
 
 export default function AboutAdmin() {
+  const { t } = useTranslation();
   const { toast } = useToast();
   const firestore = useFirestore();
   const { user } = useUser();
@@ -61,7 +63,7 @@ export default function AboutAdmin() {
 
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isLibraryOpen, setIsLibraryOpen] = useState(false);
-  const [librarySelectionConfig, setLibrarySelectionConfig] = useState<{ onSelect: (url: string, type: 'image' | 'video', filename: string) => void; field: 'imageUrl' | 'logoUrl' } | null>(null);
+  const [librarySelectionConfig, setLibrarySelectionConfig] = useState<{ onSelect: (url: string, type: 'image' | 'video' | 'raw', filename: string) => void; field: 'imageUrl' | 'logoUrl' } | null>(null);
 
   const aboutContentRef = useMemoFirebase(
     () => (firestore ? doc(firestore, 'about', 'content') : null),
@@ -109,8 +111,8 @@ export default function AboutAdmin() {
     };
     setDocumentNonBlocking(aboutContentRef, dataToSave, { merge: true });
     toast({
-      title: 'About Page Updated',
-      description: 'Your "About Us" page has been successfully updated.',
+      title: t('aboutAdmin.toast.saved.title'),
+      description: t('aboutAdmin.toast.saved.description'),
     });
     setIsFormOpen(false); // Close dialog on submit
   };
@@ -122,7 +124,7 @@ export default function AboutAdmin() {
         if (type === 'image') {
           form.setValue(field, url, { shouldValidate: true });
         } else {
-          toast({ variant: 'destructive', title: 'Invalid File Type', description: 'Please select an image.' });
+          toast({ variant: 'destructive', title: t('aboutAdmin.toast.invalidFileType.title'), description: t('aboutAdmin.toast.invalidFileType.description') });
         }
         setIsLibraryOpen(false);
       },
@@ -138,13 +140,13 @@ export default function AboutAdmin() {
           <div className="flex flex-col min-h-0">
               <div className="mb-6 flex-shrink-0 flex items-start justify-between">
                   <div>
-                      <h2 className="text-xl font-headline">Client Management</h2>
-                      <p className="text-muted-foreground">Manage the clients displayed on your "About Us" page.</p>
+                      <h2 className="text-xl font-headline">{t('aboutAdmin.title')}</h2>
+                      <p className="text-muted-foreground">{t('aboutAdmin.description')}</p>
                   </div>
                   <DialogTrigger asChild>
                       <Button variant="outline" size="sm" disabled={!canEditAbout}>
                           <FontAwesomeIcon icon={faPencilAlt} className="mr-2 h-4 w-4" />
-                          Edit Page Content
+                          {t('aboutAdmin.editPageContent')}
                       </Button>
                   </DialogTrigger>
               </div>
@@ -152,10 +154,10 @@ export default function AboutAdmin() {
           </div>
           <DialogContent className="w-[80vw] h-[90vh] flex flex-col glass-effect p-0 rounded-lg">
               <DialogHeader className="p-6 pb-0">
-                <DialogTitle className="font-headline">Edit About Page Content</DialogTitle>
+                <DialogTitle className="font-headline">{t('aboutAdmin.editDialogTitle')}</DialogTitle>
                 <DialogDescription>
-                  Update the content displayed on your public "About Us" page.
-                  {!canEditAbout && <span className="text-destructive font-bold block mt-2"> (Read-only)</span>}
+                  {t('aboutAdmin.editDialogDescription')}
+                  {!canEditAbout && <span className="text-destructive font-bold block mt-2"> {t('aboutAdmin.readonly')}</span>}
                 </DialogDescription>
               </DialogHeader>
               <div className="flex-1 min-h-0">
@@ -174,10 +176,10 @@ export default function AboutAdmin() {
                               name="logoUrl"
                               render={({ field }) => (
                                 <FormItem>
-                                  <FormLabel>Logo URL</FormLabel>
+                                  <FormLabel>{t('aboutAdmin.logoUrl')}</FormLabel>
                                   <div className="flex items-center gap-2">
                                     <FormControl>
-                                      <Input placeholder="https://example.com/your-logo.png" {...field} />
+                                      <Input placeholder={t('aboutAdmin.logoUrlPlaceholder')} {...field} />
                                     </FormControl>
                                     <Button type="button" variant="outline" size="icon" onClick={() => handleChooseImage('logoUrl')}>
                                       <FontAwesomeIcon icon={faImages} />
@@ -192,7 +194,7 @@ export default function AboutAdmin() {
                               name="logoScale"
                               render={({ field }) => (
                                 <FormItem>
-                                  <FormLabel>Logo Scale ({Math.round((field.value || 1) * 100)}%)</FormLabel>
+                                  <FormLabel>{t('aboutAdmin.logoScale').replace('{percent}', String(Math.round((field.value || 1) * 100)))}</FormLabel>
                                   <FormControl>
                                     <Slider
                                       value={[field.value || 1]}
@@ -203,7 +205,7 @@ export default function AboutAdmin() {
                                     />
                                   </FormControl>
                                    <FormDescription>
-                                    Adjust the size of the logo on the about page.
+                                    {t('aboutAdmin.logoScaleDescription')}
                                   </FormDescription>
                                   <FormMessage />
                                 </FormItem>
@@ -214,9 +216,9 @@ export default function AboutAdmin() {
                               name="title"
                               render={({ field }) => (
                                 <FormItem>
-                                  <FormLabel>Heading</FormLabel>
+                                  <FormLabel>{t('aboutAdmin.heading')}</FormLabel>
                                   <FormControl>
-                                    <Input placeholder="About Section Heading" {...field} />
+                                    <Input placeholder={t('aboutAdmin.headingPlaceholder')} {...field} />
                                   </FormControl>
                                   <FormMessage />
                                 </FormItem>
@@ -227,9 +229,9 @@ export default function AboutAdmin() {
                               name="content"
                               render={({ field }) => (
                                 <FormItem>
-                                  <FormLabel>Paragraph</FormLabel>
+                                  <FormLabel>{t('aboutAdmin.paragraph')}</FormLabel>
                                   <FormControl>
-                                    <Textarea placeholder="Write your paragraph here..." className="min-h-[150px]" {...field} />
+                                    <Textarea placeholder={t('aboutAdmin.paragraphPlaceholder')} className="min-h-[150px]" {...field} />
                                   </FormControl>
                                   <FormMessage />
                                 </FormItem>
@@ -240,10 +242,10 @@ export default function AboutAdmin() {
                               name="imageUrl"
                               render={({ field }) => (
                                 <FormItem>
-                                  <FormLabel>Image URL</FormLabel>
+                                  <FormLabel>{t('aboutAdmin.imageUrl')}</FormLabel>
                                   <div className="flex items-center gap-2">
                                     <FormControl>
-                                      <Input placeholder="https://example.com/your-image.png" {...field} />
+                                      <Input placeholder={t('aboutAdmin.imageUrlPlaceholder')} {...field} />
                                     </FormControl>
                                     <Button type="button" variant="outline" size="icon" onClick={() => handleChooseImage('imageUrl')}>
                                       <FontAwesomeIcon icon={faImages} />
@@ -254,8 +256,8 @@ export default function AboutAdmin() {
                               )}
                             />
                             <div className="flex justify-end pt-4 gap-4">
-                              <Button type="button" variant="outline" onClick={() => setIsFormOpen(false)}>Cancel</Button>
-                              <Button type="submit" disabled={!canEditAbout}>Save Changes</Button>
+                              <Button type="button" variant="outline" onClick={() => setIsFormOpen(false)}>{t('aboutAdmin.cancel')}</Button>
+                              <Button type="submit" disabled={!canEditAbout}>{t('aboutAdmin.save')}</Button>
                             </div>
                           </fieldset>
                         </form>
@@ -283,6 +285,8 @@ export default function AboutAdmin() {
         }}
         activeTab={'images'}
         setActiveTab={() => {}}
+        activeLibrary={'primary'}
+        setActiveLibrary={() => {}}
         newlyUploadedId={null}
       />
     </>

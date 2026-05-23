@@ -33,6 +33,7 @@ import type { AppUser } from '@/firebase/auth/use-user';
 import PlyrPlayer from '@/components/PlyrPlayer';
 import CdnClapprPlayer from '@/components/CdnClapprPlayer';
 import DPlayer from '@/components/DPlayer';
+import { useTranslation } from '@/lib/i18n/useTranslation';
 
 const MemoizedImage = memo(Image);
 const MemoizedPlyrPlayer = memo(PlyrPlayer);
@@ -57,6 +58,7 @@ const MemoizedPortfolioMedia = memo(({
   autoPlay: boolean;
   plyrRef: React.Ref<any>;
 }) => {
+  const { t } = useTranslation();
 
   useEffect(() => {
     onMediaLoaded();
@@ -126,7 +128,7 @@ const MemoizedPortfolioMedia = memo(({
             onClick={() => onFullscreenClick(item.sourceUrl || item.thumbnailUrl)}
           >
             <FontAwesomeIcon icon={faExpand} className="h-6 w-6 md:h-8 md:w-8" />
-            <span className="sr-only">Fullscreen</span>
+            <span className="sr-only">{t('work.details.fullscreen')}</span>
         </Button>
       </div>
     );
@@ -135,6 +137,7 @@ MemoizedPortfolioMedia.displayName = 'MemoizedPortfolioMedia';
 
 
 const PortfolioGridItem = ({ item, onClick, onEditClick, isAdmin, isSuperAdmin, onSwitchPlayer }: { item: PortfolioItem, onClick: () => void, onEditClick: () => void, isAdmin: boolean, isSuperAdmin: boolean, onSwitchPlayer: () => void }) => {
+  const { t } = useTranslation();
   const [isLoaded, setIsLoaded] = useState(false);
 
   const handleEditClick = (e: React.MouseEvent) => {
@@ -210,7 +213,7 @@ const PortfolioGridItem = ({ item, onClick, onEditClick, isAdmin, isSuperAdmin, 
                 onClick={handleEditClick}
               >
                 <FontAwesomeIcon icon={faPencilAlt} className="h-4 w-4" />
-                <span className="sr-only">Edit Project</span>
+                <span className="sr-only">{t('work.details.editProject')}</span>
               </Button>
             )}
             {isSuperAdmin && item.type === 'video' && (
@@ -219,10 +222,10 @@ const PortfolioGridItem = ({ item, onClick, onEditClick, isAdmin, isSuperAdmin, 
                 size="sm"
                 className="h-8 w-8 p-0"
                 onClick={handleSwitchPlayerClick}
-                title="Switch Default Player"
+                title={t('work.details.switchPlayer')}
               >
                 <FontAwesomeIcon icon={faSyncAlt} className="h-4 w-4" />
-                <span className="sr-only">Switch Player</span>
+                <span className="sr-only">{t('work.details.switchPlayer')}</span>
               </Button>
             )}
           </div>
@@ -245,6 +248,7 @@ export default function WorkPage() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const { t } = useTranslation();
 
   const typedUser = user as AppUser | null;
   const isSuperAdmin = typedUser?.email === 'eljabbaryhicham@example.com';
@@ -291,8 +295,8 @@ export default function WorkPage() {
   const plyrRef = useRef<any>(null);
   
   const [isLibraryOpen, setIsLibraryOpen] = useState(false);
-  const [librarySelectionConfig, setLibrarySelectionConfig] = useState<{ onSelect: (url: string, type: 'image' | 'video', filename: string) => void } | null>(null);
-  const [dialogActiveTab, setDialogActiveTab] = useState<'images' | 'videos'>('images');
+  const [librarySelectionConfig, setLibrarySelectionConfig] = useState<{ onSelect: (url: string, type: 'image' | 'video' | 'raw', filename: string) => void } | null>(null);
+  const [dialogActiveTab, setDialogActiveTab] = useState<'images' | 'videos' | 'files'>('images');
   const [dialogActiveLibrary, setDialogActiveLibrary] = useState<'primary' | 'extented'>('primary');
   const [direction, setDirection] = useState<'next' | 'prev' | null>(null);
   const [isDialogMediaLoading, setIsDialogMediaLoading] = useState(true);
@@ -473,8 +477,8 @@ export default function WorkPage() {
     if(!canEditProjects) {
         toast({
             variant: 'destructive',
-            title: 'Permission Denied',
-            description: 'You do not have permission to edit projects.',
+            title: t('work.toast.permissionDenied.title'),
+            description: t('work.toast.permissionDenied.description'),
         });
         return;
     }
@@ -484,21 +488,21 @@ export default function WorkPage() {
       const docRef = doc(firestore, 'projects', values.id);
       setDocumentNonBlocking(docRef, dataToSave, { merge: true });
       toast({
-        title: 'Changes Saved',
-        description: 'Your portfolio has been updated.',
+        title: t('work.toast.changesSaved.title'),
+        description: t('work.toast.changesSaved.description'),
       });
     } else {
       const dataToSave = { ...values, order: minOrder - 1 };
       addDocumentNonBlocking(collection(firestore, 'projects'), dataToSave);
       toast({
-        title: 'Item Added',
-        description: 'A new item has been added to your portfolio.',
+        title: t('work.toast.itemAdded.title'),
+        description: t('work.toast.itemAdded.description'),
       });
     }
     setIsFormSheetOpen(false);
   };
 
-  const handleOpenLibraryForSelection = (onSelect: (url: string, type: 'image' | 'video', filename: string) => void) => {
+  const handleOpenLibraryForSelection = (onSelect: (url: string, type: 'image' | 'video' | 'raw', filename: string) => void) => {
     setLibrarySelectionConfig({ onSelect });
     setIsLibraryOpen(true);
   };
@@ -522,8 +526,8 @@ export default function WorkPage() {
     setDocumentNonBlocking(settingsDocRef, { workPagePlayer: newPlayer }, { merge: true });
     const names: Record<string, string> = { plyr: 'Plyr', clappr: 'Clappr', dplayer: 'DPlayer' };
     toast({
-      title: 'Player Switched',
-      description: `Work page will now use the ${names[newPlayer] || newPlayer} player.`,
+      title: t('work.toast.playerSwitched.title'),
+      description: t('work.toast.playerSwitched.description').replace('{player}', names[newPlayer] || newPlayer),
     });
   };
   
@@ -586,23 +590,22 @@ export default function WorkPage() {
         <div className="p-8 pb-4">
           <div className="container mx-auto px-0">
             <div className="mb-8 text-center">
-              <h1 className="text-3xl md:text-4xl font-headline tracking-tight">Our Work</h1>
+              <h1 className="text-3xl md:text-4xl font-headline tracking-tight">{t('work.heading')}</h1>
               <p className="mt-2 max-w-2xl mx-auto text-base md:text-lg text-foreground/70">
-                Browse our collection of projects. Click on any item to view
-                details.
+                {t('work.subtitle')}
               </p>
             </div>
             <div className="flex flex-wrap justify-center gap-2 mb-4">
               <Button variant={filter === 'all' ? 'destructive' : 'outline'} onClick={() => setFilter('all')}>
-                All Projects
+                {t('work.filter.all')}
               </Button>
               <Button variant={filter === 'image' ? 'destructive' : 'outline'} onClick={() => setFilter('image')}>
                 <FontAwesomeIcon icon={faPalette} className="mr-2 h-4 w-4" />
-                Graphics
+                {t('work.filter.graphics')}
               </Button>
               <Button variant={filter === 'video' ? 'destructive' : 'outline'} onClick={() => setFilter('video')}>
                 <FontAwesomeIcon icon={faFilm} className="mr-2 h-4 w-4" />
-                Animation
+                {t('work.filter.animation')}
               </Button>
             </div>
           </div>
@@ -628,11 +631,13 @@ export default function WorkPage() {
                       </div>
                     ) : itemsToShow.length === 0 ? (
                       <div className="col-span-full h-full min-h-[50vh] flex flex-col items-center justify-center text-center gap-4">
-                        <div className="text-foreground/40 text-lg">No projects yet</div>
+                        <div className="text-foreground/40 text-lg">{t('work.empty.title')}</div>
                         <p className="text-foreground/30 text-sm max-w-md">
                           {filter === 'all'
-                            ? 'The portfolio is currently empty. Check back soon for new work.'
-                            : `No ${filter === 'video' ? 'animation' : 'graphic'} projects found.`}
+                            ? t('work.empty.description')
+                            : filter === 'video'
+                              ? t('work.empty.filteredVideo')
+                              : t('work.empty.filteredImage')}
                         </p>
                       </div>
                     ) : (
@@ -660,9 +665,9 @@ export default function WorkPage() {
                             >
                               <div className="w-full h-full rounded-md flex flex-col items-center justify-center text-center p-4 transition-colors duration-300 md:group-hover:bg-black/40">
                                 <FontAwesomeIcon icon={faArrowDown} className="h-10 w-10 text-white/70 mb-4 transition-transform duration-300 md:group-hover:translate-y-1" />
-                                <h3 className="font-bold text-white text-lg">Show More</h3>
+                                <h3 className="font-bold text-white text-lg">{t('work.showMore')}</h3>
                                 <p className="text-white/60 text-sm">
-                                  {filteredItems.length - itemsToShow.length} more projects
+                                  {t('work.showMore.count').replace('{count}', String(filteredItems.length - itemsToShow.length))}
                                 </p>
                               </div>
                             </div>
@@ -732,7 +737,7 @@ export default function WorkPage() {
                               className="md:absolute md:left-16 md:top-1/2 md:-translate-y-1/2 h-8 w-8 md:h-10 md:w-10"
                           >
                               <FontAwesomeIcon icon={faArrowLeft} className="h-4 w-4 md:h-5 md:w-5" />
-                              <span className="sr-only">Previous Project</span>
+                              <span className="sr-only">{t('work.details.previous')}</span>
                           </Button>
                           <Button
                               variant="outline"
@@ -742,7 +747,7 @@ export default function WorkPage() {
                               className="md:absolute md:right-16 md:top-1/2 md:-translate-y-1/2 h-8 w-8 md:h-10 md:w-10"
                           >
                               <FontAwesomeIcon icon={faArrowRight} className="h-4 w-4 md:h-5 md:w-5" />
-                              <span className="sr-only">Next Project</span>
+                              <span className="sr-only">{t('work.details.next')}</span>
                           </Button>
                         </div>
                       </DialogHeader>
@@ -772,7 +777,7 @@ export default function WorkPage() {
                                   onClick={() => setDetailsModalOpen(true)}
                                 >
                                   <FontAwesomeIcon icon={faUpDown} className="mr-2" />
-                                  Show Project Details
+                                  {t('work.details.showDetails')}
                                 </Button>
                             )}
                             <Button
@@ -780,7 +785,7 @@ export default function WorkPage() {
                               onClick={() => setIsContactFormOpen(true)}
                               className="h-auto py-2 px-4 leading-tight text-center"
                             >
-                              Ask About
+                              {t('work.details.askAbout')}
                             </Button>
                           </div>
                         </div>
@@ -795,7 +800,7 @@ export default function WorkPage() {
                 isMobile ? "opacity-70" : (isCloseButtonVisible ? "opacity-70" : "opacity-0")
             )}>
               <FontAwesomeIcon icon={faXmark} className="h-4 w-4" />
-              <span className="sr-only">Close</span>
+              <span className="sr-only">{t('work.details.close')}</span>
             </DialogClose>
           </DialogContent>
       </Dialog>
@@ -810,7 +815,7 @@ export default function WorkPage() {
             {selectedItem && (
                 <>
                 <DialogHeader className="p-4 md:p-6 pb-0">
-                    <DialogTitle className="font-headline">{selectedItem.title} - Details</DialogTitle>
+                    <DialogTitle className="font-headline">{t('work.details.title').replace('{title}', selectedItem.title)}</DialogTitle>
                 </DialogHeader>
                 <ScrollArea className="flex-1">
                     <div className="prose dark:prose-invert max-w-none space-y-4 text-sm text-foreground/80 whitespace-pre-wrap p-4 md:p-6">
@@ -822,7 +827,7 @@ export default function WorkPage() {
                     isMobile ? "opacity-70" : (isCloseButtonVisible ? "opacity-70" : "opacity-0")
                   )}>
                     <FontAwesomeIcon icon={faXmark} className="h-4 w-4" />
-                    <span className="sr-only">Close</span>
+                    <span className="sr-only">{t('work.details.close')}</span>
                 </DialogClose>
                 </>
             )}
@@ -833,14 +838,14 @@ export default function WorkPage() {
       <Dialog open={isContactFormOpen} onOpenChange={setIsContactFormOpen}>
         <DialogContent className="w-[80vw] max-w-xl glass-effect">
             <DialogHeader>
-              <DialogTitle className="font-headline">Contact Us</DialogTitle>
+              <DialogTitle className="font-headline">{t('work.details.contactTitle')}</DialogTitle>
               <DialogDescription>
-                Have a question about &quot;{selectedItem?.title}&quot;? Fill out the form below.
+                {t('work.details.contactDescription').replace('{title}', selectedItem?.title || '')}
               </DialogDescription>
             </DialogHeader>
             <ContactForm
                 onSuccess={() => setIsContactFormOpen(false)}
-                defaultMessage={selectedItem ? `I'm contacting you about discuss a similar project of "${selectedItem.title}"` : ''}
+                defaultMessage={selectedItem ? t('work.details.contactDefaultMessage').replace('{title}', selectedItem.title) : ''}
             />
             <DialogClose className={cn(
                 "absolute right-4 top-4 h-8 w-8",
@@ -850,7 +855,7 @@ export default function WorkPage() {
                 "disabled:pointer-events-none"
             )}>
                 <FontAwesomeIcon icon={faXmark} className="h-4 w-4" />
-                <span className="sr-only">Close</span>
+                <span className="sr-only">{t('work.details.close')}</span>
             </DialogClose>
         </DialogContent>
       </Dialog>
@@ -862,12 +867,12 @@ export default function WorkPage() {
           onMouseEnter={handleDialogMouseEnter}
           onMouseLeave={handleDialogMouseLeave}
         >
-          <DialogTitle className="sr-only">Fullscreen Image</DialogTitle>
+          <DialogTitle className="sr-only">{t('work.details.fullscreenImage')}</DialogTitle>
           {fullscreenImageUrl && (
             <div className="relative w-full h-full">
               <MemoizedImage
                 src={fullscreenImageUrl}
-                alt="Fullscreen Image"
+                alt={t('work.details.fullscreenImage')}
                 fill
                 className="object-contain"
                 sizes="100vw"
@@ -879,7 +884,7 @@ export default function WorkPage() {
               isMobile ? "opacity-70" : (isCloseButtonVisible ? "opacity-70" : "opacity-0")
           )}>
               <FontAwesomeIcon icon={faXmark} className="h-4 w-4" />
-              <span className="sr-only">Close</span>
+              <span className="sr-only">{t('work.details.close')}</span>
           </DialogClose>
         </DialogContent>
       </Dialog>

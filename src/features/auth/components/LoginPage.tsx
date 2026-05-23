@@ -23,6 +23,7 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import Link from 'next/link';
+import { useTranslation } from '@/lib/i18n/useTranslation';
 
 
 const formSchema = z.object({
@@ -35,6 +36,7 @@ const formSchema = z.object({
 type LoginFormValues = z.infer<typeof formSchema>;
 
 export default function LoginPage() {
+  const { t } = useTranslation();
   const auth = useAuth();
   const { toast } = useToast();
   const router = useRouter();
@@ -63,15 +65,15 @@ export default function LoginPage() {
     try {
       await signInWithEmailAndPassword(auth, emailToSignIn, values.password);
       toast({
-        title: 'Signed In',
-        description: 'You have successfully signed in.',
+        title: t('login.toast.success.title'),
+        description: t('login.toast.success.description'),
       });
       router.push('/admin');
     } catch (error: any) {
       toast({
         variant: 'destructive',
-        title: 'Uh oh! Something went wrong.',
-        description: error.message || 'Could not sign in. Please check your credentials.',
+        title: t('login.toast.error.title'),
+        description: error.message || t('login.toast.error.description'),
       });
     } finally {
         setIsSubmitting(false);
@@ -82,9 +84,9 @@ export default function LoginPage() {
     <div className="flex h-full min-h-full w-full items-center justify-center p-4">
       <Card className="w-full md:w-1/2 glass-effect">
         <CardHeader>
-            <CardTitle className="text-2xl font-headline">Admin Access</CardTitle>
+            <CardTitle className="text-2xl font-headline">{t('login.title')}</CardTitle>
             <CardDescription>
-                Sign in to manage the portfolio.
+                {t('login.subtitle')}
             </CardDescription>
         </CardHeader>
         <CardContent>
@@ -95,9 +97,9 @@ export default function LoginPage() {
                     name="login"
                     render={({ field }) => (
                     <FormItem>
-                        <FormLabel>Username or Email</FormLabel>
+                        <FormLabel>{t('login.username')}</FormLabel>
                         <FormControl>
-                        <Input placeholder="admin or admin@example.com" {...field} />
+                        <Input placeholder={t('login.usernamePlaceholder')} {...field} />
                         </FormControl>
                         <FormMessage />
                     </FormItem>
@@ -108,22 +110,22 @@ export default function LoginPage() {
                     name="password"
                     render={({ field }) => (
                     <FormItem>
-                        <FormLabel>Password</FormLabel>
+                        <FormLabel>{t('login.password')}</FormLabel>
                         <FormControl>
-                        <Input type="password" placeholder="••••••••" {...field} />
+                        <Input type="password" placeholder={t('login.passwordPlaceholder')} {...field} />
                         </FormControl>
                         <FormMessage />
                     </FormItem>
                     )}
                 />
                 <Button type="submit" className="w-full" disabled={isSubmitting}>
-                    {isSubmitting ? 'Signing In...' : 'Sign In'}
+                    {isSubmitting ? t('login.signingIn') : t('login.signIn')}
                 </Button>
                 </form>
             </Form>
             <div className="mt-4 text-center text-sm">
               <Link href="/register" className="underline text-muted-foreground hover:text-foreground">
-                Create an account
+                {t('login.createAccount')}
               </Link>
             </div>
         </CardContent>

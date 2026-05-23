@@ -196,7 +196,7 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true, thu
                     hls.on(window.Hls.Events.MANIFEST_PARSED, (event: any, data: any) => {
                         if (!isMounted) return;
 
-                        const availableQualities = hls.levels.map((l) => l.height);
+                        const availableQualities = hls.levels.map((l: { height: number }) => l.height);
                         availableQualities.unshift(0); // 0 will represent Auto
 
                         player = new window.Plyr(element, {
@@ -207,7 +207,7 @@ const PlyrPlayer = forwardRef(({ source, poster, watermark, autoPlay = true, thu
                                 forced: true,
                                 onChange: (quality: number) => {
                                     if (hls) {
-                                      hls.currentLevel = quality === 0 ? -1 : hls.levels.findIndex(level => level.height === quality);
+                                      hls.currentLevel = quality === 0 ? -1 : hls.levels.findIndex((level: { height: number }) => level.height === quality);
                                     }
                                 },
                             },

@@ -21,6 +21,7 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { useState } from 'react';
 import { doc } from 'firebase/firestore';
+import { useTranslation } from '@/lib/i18n/useTranslation';
 
 const formSchema = z.object({
   username: z.string().min(3, { message: 'Username must be at least 3 characters.' }).regex(/^[a-zA-Z0-9]+$/, 'Username can only contain letters and numbers.'),
@@ -36,6 +37,7 @@ interface NewAdminFormProps {
 }
 
 export default function NewAdminForm({ onSuccess }: NewAdminFormProps) {
+  const { t } = useTranslation();
   const auth = useAuth();
   const firestore = useFirestore();
   const { toast } = useToast();
@@ -80,15 +82,15 @@ export default function NewAdminForm({ onSuccess }: NewAdminFormProps) {
       await auth.signOut();
 
       toast({
-        title: 'Account Created',
-        description: `Admin user '${values.username}' has been successfully created.`,
+        title: t('newAdmin.toast.created.title'),
+        description: t('newAdmin.toast.created.description').replace('{username}', values.username),
       });
       onSuccess();
     } catch (error: any) {
       toast({
         variant: 'destructive',
-        title: 'Uh oh! Something went wrong.',
-        description: error.code === 'auth/email-already-in-use' ? 'This username is already taken.' : error.message,
+        title: t('newAdmin.toast.error.title'),
+        description: error.code === 'auth/email-already-in-use' ? t('newAdmin.toast.error.description') : error.message,
       });
     } finally {
         setIsSubmitting(false);
@@ -103,9 +105,9 @@ export default function NewAdminForm({ onSuccess }: NewAdminFormProps) {
             name="username"
             render={({ field }) => (
             <FormItem>
-                <FormLabel>Username</FormLabel>
+                <FormLabel>{t('newAdmin.username')}</FormLabel>
                 <FormControl>
-                <Input placeholder="newadmin" {...field} autoComplete="off" />
+                <Input placeholder={t('newAdmin.usernamePlaceholder')} {...field} autoComplete="off" />
                 </FormControl>
                 <FormMessage />
             </FormItem>
@@ -116,18 +118,18 @@ export default function NewAdminForm({ onSuccess }: NewAdminFormProps) {
             name="password"
             render={({ field }) => (
             <FormItem>
-                <FormLabel>Password</FormLabel>
+                <FormLabel>{t('newAdmin.password')}</FormLabel>
                 <FormControl>
-                <Input type="password" placeholder="••••••••" {...field} autoComplete="new-password" />
+                <Input type="password" placeholder={t('newAdmin.passwordPlaceholder')} {...field} autoComplete="new-password" />
                 </FormControl>
                 <FormMessage />
             </FormItem>
             )}
         />
         <div className="flex justify-end gap-4">
-            <Button type="button" variant="outline" onClick={onSuccess}>Cancel</Button>
+            <Button type="button" variant="outline" onClick={onSuccess}>{t('newAdmin.cancel')}</Button>
             <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? 'Creating...' : 'Create Admin'}
+                {isSubmitting ? t('newAdmin.creating') : t('newAdmin.createAdmin')}
             </Button>
         </div>
         </form>

@@ -19,6 +19,7 @@ import Autoplay from 'embla-carousel-autoplay'
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { ScrollIndicator } from '@/components/ScrollIndicator';
+import { useTranslation } from '@/lib/i18n/useTranslation';
 
 
 interface Client {
@@ -38,11 +39,11 @@ interface AboutPageContent {
 }
 
 const services = [
-    { title: "Brainstorming & Scripting", icon: BrainCircuit },
-    { title: "Voiceover & Sound", icon: Mic },
-    { title: "Content Creation, Animation, Video & Graphics", icon: Clapperboard },
-    { title: "Social Media Management", icon: Share2 },
-    { title: "Web Design & Development", icon: Code },
+    { key: "about.services.brainstorming", icon: BrainCircuit },
+    { key: "about.services.voiceover", icon: Mic },
+    { key: "about.services.contentCreation", icon: Clapperboard },
+    { key: "about.services.socialMedia", icon: Share2 },
+    { key: "about.services.webDesign", icon: Code },
 ];
 
 
@@ -54,7 +55,7 @@ const ClientLogo = ({ client }: { client: Client }) => (
     >
         <MemoizedImage
             src={client.logoUrl}
-            alt={`${client.name} logo`}
+            alt={client.name}
             width={128}
             height={40}
             className="object-contain h-10 w-32 grayscale brightness-0 invert transition-all duration-300 group-hover:grayscale-0 group-hover:brightness-100 group-hover:invert-0"
@@ -86,6 +87,7 @@ const itemVariants = {
 export default function AboutPage() {
   const firestore = useFirestore();
   const scrollRef = useRef<HTMLDivElement>(null);
+  const { t } = useTranslation();
 
   const clientsQuery = useMemoFirebase(
     () => firestore ? query(collection(firestore, 'clients'), orderBy('order')) : null,
@@ -126,9 +128,9 @@ export default function AboutPage() {
       <div className="p-8 flex-shrink-0">
         <div className="container mx-auto px-0">
             <div className="mb-8 text-center">
-              <h1 className="text-3xl md:text-4xl font-headline tracking-tight">About Us</h1>
+              <h1 className="text-3xl md:text-4xl font-headline tracking-tight">{t('about.heading')}</h1>
               <p className="mt-2 max-w-2xl mx-auto text-base md:text-lg text-foreground/70">
-                Learn more about our mission and the brands we&apos;ve worked with.
+                {t('about.subtitle')}
               </p>
             </div>
         </div>
@@ -164,19 +166,19 @@ export default function AboutPage() {
                             <Button asChild>
                                 <Link href="/contact">
                                     <FontAwesomeIcon icon={faEnvelope} className="mr-2" />
-                                    Contact Us
+                                    {t('about.cta.contact')}
                                 </Link>
                             </Button>
                             <Button asChild variant="success">
                                  <Link href="/work">
-                                    Explore Our Works
+                                    {t('about.cta.explore')}
                                     <FontAwesomeIcon icon={faArrowRight} className="ml-2" />
                                 </Link>
                             </Button>
                         </div>
                     </div>
                     <div className="md:w-1/2 flex flex-col justify-center">
-                       <h2 className="text-2xl md:text-3xl font-headline tracking-tight mb-6 text-center">What You&apos;ll Get?</h2>
+                       <h2 className="text-2xl md:text-3xl font-headline tracking-tight mb-6 text-center">{t('about.whatYouGet')}</h2>
                        <div className="grid grid-cols-6 grid-rows-2 gap-4 h-full">
                         {services.map((service, index) => {
                             let gridClasses = '';
@@ -189,14 +191,14 @@ export default function AboutPage() {
                             }
                             return (
                                 <div 
-                                    key={service.title}
+                                    key={service.key}
                                     className={cn(
                                       "glass-effect p-4 rounded-lg flex flex-col items-center justify-center text-center",
                                       gridClasses
                                     )}
                                 >
                                     <service.icon className="w-8 h-8 md:w-10 md:h-10 text-primary mb-3" />
-                                    <p className="text-xs md:text-sm font-semibold">{service.title}</p>
+                                    <p className="text-xs md:text-sm font-semibold">{t(service.key)}</p>
                                 </div>
                             );
                         })}
@@ -206,7 +208,7 @@ export default function AboutPage() {
 
                 <motion.div variants={itemVariants}>
                   <div className="text-center mb-8">
-                    <h2 className="text-2xl font-headline tracking-tight">Our Clients</h2>
+                    <h2 className="text-2xl font-headline tracking-tight">{t('about.ourClients')}</h2>
                     <Separator className="bg-white/10 max-w-xs mx-auto mt-2" />
                   </div>
                   
@@ -222,13 +224,13 @@ export default function AboutPage() {
                     </div>
                   ) : (
                     <div className="p-1 h-full flex items-center justify-center text-muted-foreground col-span-full">
-                        No clients to display.
+                        {t('about.clientsEmpty')}
                     </div>
                   )}
                   
                   <div className="text-center mt-8 md:mt-12">
                     <p className="text-foreground/70">
-                      Trusted by 1000+ amazing clients worldwide
+                      {t('about.clientsTagline')}
                     </p>
                   </div>
                 </motion.div>
@@ -237,12 +239,12 @@ export default function AboutPage() {
                     <Button asChild>
                         <Link href="/contact">
                             <FontAwesomeIcon icon={faEnvelope} className="mr-2" />
-                            Contact Us
+                            {t('about.cta.contact')}
                         </Link>
                     </Button>
                     <Button asChild variant="success">
                             <Link href="/work">
-                            Explore Our Works
+                            {t('about.cta.explore')}
                             <FontAwesomeIcon icon={faArrowRight} className="ml-2" />
                         </Link>
                     </Button>

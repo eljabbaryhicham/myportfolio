@@ -1,6 +1,7 @@
 
 'use client';
 
+import { useTranslation } from '@/lib/i18n/useTranslation';
 import { useCollection, useFirestore, useMemoFirebase, updateDocumentNonBlocking, useUser } from '@/firebase';
 import { collection, query, orderBy, doc } from 'firebase/firestore';
 import {
@@ -46,6 +47,7 @@ interface AdminUser {
 type Permissions = AdminUser['permissions'];
 
 function PermissionsDialog({ user, isOpen, onOpenChange, onSave }: { user: AdminUser, isOpen: boolean, onOpenChange: (open: boolean) => void, onSave: (permissions: Permissions) => void }) {
+    const { t } = useTranslation();
     const [permissions, setPermissions] = useState<Permissions>(user.permissions || {});
     
     const handlePermissionChange = (permission: keyof Permissions, value: boolean) => {
@@ -58,21 +60,21 @@ function PermissionsDialog({ user, isOpen, onOpenChange, onSave }: { user: Admin
     };
 
     const permissionItems: { key: keyof Permissions, label: string }[] = [
-        { key: 'canUploadMedia', label: 'Upload Media' },
-        { key: 'canDeleteMedia', label: 'Delete Media' },
-        { key: 'canEditProjects', label: 'Edit Projects' },
-        { key: 'canEditAbout', label: 'Edit About' },
-        { key: 'canEditContact', label: 'Edit Contact' },
-        { key: 'canEditHome', label: 'Edit Home' },
+        { key: 'canUploadMedia', label: t('adminMgmt.permission.uploadMedia') },
+        { key: 'canDeleteMedia', label: t('adminMgmt.permission.deleteMedia') },
+        { key: 'canEditProjects', label: t('adminMgmt.permission.editProjects') },
+        { key: 'canEditAbout', label: t('adminMgmt.permission.editAbout') },
+        { key: 'canEditContact', label: t('adminMgmt.permission.editContact') },
+        { key: 'canEditHome', label: t('adminMgmt.permission.editHome') },
     ];
 
     return (
         <Dialog open={isOpen} onOpenChange={onOpenChange}>
             <DialogContent className="w-[80vw] glass-effect">
                 <DialogHeader>
-                    <DialogTitle className="font-headline">Edit Permissions for {user.username}</DialogTitle>
+                    <DialogTitle className="font-headline">{t('adminMgmt.editPermissions').replace('{user}', user.username)}</DialogTitle>
                     <DialogDescription>
-                        Control what this admin user can and cannot do.
+                        {t('adminMgmt.editPermissionsDescription')}
                     </DialogDescription>
                 </DialogHeader>
                 <div className="grid grid-cols-2 gap-4 py-4">
@@ -88,8 +90,8 @@ function PermissionsDialog({ user, isOpen, onOpenChange, onSave }: { user: Admin
                     ))}
                 </div>
                 <DialogFooter>
-                    <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
-                    <Button onClick={handleSave}>Save Permissions</Button>
+                    <Button variant="outline" onClick={() => onOpenChange(false)}>{t('adminMgmt.cancel')}</Button>
+                    <Button onClick={handleSave}>{t('adminMgmt.savePermissions')}</Button>
                 </DialogFooter>
             </DialogContent>
         </Dialog>
@@ -97,6 +99,7 @@ function PermissionsDialog({ user, isOpen, onOpenChange, onSave }: { user: Admin
 }
 
 export default function AdminManagement() {
+  const { t } = useTranslation();
   const firestore = useFirestore();
   const { user: currentUser } = useUser();
   const { toast } = useToast();
@@ -125,8 +128,8 @@ export default function AdminManagement() {
     deleteDocumentNonBlocking(doc(firestore, 'users', userId));
 
     toast({
-        title: `Admin '${username}' Removed`,
-        description: 'The user has been removed from the list. To fully revoke their access, delete them from Firebase Authentication as well.',
+        title: t('adminMgmt.toast.adminRemoved.title').replace('{username}', username),
+        description: t('adminMgmt.toast.adminRemoved.description'),
         duration: 8000,
     });
   }
@@ -141,8 +144,8 @@ export default function AdminManagement() {
     const userDocRef = doc(firestore, 'users', selectedUser.id);
     updateDocumentNonBlocking(userDocRef, { permissions });
     toast({
-        title: 'Permissions Updated',
-        description: `Permissions for ${selectedUser.username} have been saved.`,
+        title: t('adminMgmt.toast.permissionsUpdated.title'),
+        description: t('adminMgmt.toast.permissionsUpdated.description').replace('{user}', selectedUser.username),
     });
   };
 
@@ -151,13 +154,13 @@ export default function AdminManagement() {
       <div className="flex-1 flex flex-col h-full min-h-0">
         <div className="mb-6 flex items-start justify-between">
             <div>
-                <h2 className="text-xl font-headline">Admin Management</h2>
-                <p className="text-muted-foreground">View and manage administrator accounts and permissions.</p>
+                <h2 className="text-xl font-headline">{t('adminMgmt.title')}</h2>
+                <p className="text-muted-foreground">{t('adminMgmt.description')}</p>
             </div>
              {isSuperAdmin && (
                 <Button onClick={() => setIsAddAdminDialogOpen(true)} size="sm">
                     <FontAwesomeIcon icon={faPlusCircle} className="mr-2 h-4 w-4" />
-                    New Admin
+                    {t('adminMgmt.newAdmin')}
                 </Button>
             )}
         </div>
@@ -182,7 +185,7 @@ export default function AdminManagement() {
                                       <p className="text-sm text-muted-foreground">{user.email}</p>
                                   </div>
                                   <Badge variant={user.email === 'eljabbaryhicham@example.com' ? 'destructive' : 'secondary'} className="ml-2 whitespace-nowrap">
-                                      {user.email === 'eljabbaryhicham@example.com' ? 'Super Admin' : 'Admin'}
+                                      {user.email === 'eljabbaryhicham@example.com' ? t('adminMgmt.superAdmin') : t('adminMgmt.admin')}
                                   </Badge>
                               </div>
                               <Separator className="my-4 bg-white/10" />
@@ -190,7 +193,7 @@ export default function AdminManagement() {
                                   {user.email !== 'eljabbaryhicham@example.com' ? (
                                       <Button variant="outline" size="sm" onClick={() => handleOpenPermissions(user)} disabled={!isSuperAdmin}>
                                           <FontAwesomeIcon icon={faShieldHalved} className="mr-2 h-4 w-4" />
-                                          Permissions
+                                          {t('adminMgmt.permissions')}
                                       </Button>
                                   ) : <div />}
                                   {user.email !== 'eljabbaryhicham@example.com' && (
@@ -211,11 +214,11 @@ export default function AdminManagement() {
                   <Table>
                       <TableHeader>
                       <TableRow>
-                          <TableHead>Username</TableHead>
-                          <TableHead>Email</TableHead>
-                          <TableHead>Role</TableHead>
-                          <TableHead className="text-center">Permissions</TableHead>
-                          <TableHead className="text-right">Actions</TableHead>
+                          <TableHead>{t('adminMgmt.col.username')}</TableHead>
+                          <TableHead>{t('adminMgmt.col.email')}</TableHead>
+                          <TableHead>{t('adminMgmt.col.role')}</TableHead>
+                          <TableHead className="text-center">{t('adminMgmt.col.permissions')}</TableHead>
+                          <TableHead className="text-right">{t('adminMgmt.col.actions')}</TableHead>
                       </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -225,17 +228,17 @@ export default function AdminManagement() {
                           <TableCell>{user.email}</TableCell>
                           <TableCell>
                               <Badge variant={user.email === 'eljabbaryhicham@example.com' ? 'destructive' : 'secondary'}>
-                              {user.email === 'eljabbaryhicham@example.com' ? 'Super Admin' : 'Admin'}
+                              {user.email === 'eljabbaryhicham@example.com' ? t('adminMgmt.superAdmin') : t('adminMgmt.admin')}
                               </Badge>
                           </TableCell>
                           <TableCell className="text-center">
                               {user.email !== 'eljabbaryhicham@example.com' ? (
                                 <Button variant="outline" size="sm" onClick={() => handleOpenPermissions(user)} disabled={!isSuperAdmin}>
                                   <FontAwesomeIcon icon={faShieldHalved} className="mr-2 h-4 w-4" />
-                                  Manage
+                                  {t('adminMgmt.manage')}
                                 </Button>
                               ) : (
-                                <p className="text-sm text-muted-foreground">All Permissions</p>
+                                <p className="text-sm text-muted-foreground">{t('adminMgmt.allPermissions')}</p>
                               )}
                           </TableCell>
                           <TableCell className="text-right">
@@ -254,7 +257,7 @@ export default function AdminManagement() {
               
               {!isLoading && displayedUsers.length === 0 && (
                   <div className="text-center text-muted-foreground py-12">
-                      No admin users found.
+                      {t('adminMgmt.empty')}
                   </div>
               )}
           </div>
@@ -273,9 +276,9 @@ export default function AdminManagement() {
        <Dialog open={isAddAdminDialogOpen} onOpenChange={setIsAddAdminDialogOpen}>
         <DialogContent className="w-[80vw] glass-effect">
             <DialogHeader>
-                <DialogTitle className="font-headline">Create New Admin</DialogTitle>
+                <DialogTitle className="font-headline">{t('adminMgmt.createNewAdmin')}</DialogTitle>
                 <DialogDescription>
-                    Enter a username and password to create a new administrator account.
+                    {t('adminMgmt.createNewAdminDescription')}
                 </DialogDescription>
             </DialogHeader>
             <NewAdminForm onSuccess={() => setIsAddAdminDialogOpen(false)} />

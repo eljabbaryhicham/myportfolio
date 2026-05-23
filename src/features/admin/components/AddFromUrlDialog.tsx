@@ -1,6 +1,7 @@
 
 'use client';
 
+import { useTranslation } from '@/lib/i18n/useTranslation';
 import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -34,6 +35,7 @@ interface AddFromUrlDialogProps {
 }
 
 export default function AddFromUrlDialog({ isOpen, onOpenChange, onUploadComplete }: AddFromUrlDialogProps) {
+  const { t } = useTranslation();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -95,7 +97,7 @@ export default function AddFromUrlDialog({ isOpen, onOpenChange, onUploadComplet
       if (result.success && result.mediaId && result.resource_type !== 'raw') {
         setProgress(100);
         toast({
-          title: 'Upload Successful',
+          title: t('addFromUrl.toast.success.title'),
           description: result.message,
         });
         onUploadComplete(result.mediaId, result.resource_type || 'image', values.libraryId);
@@ -106,15 +108,15 @@ export default function AddFromUrlDialog({ isOpen, onOpenChange, onUploadComplet
       } else if (result.resource_type === 'raw') {
           toast({
             variant: 'destructive',
-            title: 'Unsupported File Type',
-            description: 'The provided URL points to a file type that is not an image or video.',
+            title: t('addFromUrl.toast.unsupported.title'),
+            description: t('addFromUrl.toast.unsupported.description'),
             duration: 8000,
           });
           setIsSubmitting(false);
       } else {
         toast({
           variant: 'destructive',
-          title: 'Upload Failed',
+          title: t('addFromUrl.toast.failed.title'),
           description: result.message,
           duration: 8000,
         });
@@ -123,7 +125,7 @@ export default function AddFromUrlDialog({ isOpen, onOpenChange, onUploadComplet
     } catch (error: any) {
       toast({
         variant: 'destructive',
-        title: 'Error',
+        title: t('addFromUrl.toast.error.title'),
         description: error.message || 'An unexpected error occurred during upload.',
       });
       setIsSubmitting(false);
@@ -134,9 +136,9 @@ export default function AddFromUrlDialog({ isOpen, onOpenChange, onUploadComplet
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="glass-effect w-[80vw]">
         <DialogHeader>
-          <DialogTitle>Add Media from URL</DialogTitle>
+          <DialogTitle>{t('addFromUrl.title')}</DialogTitle>
           <DialogDescription>
-            Paste a direct link to an image or video and choose a library to add it to.
+            {t('addFromUrl.description')}
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -147,9 +149,9 @@ export default function AddFromUrlDialog({ isOpen, onOpenChange, onUploadComplet
                 name="mediaUrl"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Media URL</FormLabel>
+                    <FormLabel>{t('addFromUrl.mediaUrl')}</FormLabel>
                     <FormControl>
-                      <Input placeholder="https://..." {...field} />
+                      <Input placeholder={t('addFromUrl.mediaUrlPlaceholder')} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -160,16 +162,16 @@ export default function AddFromUrlDialog({ isOpen, onOpenChange, onUploadComplet
                 name="libraryId"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Library</FormLabel>
+                    <FormLabel>{t('addFromUrl.library')}</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                         <FormControl>
                             <SelectTrigger>
-                                <SelectValue placeholder="Select a library" />
+                                <SelectValue placeholder={t('addFromUrl.libraryPlaceholder')} />
                             </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                            <SelectItem value="primary">Library Primary</SelectItem>
-                            <SelectItem value="extented">Library Extented</SelectItem>
+                            <SelectItem value="primary">{t('addFromUrl.libraryPrimary')}</SelectItem>
+                            <SelectItem value="extented">{t('addFromUrl.libraryExtented')}</SelectItem>
                         </SelectContent>
                     </Select>
                     <FormMessage />
@@ -182,7 +184,7 @@ export default function AddFromUrlDialog({ isOpen, onOpenChange, onUploadComplet
                   name="videoFormat"
                   render={({ field }) => (
                     <FormItem className="space-y-3">
-                      <FormLabel>Video Format</FormLabel>
+                      <FormLabel>{t('addFromUrl.videoFormat')}</FormLabel>
                       <FormControl>
                         <RadioGroup
                           onValueChange={field.onChange}
@@ -194,7 +196,7 @@ export default function AddFromUrlDialog({ isOpen, onOpenChange, onUploadComplet
                               <RadioGroupItem value="mp4" />
                             </FormControl>
                             <FormLabel className="font-normal">
-                              MP4 (Optimized for web)
+                              {t('addFromUrl.mp4')}
                             </FormLabel>
                           </FormItem>
                           <FormItem className="flex items-center space-x-3 space-y-0">
@@ -202,7 +204,7 @@ export default function AddFromUrlDialog({ isOpen, onOpenChange, onUploadComplet
                               <RadioGroupItem value="m3u8" />
                             </FormControl>
                             <FormLabel className="font-normal">
-                              M3U8 (Adaptive streaming for best performance)
+                              {t('addFromUrl.m3u8')}
                             </FormLabel>
                           </FormItem>
                         </RadioGroup>
@@ -216,17 +218,17 @@ export default function AddFromUrlDialog({ isOpen, onOpenChange, onUploadComplet
 
             {isSubmitting && (
                 <div className="space-y-2 pt-4 text-center">
-                    <p className="text-sm text-muted-foreground">Please wait, adding to library...</p>
+                    <p className="text-sm text-muted-foreground">{t('addFromUrl.adding')}</p>
                     <Progress value={progress} />
                     <p className="text-xs text-muted-foreground">{Math.round(progress)}%</p>
                 </div>
             )}
 
             <DialogFooter className="pt-4">
-               <Button type="button" variant="outline" onClick={() => handleClose(false)} disabled={isSubmitting}>Cancel</Button>
+               <Button type="button" variant="outline" onClick={() => handleClose(false)} disabled={isSubmitting}>{t('addFromUrl.cancel')}</Button>
                <Button type="submit" disabled={isSubmitting}>
                 {isSubmitting && <FontAwesomeIcon icon={faSpinner} className="mr-2 h-4 w-4 animate-spin" />}
-                {isSubmitting ? 'Adding...' : 'Add to Library'}
+                {isSubmitting ? t('addFromUrl.addingButton') : t('addFromUrl.addToLibrary')}
               </Button>
             </DialogFooter>
           </form>
@@ -241,7 +243,7 @@ export default function AddFromUrlDialog({ isOpen, onOpenChange, onUploadComplet
                     "disabled:pointer-events-none"
                 )}>
                     <FontAwesomeIcon icon={faXmark} className="h-4 w-4" />
-                    <span className="sr-only">Close</span>
+                    <span className="sr-only">{t('addFromUrl.close')}</span>
                 </button>
             </DialogClose>
         )}

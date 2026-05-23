@@ -22,6 +22,7 @@ import { useEffect } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import Preloader from '@/components/preloader';
 import type { AppUser } from '@/firebase/auth/use-user';
+import { useTranslation } from '@/lib/i18n/useTranslation';
 
 const formSchema = z.object({
   avatarUrl: z.string().url().optional().or(z.literal('')),
@@ -56,6 +57,7 @@ const defaultFormValues: ContactInfo = {
 };
 
 export default function ContactAdmin() {
+  const { t } = useTranslation();
   const { toast } = useToast();
   const firestore = useFirestore();
   const { user } = useUser();
@@ -109,8 +111,8 @@ export default function ContactAdmin() {
     if (!contactDocRef || !canEditContact) return;
     setDocumentNonBlocking(contactDocRef, values, { merge: true });
     toast({
-      title: 'Contact Info Updated',
-      description: 'Your contact page has been successfully updated.',
+      title: t('contactAdmin.toast.saved.title'),
+      description: t('contactAdmin.toast.saved.description'),
     });
   };
 
@@ -125,9 +127,9 @@ export default function ContactAdmin() {
   return (
     <div className="flex-1 flex flex-col h-full">
       <div className="mb-6">
-          <h2 className="text-xl font-headline">Contact Page &amp; Site Settings</h2>
+          <h2 className="text-xl font-headline">{t('contactAdmin.title')}</h2>
           <p className="text-muted-foreground">
-              Update the information displayed on your public contact page and other site-wide settings.
+              {t('contactAdmin.description')}
           </p>
       </div>
       <div className="flex-1 border rounded-lg overflow-hidden glass-effect">
@@ -141,11 +143,11 @@ export default function ContactAdmin() {
                         name="logoUrl"
                         render={({ field }) => (
                         <FormItem>
-                            <FormLabel>Site Logo URL</FormLabel>
+                            <FormLabel>{t('contactAdmin.siteLogoUrl')}</FormLabel>
                             <FormControl>
-                            <Input placeholder="https://example.com/your-logo.png" {...field} />
+                            <Input placeholder={t('contactAdmin.siteLogoUrlPlaceholder')} {...field} />
                             </FormControl>
-                            <FormDescription>The main logo for the entire website.</FormDescription>
+                            <FormDescription>{t('contactAdmin.siteLogoUrlDescription')}</FormDescription>
                             <FormMessage />
                         </FormItem>
                         )}
@@ -155,9 +157,9 @@ export default function ContactAdmin() {
                         name="name"
                         render={({ field }) => (
                         <FormItem>
-                            <FormLabel>Name</FormLabel>
+                            <FormLabel>{t('contactAdmin.name')}</FormLabel>
                             <FormControl>
-                            <Input placeholder="Your Name" {...field} />
+                            <Input placeholder={t('contactAdmin.namePlaceholder')} {...field} />
                             </FormControl>
                             <FormMessage />
                         </FormItem>
@@ -168,9 +170,9 @@ export default function ContactAdmin() {
                         name="title"
                         render={({ field }) => (
                         <FormItem>
-                            <FormLabel>Title / Profession</FormLabel>
+                            <FormLabel>{t('contactAdmin.titleField')}</FormLabel>
                             <FormControl>
-                            <Input placeholder="e.g., Motion Graphics Designer" {...field} />
+                            <Input placeholder={t('contactAdmin.titlePlaceholder')} {...field} />
                             </FormControl>
                             <FormMessage />
                         </FormItem>
@@ -181,11 +183,11 @@ export default function ContactAdmin() {
                         name="avatarUrl"
                         render={({ field }) => (
                         <FormItem>
-                            <FormLabel>Avatar Image URL</FormLabel>
+                            <FormLabel>{t('contactAdmin.avatarUrl')}</FormLabel>
                             <FormControl>
-                            <Input placeholder="https://example.com/your-photo.png" {...field} />
+                            <Input placeholder={t('contactAdmin.avatarUrlPlaceholder')} {...field} />
                             </FormControl>
-                            <FormDescription>The image displayed on your contact card.</FormDescription>
+                            <FormDescription>{t('contactAdmin.avatarUrlDescription')}</FormDescription>
                             <FormMessage />
                         </FormItem>
                         )}
@@ -195,9 +197,9 @@ export default function ContactAdmin() {
                         name="email"
                         render={({ field }) => (
                         <FormItem>
-                            <FormLabel>Email</FormLabel>
+                            <FormLabel>{t('contactAdmin.email')}</FormLabel>
                             <FormControl>
-                            <Input type="email" placeholder="your.email@example.com" {...field} />
+                            <Input type="email" placeholder={t('contactAdmin.emailPlaceholder')} {...field} />
                             </FormControl>
                             <FormMessage />
                         </FormItem>
@@ -208,9 +210,9 @@ export default function ContactAdmin() {
                         name="whatsApp"
                         render={({ field }) => (
                         <FormItem>
-                            <FormLabel>WhatsApp Number</FormLabel>
+                            <FormLabel>{t('contactAdmin.whatsApp')}</FormLabel>
                             <FormControl>
-                            <Input placeholder="+1234567890" {...field} />
+                            <Input placeholder={t('contactAdmin.whatsAppPlaceholder')} {...field} />
                             </FormControl>
                             <FormMessage />
                         </FormItem>
@@ -221,9 +223,9 @@ export default function ContactAdmin() {
                         name="behanceUrl"
                         render={({ field }) => (
                         <FormItem>
-                            <FormLabel>Behance URL</FormLabel>
+                            <FormLabel>{t('contactAdmin.behanceUrl')}</FormLabel>
                             <FormControl>
-                            <Input placeholder="https://www.behance.net/yourprofile" {...field} />
+                            <Input placeholder={t('contactAdmin.behanceUrlPlaceholder')} {...field} />
                             </FormControl>
                             <FormMessage />
                         </FormItem>
@@ -234,9 +236,9 @@ export default function ContactAdmin() {
                         name="linkedinUrl"
                         render={({ field }) => (
                         <FormItem>
-                            <FormLabel>LinkedIn URL</FormLabel>
+                            <FormLabel>{t('contactAdmin.linkedinUrl')}</FormLabel>
                             <FormControl>
-                            <Input placeholder="https://www.linkedin.com/in/yourprofile" {...field} />
+                            <Input placeholder={t('contactAdmin.linkedinUrlPlaceholder')} {...field} />
                             </FormControl>
                             <FormMessage />
                         </FormItem>
@@ -247,9 +249,9 @@ export default function ContactAdmin() {
                         name="fiverrUrl"
                         render={({ field }) => (
                         <FormItem>
-                            <FormLabel>Fiverr URL</FormLabel>
+                            <FormLabel>{t('contactAdmin.fiverrUrl')}</FormLabel>
                             <FormControl>
-                            <Input placeholder="https://www.fiverr.com/yourprofile" {...field} />
+                            <Input placeholder={t('contactAdmin.fiverrUrlPlaceholder')} {...field} />
                             </FormControl>
                             <FormMessage />
                         </FormItem>
@@ -260,9 +262,9 @@ export default function ContactAdmin() {
                         name="instagramUrl"
                         render={({ field }) => (
                         <FormItem>
-                            <FormLabel>Instagram URL</FormLabel>
+                            <FormLabel>{t('contactAdmin.instagramUrl')}</FormLabel>
                             <FormControl>
-                            <Input placeholder="https://www.instagram.com/yourprofile" {...field} />
+                            <Input placeholder={t('contactAdmin.instagramUrlPlaceholder')} {...field} />
                             </FormControl>
                             <FormMessage />
                         </FormItem>
@@ -273,9 +275,9 @@ export default function ContactAdmin() {
                         name="facebookUrl"
                         render={({ field }) => (
                         <FormItem>
-                            <FormLabel>Facebook URL</FormLabel>
+                            <FormLabel>{t('contactAdmin.facebookUrl')}</FormLabel>
                             <FormControl>
-                            <Input placeholder="https://www.facebook.com/yourprofile" {...field} />
+                            <Input placeholder={t('contactAdmin.facebookUrlPlaceholder')} {...field} />
                             </FormControl>
                             <FormMessage />
                         </FormItem>
@@ -286,16 +288,16 @@ export default function ContactAdmin() {
                         name="twitterUrl"
                         render={({ field }) => (
                         <FormItem>
-                            <FormLabel>Twitter (X) URL</FormLabel>
+                            <FormLabel>{t('contactAdmin.twitterUrl')}</FormLabel>
                             <FormControl>
-                            <Input placeholder="https://www.twitter.com/yourprofile" {...field} />
+                            <Input placeholder={t('contactAdmin.twitterUrlPlaceholder')} {...field} />
                             </FormControl>
                             <FormMessage />
                         </FormItem>
                         )}
                     />
                     <div className="flex justify-end pt-4">
-                        <Button type="submit" disabled={!canEditContact}>Save Changes</Button>
+                        <Button type="submit" disabled={!canEditContact}>{t('contactAdmin.save')}</Button>
                     </div>
                     </fieldset>
                     </form>

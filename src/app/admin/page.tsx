@@ -24,6 +24,7 @@ import { collection, doc } from 'firebase/firestore';
 import { useFirestore, useUser } from '@/firebase';
 import AdminManagement from '@/features/admin/components/AdminManagement';
 import AboutAdmin from '@/features/admin/components/AboutAdmin';
+import { useTranslation } from '@/lib/i18n/useTranslation';
 
 
 function AdminPage() {
@@ -33,15 +34,16 @@ function AdminPage() {
   const router = useRouter();
     
   const { user, isUserLoading } = useUser();
+  const { t } = useTranslation();
 
   const [selectedPortfolioItem, setSelectedPortfolioItem] = useState<PortfolioItem | null>(null);
   const [isPortfolioSheetOpen, setIsPortfolioSheetOpen] = useState(false);
   const [isLibraryOpen, setIsLibraryOpen] = useState(false);
-  const [librarySelectionConfig, setLibrarySelectionConfig] = useState<{ onSelect: (url: string, type: 'image' | 'video', filename: string) => void } | null>(null);
+  const [librarySelectionConfig, setLibrarySelectionConfig] = useState<{ onSelect: (url: string, type: 'image' | 'video' | 'raw', filename: string) => void } | null>(null);
   const [activeTab, setActiveTab] = useState('home');
   const [fromMediaLibrary, setFromMediaLibrary] = useState(false);
   const [newlyUploadedId, setNewlyUploadedId] = useState<string | null>(null);
-  const [dialogActiveTab, setDialogActiveTab] = useState<'images' | 'videos'>('images');
+  const [dialogActiveTab, setDialogActiveTab] = useState<'images' | 'videos' | 'files'>('images');
   const [dialogActiveLibrary, setDialogActiveLibrary] = useState<'primary' | 'extented'>('primary');
 
   const typedUser = user as AppUser | null;
@@ -78,21 +80,21 @@ function AdminPage() {
       if (isUnauthorized) {
           toast({
               variant: "destructive",
-              title: "Access Denied",
-              description: "You do not have permission to access the admin panel.",
+              title: t('admin.toast.accessDenied.title'),
+              description: t('admin.toast.accessDenied.description'),
           });
       } else {
           toast({
-              title: "Signed Out",
-              description: "You have successfully signed out.",
+              title: t('admin.toast.signedOut.title'),
+              description: t('admin.toast.signedOut.description'),
           });
       }
       router.push("/login");
     } catch (error: any) {
       toast({
         variant: "destructive",
-        title: "Uh oh! Something went wrong.",
-        description: "Could not sign out.",
+        title: t('admin.toast.error.title'),
+        description: t('admin.toast.error.description'),
       });
     }
   };
@@ -106,16 +108,16 @@ function AdminPage() {
       const docRef = doc(firestore, 'projects', values.id);
       setDocumentNonBlocking(docRef, dataToSave, { merge: true });
        toast({
-        title: 'Changes Saved',
-        description: 'Your portfolio has been updated.',
+        title: t('admin.toast.changesSaved.title'),
+        description: t('admin.toast.changesSaved.description'),
       });
     } else {
       // New item, place it at the beginning
       const dataToSave = { ...values, order: minOrder - 1 };
       addDocumentNonBlocking(collection(firestore, 'projects'), dataToSave);
        toast({
-        title: 'Item Added',
-        description: 'A new item has been added to your portfolio.',
+        title: t('admin.toast.itemAdded.title'),
+        description: t('admin.toast.itemAdded.description'),
       });
     }
 
@@ -126,13 +128,13 @@ function AdminPage() {
     setIsPortfolioSheetOpen(false);
   };
   
-  const handleOpenPortfolioFormWithMedia = (url: string, type: 'image' | 'video', filename: string) => {
+  const handleOpenPortfolioFormWithMedia = (url: string, type: 'image' | 'video' | 'raw', filename: string) => {
     const title = filename.split('.').slice(0, -1).join('.'); // Remove file extension
     setSelectedPortfolioItem({
       id: '',
       title: title || 'New Project',
       description: '',
-      type: type,
+      type: type === 'raw' ? 'image' : type,
       thumbnailUrl: type === 'video' ? '' : url, // For videos, thumbnail might be different
       sourceUrl: url,
       thumbnailHint: '',
@@ -142,7 +144,7 @@ function AdminPage() {
     setIsPortfolioSheetOpen(true); // Open form
   };
 
-  const handleOpenLibraryForSelection = (onSelect: (url: string, type: 'image' | 'video', filename: string) => void) => {
+  const handleOpenLibraryForSelection = (onSelect: (url: string, type: 'image' | 'video' | 'raw', filename: string) => void) => {
     setLibrarySelectionConfig({ onSelect });
     setIsLibraryOpen(true);
   };
@@ -160,7 +162,7 @@ function AdminPage() {
     }
   };
 
-  const handleUploadComplete = async (docId: string, resourceType: 'image' | 'video', libraryId: 'primary' | 'extented') => {
+  const handleUploadComplete = async (docId: string, resourceType: 'image' | 'video' | 'raw', libraryId: 'primary' | 'extented') => {
     if (!docId) return;
     setNewlyUploadedId(docId);
     
@@ -169,7 +171,7 @@ function AdminPage() {
       setActiveTab('media');
     }
     
-    setDialogActiveTab(resourceType === 'video' ? 'videos' : 'images');
+    setDialogActiveTab(resourceType === 'video' ? 'videos' : resourceType === 'raw' ? 'files' : 'images');
     setDialogActiveLibrary(libraryId);
     setIsLibraryOpen(true); // Open the library
     
@@ -191,15 +193,15 @@ function AdminPage() {
         <div className="container mx-auto px-0 flex flex-col h-full min-h-0 w-full">
           <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4 text-center">
             <div className="text-center md:text-left">
-              <h1 className="text-2xl md:text-4xl font-headline tracking-tight">Admin Panel</h1>
+              <h1 className="text-2xl md:text-4xl font-headline tracking-tight">{t('admin.heading')}</h1>
               <p className="mt-2 text-md md:text-lg text-foreground/70 break-all">
-                Welcome, {typedUser?.username || typedUser?.email?.split('@')[0]}!
+                {t('admin.welcome').replace('{user}', typedUser?.username || typedUser?.email?.split('@')[0] || '')}
               </p>
             </div>
             <div className="flex items-center gap-2 md:gap-4 flex-wrap justify-center">
               <Button onClick={() => handleLogout(false)} variant="secondary">
                 <FontAwesomeIcon icon={faRightFromBracket} className="mr-2 h-4 w-4" />
-                Sign Out
+                {t('admin.signOut')}
               </Button>
             </div>
           </div>
@@ -209,15 +211,15 @@ function AdminPage() {
           <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col min-h-0 mt-8">
             <div className="w-full flex flex-wrap justify-center items-center gap-4 md:gap-0">
               <TabsList className="flex-wrap h-auto justify-center">
-                <TabsTrigger value="home" className="glass-effect data-[state=active]:bg-destructive">Home</TabsTrigger>
-                <TabsTrigger value="projects" className="glass-effect data-[state=active]:bg-destructive">Projects</TabsTrigger>
-                <TabsTrigger value="about" className="glass-effect data-[state=active]:bg-destructive">About & Clients</TabsTrigger>
-                <TabsTrigger value="contact" className="glass-effect data-[state=active]:bg-destructive">Contact</TabsTrigger>
+                <TabsTrigger value="home" className="glass-effect data-[state=active]:bg-destructive">{t('admin.tabs.home')}</TabsTrigger>
+                <TabsTrigger value="projects" className="glass-effect data-[state=active]:bg-destructive">{t('admin.tabs.projects')}</TabsTrigger>
+                <TabsTrigger value="about" className="glass-effect data-[state=active]:bg-destructive">{t('admin.tabs.about')}</TabsTrigger>
+                <TabsTrigger value="contact" className="glass-effect data-[state=active]:bg-destructive">{t('admin.tabs.contact')}</TabsTrigger>
               </TabsList>
               <div className="md:ml-auto">
                 <TabsList className="flex-wrap h-auto justify-center">
-                  <TabsTrigger value="media" className="glass-effect bg-blue-900/50 text-white data-[state=active]:bg-destructive data-[state=active]:animate-glow px-4 py-2">Media</TabsTrigger>
-                  {isSuperAdmin && <TabsTrigger value="admins" className="glass-effect bg-blue-900/50 text-white data-[state=active]:bg-destructive data-[state=active]:animate-glow px-4 py-2">Admins</TabsTrigger>}
+                  <TabsTrigger value="media" className="glass-effect bg-blue-900/50 text-white data-[state=active]:bg-destructive data-[state=active]:animate-glow px-4 py-2">{t('admin.tabs.media')}</TabsTrigger>
+                  {isSuperAdmin && <TabsTrigger value="admins" className="glass-effect bg-blue-900/50 text-white data-[state=active]:bg-destructive data-[state=active]:animate-glow px-4 py-2">{t('admin.tabs.admins')}</TabsTrigger>}
                 </TabsList>
               </div>
             </div>

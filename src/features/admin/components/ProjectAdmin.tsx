@@ -29,6 +29,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlusCircle, faEllipsisH, faCloudUploadAlt, faGripVertical, faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
 import Preloader from '@/components/preloader';
 import type { AppUser } from '@/firebase/auth/use-user';
+import { useTranslation } from '@/lib/i18n/useTranslation';
 
 interface ProjectAdminProps {
   setSelectedItem: (item: PortfolioItem | null) => void;
@@ -40,6 +41,7 @@ function ProjectAdmin({ setSelectedItem, setIsSheetOpen }: ProjectAdminProps) {
   const firestore = useFirestore();
   const { user } = useUser();
   const { toast } = useToast();
+  const { t } = useTranslation();
   
   const typedUser = user as AppUser | null;
   const isSuperAdmin = typedUser?.email === 'eljabbaryhicham@example.com';
@@ -62,7 +64,7 @@ function ProjectAdmin({ setSelectedItem, setIsSheetOpen }: ProjectAdminProps) {
 
   const handleSeedData = async () => {
     if (!firestore || !canEditProjects) {
-        toast({ variant: 'destructive', title: 'Permission Denied', description: 'You do not have permission to seed data.' });
+        toast({ variant: 'destructive', title: t('projectAdmin.toast.permissionDenied.title'), description: t('projectAdmin.toast.permissionDenied.description') });
         return;
     }
     const batch = writeBatch(firestore);
@@ -75,7 +77,7 @@ function ProjectAdmin({ setSelectedItem, setIsSheetOpen }: ProjectAdminProps) {
 
     try {
         await batch.commit();
-        toast({ title: 'Success', description: 'Default projects have been added.' });
+        toast({ title: t('projectAdmin.toast.seedSuccess.title'), description: t('projectAdmin.toast.seedSuccess.description') });
     } catch (e: any) {
         errorEmitter.emit(
           'permission-error',
@@ -102,8 +104,8 @@ function ProjectAdmin({ setSelectedItem, setIsSheetOpen }: ProjectAdminProps) {
     if (!firestore || !canEditProjects) return;
     deleteDocumentNonBlocking(doc(firestore, 'projects', id));
     toast({
-      title: 'Item Deleted',
-      description: 'The portfolio item has been removed.',
+      title: t('projectAdmin.toast.deleted.title'),
+      description: t('projectAdmin.toast.deleted.description'),
     });
   };
 
@@ -113,8 +115,8 @@ function ProjectAdmin({ setSelectedItem, setIsSheetOpen }: ProjectAdminProps) {
     const newVisibility = !(item.isVisible ?? true);
     updateDocumentNonBlocking(docRef, { isVisible: newVisibility });
     toast({
-        title: `Project ${newVisibility ? 'Visible' : 'Hidden'}`,
-        description: `"${item.title}" is now ${newVisibility ? 'visible' : 'hidden'} on the work page.`,
+        title: t('projectAdmin.toast.visibilityChanged.title').replace('{visibility}', newVisibility ? t('projectAdmin.show') : t('projectAdmin.hide')),
+        description: t('projectAdmin.toast.visibilityChanged.description').replace('{title}', item.title).replace('{visibility}', newVisibility ? 'visible' : 'hidden'),
     });
   };
 
@@ -156,7 +158,7 @@ function ProjectAdmin({ setSelectedItem, setIsSheetOpen }: ProjectAdminProps) {
     });
 
     batch.commit().then(() => {
-        toast({ title: "Reordered!", description: "Project order has been updated." });
+        toast({ title: t('projectAdmin.toast.reordered.title'), description: t('projectAdmin.toast.reordered.description') });
     }).catch(e => {
         // Reset local state on failure
         if (items) {
@@ -197,21 +199,21 @@ function ProjectAdmin({ setSelectedItem, setIsSheetOpen }: ProjectAdminProps) {
     <div className="flex-1 flex flex-col h-full">
         <div className="flex items-start justify-between mb-6">
             <div className="text-left">
-                <h2 className="text-xl font-headline">Portfolio Projects</h2>
+                <h2 className="text-xl font-headline">{t('projectAdmin.title')}</h2>
                 <p className="text-muted-foreground">
-                Add, edit, and reorder the projects in your portfolio.
+                {t('projectAdmin.description')}
                 </p>
             </div>
             <div className="flex items-center gap-2">
                 {!isLoading && items?.length === 0 && (
                 <Button onClick={handleSeedData} variant="secondary" size="sm" disabled={!canEditProjects}>
                     <FontAwesomeIcon icon={faCloudUploadAlt} className="mr-2 h-4 w-4" />
-                    Seed Projects
+                    {t('projectAdmin.seed')}
                 </Button>
                 )}
                 <Button onClick={handleAddItem} size="sm" disabled={!canEditProjects}>
                 <FontAwesomeIcon icon={faPlusCircle} className="mr-2 h-4 w-4" />
-                Add New
+                {t('projectAdmin.addNew')}
                 </Button>
             </div>
         </div>
@@ -221,11 +223,11 @@ function ProjectAdmin({ setSelectedItem, setIsSheetOpen }: ProjectAdminProps) {
               <TableHeader>
                 <TableRow>
                   <TableHead className="w-[40px] text-center"></TableHead>
-                  <TableHead className="w-[80px] text-center">Image</TableHead>
-                  <TableHead className="text-center">Title</TableHead>
-                  <TableHead className="hidden md:table-cell text-center">Type</TableHead>
-                  <TableHead className="hidden lg:table-cell text-center">Description</TableHead>
-                  <TableHead className="text-center w-[100px]">Actions</TableHead>
+                  <TableHead className="w-[80px] text-center">{t('projectAdmin.col.image')}</TableHead>
+                  <TableHead className="text-center">{t('projectAdmin.col.title')}</TableHead>
+                  <TableHead className="hidden md:table-cell text-center">{t('projectAdmin.col.type')}</TableHead>
+                  <TableHead className="hidden lg:table-cell text-center">{t('projectAdmin.col.description')}</TableHead>
+                  <TableHead className="text-center w-[100px]">{t('projectAdmin.col.actions')}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -273,7 +275,7 @@ function ProjectAdmin({ setSelectedItem, setIsSheetOpen }: ProjectAdminProps) {
                     <TableCell className="hidden lg:table-cell max-w-xs truncate text-center">{item.description}</TableCell>
                     <TableCell className="text-center">
                       <div className="flex justify-center items-center gap-1">
-                          <Button variant="ghost" size="icon" onClick={() => handleToggleVisibility(item)} disabled={!canEditProjects} title={item.isVisible === false ? "Show Project" : "Hide Project"}>
+                          <Button variant="ghost" size="icon" onClick={() => handleToggleVisibility(item)} disabled={!canEditProjects} title={item.isVisible === false ? t('projectAdmin.show') : t('projectAdmin.hide')}>
                             <FontAwesomeIcon icon={item.isVisible === false ? faEyeSlash : faEye} />
                           </Button>
                           <DropdownMenu>
@@ -284,14 +286,14 @@ function ProjectAdmin({ setSelectedItem, setIsSheetOpen }: ProjectAdminProps) {
                             </DropdownMenuTrigger>
                             <DropdownMenuContent className="glass-effect">
                               <DropdownMenuItem onClick={() => handleEditItem(item)} className="justify-center">
-                                {canEditProjects ? 'Edit' : 'View'}
+                                {canEditProjects ? t('projectAdmin.edit') : t('projectAdmin.view')}
                               </DropdownMenuItem>
                               <DropdownMenuItem
                                 onClick={() => handleDeleteItem(item.id)}
                                 className="text-destructive justify-center"
                                 disabled={!canEditProjects}
                               >
-                                Delete
+                                {t('projectAdmin.delete')}
                               </DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>

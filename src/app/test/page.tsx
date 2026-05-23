@@ -16,6 +16,7 @@ import PlyrPlayer from '@/components/PlyrPlayer';
 import type { AppUser } from '@/firebase/auth/use-user';
 import { useToast } from '@/hooks/use-toast';
 import DPlayer from '@/components/DPlayer';
+import { useTranslation } from '@/lib/i18n/useTranslation';
 
 interface HomePageSettings {
     workPagePlayer?: 'plyr' | 'clappr' | 'dplayer';
@@ -26,6 +27,7 @@ export default function TestPage() {
   const firestore = useFirestore();
   const router = useRouter();
   const { toast } = useToast();
+  const { t } = useTranslation();
   
   const defaultUrl = 'https://res.cloudinary.com/da1srnoer/video/upload/sp_auto/v1761114792/u7h3zjwcglk5vzlxwiaq.m3u8';
   const [source, setSource] = useState(defaultUrl);
@@ -60,8 +62,8 @@ export default function TestPage() {
     setDocumentNonBlocking(settingsDocRef, { workPagePlayer: newPlayer }, { merge: true });
     const names: Record<string, string> = { plyr: 'Plyr', clappr: 'Clappr', dplayer: 'DPlayer' };
     toast({
-      title: 'Player Switched',
-      description: `Default player is now ${names[newPlayer] || newPlayer}.`,
+      title: t('test.toast.playerSwitched.title'),
+      description: t('test.toast.playerSwitched.description').replace('{player}', names[newPlayer] || newPlayer),
     });
   };
 
@@ -77,21 +79,21 @@ export default function TestPage() {
     <div className="h-full w-full flex items-center justify-center p-4 md:p-8">
       <div className='w-full flex flex-col items-center justify-center'>
         <div className="text-center mb-8 w-full max-w-4xl">
-          <h1 className="text-3xl md:text-4xl font-headline tracking-tight">Streaming Test</h1>
+          <h1 className="text-3xl md:text-4xl font-headline tracking-tight">{t('test.heading')}</h1>
           <p className="mt-2 text-base md:text-lg text-foreground/70">
-            The active player is <span className='font-bold text-primary'>{({ plyr: 'Plyr', clappr: 'Clappr', dplayer: 'DPlayer' })[workPagePlayer] || workPagePlayer}</span>. Enter a video URL to test playback.
+            {t('test.description').replace('{player}', ({ plyr: 'Plyr', clappr: 'Clappr', dplayer: 'DPlayer' })[workPagePlayer] || workPagePlayer)}
           </p>
           <div className="mt-4 flex w-full items-center space-x-2">
             <Input
               type="url"
-              placeholder="Enter video URL..."
+              placeholder={t('test.placeholder')}
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               className="text-base"
             />
             <Button type="submit" onClick={handleLoadClick}>
               <FontAwesomeIcon icon={faPlay} className="mr-2 h-4 w-4" />
-              Load
+              {t('test.load')}
             </Button>
           </div>
         </div>
@@ -102,10 +104,10 @@ export default function TestPage() {
                 variant="default"
                 size="sm"
                 onClick={handleSwitchPlayer}
-                title="Switch Default Player"
+                title={t('test.switchPlayer')}
               >
                 <FontAwesomeIcon icon={faSyncAlt} className="mr-2 h-4 w-4" />
-                Switch Player
+                {t('test.switchPlayer')}
               </Button>
           </div>
         )}

@@ -1,6 +1,7 @@
 
 'use client';
 
+import { useTranslation } from '@/lib/i18n/useTranslation';
 import React, { useCallback, useState, useEffect, useMemo, useRef } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { Button } from '@/components/ui/button';
@@ -65,6 +66,7 @@ const MediaFileCard = ({
   canEditContact: boolean;
   canEditHome: boolean;
 }) => {
+  const { t } = useTranslation();
   
   const handleDelete = () => {
     onDelete(file.public_id, file.id, file.resource_type, file.libraryId || 'primary');
@@ -109,20 +111,20 @@ const MediaFileCard = ({
            {isSelectionMode ? (
               <div className="text-white text-center">
                 <FontAwesomeIcon icon={faImages} className="h-8 w-8 mb-2" />
-                <p className="font-bold">Select</p>
+                <p className="font-bold">{t('mediaAdmin.select')}</p>
               </div>
             ) : (
               <div className="flex flex-wrap items-center justify-center gap-1 md:gap-2">
-                <Button size="icon" variant="ghost" onClick={() => onPreview(file)} title="Preview" className="h-8 w-8 md:h-10 md:w-10 text-white glass-effect">
+                <Button size="icon" variant="ghost" onClick={() => onPreview(file)} title={t('mediaAdmin.preview')} className="h-8 w-8 md:h-10 md:w-10 text-white glass-effect">
                   <FontAwesomeIcon icon={faEye} />
                 </Button>
                 {file.resource_type !== 'raw' && (
-                  <Button size="icon" variant="default" onClick={() => onMediaSelect(file.url, file.resource_type, file.filename)} title="Create Project" className="h-8 w-8 md:h-10 md:w-10 glass-effect">
+                  <Button size="icon" variant="default" onClick={() => onMediaSelect(file.url, file.resource_type, file.filename)} title={t('mediaAdmin.createProject')} className="h-8 w-8 md:h-10 md:w-10 glass-effect">
                     <FontAwesomeIcon icon={faPlus} />
                   </Button>
                 )}
                 {canEditHome && (
-                  <Button size="icon" variant="secondary" onClick={() => onSetBackground(file)} title="Set as Background" className="h-8 w-8 md:h-10 md:w-10 glass-effect">
+                  <Button size="icon" variant="secondary" onClick={() => onSetBackground(file)} title={t('mediaAdmin.setAsBackground')} className="h-8 w-8 md:h-10 md:w-10 glass-effect">
                     <FontAwesomeIcon icon={faPhotoFilm} />
                   </Button>
                 )}
@@ -131,27 +133,27 @@ const MediaFileCard = ({
                     <FontAwesomeIcon icon={faStar} />
                   </Button>
                 )}
-                <Button size="icon" variant="secondary" onClick={() => onCopy(file.url)} title="Copy URL" className="h-8 w-8 md:h-10 md:w-10 glass-effect">
+                <Button size="icon" variant="secondary" onClick={() => onCopy(file.url)} title={t('mediaAdmin.copyUrl')} className="h-8 w-8 md:h-10 md:w-10 glass-effect">
                   <FontAwesomeIcon icon={faCopy} />
                 </Button>
                 {canDelete && (
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
-                      <Button size="icon" variant="destructive" title="Delete" className="h-8 w-8 md:h-10 md:w-10">
+                      <Button size="icon" variant="destructive" title={t('mediaAdmin.delete')} className="h-8 w-8 md:h-10 md:w-10">
                         <FontAwesomeIcon icon={faTrash} />
                       </Button>
                     </AlertDialogTrigger>
                     <AlertDialogContent className="w-[80vw]">
                       <AlertDialogHeader>
-                        <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                        <AlertDialogTitle>{t('mediaAdmin.confirmDelete')}</AlertDialogTitle>
                         <AlertDialogDescription>
-                          This will permanently delete the file from your Cloudinary storage. This action cannot be undone.
+                          {t('mediaAdmin.confirmDeleteDescription')}
                         </AlertDialogDescription>
                       </AlertDialogHeader>
                       <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogCancel>{t('mediaAdmin.cancel')}</AlertDialogCancel>
                         <AlertDialogAction onClick={handleDelete}>
-                          Delete
+                          {t('mediaAdmin.delete')}
                         </AlertDialogAction>
                       </AlertDialogFooter>
                     </AlertDialogContent>
@@ -201,6 +203,7 @@ interface DialogMediaAdminProps {
 type MediaAdminProps = StandaloneMediaAdminProps | DialogMediaAdminProps;
 
 export default function MediaAdmin(props: MediaAdminProps) {
+  const { t } = useTranslation();
   const { toast } = useToast();
   const firestore = useFirestore();
   const { user } = useUser();
@@ -262,8 +265,8 @@ export default function MediaAdmin(props: MediaAdminProps) {
     if (!canUpload) {
       toast({
         variant: 'destructive',
-        title: 'Permission Denied',
-        description: 'You do not have permission to upload files.',
+        title: t('mediaAdmin.toast.permissionDenied.title'),
+        description: t('mediaAdmin.toast.permissionDenied.description'),
       });
       return;
     }
@@ -294,8 +297,8 @@ export default function MediaAdmin(props: MediaAdminProps) {
     if (!cloudName || !uploadPreset || uploadPreset.includes("your_unsigned_preset")) {
       toast({
         variant: 'destructive',
-        title: 'Configuration Error',
-        description: `Cloudinary settings for ${libraryId === 'primary' ? 'Library Primary' : 'Library Extented'} are not set. Please add them to your .env file.`,
+        title: t('mediaAdmin.toast.configError.title'),
+        description: t('mediaAdmin.toast.configError.description').replace('{library}', libraryId === 'primary' ? 'Library Primary' : 'Library Extented'),
         duration: 10000,
       });
       setFilesToUpload([]);
@@ -354,15 +357,15 @@ export default function MediaAdmin(props: MediaAdminProps) {
           }
 
           toast({
-            title: 'Upload successful',
-            description: `${file.name} has been uploaded to ${libraryId === 'primary' ? 'Library Primary' : 'Library Extented'}.`,
+            title: t('mediaAdmin.toast.uploadSuccessful.title'),
+            description: t('mediaAdmin.toast.uploadSuccessful.description').replace('{file}', file.name).replace('{library}', libraryId === 'primary' ? 'Library Primary' : 'Library Extented'),
           });
         } else {
           const error = JSON.parse(xhr.responseText).error;
           toast({
             variant: 'destructive',
-            title: `Upload Failed for ${file.name}`,
-            description: error.message || 'An unknown error occurred.',
+            title: t('mediaAdmin.toast.uploadFailed.title').replace('{file}', file.name),
+            description: t('mediaAdmin.toast.uploadFailed.description').replace('{error}', error.message || 'An unknown error occurred.'),
           });
         }
       };
@@ -370,8 +373,8 @@ export default function MediaAdmin(props: MediaAdminProps) {
       xhr.onerror = () => {
          toast({
             variant: 'destructive',
-            title: `Upload Failed for ${file.name}`,
-            description: 'A network error occurred during upload.',
+            title: t('mediaAdmin.toast.uploadFailedNetwork.title').replace('{file}', file.name),
+            description: t('mediaAdmin.toast.uploadFailedNetwork.description'),
           });
       }
 
@@ -405,9 +408,9 @@ export default function MediaAdmin(props: MediaAdminProps) {
     
     try {
         await deleteDocumentNonBlocking(doc(firestore, 'media', docId));
-        toast({ title: "File Removed", description: `The reference to the file has been removed from your library.`});
+        toast({ title: t('mediaAdmin.toast.fileRemoved.title'), description: t('mediaAdmin.toast.fileRemoved.description')});
     } catch(e: any) {
-        toast({ variant: 'destructive', title: "Deletion Failed", description: `Could not remove file reference: ${e.message}`});
+        toast({ variant: 'destructive', title: t('mediaAdmin.toast.deletionFailed.title'), description: t('mediaAdmin.toast.deletionFailed.description').replace('{error}', e.message)});
     }
   };
 
@@ -416,14 +419,14 @@ export default function MediaAdmin(props: MediaAdminProps) {
     const contactDocRef = doc(firestore, 'contact', 'details');
     setDocumentNonBlocking(contactDocRef, { logoUrl: url }, { merge: true });
     toast({
-        title: 'Logo Updated',
-        description: 'The site logo has been successfully updated.',
+        title: t('mediaAdmin.toast.logoUpdated.title'),
+        description: t('mediaAdmin.toast.logoUpdated.description'),
     });
   }
 
   const handleCopy = (url: string) => {
     navigator.clipboard.writeText(url);
-    toast({ title: "Copied!", description: "File URL copied to clipboard."});
+    toast({ title: t('mediaAdmin.toast.copied.title'), description: t('mediaAdmin.toast.copied.description')});
   }
 
   const handleMediaSelect = (url: string, type: 'image' | 'video' | 'raw', filename: string) => {
@@ -478,7 +481,7 @@ export default function MediaAdmin(props: MediaAdminProps) {
                 order: 999,
             });
             await batch.commit();
-            toast({ title: 'Project Created', description: 'A hidden project was created for this background video.'});
+            toast({ title: t('mediaAdmin.toast.projectCreated.title'), description: t('mediaAdmin.toast.projectCreated.description')});
         }
     }
 
@@ -492,8 +495,8 @@ export default function MediaAdmin(props: MediaAdminProps) {
     }, { merge: true });
 
     toast({
-        title: 'Background Updated',
-        description: `The background for the ${backgroundTarget === 'home' ? 'Homepage' : 'Other Pages'} has been set.`,
+        title: t('mediaAdmin.toast.backgroundUpdated.title'),
+        description: t('mediaAdmin.toast.backgroundUpdated.description').replace('{page}', backgroundTarget === 'home' ? 'Homepage' : 'Other Pages'),
     });
     
     setIsSetBackgroundOpen(false);
@@ -514,7 +517,7 @@ export default function MediaAdmin(props: MediaAdminProps) {
         return (
             <div className="text-center py-12 text-muted-foreground">
                 <FontAwesomeIcon icon={type === 'image' ? faFileImage : type === 'video' ? faFilm : faFileLines} className="h-12 w-12 mb-4" />
-                <p>No {typeName} uploaded to this library yet.</p>
+                <p>{t('mediaAdmin.empty').replace('{type}', typeName)}</p>
             </div>
         );
     }
@@ -573,13 +576,13 @@ export default function MediaAdmin(props: MediaAdminProps) {
   const commonDialogContent = (
     <>
       <DialogHeader className="p-4 border-b text-center">
-          <DialogTitle className="font-headline">{props.isDialog && props.isSelectionMode ? "Choose Media" : "Media Library"}</DialogTitle>
-           <DialogDescription>Upload and manage your images and videos.</DialogDescription>
+          <DialogTitle className="font-headline">{props.isDialog && props.isSelectionMode ? t('mediaAdmin.chooseMedia') : t('mediaAdmin.mediaLibrary')}</DialogTitle>
+           <DialogDescription>{t('mediaAdmin.description')}</DialogDescription>
       </DialogHeader>
         <Tabs value={activeLibrary} onValueChange={(value) => setActiveLibrary(value as 'primary' | 'extented')} className='px-4 pt-4'>
             <TabsList>
-                <TabsTrigger value="primary" className="py-2 px-4 text-base glass-effect data-[state=active]:bg-destructive">Library Primary</TabsTrigger>
-                <TabsTrigger value="extented" className="py-2 px-4 text-base glass-effect data-[state=active]:bg-destructive">Library Extented</TabsTrigger>
+                <TabsTrigger value="primary" className="py-2 px-4 text-base glass-effect data-[state=active]:bg-destructive">{t('mediaAdmin.tab.libraryPrimary')}</TabsTrigger>
+                <TabsTrigger value="extented" className="py-2 px-4 text-base glass-effect data-[state=active]:bg-destructive">{t('mediaAdmin.tab.libraryExtented')}</TabsTrigger>
             </TabsList>
         </Tabs>
       <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'images' | 'videos' | 'files')} className="flex-1 flex flex-col min-h-0">
@@ -587,15 +590,15 @@ export default function MediaAdmin(props: MediaAdminProps) {
             <TabsList>
                 <TabsTrigger value="images" className="py-2 px-4 text-base glass-effect data-[state=active]:bg-destructive">
                     <FontAwesomeIcon icon={faFileImage} className="mr-2" />
-                    Images
+                    {t('mediaAdmin.tab.images')}
                 </TabsTrigger>
                 <TabsTrigger value="videos" className="py-2 px-4 text-base glass-effect data-[state=active]:bg-destructive">
                     <FontAwesomeIcon icon={faFilm} className="mr-2" />
-                    Videos
+                    {t('mediaAdmin.tab.videos')}
                 </TabsTrigger>
                 <TabsTrigger value="files" className="py-2 px-4 text-base glass-effect data-[state=active]:bg-destructive">
                     <FontAwesomeIcon icon={faFileLines} className="mr-2" />
-                    Files
+                    {t('mediaAdmin.tab.files')}
                 </TabsTrigger>
             </TabsList>
           </div>
@@ -620,7 +623,7 @@ export default function MediaAdmin(props: MediaAdminProps) {
           "disabled:pointer-events-none"
       )}>
           <FontAwesomeIcon icon={faXmark} className="h-4 w-4" />
-          <span className="sr-only">Close</span>
+          <span className="sr-only">{t('mediaAdmin.close')}</span>
       </DialogClose>
     </>
   );
@@ -636,7 +639,7 @@ export default function MediaAdmin(props: MediaAdminProps) {
           "absolute top-4 right-4 z-10 h-8 w-8 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center hover:opacity-100 transition-opacity"
         )}>
           <FontAwesomeIcon icon={faXmark} className="h-4 w-4" />
-          <span className="sr-only">Close</span>
+          <span className="sr-only">{t('mediaAdmin.close')}</span>
         </DialogClose>
       </DialogContent>
     </Dialog>
@@ -646,26 +649,26 @@ export default function MediaAdmin(props: MediaAdminProps) {
     <Dialog open={isSetBackgroundOpen} onOpenChange={setIsSetBackgroundOpen}>
         <DialogContent className="w-[80vw]">
             <DialogHeader>
-                <DialogTitle>Set as Background</DialogTitle>
+                <DialogTitle>{t('mediaAdmin.setAsBackground')}</DialogTitle>
                 <DialogDescription>
-                    Where would you like to set this media as the background?
+                    {t('mediaAdmin.setAsBackgroundDescription')}
                 </DialogDescription>
             </DialogHeader>
             <div className="py-4">
                  <RadioGroup defaultValue="home" value={backgroundTarget} onValueChange={(value: 'home' | 'website') => setBackgroundTarget(value)}>
                     <div className="flex items-center space-x-2">
                         <RadioGroupItem value="home" id="bg-home" />
-                        <Label htmlFor="bg-home">Homepage Only</Label>
+                        <Label htmlFor="bg-home">{t('mediaAdmin.homepageOnly')}</Label>
                     </div>
                     <div className="flex items-center space-x-2">
                         <RadioGroupItem value="website" id="bg-website" />
-                        <Label htmlFor="bg-website">Other Pages</Label>
+                        <Label htmlFor="bg-website">{t('mediaAdmin.otherPages')}</Label>
                     </div>
                 </RadioGroup>
             </div>
             <DialogFooter>
-                <Button variant="outline" onClick={() => setIsSetBackgroundOpen(false)}>Cancel</Button>
-                <Button onClick={handleConfirmSetBackground}>Confirm</Button>
+                <Button variant="outline" onClick={() => setIsSetBackgroundOpen(false)}>{t('mediaAdmin.cancel')}</Button>
+                <Button onClick={handleConfirmSetBackground}>{t('mediaAdmin.confirm')}</Button>
             </DialogFooter>
         </DialogContent>
     </Dialog>
@@ -695,13 +698,13 @@ export default function MediaAdmin(props: MediaAdminProps) {
       <div className="flex-1 flex flex-col h-full gap-6">
         <div className="flex items-start justify-between">
             <div className="text-left">
-                <h2 className="text-xl font-headline">Media Library</h2>
-                <p className="text-muted-foreground mt-1 text-sm">Upload and manage your images and videos.</p>
+                <h2 className="text-xl font-headline">{t('mediaAdmin.mediaLibrary')}</h2>
+                <p className="text-muted-foreground mt-1 text-sm">{t('mediaAdmin.description')}</p>
             </div>
             <div className="flex items-center gap-2">
                 <Button onClick={props.onLibraryOpenRequest} variant="outline" size="sm">
                     <FontAwesomeIcon icon={faFolderOpen} className="mr-2" />
-                    Browse Full Library
+                    {t('mediaAdmin.browseFullLibrary')}
                 </Button>
             </div>
         </div>
@@ -719,23 +722,23 @@ export default function MediaAdmin(props: MediaAdminProps) {
                 <div className="flex flex-col items-center justify-center gap-2 text-muted-foreground">
                     <FontAwesomeIcon icon={faCloudUploadAlt} className="h-8 w-8" />
                     {isUploading ? (
-                        <p className="text-sm">Uploading...</p>
+                        <p className="text-sm">{t('mediaAdmin.uploading')}</p>
                     ) : !canUpload ? (
-                        <p className="text-sm text-destructive-foreground/70">You do not have permission to upload.</p>
+                        <p className="text-sm text-destructive-foreground/70">{t('mediaAdmin.noPermission')}</p>
                     ) : (
-                       <p className="text-sm">Drag & drop files, or <span className="text-primary font-semibold">click to browse</span></p>
+                       <p className="text-sm">{t('mediaAdmin.dragAndDrop')}</p>
                     )}
                 </div>
             </div>
             <Button onClick={() => setIsAddFromUrlOpen(true)} variant="outline" size="sm" className="w-full" disabled={!canUpload || isUploading}>
                 <FontAwesomeIcon icon={faLink} className="mr-2" />
-                Add from URL
+                {t('mediaAdmin.addFromUrl')}
             </Button>
           {isUploading && (
               <div className="mt-4">
                   <Progress value={uploadProgress} className="w-full" />
                   <p className="text-sm text-center mt-2 text-muted-foreground">
-                    Uploading: {uploadingFileName} ({Math.round(uploadProgress)}%)
+                    {t('mediaAdmin.uploadProgress').replace('{name}', uploadingFileName).replace('{progress}', String(Math.round(uploadProgress)))}
                   </p>
               </div>
           )}
@@ -751,37 +754,37 @@ export default function MediaAdmin(props: MediaAdminProps) {
       <Dialog open={isChoosingVideoFormat} onOpenChange={setIsChoosingVideoFormat}>
         <DialogContent className="w-[80vw]">
             <DialogHeader>
-                <DialogTitle>Choose Video Format</DialogTitle>
-                <DialogDescription>Select the delivery format for the video(s) you are uploading.</DialogDescription>
+                <DialogTitle>{t('mediaAdmin.chooseVideoFormat')}</DialogTitle>
+                <DialogDescription>{t('mediaAdmin.chooseVideoFormatDescription')}</DialogDescription>
             </DialogHeader>
             <RadioGroup defaultValue="mp4" onValueChange={(value: 'mp4' | 'm3u8') => setUploadVideoFormat(value)}>
                 <div className="flex items-center space-x-2">
                     <RadioGroupItem value="mp4" id="r1" />
-                    <Label htmlFor="r1">MP4 (Optimized for web)</Label>
+                    <Label htmlFor="r1">{t('mediaAdmin.mp4')}</Label>
                 </div>
                 <div className="flex items-center space-x-2">
                     <RadioGroupItem value="m3u8" id="r2" />
-                    <Label htmlFor="r2">M3U8 (Adaptive streaming)</Label>
+                    <Label htmlFor="r2">{t('mediaAdmin.m3u8')}</Label>
                 </div>
             </RadioGroup>
             <DialogFooter>
-                <Button variant="outline" onClick={() => setIsChoosingVideoFormat(false)}>Cancel</Button>
-                <Button onClick={() => { setIsChoosingVideoFormat(false); setIsChoosingLibrary(true); }}>Next</Button>
+                <Button variant="outline" onClick={() => setIsChoosingVideoFormat(false)}>{t('mediaAdmin.cancel')}</Button>
+                <Button onClick={() => { setIsChoosingVideoFormat(false); setIsChoosingLibrary(true); }}>{t('mediaAdmin.next')}</Button>
             </DialogFooter>
         </DialogContent>
       </Dialog>
       <Dialog open={isChoosingLibrary} onOpenChange={setIsChoosingLibrary}>
         <DialogContent className="w-[80vw]">
             <DialogHeader>
-                <DialogTitle>Choose a Library</DialogTitle>
-                <DialogDescription>Select which Cloudinary library you want to upload the files to.</DialogDescription>
+                <DialogTitle>{t('mediaAdmin.chooseLibrary')}</DialogTitle>
+                <DialogDescription>{t('mediaAdmin.chooseLibraryDescription')}</DialogDescription>
             </DialogHeader>
             <div className="flex justify-center gap-4 py-4">
-                <Button onClick={() => handleLibraryChoiceAndUpload('primary')} size="lg" className="w-48"><FontAwesomeIcon icon={faUniversity} className="mr-2"/> Library Primary</Button>
-                <Button onClick={() => handleLibraryChoiceAndUpload('extented')} size="lg" className="w-48"><FontAwesomeIcon icon={faUniversity} className="mr-2"/> Library Extented</Button>
+                <Button onClick={() => handleLibraryChoiceAndUpload('primary')} size="lg" className="w-48"><FontAwesomeIcon icon={faUniversity} className="mr-2"/> {t('mediaAdmin.libraryPrimary')}</Button>
+                <Button onClick={() => handleLibraryChoiceAndUpload('extented')} size="lg" className="w-48"><FontAwesomeIcon icon={faUniversity} className="mr-2"/> {t('mediaAdmin.libraryExtented')}</Button>
             </div>
              <DialogFooter>
-                <Button variant="outline" onClick={() => setIsChoosingLibrary(false)}>Cancel</Button>
+                <Button variant="outline" onClick={() => setIsChoosingLibrary(false)}>{t('mediaAdmin.cancel')}</Button>
             </DialogFooter>
         </DialogContent>
       </Dialog>

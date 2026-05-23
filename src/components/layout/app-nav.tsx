@@ -13,16 +13,16 @@ import { faHouse, faImage, faCircleInfo, faEnvelope, faShieldHalved, faVial } fr
 import Logo from "../logo";
 import { doc } from "firebase/firestore";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { LanguageSwitcher } from "@/components/layout/language-switcher";
-
+import { LanguageSwitcher, useLanguage } from "@/components/layout/language-switcher";
+import translations from "@/lib/i18n/translations";
 
 const navItems = [
-  { href: "/", label: "Home", icon: faHouse, public: true },
-  { href: "/work", label: "Work", icon: faImage, public: true },
-  { href: "/about", label: "About", icon: faCircleInfo, public: true },
-  { href: "/contact", label: "Contact", icon: faEnvelope, public: true },
-  { href: "/admin", label: "Admin", icon: faShieldHalved, public: false, adminOnly: true },
-  { href: "/test", label: "Test", icon: faVial, public: false, adminOnly: true },
+  { href: "/", key: "nav.home", icon: faHouse, public: true },
+  { href: "/work", key: "nav.work", icon: faImage, public: true },
+  { href: "/about", key: "nav.about", icon: faCircleInfo, public: true },
+  { href: "/contact", key: "nav.contact", icon: faEnvelope, public: true },
+  { href: "/admin", key: "nav.admin", icon: faShieldHalved, public: false, adminOnly: true },
+  { href: "/test", key: "nav.test", icon: faVial, public: false, adminOnly: true },
 ];
 
 interface HomePageSettings {
@@ -34,6 +34,8 @@ export function AppNav() {
   const { user } = useUser();
   const firestore = useFirestore();
   const isMobile = useIsMobile();
+  const { lang } = useLanguage();
+  const t = (key: string) => translations[lang]?.[key] ?? translations.en[key] ?? key;
 
   const contactDocRef = useMemoFirebase(
     () => (firestore ? doc(firestore, 'contact', 'details') : null),
@@ -62,9 +64,10 @@ export function AppNav() {
   
   const renderNavItem = (item: (typeof navItems)[0]) => {
     const isActive = item.href === "/" ? pathname === item.href : pathname.startsWith(item.href);
-    const isAdminButton = item.label === 'Admin';
-    const isTestButton = item.label === 'Test';
+    const isAdminButton = item.href === '/admin';
+    const isTestButton = item.href === '/test';
     const isSpecialButton = isAdminButton || isTestButton;
+    const label = t(item.key);
 
     const navButtonContent = (
       <div className="relative">
@@ -117,7 +120,7 @@ export function AppNav() {
             {navButtonContent}
           </TooltipTrigger>
           <TooltipContent side="right" className="glass-effect rounded-md">
-            <p>{item.label}</p>
+            <p>{label}</p>
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>

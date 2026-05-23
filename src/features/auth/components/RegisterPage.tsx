@@ -24,6 +24,7 @@ import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import Link from 'next/link';
 import { doc } from 'firebase/firestore';
+import { useTranslation } from '@/lib/i18n/useTranslation';
 
 const formSchema = z.object({
   username: z.string().min(3, { message: 'Username must be at least 3 characters.' }),
@@ -43,6 +44,7 @@ const formSchema = z.object({
 type RegisterFormValues = z.infer<typeof formSchema>;
 
 export default function RegisterPage() {
+  const { t } = useTranslation();
   const auth = useAuth();
   const firestore = useFirestore();
   const { user, isUserLoading } = useUser();
@@ -91,15 +93,15 @@ export default function RegisterPage() {
       }, {});
 
       toast({
-        title: 'Account Created',
-        description: 'You have successfully signed up.',
+        title: t('register.toast.success.title'),
+        description: t('register.toast.success.description'),
       });
       router.push('/admin');
     } catch (error: any) {
       toast({
         variant: 'destructive',
-        title: 'Uh oh! Something went wrong.',
-        description: error.code === 'auth/email-already-in-use' ? 'This username is already taken.' : error.message,
+        title: t('register.toast.error.title'),
+        description: error.code === 'auth/email-already-in-use' ? t('register.toast.error.description') : error.message,
       });
     } finally {
         setIsSubmitting(false);
@@ -114,9 +116,9 @@ export default function RegisterPage() {
     <div className="flex h-full min-h-full w-full items-center justify-center p-4">
       <Card className="w-full md:w-1/2 glass-effect">
         <CardHeader>
-            <CardTitle className="text-2xl font-headline">Create Admin Account</CardTitle>
+            <CardTitle className="text-2xl font-headline">{t('register.title')}</CardTitle>
             <CardDescription>
-                Enter your details and the secret code to register.
+                {t('register.subtitle')}
             </CardDescription>
         </CardHeader>
         <CardContent>
@@ -127,9 +129,9 @@ export default function RegisterPage() {
                     name="username"
                     render={({ field }) => (
                     <FormItem>
-                        <FormLabel>Username</FormLabel>
+                        <FormLabel>{t('register.username')}</FormLabel>
                         <FormControl>
-                        <Input placeholder="newadmin" {...field} />
+                        <Input placeholder={t('register.usernamePlaceholder')} {...field} />
                         </FormControl>
                         <FormMessage />
                     </FormItem>
@@ -140,9 +142,9 @@ export default function RegisterPage() {
                     name="password"
                     render={({ field }) => (
                     <FormItem>
-                        <FormLabel>Password</FormLabel>
+                        <FormLabel>{t('register.password')}</FormLabel>
                         <FormControl>
-                        <Input type="password" placeholder="••••••••" {...field} />
+                        <Input type="password" placeholder={t('register.passwordPlaceholder')} {...field} />
                         </FormControl>
                         <FormMessage />
                     </FormItem>
@@ -153,22 +155,22 @@ export default function RegisterPage() {
                     name="secretCode"
                     render={({ field }) => (
                     <FormItem>
-                        <FormLabel>Secret Code</FormLabel>
+                        <FormLabel>{t('register.secretCode')}</FormLabel>
                         <FormControl>
-                        <Input type="password" placeholder="Secret Code" {...field} />
+                        <Input type="password" placeholder={t('register.secretCodePlaceholder')} {...field} />
                         </FormControl>
                         <FormMessage />
                     </FormItem>
                     )}
                 />
                 <Button type="submit" className="w-full" disabled={isSubmitting}>
-                    {isSubmitting ? 'Registering...' : 'Register'}
+                    {isSubmitting ? t('register.signingIn') : t('register.signIn')}
                 </Button>
                 </form>
             </Form>
             <div className="mt-4 text-center text-sm">
               <Link href="/login" className="underline text-muted-foreground hover:text-foreground">
-                Already have an account? Sign In
+                {t('register.signInLink')}
               </Link>
             </div>
         </CardContent>

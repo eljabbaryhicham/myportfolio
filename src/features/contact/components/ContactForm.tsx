@@ -24,6 +24,7 @@ import { useDoc, useFirestore, useMemoFirebase } from '@/firebase';
 import { doc } from 'firebase/firestore';
 import Link from 'next/link';
 import { useToast } from '@/hooks/use-toast';
+import { useTranslation } from '@/lib/i18n/useTranslation';
 
 const formSchema = ContactFormInputSchema;
 type ContactFormValues = z.infer<typeof formSchema>;
@@ -42,6 +43,7 @@ export default function ContactForm({ onSuccess, defaultMessage = '' }: ContactF
   const [isSent, setIsSent] = useState(false);
   const firestore = useFirestore();
   const { toast } = useToast();
+  const { t } = useTranslation();
 
   const contactDocRef = useMemoFirebase(
     () => (firestore ? doc(firestore, 'contact', 'details') : null),
@@ -92,8 +94,8 @@ export default function ContactForm({ onSuccess, defaultMessage = '' }: ContactF
       } else {
         toast({
           variant: "destructive",
-          title: "Message Failed to Send",
-          description: result.message || "An unexpected error occurred. Please try again.",
+          title: t('contactForm.error.failed.title'),
+          description: result.message || t('contactForm.error.failed.description'),
           duration: 8000,
         });
         setIsSubmitting(false);
@@ -101,8 +103,8 @@ export default function ContactForm({ onSuccess, defaultMessage = '' }: ContactF
     } catch (error) {
        toast({
           variant: "destructive",
-          title: "An Error Occurred",
-          description: "A network error occurred. Please check your connection and try again.",
+          title: t('contactForm.error.network.title'),
+          description: t('contactForm.error.network.description'),
         });
        setIsSubmitting(false);
     }
@@ -118,20 +120,20 @@ export default function ContactForm({ onSuccess, defaultMessage = '' }: ContactF
            >
             <FontAwesomeIcon icon={faCheckCircle} className="w-16 h-16 text-green-400 mb-4" />
            </motion.div>
-          <h3 className="text-xl font-bold">Message Sent!</h3>
+          <h3 className="text-xl font-bold">{t('contactForm.success.title')}</h3>
           <p className="text-foreground/80 mt-2 max-w-sm">
-            Thank you for reaching out. We will get back to you shortly.
+            {t('contactForm.success.description')}
           </p>
-          {!onSuccess && ( // Only show "Send Another" if it's not in a dialog that will close
+          {!onSuccess && (
             <Button onClick={() => setIsSent(false)} className="mt-6">
-              Send Another Message
+              {t('contactForm.success.sendAnother')}
             </Button>
           )}
           {!onSuccess && contactInfo?.whatsApp && (
             <Button asChild className="bg-gradient-to-r from-green-500 to-emerald-600 mt-4">
                 <Link href={`https://wa.me/${contactInfo.whatsApp.replace(/\\D/g, '')}`} target="_blank" rel="noopener noreferrer">
                     <FontAwesomeIcon icon={faWhatsapp} className="mr-2 h-5 w-5" />
-                    Chat on WhatsApp
+                    {t('contactForm.success.chatOnWhatsApp')}
                 </Link>
             </Button>
           )}
@@ -142,7 +144,7 @@ export default function ContactForm({ onSuccess, defaultMessage = '' }: ContactF
   return (
     <div className='w-full'>
         <div className="flex flex-col items-center mb-8">
-            <p className="font-handwriting text-xl md:text-2xl text-white transform -rotate-6">send a message we are always avalaible</p>
+            <p className="font-handwriting text-xl md:text-2xl text-white transform -rotate-6">{t('contactForm.handwriting')}</p>
             <svg className="w-12 h-12 md:w-20 md:h-20 text-white" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M50 10 C51 30, 51 50, 50 70" stroke="currentColor" strokeWidth="2" strokeLinecap="round" fill="none"/>
               <path d="M45 65 L50 75 L55 65" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
@@ -156,7 +158,7 @@ export default function ContactForm({ onSuccess, defaultMessage = '' }: ContactF
             render={({ field }) => (
                 <FormItem>
                 <FormControl>
-                    <Input placeholder="Name" {...field} className="text-center bg-transparent border-0 border-b border-foreground/30 rounded-none focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-primary transition-colors placeholder:text-foreground/80" />
+                    <Input placeholder={t('contactForm.placeholder.name')} {...field} className="text-center bg-transparent border-0 border-b border-foreground/30 rounded-none focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-primary transition-colors placeholder:text-foreground/80" />
                 </FormControl>
                 <FormMessage />
                 </FormItem>
@@ -168,7 +170,7 @@ export default function ContactForm({ onSuccess, defaultMessage = '' }: ContactF
             render={({ field }) => (
                 <FormItem>
                 <FormControl>
-                    <Input type="email" placeholder="Email" {...field} className="text-center bg-transparent border-0 border-b border-foreground/30 rounded-none focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-primary transition-colors placeholder:text-foreground/80" />
+                    <Input type="email" placeholder={t('contactForm.placeholder.email')} {...field} className="text-center bg-transparent border-0 border-b border-foreground/30 rounded-none focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-primary transition-colors placeholder:text-foreground/80" />
                 </FormControl>
                 <FormMessage />
                 </FormItem>
@@ -181,7 +183,7 @@ export default function ContactForm({ onSuccess, defaultMessage = '' }: ContactF
                 <FormItem>
                 <FormControl>
                     <Textarea
-                    placeholder="Message"
+                    placeholder={t('contactForm.placeholder.message')}
                     className="text-center bg-transparent border-0 border-b border-foreground/30 rounded-none focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-primary transition-colors min-h-[100px] placeholder:text-foreground/80"
                     {...field}
                     />
@@ -191,7 +193,7 @@ export default function ContactForm({ onSuccess, defaultMessage = '' }: ContactF
             )}
             />
             <Button type="submit" size="lg" className="w-full glass-effect" disabled={isSubmitting}>
-            {isSubmitting ? 'Sending...' : 'Send Message'}
+            {isSubmitting ? t('contactForm.submit.sending') : t('contactForm.submit.send')}
             </Button>
         </form>
         </Form>

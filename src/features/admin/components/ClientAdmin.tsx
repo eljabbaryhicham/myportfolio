@@ -1,6 +1,7 @@
 
 'use client';
 
+import { useTranslation } from '@/lib/i18n/useTranslation';
 import { useMemo, useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import {
@@ -61,7 +62,8 @@ const formSchema = z.object({
 
 type ClientFormValues = z.infer<typeof formSchema>;
 
-function ClientForm({ client, onSubmit, onCancel, onChooseFromLibrary, canEdit }: { client: Partial<Client> | null, onSubmit: (values: ClientFormValues) => void, onCancel: () => void, onChooseFromLibrary: (onSelect: (url: string, type: 'image' | 'video', filename: string) => void) => void, canEdit: boolean }) {
+function ClientForm({ client, onSubmit, onCancel, onChooseFromLibrary, canEdit }: { client: Partial<Client> | null, onSubmit: (values: ClientFormValues) => void, onCancel: () => void, onChooseFromLibrary: (onSelect: (url: string, type: 'image' | 'video' | 'raw', filename: string) => void) => void, canEdit: boolean }) {
+  const { t } = useTranslation();
   const form = useForm<ClientFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -103,9 +105,9 @@ function ClientForm({ client, onSubmit, onCancel, onChooseFromLibrary, canEdit }
             name="name"
             render={({ field }) => (
                 <FormItem>
-                <FormLabel>Client Name</FormLabel>
+                <FormLabel>{t('clientAdmin.name')}</FormLabel>
                 <FormControl>
-                    <Input placeholder="Client Name" {...field} />
+                    <Input placeholder={t('clientAdmin.namePlaceholder')} {...field} />
                 </FormControl>
                 <FormMessage />
                 </FormItem>
@@ -116,10 +118,10 @@ function ClientForm({ client, onSubmit, onCancel, onChooseFromLibrary, canEdit }
             name="logoUrl"
             render={({ field }) => (
                 <FormItem>
-                <FormLabel>Logo URL</FormLabel>
+                <FormLabel>{t('clientAdmin.logoUrl')}</FormLabel>
                 <div className="flex items-center gap-2">
                     <FormControl>
-                        <Input placeholder="https://example.com/logo.png" {...field} />
+                        <Input placeholder={t('clientAdmin.logoUrlPlaceholder')} {...field} />
                     </FormControl>
                     <Button type="button" variant="outline" size="icon" onClick={handleChooseLogo}>
                         <FontAwesomeIcon icon={faImages} />
@@ -130,8 +132,8 @@ function ClientForm({ client, onSubmit, onCancel, onChooseFromLibrary, canEdit }
             )}
             />
             <div className="flex justify-end space-x-4">
-                <Button type="button" variant="outline" onClick={onCancel}>Cancel</Button>
-                <Button type="submit">Save</Button>
+                <Button type="button" variant="outline" onClick={onCancel}>{t('clientAdmin.cancel')}</Button>
+                <Button type="submit">{t('clientAdmin.save')}</Button>
             </div>
         </fieldset>
       </form>
@@ -140,6 +142,7 @@ function ClientForm({ client, onSubmit, onCancel, onChooseFromLibrary, canEdit }
 }
 
 export default function ClientAdmin() {
+  const { t } = useTranslation();
   const firestore = useFirestore();
   const { user } = useUser();
   const { toast } = useToast();
@@ -156,7 +159,7 @@ export default function ClientAdmin() {
   const [selectedClient, setSelectedClient] = useState<Partial<Client> | null>(null);
   
   const [isLibraryOpen, setIsLibraryOpen] = useState(false);
-  const [librarySelectionConfig, setLibrarySelectionConfig] = useState<{ onSelect: (url: string, type: 'image' | 'video', filename: string) => void } | null>(null);
+  const [librarySelectionConfig, setLibrarySelectionConfig] = useState<{ onSelect: (url: string, type: 'image' | 'video' | 'raw', filename: string) => void } | null>(null);
 
   const draggingItem = useRef<string | null>(null);
   const dragOverItem = useRef<string | null>(null);
@@ -169,7 +172,7 @@ export default function ClientAdmin() {
 
   const handleSeedData = async () => {
     if (!firestore || !canEdit) {
-        toast({ variant: 'destructive', title: 'Permission Denied', description: 'You do not have permission to seed data.' });
+        toast({ variant: 'destructive', title: t('clientAdmin.toast.permissionDenied.title'), description: t('clientAdmin.toast.permissionDenied.description') });
         return;
     }
     const batch = writeBatch(firestore);
@@ -182,9 +185,9 @@ export default function ClientAdmin() {
 
     try {
         await batch.commit();
-        toast({ title: 'Success', description: 'Default clients have been added.' });
+        toast({ title: t('clientAdmin.toast.seedSuccess.title'), description: t('clientAdmin.toast.seedSuccess.description') });
     } catch (e: any) {
-        toast({ variant: 'destructive', title: 'Error', description: 'Could not seed clients.' });
+        toast({ variant: 'destructive', title: t('clientAdmin.toast.seedError.title'), description: t('clientAdmin.toast.seedError.description') });
     }
   }
 
@@ -202,8 +205,8 @@ export default function ClientAdmin() {
     if (!firestore || !canEdit) return;
     deleteDocumentNonBlocking(doc(firestore, 'clients', id));
     toast({
-      title: 'Client Deleted',
-      description: 'The client has been removed.',
+      title: t('clientAdmin.toast.deleted.title'),
+      description: t('clientAdmin.toast.deleted.description'),
     });
   };
 
@@ -213,8 +216,8 @@ export default function ClientAdmin() {
     const newVisibility = !(item.isVisible ?? true);
     updateDocumentNonBlocking(docRef, { isVisible: newVisibility });
     toast({
-        title: `Client ${newVisibility ? 'Visible' : 'Hidden'}`,
-        description: `"${item.name}" is now ${newVisibility ? 'visible' : 'hidden'} on the about page.`,
+        title: t('clientAdmin.toast.visibilityChanged.title').replace('{visibility}', newVisibility ? 'visible' : 'hidden'),
+        description: t('clientAdmin.toast.visibilityChanged.description').replace('{name}', item.name).replace('{visibility}', newVisibility ? 'visible' : 'hidden'),
     });
   };
   
@@ -225,19 +228,19 @@ export default function ClientAdmin() {
         // Editing existing client
         const clientRef = doc(firestore, 'clients', selectedClient.id);
         setDocumentNonBlocking(clientRef, { ...values, order: selectedClient.order ?? 0, isVisible: selectedClient.isVisible ?? true }, { merge: true });
-        toast({ title: 'Client Updated', description: 'The client has been updated.'});
+        toast({ title: t('clientAdmin.toast.updated.title'), description: t('clientAdmin.toast.updated.description')});
     } else {
         // Adding new client
         const maxOrder = clients ? Math.max(-1, ...clients.map(c => c.order)) : -1;
         const newClient = { ...values, order: maxOrder + 1, isVisible: true };
         addDocumentNonBlocking(collection(firestore, 'clients'), newClient);
-        toast({ title: 'Client Added', description: 'A new client has been added.'});
+        toast({ title: t('clientAdmin.toast.added.title'), description: t('clientAdmin.toast.added.description')});
     }
     setIsFormOpen(false);
     setSelectedClient(null);
   };
   
-  const handleOpenLibraryForSelection = (onSelect: (url: string, type: 'image' | 'video', filename: string) => void) => {
+  const handleOpenLibraryForSelection = (onSelect: (url: string, type: 'image' | 'video' | 'raw', filename: string) => void) => {
     if (!canEdit) return;
     setLibrarySelectionConfig({ onSelect });
     setIsLibraryOpen(true);
@@ -281,7 +284,7 @@ export default function ClientAdmin() {
     });
 
     batch.commit().then(() => {
-        toast({ title: "Reordered!", description: "Client order has been updated." });
+        toast({ title: t('clientAdmin.toast.reordered.title'), description: t('clientAdmin.toast.reordered.description') });
     }).catch(e => {
         if (clients) {
           setSortedClients([...clients].sort((a, b) => (a.order ?? 0) - (b.order ?? 0)));
@@ -327,12 +330,12 @@ export default function ClientAdmin() {
                   {!isLoading && (!clients || clients.length === 0) && (
                   <Button onClick={handleSeedData} variant="secondary" size="sm" disabled={!canEdit}>
                       <FontAwesomeIcon icon={faCloudUploadAlt} className="mr-2 h-4 w-4" />
-                      Seed Clients
+                      {t('clientAdmin.seed')}
                   </Button>
                   )}
                   <Button onClick={handleAddItem} size="sm" disabled={!canEdit}>
                   <FontAwesomeIcon icon={faPlusCircle} className="mr-2 h-4 w-4" />
-                  Add New
+                  {t('clientAdmin.addNew')}
                   </Button>
               </div>
           </div>
@@ -368,7 +371,7 @@ export default function ClientAdmin() {
                                     <p className="font-medium truncate">{client.name}</p>
                                 </div>
                                 <div className="flex items-center">
-                                    <Button variant="ghost" size="icon" onClick={() => handleToggleVisibility(client)} disabled={!canEdit} title={client.isVisible === false ? "Show Client" : "Hide Client"}>
+                                    <Button variant="ghost" size="icon" onClick={() => handleToggleVisibility(client)} disabled={!canEdit} title={client.isVisible === false ? t('clientAdmin.show') : t('clientAdmin.hide')}>
                                         <FontAwesomeIcon icon={client.isVisible === false ? faEyeSlash : faEye} />
                                     </Button>
                                     <DropdownMenu>
@@ -378,8 +381,8 @@ export default function ClientAdmin() {
                                             </Button>
                                         </DropdownMenuTrigger>
                                         <DropdownMenuContent className="glass-effect">
-                                            <DropdownMenuItem onClick={() => handleEditItem(client)}>Edit</DropdownMenuItem>
-                                            <DropdownMenuItem onClick={() => handleDeleteItem(client.id)} className="text-destructive">Delete</DropdownMenuItem>
+                                            <DropdownMenuItem onClick={() => handleEditItem(client)}>{t('clientAdmin.edit')}</DropdownMenuItem>
+                                            <DropdownMenuItem onClick={() => handleDeleteItem(client.id)} className="text-destructive">{t('clientAdmin.delete')}</DropdownMenuItem>
                                         </DropdownMenuContent>
                                     </DropdownMenu>
                                 </div>
@@ -393,9 +396,9 @@ export default function ClientAdmin() {
                             <TableHeader>
                             <TableRow>
                                 <TableHead className="w-[40px]"></TableHead>
-                                <TableHead className="w-[100px] text-center">Logo</TableHead>
-                                <TableHead>Name</TableHead>
-                                <TableHead className="text-right w-[100px]">Actions</TableHead>
+                                <TableHead className="w-[100px] text-center">{t('clientAdmin.col.logo')}</TableHead>
+                                <TableHead>{t('clientAdmin.col.name')}</TableHead>
+                                <TableHead className="text-right w-[100px]">{t('clientAdmin.col.actions')}</TableHead>
                             </TableRow>
                             </TableHeader>
                             <TableBody>
@@ -424,7 +427,7 @@ export default function ClientAdmin() {
                                 <TableCell className="font-medium max-w-[100px] md:max-w-xs truncate">{client.name}</TableCell>
                                 <TableCell className="text-right">
                                     <div className="flex justify-end items-center gap-1">
-                                      <Button variant="ghost" size="icon" onClick={() => handleToggleVisibility(client)} disabled={!canEdit} title={client.isVisible === false ? "Show Client" : "Hide Client"}>
+                                      <Button variant="ghost" size="icon" onClick={() => handleToggleVisibility(client)} disabled={!canEdit} title={client.isVisible === false ? t('clientAdmin.show') : t('clientAdmin.hide')}>
                                         <FontAwesomeIcon icon={client.isVisible === false ? faEyeSlash : faEye} />
                                       </Button>
                                       <DropdownMenu>
@@ -435,13 +438,13 @@ export default function ClientAdmin() {
                                       </DropdownMenuTrigger>
                                       <DropdownMenuContent className="glass-effect">
                                           <DropdownMenuItem onClick={() => handleEditItem(client)}>
-                                          Edit
+                                          {t('clientAdmin.edit')}
                                           </DropdownMenuItem>
                                           <DropdownMenuItem
                                           onClick={() => handleDeleteItem(client.id)}
                                           className="text-destructive"
                                           >
-                                          Delete
+                                          {t('clientAdmin.delete')}
                                           </DropdownMenuItem>
                                       </DropdownMenuContent>
                                       </DropdownMenu>
@@ -455,7 +458,7 @@ export default function ClientAdmin() {
 
                     {!isLoading && (!clients || clients.length === 0) && (
                         <div className="flex items-center justify-center h-48 text-muted-foreground">
-                            <p>No clients to display.</p>
+                            <p>{t('clientAdmin.empty')}</p>
                         </div>
                     )}
                 </>
@@ -465,10 +468,10 @@ export default function ClientAdmin() {
         <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
           <DialogContent className="w-[80vw] glass-effect">
             <DialogHeader>
-              <DialogTitle className="font-headline">{selectedClient?.id ? 'Edit Client' : 'Add New Client'}</DialogTitle>
+              <DialogTitle className="font-headline">{selectedClient?.id ? t('clientAdmin.dialogEditTitle') : t('clientAdmin.dialogAddTitle')}</DialogTitle>
               <DialogDescription>
-                Enter the details for the client.
-                {!canEdit && <span className="text-destructive font-bold block mt-2"> (Read-only)</span>}
+                {t('clientAdmin.dialogDescription')}
+                {!canEdit && <span className="text-destructive font-bold block mt-2"> {t('clientAdmin.readonly')}</span>}
               </DialogDescription>
             </DialogHeader>
             <ClientForm 
@@ -501,7 +504,9 @@ export default function ClientAdmin() {
               setLibrarySelectionConfig(null);
           }}
           activeTab={'images'}
-          setActiveTab={() => {}} // Only show images for logos
+          setActiveTab={() => {}}
+          activeLibrary={'primary'}
+          setActiveLibrary={() => {}}
           newlyUploadedId={null}
       />
     </>

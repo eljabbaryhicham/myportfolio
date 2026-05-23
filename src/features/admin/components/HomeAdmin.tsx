@@ -33,7 +33,17 @@ import { Separator } from '@/components/ui/separator';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { debounce } from 'lodash';
+import { useTranslation } from '@/lib/i18n/useTranslation';
+
+function debounce<T extends (...args: any[]) => void>(fn: T, delay: number): T & { cancel: () => void } {
+  let timer: ReturnType<typeof setTimeout>;
+  const debounced = (...args: any[]) => {
+    clearTimeout(timer);
+    timer = setTimeout(() => fn(...args), delay);
+  };
+  debounced.cancel = () => clearTimeout(timer);
+  return debounced as T & { cancel: () => void };
+}
 
 interface HomePageSettings {
     homePageBackgroundType?: 'video' | 'image';
@@ -43,14 +53,24 @@ interface HomePageSettings {
     isHomePageVideoEnabled?: boolean;
     isWebsiteVideoEnabled?: boolean;
     workPagePlayer?: 'plyr' | 'clappr' | 'dplayer';
+    isTestPageEnabled?: boolean;
+    homePageLogoUrl?: string;
+    isHomePageLogoVisible?: boolean;
+    themeColor?: string;
 }
 
 const settingsSchema = z.object({
   workPagePlayer: z.enum(['plyr', 'clappr', 'dplayer']).optional(),
   isTestPageEnabled: z.boolean().optional(),
-  homePageLogoUrl: z.string().url().optional().or(z.literal('')),
+  homePageLogoUrl: z.string().optional(),
   isHomePageLogoVisible: z.boolean().optional(),
   themeColor: z.string().optional(),
+  homePageBackgroundType: z.enum(['video', 'image']).optional(),
+  homePageBackgroundMediaId: z.string().optional(),
+  websiteBackgroundType: z.enum(['video', 'image']).optional(),
+  websiteBackgroundMediaId: z.string().optional(),
+  isHomePageVideoEnabled: z.boolean().optional(),
+  isWebsiteVideoEnabled: z.boolean().optional(),
 });
 
 type SettingsFormValues = z.infer<typeof settingsSchema>;
@@ -65,6 +85,7 @@ interface MediaAsset {
 
 export default function HomeAdmin() {
   const { toast } = useToast();
+  const { t } = useTranslation();
   const firestore = useFirestore();
   const { user } = useUser();
   const [isMounted, setIsMounted] = useState(false);
@@ -129,7 +150,7 @@ export default function HomeAdmin() {
   useEffect(() => {
     if (!canEditHome || !isMounted) return;
 
-    const debouncedSave = debounce((fieldName, value) => {
+    const debouncedSave = debounce((fieldName: string, value: any) => {
         if (settingsDocRef) {
             const dataToSave = { [fieldName]: value };
             setDocumentNonBlocking(settingsDocRef, dataToSave, { merge: true });
@@ -155,8 +176,8 @@ export default function HomeAdmin() {
                 } catch {}
             }
             toast({
-                title: 'Setting Saved',
-                description: 'Your change has been saved automatically.',
+                title: t('homeAdmin.toast.saved.title'),
+                description: t('homeAdmin.toast.saved.description'),
             });
         }
     }, 500);
@@ -187,9 +208,9 @@ export default function HomeAdmin() {
   return (
     <div className="flex-1 flex flex-col h-full">
         <div className="mb-6">
-            <h2 className="text-xl font-headline">Home Page Settings</h2>
+            <h2 className="text-xl font-headline">{t('homeAdmin.title')}</h2>
             <p className="text-muted-foreground">
-                Manage background videos and other global settings. Changes save automatically.
+                {t('homeAdmin.description')}
             </p>
         </div>
         <div className="flex-1 border rounded-lg overflow-hidden glass-effect">
@@ -201,16 +222,16 @@ export default function HomeAdmin() {
                                 
                                 {/* Homepage Background Settings */}
                                 <div className="space-y-4 p-4 rounded-lg border glass-effect">
-                                    <h3 className="font-headline text-lg">Homepage</h3>
+                                    <h3 className="font-headline text-lg">{t('homeAdmin.homepageHeading')}</h3>
                                     
                                     <FormField
                                         control={control}
                                         name="homePageLogoUrl"
                                         render={({ field }) => (
                                             <FormItem>
-                                                <FormLabel>Homepage Logo URL</FormLabel>
+                                                <FormLabel>{t('homeAdmin.homepageLogoUrl')}</FormLabel>
                                                 <FormControl>
-                                                    <Input placeholder="https://example.com/logo.png" {...field} />
+                                                    <Input placeholder={t('homeAdmin.homepageLogoUrlPlaceholder')} {...field} />
                                                 </FormControl>
                                                 <FormMessage />
                                             </FormItem>
@@ -222,7 +243,7 @@ export default function HomeAdmin() {
                                         render={({ field }) => (
                                             <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
                                                 <div className="space-y-0.5">
-                                                    <FormLabel>Show Homepage Logo</FormLabel>
+                                                    <FormLabel>{t('homeAdmin.showLogo')}</FormLabel>
                                                 </div>
                                                 <FormControl>
                                                     <Switch checked={field.value} onCheckedChange={field.onChange} />
@@ -233,13 +254,13 @@ export default function HomeAdmin() {
                                     
                                     <Separator />
                                     
-                                    <h3 className="font-headline text-lg pt-4">Homepage Background</h3>
+                                    <h3 className="font-headline text-lg pt-4">{t('homeAdmin.homepageBackground')}</h3>
                                     <FormField
                                       control={control}
                                       name="homePageBackgroundType"
                                       render={({ field }) => (
                                         <FormItem className="space-y-3">
-                                          <FormLabel>Background Type</FormLabel>
+                                          <FormLabel>{t('homeAdmin.backgroundType')}</FormLabel>
                                           <FormControl>
                                             <RadioGroup
                                               onValueChange={(value) => {
@@ -251,11 +272,11 @@ export default function HomeAdmin() {
                                             >
                                               <FormItem className="flex items-center space-x-2 space-y-0">
                                                 <FormControl><RadioGroupItem value="video" /></FormControl>
-                                                <FormLabel className="font-normal">Video</FormLabel>
+                                                <FormLabel className="font-normal">{t('homeAdmin.video')}</FormLabel>
                                               </FormItem>
                                               <FormItem className="flex items-center space-x-2 space-y-0">
                                                 <FormControl><RadioGroupItem value="image" /></FormControl>
-                                                <FormLabel className="font-normal">Image</FormLabel>
+                                                <FormLabel className="font-normal">{t('homeAdmin.image')}</FormLabel>
                                               </FormItem>
                                             </RadioGroup>
                                           </FormControl>
@@ -268,11 +289,11 @@ export default function HomeAdmin() {
                                         name="homePageBackgroundMediaId"
                                         render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>Background Media</FormLabel>
+                                            <FormLabel>{t('homeAdmin.backgroundMedia')}</FormLabel>
                                             <Select onValueChange={field.onChange} value={field.value}>
                                                 <FormControl>
                                                 <SelectTrigger>
-                                                    <SelectValue placeholder={`Select a ${watch('homePageBackgroundType')}`} />
+                                                    <SelectValue placeholder={t('homeAdmin.backgroundMediaPlaceholder').replace('{type}', watch('homePageBackgroundType') || 'video')} />
                                                 </SelectTrigger>
                                                 </FormControl>
                                                 <SelectContent>
@@ -294,7 +315,7 @@ export default function HomeAdmin() {
                                             render={({ field }) => (
                                                 <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
                                                     <div className="space-y-0.5">
-                                                        <FormLabel>Enable Homepage Video</FormLabel>
+                                                        <FormLabel>{t('homeAdmin.enableHomepageVideo')}</FormLabel>
                                                     </div>
                                                     <FormControl>
                                                         <Switch checked={field.value} onCheckedChange={field.onChange} />
@@ -309,13 +330,13 @@ export default function HomeAdmin() {
 
                                 {/* Website Background Settings */}
                                 <div className="space-y-4 p-4 rounded-lg border glass-effect">
-                                     <h3 className="font-headline text-lg">Other Pages Background</h3>
+                                     <h3 className="font-headline text-lg">{t('homeAdmin.otherPagesBackground')}</h3>
                                     <FormField
                                       control={control}
                                       name="websiteBackgroundType"
                                       render={({ field }) => (
                                         <FormItem className="space-y-3">
-                                          <FormLabel>Background Type</FormLabel>
+                                          <FormLabel>{t('homeAdmin.websiteBackgroundType')}</FormLabel>
                                           <FormControl>
                                             <RadioGroup
                                               onValueChange={(value) => {
@@ -327,11 +348,11 @@ export default function HomeAdmin() {
                                             >
                                               <FormItem className="flex items-center space-x-2 space-y-0">
                                                 <FormControl><RadioGroupItem value="video" /></FormControl>
-                                                <FormLabel className="font-normal">Video</FormLabel>
+                                                <FormLabel className="font-normal">{t('homeAdmin.websiteVideo')}</FormLabel>
                                               </FormItem>
                                               <FormItem className="flex items-center space-x-2 space-y-0">
                                                 <FormControl><RadioGroupItem value="image" /></FormControl>
-                                                <FormLabel className="font-normal">Image</FormLabel>
+                                                <FormLabel className="font-normal">{t('homeAdmin.websiteImage')}</FormLabel>
                                               </FormItem>
                                             </RadioGroup>
                                           </FormControl>
@@ -344,11 +365,11 @@ export default function HomeAdmin() {
                                         name="websiteBackgroundMediaId"
                                         render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>Background Media</FormLabel>
+                                            <FormLabel>{t('homeAdmin.websiteBackgroundMedia')}</FormLabel>
                                             <Select onValueChange={field.onChange} value={field.value}>
                                                 <FormControl>
                                                 <SelectTrigger>
-                                                    <SelectValue placeholder={`Select a ${watch('websiteBackgroundType')}`} />
+                                                    <SelectValue placeholder={t('homeAdmin.websiteBackgroundMediaPlaceholder').replace('{type}', watch('websiteBackgroundType') || 'video')} />
                                                 </SelectTrigger>
                                                 </FormControl>
                                                 <SelectContent>
@@ -370,7 +391,7 @@ export default function HomeAdmin() {
                                             render={({ field }) => (
                                                 <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
                                                     <div className="space-y-0.5">
-                                                        <FormLabel>Enable Website Video</FormLabel>
+                                                        <FormLabel>{t('homeAdmin.enableWebsiteVideo')}</FormLabel>
                                                     </div>
                                                     <FormControl>
                                                         <Switch checked={field.value} onCheckedChange={field.onChange} />
@@ -384,22 +405,22 @@ export default function HomeAdmin() {
 
                                 {/* Player Settings */}
                                 <div className="space-y-4 p-4 rounded-lg border glass-effect">
-                                     <h3 className="font-headline text-lg">Global Settings</h3>
+                                     <h3 className="font-headline text-lg">{t('homeAdmin.globalSettings')}</h3>
 
                                      <FormField
                                         control={control}
                                         name="themeColor"
                                         render={({ field }) => (
                                             <FormItem>
-                                                <FormLabel>Theme Color</FormLabel>
+                                                <FormLabel>{t('homeAdmin.themeColor')}</FormLabel>
                                                 <div className="flex items-center gap-4">
                                                     <FormControl>
                                                         <Input type="color" {...field} className="p-1 h-10 w-14 cursor-pointer" />
                                                     </FormControl>
-                                                    <Input type="text" {...field} placeholder="#d81e38" />
+                                                    <Input type="text" {...field} placeholder={t('homeAdmin.themeColorPlaceholder')} />
                                                 </div>
                                                 <FormDescription>
-                                                    Set the primary color for the website theme.
+                                                    {t('homeAdmin.themeColorDescription')}
                                                 </FormDescription>
                                                 <FormMessage />
                                             </FormItem>
@@ -413,9 +434,9 @@ export default function HomeAdmin() {
                                       name="workPagePlayer"
                                       render={({ field }) => (
                                         <FormItem className="space-y-3">
-                                          <FormLabel>Work Page Video Player</FormLabel>
+                                          <FormLabel>{t('homeAdmin.workPagePlayer')}</FormLabel>
                                            <FormDescription>
-                                            Choose which player to use for videos on the public "Work" page.
+                                            {t('homeAdmin.workPagePlayerDescription')}
                                           </FormDescription>
                                           <FormControl>
                                             <RadioGroup
@@ -425,15 +446,15 @@ export default function HomeAdmin() {
                                             >
                                               <FormItem className="flex items-center space-x-2 space-y-0">
                                                 <FormControl><RadioGroupItem value="plyr" /></FormControl>
-                                                <FormLabel className="font-normal">Plyr (Optimized)</FormLabel>
+                                                <FormLabel className="font-normal">{t('homeAdmin.player.plyr')}</FormLabel>
                                               </FormItem>
                                               <FormItem className="flex items-center space-x-2 space-y-0">
                                                 <FormControl><RadioGroupItem value="clappr" /></FormControl>
-                                                <FormLabel className="font-normal">Clappr (Feature-rich)</FormLabel>
+                                                <FormLabel className="font-normal">{t('homeAdmin.player.clappr')}</FormLabel>
                                               </FormItem>
                                               <FormItem className="flex items-center space-x-2 space-y-0">
                                                 <FormControl><RadioGroupItem value="dplayer" /></FormControl>
-                                                <FormLabel className="font-normal">DPlayer (Lightweight)</FormLabel>
+                                                <FormLabel className="font-normal">{t('homeAdmin.player.dplayer')}</FormLabel>
                                               </FormItem>
                                             </RadioGroup>
                                           </FormControl>
@@ -447,9 +468,9 @@ export default function HomeAdmin() {
                                         render={({ field }) => (
                                             <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
                                                 <div className="space-y-0.5">
-                                                    <FormLabel>Enable Test Page</FormLabel>
+                                                    <FormLabel>{t('homeAdmin.enableTestPage')}</FormLabel>
                                                      <FormDescription>
-                                                        Show or hide the "Test" page link in the main navigation.
+                                                        {t('homeAdmin.enableTestPageDescription')}
                                                     </FormDescription>
                                                 </div>
                                                 <FormControl>
