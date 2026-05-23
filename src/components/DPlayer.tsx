@@ -7,18 +7,15 @@ import { cn } from '@/lib/utils';
 
 declare global {
     interface Window {
-        afterglow: any;
+        DPlayer: any;
     }
 }
 
-interface AfterglowPlayerProps {
+interface DPlayerProps {
   source: string;
   poster?: string;
   autoPlay?: boolean;
 }
-
-const AFTERGLOW_CSS = 'https://cdn.jsdelivr.net/npm/afterglowplayer@3.0/dist/afterglow.min.css';
-const AFTERGLOW_JS = 'https://cdn.jsdelivr.net/npm/afterglowplayer@3.0/dist/afterglow.min.js';
 
 const loadCss = (href: string, id: string): Promise<void> => {
     return new Promise((resolve) => {
@@ -41,62 +38,80 @@ const loadScript = (src: string, id: string): Promise<void> => {
         script.src = src;
         script.async = true;
         script.onload = () => resolve();
-        script.onerror = () => reject(new Error('Failed to load Afterglow script'));
+        script.onerror = () => reject(new Error('Failed to load DPlayer script'));
         document.head.appendChild(script);
     });
 };
 
-const AfterglowPlayer = ({ source, poster, autoPlay = true }: AfterglowPlayerProps) => {
-  const videoRef = useRef<HTMLVideoElement>(null);
+const DPlayer = ({ source, poster, autoPlay = true }: DPlayerProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const playerRef = useRef<any>(null);
 
   useEffect(() => {
     let isMounted = true;
 
     const init = async () => {
+      const container = containerRef.current;
+      if (!container) return;
+
       try {
-        await loadCss(AFTERGLOW_CSS, 'afterglow-css');
-        await loadScript(AFTERGLOW_JS, 'afterglow-js');
-        if (!isMounted) return;
+        await loadCss('https://cdn.jsdelivr.net/npm/dplayer@1.26.0/dist/DPlayer.min.css', 'dplayer-css');
+        await loadScript('https://cdn.jsdelivr.net/npm/dplayer@1.26.0/dist/DPlayer.min.js', 'dplayer-js');
+        if (!isMounted || !container) return;
 
-        if (window.afterglow) {
-          window.afterglow.init();
+        if (playerRef.current) {
+          playerRef.current.destroy();
+          playerRef.current = null;
         }
+        container.innerHTML = '';
 
+        const player = new window.DPlayer({
+          container,
+          video: {
+            url: source,
+            pic: poster || undefined,
+          },
+          autoplay: autoPlay,
+          theme: '#d81e38',
+          volume: 0.7,
+          screenshot: false,
+          airplay: true,
+        });
+
+        player.on('error', () => { if (isMounted) setIsLoading(false); });
         setIsLoading(false);
+        playerRef.current = player;
       } catch (e) {
-        console.error('Afterglow init error:', e);
+        console.error('DPlayer init error:', e);
         if (isMounted) setIsLoading(false);
       }
     };
 
-    // Small delay to ensure DOM is ready
-    setTimeout(init, 100);
+    init();
 
-    return () => { isMounted = false; };
-  }, []);
+    return () => {
+      isMounted = false;
+      if (playerRef.current) {
+        try { playerRef.current.destroy(); } catch {}
+        playerRef.current = null;
+      }
+    };
+  }, [source, poster, autoPlay]);
 
   return (
-    <div ref={containerRef} className="relative w-full h-full">
+    <div className="relative w-full h-full">
       {isLoading && (
         <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/20 pointer-events-none">
           <Preloader />
         </div>
       )}
-      <video
-        ref={videoRef}
-        className={cn("afterglow w-full h-full", isLoading ? 'opacity-0' : 'opacity-100')}
-        src={source}
-        poster={poster || undefined}
-        autoPlay={autoPlay}
-        controls
-        playsInline
-        data-width="100%"
-        data-height="100%"
+      <div
+        ref={containerRef}
+        className={cn("w-full h-full", isLoading ? 'opacity-0' : 'opacity-100')}
       />
     </div>
   );
 };
 
-export default AfterglowPlayer;
+export default DPlayer;

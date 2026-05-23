@@ -42,11 +42,11 @@ interface HomePageSettings {
     websiteBackgroundMediaId?: string;
     isHomePageVideoEnabled?: boolean;
     isWebsiteVideoEnabled?: boolean;
-    workPagePlayer?: 'plyr' | 'clappr' | 'afterglow';
+    workPagePlayer?: 'plyr' | 'clappr' | 'dplayer';
 }
 
 const settingsSchema = z.object({
-  workPagePlayer: z.enum(['plyr', 'clappr', 'afterglow']).optional(),
+  workPagePlayer: z.enum(['plyr', 'clappr', 'dplayer']).optional(),
   isTestPageEnabled: z.boolean().optional(),
   homePageLogoUrl: z.string().url().optional().or(z.literal('')),
   isHomePageLogoVisible: z.boolean().optional(),
@@ -432,8 +432,8 @@ export default function HomeAdmin() {
                                                 <FormLabel className="font-normal">Clappr (Feature-rich)</FormLabel>
                                               </FormItem>
                                               <FormItem className="flex items-center space-x-2 space-y-0">
-                                                <FormControl><RadioGroupItem value="afterglow" /></FormControl>
-                                                <FormLabel className="font-normal">Afterglow (Lightweight)</FormLabel>
+                                                <FormControl><RadioGroupItem value="dplayer" /></FormControl>
+                                                <FormLabel className="font-normal">DPlayer (Lightweight)</FormLabel>
                                               </FormItem>
                                             </RadioGroup>
                                           </FormControl>

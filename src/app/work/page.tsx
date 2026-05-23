@@ -32,12 +32,12 @@ import ContactForm from '@/features/contact/components/ContactForm';
 import type { AppUser } from '@/firebase/auth/use-user';
 import PlyrPlayer from '@/components/PlyrPlayer';
 import CdnClapprPlayer from '@/components/CdnClapprPlayer';
-import AfterglowPlayer from '@/components/AfterglowPlayer';
+import DPlayer from '@/components/DPlayer';
 
 const MemoizedImage = memo(Image);
 const MemoizedPlyrPlayer = memo(PlyrPlayer);
 const MemoizedCdnClapprPlayer = memo(CdnClapprPlayer);
-const MemoizedAfterglowPlayer = memo(AfterglowPlayer);
+const MemoizedDPlayer = memo(DPlayer);
 
 
 const MemoizedPortfolioMedia = memo(({
@@ -53,7 +53,7 @@ const MemoizedPortfolioMedia = memo(({
   onFullscreenClick: (url: string) => void;
   onMediaLoaded: () => void;
   watermark?: string;
-  playerType?: 'plyr' | 'clappr' | 'afterglow';
+  playerType?: 'plyr' | 'clappr' | 'dplayer';
   autoPlay: boolean;
   plyrRef: React.Ref<any>;
 }) => {
@@ -87,8 +87,8 @@ const MemoizedPortfolioMedia = memo(({
                   watermark={watermark}
                   autoPlay={autoPlay}
               />
-          ) : playerType === 'afterglow' ? (
-              <MemoizedAfterglowPlayer
+          ) : playerType === 'dplayer' ? (
+              <MemoizedDPlayer
                   key={item.id}
                   source={item.sourceUrl}
                   poster={item.useVideoFrameAsPoster ? undefined : item.thumbnailUrl}
@@ -233,7 +233,7 @@ const PortfolioGridItem = ({ item, onClick, onEditClick, isAdmin, isSuperAdmin, 
 };
 
 interface HomePageSettings {
-    workPagePlayer?: 'plyr' | 'clappr' | 'afterglow';
+    workPagePlayer?: 'plyr' | 'clappr' | 'dplayer';
 }
 
 const slugify = (text: string) => text.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, '');
@@ -517,10 +517,10 @@ export default function WorkPage() {
 
   const handleSwitchPlayer = () => {
     if (!settingsDocRef || !isSuperAdmin) return;
-    const cycle: Record<string, string> = { plyr: 'clappr', clappr: 'afterglow', afterglow: 'plyr' };
+    const cycle: Record<string, string> = { plyr: 'clappr', clappr: 'dplayer', dplayer: 'plyr' };
     const newPlayer = cycle[homeSettings?.workPagePlayer || 'clappr'] || 'plyr';
     setDocumentNonBlocking(settingsDocRef, { workPagePlayer: newPlayer }, { merge: true });
-    const names: Record<string, string> = { plyr: 'Plyr', clappr: 'Clappr', afterglow: 'Afterglow' };
+    const names: Record<string, string> = { plyr: 'Plyr', clappr: 'Clappr', dplayer: 'DPlayer' };
     toast({
       title: 'Player Switched',
       description: `Work page will now use the ${names[newPlayer] || newPlayer} player.`,
