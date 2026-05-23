@@ -42,15 +42,17 @@ interface HomePageSettings {
     websiteBackgroundMediaId?: string;
     isHomePageVideoEnabled?: boolean;
     isWebsiteVideoEnabled?: boolean;
-    workPagePlayer?: 'plyr' | 'clappr';
+    workPagePlayer?: 'plyr' | 'clappr' | 'jwplayer';
+    jwPlayerLibraryUrl?: string;
 }
 
 const settingsSchema = z.object({
-  workPagePlayer: z.enum(['plyr', 'clappr']).optional(),
+  workPagePlayer: z.enum(['plyr', 'clappr', 'jwplayer']).optional(),
   isTestPageEnabled: z.boolean().optional(),
   homePageLogoUrl: z.string().url().optional().or(z.literal('')),
   isHomePageLogoVisible: z.boolean().optional(),
   themeColor: z.string().optional(),
+  jwPlayerLibraryUrl: z.string().url().optional().or(z.literal('')),
 });
 
 type SettingsFormValues = z.infer<typeof settingsSchema>;
@@ -102,6 +104,7 @@ export default function HomeAdmin() {
       homePageLogoUrl: '',
       isHomePageLogoVisible: true,
       themeColor: '#d81e38',
+      jwPlayerLibraryUrl: '',
     },
   });
 
@@ -122,6 +125,7 @@ export default function HomeAdmin() {
         homePageLogoUrl: homeSettings.homePageLogoUrl || '',
         isHomePageLogoVisible: homeSettings.isHomePageLogoVisible ?? true,
         themeColor: homeSettings.themeColor || '#d81e38',
+        jwPlayerLibraryUrl: (homeSettings as any).jwPlayerLibraryUrl || '',
       });
     }
   }, [homeSettings, form]);
@@ -431,11 +435,33 @@ export default function HomeAdmin() {
                                                 <FormControl><RadioGroupItem value="clappr" /></FormControl>
                                                 <FormLabel className="font-normal">Clappr (Feature-rich)</FormLabel>
                                               </FormItem>
+                                              <FormItem className="flex items-center space-x-2 space-y-0">
+                                                <FormControl><RadioGroupItem value="jwplayer" /></FormControl>
+                                                <FormLabel className="font-normal">JW Player</FormLabel>
+                                              </FormItem>
                                             </RadioGroup>
                                           </FormControl>
                                         </FormItem>
                                       )}
                                     />
+                                    {watch('workPagePlayer') === 'jwplayer' && (
+                                      <FormField
+                                        control={control}
+                                        name="jwPlayerLibraryUrl"
+                                        render={({ field }) => (
+                                          <FormItem>
+                                            <FormLabel>JW Player Library URL</FormLabel>
+                                            <FormControl>
+                                              <Input placeholder="https://cdn.jwplayer.com/libraries/XXXXXXXXX.js" {...field} />
+                                            </FormControl>
+                                            <FormDescription>
+                                              Enter your JW Player library script URL from your JW Player account dashboard.
+                                            </FormDescription>
+                                            <FormMessage />
+                                          </FormItem>
+                                        )}
+                                      />
+                                    )}
                                     <Separator />
                                      <FormField
                                         control={control}

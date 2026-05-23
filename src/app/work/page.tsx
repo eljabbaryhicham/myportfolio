@@ -32,10 +32,12 @@ import ContactForm from '@/features/contact/components/ContactForm';
 import type { AppUser } from '@/firebase/auth/use-user';
 import PlyrPlayer from '@/components/PlyrPlayer';
 import CdnClapprPlayer from '@/components/CdnClapprPlayer';
+import JWPlayer from '@/components/JWPlayer';
 
 const MemoizedImage = memo(Image);
 const MemoizedPlyrPlayer = memo(PlyrPlayer);
 const MemoizedCdnClapprPlayer = memo(CdnClapprPlayer);
+const MemoizedJWPlayer = memo(JWPlayer);
 
 
 const MemoizedPortfolioMedia = memo(({
@@ -51,9 +53,10 @@ const MemoizedPortfolioMedia = memo(({
   onFullscreenClick: (url: string) => void;
   onMediaLoaded: () => void;
   watermark?: string;
-  playerType?: 'plyr' | 'clappr';
+  playerType?: 'plyr' | 'clappr' | 'jwplayer';
   autoPlay: boolean;
   plyrRef: React.Ref<any>;
+  jwPlayerLibraryUrl?: string;
 }) => {
 
   useEffect(() => {
@@ -84,6 +87,14 @@ const MemoizedPortfolioMedia = memo(({
                   poster={item.useVideoFrameAsPoster ? undefined : item.thumbnailUrl}
                   watermark={watermark}
                   autoPlay={autoPlay}
+              />
+          ) : playerType === 'jwplayer' ? (
+              <MemoizedJWPlayer
+                  key={item.id}
+                  source={item.sourceUrl}
+                  poster={item.useVideoFrameAsPoster ? undefined : item.thumbnailUrl}
+                  autoPlay={autoPlay}
+                  libraryUrl={jwPlayerLibraryUrl || ''}
               />
           ) : (
               <MemoizedPlyrPlayer
@@ -224,7 +235,8 @@ const PortfolioGridItem = ({ item, onClick, onEditClick, isAdmin, isSuperAdmin, 
 };
 
 interface HomePageSettings {
-    workPagePlayer?: 'plyr' | 'clappr';
+    workPagePlayer?: 'plyr' | 'clappr' | 'jwplayer';
+    jwPlayerLibraryUrl?: string;
 }
 
 const slugify = (text: string) => text.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, '');
@@ -508,14 +520,13 @@ export default function WorkPage() {
 
   const handleSwitchPlayer = () => {
     if (!settingsDocRef || !isSuperAdmin) return;
-    const newPlayer =
-      homeSettings?.workPagePlayer === 'plyr' ? 'clappr' : 'plyr';
+    const cycle: Record<string, string> = { plyr: 'clappr', clappr: 'jwplayer', jwplayer: 'plyr' };
+    const newPlayer = cycle[homeSettings?.workPagePlayer || 'clappr'] || 'plyr';
     setDocumentNonBlocking(settingsDocRef, { workPagePlayer: newPlayer }, { merge: true });
+    const names: Record<string, string> = { plyr: 'Plyr', clappr: 'Clappr', jwplayer: 'JW Player' };
     toast({
       title: 'Player Switched',
-      description: `Work page will now use the ${
-        newPlayer.charAt(0).toUpperCase() + newPlayer.slice(1)
-      } player.`,
+      description: `Work page will now use the ${names[newPlayer] || newPlayer} player.`,
     });
   };
   
@@ -571,6 +582,7 @@ export default function WorkPage() {
 
   const logoUrl = contactInfo?.logoUrl;
   const workPagePlayer = homeSettings?.workPagePlayer || 'clappr';
+  const jwPlayerLibraryUrl = homeSettings?.jwPlayerLibraryUrl;
 
   return (
     <>
@@ -753,6 +765,7 @@ export default function WorkPage() {
                                 playerType={workPagePlayer}
                                 autoPlay={!isDialogOpen}
                                 plyrRef={plyrRef}
+                                jwPlayerLibraryUrl={jwPlayerLibraryUrl}
                               />
                             )}
                           </div>

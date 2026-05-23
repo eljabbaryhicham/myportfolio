@@ -15,9 +15,11 @@ import { doc } from 'firebase/firestore';
 import PlyrPlayer from '@/components/PlyrPlayer';
 import type { AppUser } from '@/firebase/auth/use-user';
 import { useToast } from '@/hooks/use-toast';
+import JWPlayer from '@/components/JWPlayer';
 
 interface HomePageSettings {
-    workPagePlayer?: 'plyr' | 'clappr';
+    workPagePlayer?: 'plyr' | 'clappr' | 'jwplayer';
+    jwPlayerLibraryUrl?: string;
 }
 
 export default function TestPage() {
@@ -39,6 +41,7 @@ export default function TestPage() {
   );
   const { data: homeSettings } = useDoc<HomePageSettings>(settingsDocRef);
   const workPagePlayer = homeSettings?.workPagePlayer || 'clappr';
+  const jwPlayerLibraryUrl = homeSettings?.jwPlayerLibraryUrl;
 
 
   useEffect(() => {
@@ -54,14 +57,13 @@ export default function TestPage() {
   
   const handleSwitchPlayer = () => {
     if (!settingsDocRef || !isSuperAdmin) return;
-    const newPlayer =
-      homeSettings?.workPagePlayer === 'plyr' ? 'clappr' : 'plyr';
+    const cycle: Record<string, string> = { plyr: 'clappr', clappr: 'jwplayer', jwplayer: 'plyr' };
+    const newPlayer = cycle[homeSettings?.workPagePlayer || 'clappr'] || 'plyr';
     setDocumentNonBlocking(settingsDocRef, { workPagePlayer: newPlayer }, { merge: true });
+    const names: Record<string, string> = { plyr: 'Plyr', clappr: 'Clappr', jwplayer: 'JW Player' };
     toast({
       title: 'Player Switched',
-      description: `Default player is now ${
-        newPlayer.charAt(0).toUpperCase() + newPlayer.slice(1)
-      }.`,
+      description: `Default player is now ${names[newPlayer] || newPlayer}.`,
     });
   };
 
@@ -79,7 +81,7 @@ export default function TestPage() {
         <div className="text-center mb-8 w-full max-w-4xl">
           <h1 className="text-3xl md:text-4xl font-headline tracking-tight">Streaming Test</h1>
           <p className="mt-2 text-base md:text-lg text-foreground/70">
-            The active player is <span className='font-bold text-primary'>{workPagePlayer.charAt(0).toUpperCase() + workPagePlayer.slice(1)}</span>. Enter a video URL to test playback.
+            The active player is <span className='font-bold text-primary'>{({ plyr: 'Plyr', clappr: 'Clappr', jwplayer: 'JW Player' })[workPagePlayer] || workPagePlayer}</span>. Enter a video URL to test playback.
           </p>
           <div className="mt-4 flex w-full items-center space-x-2">
             <Input
@@ -115,6 +117,8 @@ export default function TestPage() {
         <div className="w-full max-w-4xl aspect-video bg-black">
           {workPagePlayer === 'clappr' ? (
               <CdnClapprPlayer key={source} source={source} autoPlay={true} />
+          ) : workPagePlayer === 'jwplayer' ? (
+              <JWPlayer key={source} source={source} autoPlay={true} libraryUrl={jwPlayerLibraryUrl || ''} />
           ) : (
               <PlyrPlayer key={source} source={source} autoPlay={true} />
           )}
