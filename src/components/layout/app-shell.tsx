@@ -8,6 +8,7 @@ import { DynamicThemeStyles, SiteBackground } from '@/components/layout/site-bac
 import Preloader from '@/components/preloader';
 import { useDoc, useFirestore, useMemoFirebase } from '@/firebase';
 import { doc } from 'firebase/firestore';
+import { LanguageProvider } from '@/components/layout/language-switcher';
 
 function LoadingGate({ children }: { children: React.ReactNode }) {
   const firestore = useFirestore();
@@ -47,11 +48,13 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <FirebaseClientProvider>
       <LoadingGate>
-        <DynamicThemeStyles />
-        <SiteBackground />
-        <LayoutProvider>
-          {children}
-        </LayoutProvider>
+        <LanguageProvider>
+          <DynamicThemeStyles />
+          <SiteBackground />
+          <LayoutProvider>
+            {children}
+          </LayoutProvider>
+        </LanguageProvider>
       </LoadingGate>
       <Toaster />
     </FirebaseClientProvider>
