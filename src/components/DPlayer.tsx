@@ -66,6 +66,10 @@ const DPlayer = ({ source, poster, autoPlay = true }: DPlayerProps) => {
         }
         container.innerHTML = '';
 
+        const rootStyle = getComputedStyle(document.documentElement);
+        const themeHsl = rootStyle.getPropertyValue('--destructive').trim();
+        const themeColor = themeHsl ? `hsl(${themeHsl})` : '#d81e38';
+
         const player = new window.DPlayer({
           container,
           video: {
@@ -73,7 +77,7 @@ const DPlayer = ({ source, poster, autoPlay = true }: DPlayerProps) => {
             pic: poster || undefined,
           },
           autoplay: autoPlay,
-          theme: '#d81e38',
+          theme: themeColor,
           volume: 0.7,
           screenshot: false,
           airplay: true,
