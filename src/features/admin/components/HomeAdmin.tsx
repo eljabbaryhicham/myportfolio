@@ -455,8 +455,13 @@ export default function HomeAdmin() {
                                               <Input placeholder="https://cdn.jwplayer.com/libraries/XXXXXXXXX.js" {...field} />
                                             </FormControl>
                                             <FormDescription>
-                                              Enter your JW Player library script URL from your JW Player account dashboard.
+                                              Get this from your JW Player account dashboard. Without it, Plyr will be used as a fallback.
                                             </FormDescription>
+                                            {!field.value && (
+                                              <p className="text-sm text-amber-400">
+                                                ⚠ No URL set — will fall back to Plyr on the work page.
+                                              </p>
+                                            )}
                                             <FormMessage />
                                           </FormItem>
                                         )}

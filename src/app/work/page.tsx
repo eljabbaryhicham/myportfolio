@@ -89,13 +89,13 @@ const MemoizedPortfolioMedia = memo(({
                   watermark={watermark}
                   autoPlay={autoPlay}
               />
-          ) : playerType === 'jwplayer' ? (
+          ) : playerType === 'jwplayer' && jwPlayerLibraryUrl ? (
               <MemoizedJWPlayer
                   key={item.id}
                   source={item.sourceUrl}
                   poster={item.useVideoFrameAsPoster ? undefined : item.thumbnailUrl}
                   autoPlay={autoPlay}
-                  libraryUrl={jwPlayerLibraryUrl || ''}
+                  libraryUrl={jwPlayerLibraryUrl}
               />
           ) : (
               <MemoizedPlyrPlayer

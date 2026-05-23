@@ -117,8 +117,8 @@ export default function TestPage() {
         <div className="w-full max-w-4xl aspect-video bg-black">
           {workPagePlayer === 'clappr' ? (
               <CdnClapprPlayer key={source} source={source} autoPlay={true} />
-          ) : workPagePlayer === 'jwplayer' ? (
-              <JWPlayer key={source} source={source} autoPlay={true} libraryUrl={jwPlayerLibraryUrl || ''} />
+          ) : workPagePlayer === 'jwplayer' && jwPlayerLibraryUrl ? (
+              <JWPlayer key={source} source={source} autoPlay={true} libraryUrl={jwPlayerLibraryUrl} />
           ) : (
               <PlyrPlayer key={source} source={source} autoPlay={true} />
           )}
