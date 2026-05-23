@@ -48,6 +48,7 @@ const MemoizedPortfolioMedia = memo(({
   playerType,
   autoPlay,
   plyrRef,
+  jwPlayerLibraryUrl,
 }: {
   item: PortfolioItem;
   onFullscreenClick: (url: string) => void;
