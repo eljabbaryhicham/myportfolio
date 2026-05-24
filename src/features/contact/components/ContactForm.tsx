@@ -18,8 +18,9 @@ import { useState, useEffect } from 'react';
 import { ContactFormInputSchema, type ContactFormInput } from '@/features/contact/data/contact-form-types';
 import { motion } from 'framer-motion';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCheckCircle } from '@fortawesome/free-solid-svg-icons';
 import { faWhatsapp } from '@fortawesome/free-brands-svg-icons';
+import Lottie from 'lottie-react';
+import sentAnimation from '@/lib/sent-animation.json';
 import { useDoc, useFirestore, useMemoFirebase } from '@/firebase';
 import { doc } from 'firebase/firestore';
 import Link from 'next/link';
@@ -50,6 +51,7 @@ export default function ContactForm({ onSuccess, defaultMessage = '' }: ContactF
     [firestore]
   );
   const { data: contactInfo } = useDoc<ContactInfo>(contactDocRef);
+
 
   const form = useForm<ContactFormValues>({
     resolver: zodResolver(formSchema),
@@ -113,13 +115,14 @@ export default function ContactForm({ onSuccess, defaultMessage = '' }: ContactF
   if (isSent) {
     return (
         <div className="text-center flex flex-col items-center justify-center h-full min-h-[350px]">
-           <motion.div
-            initial={{ scale: 0.5, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ type: 'spring', stiffness: 260, damping: 20 }}
-           >
-            <FontAwesomeIcon icon={faCheckCircle} className="w-16 h-16 text-green-400 mb-4" />
-           </motion.div>
+            <motion.div
+             initial={{ scale: 0.5, opacity: 0 }}
+             animate={{ scale: 1, opacity: 1 }}
+             transition={{ type: 'spring', stiffness: 260, damping: 20 }}
+             className="w-32 h-32 mb-4"
+            >
+             <Lottie animationData={sentAnimation} loop={false} />
+            </motion.div>
           <h3 className="text-xl font-bold">{t('contactForm.success.title')}</h3>
           <p className="text-foreground/80 mt-2 max-w-sm">
             {t('contactForm.success.description')}

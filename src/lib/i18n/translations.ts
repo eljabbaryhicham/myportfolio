@@ -14,7 +14,7 @@ const en: Record<string, string> = {
   'home.hero.heading': 'From Concept to Screen',
   'home.hero.subtitle': 'We craft compelling visual content — animation, graphics, sound, and strategy — to bring your brand\'s story to life.',
   'home.hero.cta': 'Explore Work',
-  'home.hero.scroll': 'Scroll to explore',
+  'home.hero.scroll': 'Click to explore',
 
   /* AboutPage */
   'about.heading': 'About Us',
@@ -498,7 +498,7 @@ const fr: Record<string, string> = {
   'home.hero.heading': 'Du concept à l\'écran',
   'home.hero.subtitle': 'Nous créons un contenu visuel captivant — animation, graphisme, son et stratégie — pour donner vie à l\'histoire de votre marque.',
   'home.hero.cta': 'Voir nos projets',
-  'home.hero.scroll': 'Défiler pour découvrir',
+  'home.hero.scroll': 'Cliquer pour découvrir',
 
   /* AboutPage */
   'about.heading': 'À propos de nous',
