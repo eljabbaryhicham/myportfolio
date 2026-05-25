@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useRef, useEffect, useState } from "react";
@@ -15,9 +14,12 @@ import { cn } from "@/lib/utils";
 
 import Preloader from "@/components/preloader";
 import Logo from "@/components/logo";
+import TrustedBy from "./TrustedBy";
 import { useDoc, useFirestore, useMemoFirebase } from "@/firebase";
 import { doc } from "firebase/firestore";
 import { useTranslation } from "@/lib/i18n/useTranslation";
+
+const HERO_VIDEO_URL = "https://res.cloudinary.com/dsq1lxrqi/video/upload/sp_auto/pg_5/v1778867307/Ovi_Motion_Design_v3kfy0.m3u8";
 
 interface ContactInfo {
     logoUrl?: string;
@@ -26,6 +28,30 @@ interface ContactInfo {
 interface HomePageSettings {
     homePageLogoUrl?: string;
     isHomePageLogoVisible?: boolean;
+    heroVideoUrl?: string;
+}
+
+function Particles() {
+  const circles = [];
+  for (let i = 0; i < 20; i++) {
+    const size = Math.random() * 3 + 1;
+    const duration = Math.random() * 10 + 10;
+    circles.push(
+      <motion.div
+        key={i}
+        className="absolute rounded-full bg-white/10"
+        style={{
+          left: `${Math.random() * 100}%`,
+          top: `${Math.random() * 100}%`,
+          width: size,
+          height: size,
+        }}
+        animate={{ y: [0, -30, 0], opacity: [0.1, 0.4, 0.1] }}
+        transition={{ duration, repeat: Infinity, ease: "easeInOut", delay: Math.random() * 10 }}
+      />
+    );
+  }
+  return <div className="absolute inset-0 pointer-events-none overflow-hidden">{circles}</div>;
 }
 
 function CursorArrow({ targetRef }: { targetRef: React.RefObject<HTMLButtonElement | null> }) {
@@ -36,6 +62,11 @@ function CursorArrow({ targetRef }: { targetRef: React.RefObject<HTMLButtonEleme
   useEffect(() => {
     const el = arrowRef.current;
     if (!el) return;
+
+    const style = document.createElement('style');
+    style.id = 'cursor-hide';
+    style.textContent = '* { cursor: none !important }';
+    document.head.appendChild(style);
 
     const update = (e: MouseEvent) => {
       if (!targetRef.current) return;
@@ -68,6 +99,8 @@ function CursorArrow({ targetRef }: { targetRef: React.RefObject<HTMLButtonEleme
     return () => {
       window.removeEventListener("mousemove", update);
       window.removeEventListener("mouseleave", hide);
+      const s = document.getElementById('cursor-hide');
+      if (s) s.remove();
     };
   }, [targetRef]);
 
@@ -111,37 +144,84 @@ export default function HomePageContent() {
   const isLogoVisible = homeSettings?.isHomePageLogoVisible ?? true;
 
   return (
-    <div className="relative h-full w-full flex flex-col items-center justify-center p-4">
-      <CursorArrow targetRef={ctaRef} />
+    <div className="fixed inset-0 overflow-y-auto">
+      <div className="relative z-10 h-full w-full flex flex-col items-center px-4 transition-opacity duration-1000">
+        <CursorArrow targetRef={ctaRef} />
 
-      {isLoading && (
-          <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/50">
-              <Preloader />
+        <Particles />
+
+        {isLoading && (
+          <div className="absolute inset-0 z-30 flex items-center justify-center bg-black/50">
+            <Preloader />
           </div>
-      )}
-
-      <div className={cn("relative z-10 flex flex-col items-center justify-center gap-6 transition-opacity duration-1000", isLoading && "opacity-0")}>
-        {isLogoVisible && homeLogoUrl && (
-            <div className="w-full max-w-sm">
-                <Logo src={homeLogoUrl} />
-            </div>
         )}
-        <div className="text-center space-y-3 max-w-lg">
-            <h2 className="text-xl md:text-2xl font-headline tracking-tight text-white/90">
-                {t('home.hero.heading')}
-            </h2>
-            <p className="text-sm md:text-base text-foreground/60 leading-relaxed">
-                {t('home.hero.subtitle')}
-            </p>
+
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <motion.div
+            style={{
+              width: "88%",
+              maxWidth: 1024,
+              aspectRatio: "4/3",
+              position: "relative",
+            }}
+            animate={{ y: [0, -8, 0] }}
+            transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+          >
+            <div className="absolute inset-0" style={{
+              borderRadius: 24,
+              overflow: "hidden",
+              boxShadow: "0 0 60px rgba(0,0,0,0.4)",
+              border: "0.5px solid rgba(255,255,255,0.5)",
+              maskImage: "linear-gradient(to bottom, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0.8) 8%, black 18%, black 20%, rgba(0,0,0,0.5) 35%, transparent 55%, transparent 100%)",
+              WebkitMaskImage: "linear-gradient(to bottom, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0.8) 8%, black 18%, black 20%, rgba(0,0,0,0.5) 35%, transparent 55%, transparent 100%)",
+            }}>
+              <div style={{
+                position: "absolute",
+                inset: -60,
+                borderRadius: "50%",
+                background: "radial-gradient(ellipse at center, rgba(255,255,255,0.08) 0%, transparent 70%)",
+                filter: "blur(50px)",
+              }} />
+              <video autoPlay muted loop playsInline className="absolute inset-0 w-full h-full object-cover" key={homeSettings?.heroVideoUrl || HERO_VIDEO_URL}>
+                <source src={homeSettings?.heroVideoUrl || HERO_VIDEO_URL} type="application/x-mpegURL" />
+              </video>
+              <div className="absolute inset-0 bg-black/60" />
+              <div className="absolute inset-0" style={{ backdropFilter: "blur(1px)" }} />
+            </div>
+            {isLogoVisible && homeLogoUrl && (
+              <div className="absolute inset-0 flex items-center justify-center" style={{ zIndex: 10 }}>
+                <div className="w-full max-w-sm px-4">
+                  <Logo src={homeLogoUrl} />
+                </div>
+              </div>
+            )}
+          </motion.div>
         </div>
-        <Button ref={ctaRef} asChild size="lg" className="group">
-          <Link href="/work">
-            {t('home.hero.cta')}
-            <FontAwesomeIcon icon={faArrowRight} className="ml-2 transition-transform group-hover:translate-x-1" />
-          </Link>
-        </Button>
-        <div className="pt-4 text-foreground/40 text-xs animate-pulse">
+
+        <div className="relative z-20 flex flex-col items-center gap-6" style={{ paddingTop: "calc(50vh + 60px)" }}>
+          <div className="text-center space-y-3 max-w-lg" style={{ textShadow: "0 2px 12px rgba(0,0,0,0.6)" }}>
+            <h2 className="text-xl md:text-2xl font-headline tracking-tight text-white/90">
+              {t('home.hero.heading')}
+            </h2>
+            <p className="text-sm md:text-base text-foreground/60 leading-relaxed" style={{ textShadow: "0 1px 8px rgba(0,0,0,0.5)" }}>
+              {t('home.hero.subtitle')}
+            </p>
+          </div>
+          <Button ref={ctaRef} asChild size="lg" className="group transition-shadow duration-300" style={{ boxShadow: "0 0 20px rgba(255,255,255,0.12)" }}
+            onMouseEnter={(e) => e.currentTarget.style.boxShadow = "0 0 35px rgba(255,255,255,0.25)"}
+            onMouseLeave={(e) => e.currentTarget.style.boxShadow = "0 0 20px rgba(255,255,255,0.12)"}
+          >
+            <Link href="/work">
+              {t('home.hero.cta')}
+              <FontAwesomeIcon icon={faArrowRight} className="ml-2 transition-transform group-hover:translate-x-1" />
+            </Link>
+          </Button>
+          <div className="pt-4 text-foreground/40 text-xs animate-pulse" style={{ textShadow: "0 1px 8px rgba(0,0,0,0.5)" }}>
             {t('home.hero.scroll')}
+          </div>
+          <div className="w-full mt-6">
+            <TrustedBy />
+          </div>
         </div>
       </div>
     </div>

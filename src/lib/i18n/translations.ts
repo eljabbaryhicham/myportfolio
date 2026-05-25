@@ -15,6 +15,7 @@ const en: Record<string, string> = {
   'home.hero.subtitle': 'We craft compelling visual content — animation, graphics, sound, and strategy — to bring your brand\'s story to life.',
   'home.hero.cta': 'Explore Work',
   'home.hero.scroll': 'Click to explore',
+  'home.trustedBy': 'Trusted By',
 
   /* AboutPage */
   'about.heading': 'About Us',
@@ -155,6 +156,10 @@ const en: Record<string, string> = {
   'homeAdmin.enableTestPageDescription': 'Show or hide the "Test" page link in the main navigation.',
   'homeAdmin.toast.saved.title': 'Setting Saved',
   'homeAdmin.toast.saved.description': 'Your change has been saved automatically.',
+  'homeAdmin.heroVideoUrl': 'Hero Video URL',
+  'homeAdmin.heroVideoUrlPlaceholder': 'https://res.cloudinary.com/.../video.m3u8',
+  'homeAdmin.heroVideoUrlDescription': 'Enter a direct URL or choose from the media library below.',
+  'homeAdmin.chooseFromLibrary': 'Library',
 
   /* ContactAdmin */
   'contactAdmin.title': 'Contact Page & Site Settings',
@@ -499,6 +504,7 @@ const fr: Record<string, string> = {
   'home.hero.subtitle': 'Nous créons un contenu visuel captivant — animation, graphisme, son et stratégie — pour donner vie à l\'histoire de votre marque.',
   'home.hero.cta': 'Voir nos projets',
   'home.hero.scroll': 'Cliquer pour découvrir',
+  'home.trustedBy': 'Ils nous font confiance',
 
   /* AboutPage */
   'about.heading': 'À propos de nous',
@@ -639,6 +645,10 @@ const fr: Record<string, string> = {
   'homeAdmin.enableTestPageDescription': 'Afficher ou masquer le lien "Test" dans la navigation principale.',
   'homeAdmin.toast.saved.title': 'Paramètre enregistré',
   'homeAdmin.toast.saved.description': 'Votre modification a été automatiquement enregistrée.',
+  'homeAdmin.heroVideoUrl': 'URL de la vidéo Hero',
+  'homeAdmin.heroVideoUrlPlaceholder': 'https://res.cloudinary.com/.../video.m3u8',
+  'homeAdmin.heroVideoUrlDescription': 'Entrez une URL directe ou choisissez depuis la bibliothèque ci-dessous.',
+  'homeAdmin.chooseFromLibrary': 'Bibliothèque',
 
   /* ContactAdmin */
   'contactAdmin.title': 'Page de contact & Paramètres du site',

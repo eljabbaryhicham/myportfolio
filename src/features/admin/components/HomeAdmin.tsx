@@ -57,6 +57,7 @@ interface HomePageSettings {
     homePageLogoUrl?: string;
     isHomePageLogoVisible?: boolean;
     themeColor?: string;
+    heroVideoUrl?: string;
 }
 
 const settingsSchema = z.object({
@@ -71,6 +72,7 @@ const settingsSchema = z.object({
   websiteBackgroundMediaId: z.string().optional(),
   isHomePageVideoEnabled: z.boolean().optional(),
   isWebsiteVideoEnabled: z.boolean().optional(),
+  heroVideoUrl: z.string().optional(),
 });
 
 type SettingsFormValues = z.infer<typeof settingsSchema>;
@@ -123,6 +125,7 @@ export default function HomeAdmin() {
       homePageLogoUrl: '',
       isHomePageLogoVisible: true,
       themeColor: '#d81e38',
+      heroVideoUrl: '',
     },
   });
 
@@ -143,6 +146,7 @@ export default function HomeAdmin() {
         homePageLogoUrl: homeSettings.homePageLogoUrl || '',
         isHomePageLogoVisible: homeSettings.isHomePageLogoVisible ?? true,
         themeColor: homeSettings.themeColor || '#d81e38',
+        heroVideoUrl: homeSettings.heroVideoUrl || '',
       });
     }
   }, [homeSettings, form]);
@@ -233,6 +237,34 @@ export default function HomeAdmin() {
                                                 <FormControl>
                                                     <Input placeholder={t('homeAdmin.homepageLogoUrlPlaceholder')} {...field} />
                                                 </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                    <FormField
+                                        control={control}
+                                        name="heroVideoUrl"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>{t('homeAdmin.heroVideoUrl')}</FormLabel>
+                                                <div className="flex gap-2">
+                                                    <FormControl>
+                                                        <Input placeholder={t('homeAdmin.heroVideoUrlPlaceholder')} {...field} className="flex-1" />
+                                                    </FormControl>
+                                                    <Select onValueChange={(val) => field.onChange(val)} value="">
+                                                        <SelectTrigger className="w-auto whitespace-nowrap">
+                                                            <SelectValue placeholder={t('homeAdmin.chooseFromLibrary')} />
+                                                        </SelectTrigger>
+                                                        <SelectContent>
+                                                            {mediaAssets?.filter(a => a.resource_type === 'video').map((asset) => (
+                                                                <SelectItem key={asset.id} value={asset.url}>
+                                                                    {asset.title || asset.filename}
+                                                                </SelectItem>
+                                                            ))}
+                                                        </SelectContent>
+                                                    </Select>
+                                                </div>
+                                                <FormDescription>{t('homeAdmin.heroVideoUrlDescription')}</FormDescription>
                                                 <FormMessage />
                                             </FormItem>
                                         )}
