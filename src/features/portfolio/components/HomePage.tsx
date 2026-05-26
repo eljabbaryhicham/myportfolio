@@ -144,7 +144,7 @@ export default function HomePageContent() {
   const isLogoVisible = homeSettings?.isHomePageLogoVisible ?? true;
 
   return (
-    <div className="fixed inset-0 overflow-y-auto">
+    <div className="fixed inset-0 overflow-y-auto overflow-x-hidden">
       <div className="relative z-10 h-full w-full flex flex-col items-center px-4 transition-opacity duration-1000">
         <CursorArrow targetRef={ctaRef} />
 
@@ -198,7 +198,7 @@ export default function HomePageContent() {
           </motion.div>
         </div>
 
-        <div className="relative z-20 flex flex-col items-center gap-6" style={{ paddingTop: "calc(50vh + 60px)" }}>
+        <div className="relative z-20 flex flex-col items-center gap-6 w-full" style={{ paddingTop: "calc(50vh + 60px)" }}>
           <div className="text-center space-y-3 max-w-lg" style={{ textShadow: "0 2px 12px rgba(0,0,0,0.6)" }}>
             <h2 className="text-xl md:text-2xl font-headline tracking-tight text-white/90">
               {t('home.hero.heading')}
@@ -219,7 +219,7 @@ export default function HomePageContent() {
           <div className="pt-4 text-foreground/40 text-xs animate-pulse" style={{ textShadow: "0 1px 8px rgba(0,0,0,0.5)" }}>
             {t('home.hero.scroll')}
           </div>
-          <div className="w-full mt-6">
+          <div className="mt-6 w-full">
             <TrustedBy />
           </div>
         </div>
