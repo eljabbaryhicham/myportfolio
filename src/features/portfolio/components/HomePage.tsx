@@ -63,11 +63,6 @@ function CursorArrow({ targetRef }: { targetRef: React.RefObject<HTMLButtonEleme
     const el = arrowRef.current;
     if (!el) return;
 
-    const style = document.createElement('style');
-    style.id = 'cursor-hide';
-    style.textContent = '* { cursor: none !important }';
-    document.head.appendChild(style);
-
     const update = (e: MouseEvent) => {
       if (!targetRef.current) return;
       const rect = targetRef.current.getBoundingClientRect();
@@ -99,24 +94,21 @@ function CursorArrow({ targetRef }: { targetRef: React.RefObject<HTMLButtonEleme
     return () => {
       window.removeEventListener("mousemove", update);
       window.removeEventListener("mouseleave", hide);
-      const s = document.getElementById('cursor-hide');
-      if (s) s.remove();
     };
   }, [targetRef]);
 
   return (
-    <motion.div
+    <div
       ref={arrowRef}
       className="pointer-events-none fixed z-50 w-10 h-10"
-      initial={{ opacity: 0 }}
-      style={{ left: -100, top: -100 }}
+      style={{ left: -100, top: -100, opacity: 0 }}
     >
       {isOver ? (
         <Lottie key="tick" animationData={tickAnimationData} loop={false} />
       ) : (
         <Lottie key="arrow" animationData={cursorArrowData} loop={true} />
       )}
-    </motion.div>
+    </div>
   );
 }
 
@@ -143,8 +135,17 @@ export default function HomePageContent() {
   const homeLogoUrl = homeSettings?.homePageLogoUrl || siteLogoUrl;
   const isLogoVisible = homeSettings?.isHomePageLogoVisible ?? true;
 
+  useEffect(() => {
+    document.body.style.cursor = 'none';
+    const s = document.createElement('style');
+    s.textContent = '*,*::before,*::after,:root,html,video,canvas,svg{ cursor: none !important; }';
+    document.head.prepend(s);
+    return () => { document.body.style.cursor = ''; s.remove(); };
+  }, []);
+
   return (
     <div className="fixed inset-0 overflow-y-auto overflow-x-hidden">
+      <style>{`*,*::before,*::after,:root,html,video,canvas,svg{ cursor: none !important; }`}</style>
       <div className="relative z-10 h-full w-full flex flex-col items-center px-4 transition-opacity duration-1000">
         <CursorArrow targetRef={ctaRef} />
 
@@ -163,6 +164,7 @@ export default function HomePageContent() {
               maxWidth: 1024,
               aspectRatio: "4/3",
               position: "relative",
+              cursor: "none",
             }}
             animate={{ y: [0, -8, 0] }}
             transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
@@ -182,7 +184,7 @@ export default function HomePageContent() {
                 background: "radial-gradient(ellipse at center, rgba(255,255,255,0.08) 0%, transparent 70%)",
                 filter: "blur(50px)",
               }} />
-              <video autoPlay muted loop playsInline className="absolute inset-0 w-full h-full object-cover" key={homeSettings?.heroVideoUrl || HERO_VIDEO_URL}>
+              <video autoPlay muted loop playsInline className="absolute inset-0 w-full h-full object-cover" key={homeSettings?.heroVideoUrl || HERO_VIDEO_URL} style={{ cursor: 'none', pointerEvents: 'none' }}>
                 <source src={homeSettings?.heroVideoUrl || HERO_VIDEO_URL} type="application/x-mpegURL" />
               </video>
               <div className="absolute inset-0 bg-black/60" />
@@ -198,7 +200,8 @@ export default function HomePageContent() {
           </motion.div>
         </div>
 
-        <div className="relative z-20 flex flex-col items-center gap-6 w-full" style={{ paddingTop: "calc(50vh + 60px)" }}>
+        <style>{`@media (max-width: 767px) { [data-content] { padding-top: calc(50vh + 60px) !important; justify-content: flex-start !important; min-height: 0 !important; } }`}</style>
+        <div data-content className="relative z-20 flex flex-col items-center gap-6 w-full" style={{ paddingTop: "calc(50vh + 60px)" }}>
           <div className="text-center space-y-3 max-w-lg" style={{ textShadow: "0 2px 12px rgba(0,0,0,0.6)" }}>
             <h2 className="text-xl md:text-2xl font-headline tracking-tight text-white/90">
               {t('home.hero.heading')}
