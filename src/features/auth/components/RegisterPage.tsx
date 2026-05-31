@@ -21,6 +21,7 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { motion } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import Link from 'next/link';
 import { doc } from 'firebase/firestore';
@@ -114,67 +115,74 @@ export default function RegisterPage() {
 
   return (
     <div className="flex h-full min-h-full w-full items-center justify-center p-4">
-      <Card className="w-full md:w-1/2 glass-effect">
-        <CardHeader>
-            <CardTitle className="text-2xl font-headline">{t('register.title')}</CardTitle>
-            <CardDescription>
-                {t('register.subtitle')}
-            </CardDescription>
-        </CardHeader>
-        <CardContent>
-            <Form {...form}>
-                <form onSubmit={form.handleSubmit(handleSignUp)} className="space-y-6 pt-4">
-                <FormField
-                    control={form.control}
-                    name="username"
-                    render={({ field }) => (
-                    <FormItem>
-                        <FormLabel>{t('register.username')}</FormLabel>
-                        <FormControl>
-                        <Input placeholder={t('register.usernamePlaceholder')} {...field} />
-                        </FormControl>
-                        <FormMessage />
-                    </FormItem>
-                    )}
-                />
-                <FormField
-                    control={form.control}
-                    name="password"
-                    render={({ field }) => (
-                    <FormItem>
-                        <FormLabel>{t('register.password')}</FormLabel>
-                        <FormControl>
-                        <Input type="password" placeholder={t('register.passwordPlaceholder')} {...field} />
-                        </FormControl>
-                        <FormMessage />
-                    </FormItem>
-                    )}
-                />
-                <FormField
-                    control={form.control}
-                    name="secretCode"
-                    render={({ field }) => (
-                    <FormItem>
-                        <FormLabel>{t('register.secretCode')}</FormLabel>
-                        <FormControl>
-                        <Input type="password" placeholder={t('register.secretCodePlaceholder')} {...field} />
-                        </FormControl>
-                        <FormMessage />
-                    </FormItem>
-                    )}
-                />
-                <Button type="submit" className="w-full" disabled={isSubmitting}>
-                    {isSubmitting ? t('register.signingIn') : t('register.signIn')}
-                </Button>
-                </form>
-            </Form>
-            <div className="mt-4 text-center text-sm">
-              <Link href="/login" className="underline text-muted-foreground hover:text-foreground">
-                {t('register.signInLink')}
-              </Link>
-            </div>
-        </CardContent>
-      </Card>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, ease: "easeOut" }}
+        className="w-full md:w-1/2"
+      >
+        <Card className="glass-effect">
+          <CardHeader>
+              <CardTitle className="text-2xl font-headline">{t('register.title')}</CardTitle>
+              <CardDescription>
+                  {t('register.subtitle')}
+              </CardDescription>
+          </CardHeader>
+          <CardContent>
+              <Form {...form}>
+                  <form onSubmit={form.handleSubmit(handleSignUp)} className="space-y-6 pt-4">
+                  <FormField
+                      control={form.control}
+                      name="username"
+                      render={({ field }) => (
+                      <FormItem>
+                          <FormLabel>{t('register.username')}</FormLabel>
+                          <FormControl>
+                          <Input placeholder={t('register.usernamePlaceholder')} {...field} />
+                          </FormControl>
+                          <FormMessage />
+                      </FormItem>
+                      )}
+                  />
+                  <FormField
+                      control={form.control}
+                      name="password"
+                      render={({ field }) => (
+                      <FormItem>
+                          <FormLabel>{t('register.password')}</FormLabel>
+                          <FormControl>
+                          <Input type="password" placeholder={t('register.passwordPlaceholder')} {...field} />
+                          </FormControl>
+                          <FormMessage />
+                      </FormItem>
+                      )}
+                  />
+                  <FormField
+                      control={form.control}
+                      name="secretCode"
+                      render={({ field }) => (
+                      <FormItem>
+                          <FormLabel>{t('register.secretCode')}</FormLabel>
+                          <FormControl>
+                          <Input type="password" placeholder={t('register.secretCodePlaceholder')} {...field} />
+                          </FormControl>
+                          <FormMessage />
+                      </FormItem>
+                      )}
+                  />
+                  <Button type="submit" className="w-full" disabled={isSubmitting}>
+                      {isSubmitting ? t('register.signingIn') : t('register.signIn')}
+                  </Button>
+                  </form>
+              </Form>
+              <div className="mt-4 text-center text-sm">
+                <Link href="/login" className="underline text-muted-foreground hover:text-foreground">
+                  {t('register.signInLink')}
+                </Link>
+              </div>
+          </CardContent>
+        </Card>
+      </motion.div>
     </div>
   );
 }

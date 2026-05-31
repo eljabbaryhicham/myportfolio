@@ -18,6 +18,7 @@ import { useAuth } from '@/firebase';
 import {
   signInWithEmailAndPassword,
 } from 'firebase/auth';
+import { motion } from 'framer-motion';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
@@ -82,54 +83,61 @@ export default function LoginPage() {
 
   return (
     <div className="flex h-full min-h-full w-full items-center justify-center p-4">
-      <Card className="w-full md:w-1/2 glass-effect">
-        <CardHeader>
-            <CardTitle className="text-2xl font-headline">{t('login.title')}</CardTitle>
-            <CardDescription>
-                {t('login.subtitle')}
-            </CardDescription>
-        </CardHeader>
-        <CardContent>
-            <Form {...form}>
-                <form onSubmit={form.handleSubmit(handleSignIn)} className="space-y-6 pt-4">
-                <FormField
-                    control={form.control}
-                    name="login"
-                    render={({ field }) => (
-                    <FormItem>
-                        <FormLabel>{t('login.username')}</FormLabel>
-                        <FormControl>
-                        <Input placeholder={t('login.usernamePlaceholder')} {...field} />
-                        </FormControl>
-                        <FormMessage />
-                    </FormItem>
-                    )}
-                />
-                <FormField
-                    control={form.control}
-                    name="password"
-                    render={({ field }) => (
-                    <FormItem>
-                        <FormLabel>{t('login.password')}</FormLabel>
-                        <FormControl>
-                        <Input type="password" placeholder={t('login.passwordPlaceholder')} {...field} />
-                        </FormControl>
-                        <FormMessage />
-                    </FormItem>
-                    )}
-                />
-                <Button type="submit" className="w-full" disabled={isSubmitting}>
-                    {isSubmitting ? t('login.signingIn') : t('login.signIn')}
-                </Button>
-                </form>
-            </Form>
-            <div className="mt-4 text-center text-sm">
-              <Link href="/register" className="underline text-muted-foreground hover:text-foreground">
-                {t('login.createAccount')}
-              </Link>
-            </div>
-        </CardContent>
-      </Card>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, ease: "easeOut" }}
+        className="w-full md:w-1/2"
+      >
+        <Card className="glass-effect">
+          <CardHeader>
+              <CardTitle className="text-2xl font-headline">{t('login.title')}</CardTitle>
+              <CardDescription>
+                  {t('login.subtitle')}
+              </CardDescription>
+          </CardHeader>
+          <CardContent>
+              <Form {...form}>
+                  <form onSubmit={form.handleSubmit(handleSignIn)} className="space-y-6 pt-4">
+                  <FormField
+                      control={form.control}
+                      name="login"
+                      render={({ field }) => (
+                      <FormItem>
+                          <FormLabel>{t('login.username')}</FormLabel>
+                          <FormControl>
+                          <Input placeholder={t('login.usernamePlaceholder')} {...field} />
+                          </FormControl>
+                          <FormMessage />
+                      </FormItem>
+                      )}
+                  />
+                  <FormField
+                      control={form.control}
+                      name="password"
+                      render={({ field }) => (
+                      <FormItem>
+                          <FormLabel>{t('login.password')}</FormLabel>
+                          <FormControl>
+                          <Input type="password" placeholder={t('login.passwordPlaceholder')} {...field} />
+                          </FormControl>
+                          <FormMessage />
+                      </FormItem>
+                      )}
+                  />
+                  <Button type="submit" className="w-full" disabled={isSubmitting}>
+                      {isSubmitting ? t('login.signingIn') : t('login.signIn')}
+                  </Button>
+                  </form>
+              </Form>
+              <div className="mt-4 text-center text-sm">
+                <Link href="/register" className="underline text-muted-foreground hover:text-foreground">
+                  {t('login.createAccount')}
+                </Link>
+              </div>
+          </CardContent>
+        </Card>
+      </motion.div>
     </div>
   );
 }

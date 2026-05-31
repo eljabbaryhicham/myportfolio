@@ -112,6 +112,16 @@ function CursorArrow({ targetRef }: { targetRef: React.RefObject<HTMLButtonEleme
   );
 }
 
+const contentVariants = {
+  hidden: {},
+  visible: { transition: { staggerChildren: 0.15, delayChildren: 0.5 } },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 24 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } },
+};
+
 export default function HomePageContent() {
   const firestore = useFirestore();
   const { t } = useTranslation();
@@ -201,31 +211,40 @@ export default function HomePageContent() {
         </div>
 
         <style>{`@media (max-width: 767px) { [data-content] { padding-top: calc(50vh + 60px) !important; justify-content: flex-start !important; min-height: 0 !important; } }`}</style>
-        <div data-content className="relative z-20 flex flex-col items-center gap-6 w-full" style={{ paddingTop: "calc(50vh + 60px)" }}>
-          <div className="text-center space-y-3 max-w-lg" style={{ textShadow: "0 2px 12px rgba(0,0,0,0.6)" }}>
+        <motion.div
+          data-content
+          className="relative z-20 flex flex-col items-center gap-6 w-full"
+          style={{ paddingTop: "calc(50vh + 60px)" }}
+          variants={contentVariants}
+          initial="hidden"
+          animate="visible"
+        >
+          <motion.div variants={itemVariants} className="text-center space-y-3 max-w-lg" style={{ textShadow: "0 2px 12px rgba(0,0,0,0.6)" }}>
             <h2 className="text-xl md:text-2xl font-headline tracking-tight text-white/90">
               {t('home.hero.heading')}
             </h2>
             <p className="text-sm md:text-base text-foreground/60 leading-relaxed" style={{ textShadow: "0 1px 8px rgba(0,0,0,0.5)" }}>
               {t('home.hero.subtitle')}
             </p>
-          </div>
-          <Button ref={ctaRef} asChild size="lg" className="group transition-shadow duration-300" style={{ boxShadow: "0 0 20px rgba(255,255,255,0.12)" }}
-            onMouseEnter={(e) => e.currentTarget.style.boxShadow = "0 0 35px rgba(255,255,255,0.25)"}
-            onMouseLeave={(e) => e.currentTarget.style.boxShadow = "0 0 20px rgba(255,255,255,0.12)"}
-          >
-            <Link href="/work">
-              {t('home.hero.cta')}
-              <FontAwesomeIcon icon={faArrowRight} className="ml-2 transition-transform group-hover:translate-x-1" />
-            </Link>
-          </Button>
-          <div className="pt-4 text-foreground/40 text-xs animate-pulse" style={{ textShadow: "0 1px 8px rgba(0,0,0,0.5)" }}>
+          </motion.div>
+          <motion.div variants={itemVariants}>
+            <Button ref={ctaRef} asChild size="lg" className="group transition-shadow duration-300" style={{ boxShadow: "0 0 20px rgba(255,255,255,0.12)" }}
+              onMouseEnter={(e) => e.currentTarget.style.boxShadow = "0 0 35px rgba(255,255,255,0.25)"}
+              onMouseLeave={(e) => e.currentTarget.style.boxShadow = "0 0 20px rgba(255,255,255,0.12)"}
+            >
+              <Link href="/work">
+                {t('home.hero.cta')}
+                <FontAwesomeIcon icon={faArrowRight} className="ml-2 transition-transform group-hover:translate-x-1" />
+              </Link>
+            </Button>
+          </motion.div>
+          <motion.div variants={itemVariants} className="pt-4 text-foreground/40 text-xs animate-pulse" style={{ textShadow: "0 1px 8px rgba(0,0,0,0.5)" }}>
             {t('home.hero.scroll')}
-          </div>
-          <div className="mt-6 w-full">
+          </motion.div>
+          <motion.div variants={itemVariants} className="mt-6 w-full">
             <TrustedBy />
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
       </div>
     </div>
   );
