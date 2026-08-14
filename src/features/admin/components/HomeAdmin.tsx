@@ -52,7 +52,7 @@ interface HomePageSettings {
     websiteBackgroundMediaId?: string;
     isHomePageVideoEnabled?: boolean;
     isWebsiteVideoEnabled?: boolean;
-    workPagePlayer?: 'plyr' | 'clappr' | 'dplayer';
+    workPagePlayer?: 'plyr' | 'clappr';
     isTestPageEnabled?: boolean;
     homePageLogoUrl?: string;
     isHomePageLogoVisible?: boolean;
@@ -61,7 +61,7 @@ interface HomePageSettings {
 }
 
 const settingsSchema = z.object({
-  workPagePlayer: z.enum(['plyr', 'clappr', 'dplayer']).optional(),
+  workPagePlayer: z.enum(['plyr', 'clappr']).optional(),
   isTestPageEnabled: z.boolean().optional(),
   homePageLogoUrl: z.string().optional(),
   isHomePageLogoVisible: z.boolean().optional(),
@@ -483,10 +483,6 @@ export default function HomeAdmin() {
                                               <FormItem className="flex items-center space-x-2 space-y-0">
                                                 <FormControl><RadioGroupItem value="clappr" /></FormControl>
                                                 <FormLabel className="font-normal">{t('homeAdmin.player.clappr')}</FormLabel>
-                                              </FormItem>
-                                              <FormItem className="flex items-center space-x-2 space-y-0">
-                                                <FormControl><RadioGroupItem value="dplayer" /></FormControl>
-                                                <FormLabel className="font-normal">{t('homeAdmin.player.dplayer')}</FormLabel>
                                               </FormItem>
                                             </RadioGroup>
                                           </FormControl>

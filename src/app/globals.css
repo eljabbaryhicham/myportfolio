@@ -168,6 +168,11 @@
     display: none !important;
 }
 
+/* Plyr Theme Overrides */
+.plyr {
+  --plyr-color-main: hsl(var(--destructive));
+}
+
 /* Watermark styles */
 .clappr-watermark[data-watermark] {
   top: 15px !important;

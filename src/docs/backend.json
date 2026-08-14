@@ -159,7 +159,7 @@
         },
         "workPagePlayer": {
           "type": "string",
-          "enum": ["plyr", "clappr", "dplayer"],
+          "enum": ["plyr", "clappr"],
           "description": "The video player to use on the Work page."
         },
         "isTestPageEnabled": {

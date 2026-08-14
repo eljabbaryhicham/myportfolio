@@ -15,11 +15,10 @@ import { doc } from 'firebase/firestore';
 import PlyrPlayer from '@/components/PlyrPlayer';
 import type { AppUser } from '@/firebase/auth/use-user';
 import { useToast } from '@/hooks/use-toast';
-import DPlayer from '@/components/DPlayer';
 import { useTranslation } from '@/lib/i18n/useTranslation';
 
 interface HomePageSettings {
-    workPagePlayer?: 'plyr' | 'clappr' | 'dplayer';
+    workPagePlayer?: 'plyr' | 'clappr';
 }
 
 export default function TestPage() {
@@ -57,10 +56,10 @@ export default function TestPage() {
   
   const handleSwitchPlayer = () => {
     if (!settingsDocRef || !isSuperAdmin) return;
-    const cycle: Record<string, string> = { plyr: 'clappr', clappr: 'dplayer', dplayer: 'plyr' };
+    const cycle: Record<string, string> = { plyr: 'clappr', clappr: 'plyr' };
     const newPlayer = cycle[homeSettings?.workPagePlayer || 'clappr'] || 'plyr';
     setDocumentNonBlocking(settingsDocRef, { workPagePlayer: newPlayer }, { merge: true });
-    const names: Record<string, string> = { plyr: 'Plyr', clappr: 'Clappr', dplayer: 'DPlayer' };
+    const names: Record<string, string> = { plyr: 'Plyr', clappr: 'Clappr' };
     toast({
       title: t('test.toast.playerSwitched.title'),
       description: t('test.toast.playerSwitched.description').replace('{player}', names[newPlayer] || newPlayer),
@@ -81,7 +80,7 @@ export default function TestPage() {
         <div className="text-center mb-8 w-full max-w-4xl">
           <h1 className="text-3xl md:text-4xl font-headline tracking-tight">{t('test.heading')}</h1>
           <p className="mt-2 text-base md:text-lg text-foreground/70">
-            {t('test.description').replace('{player}', ({ plyr: 'Plyr', clappr: 'Clappr', dplayer: 'DPlayer' })[workPagePlayer] || workPagePlayer)}
+            {t('test.description').replace('{player}', ({ plyr: 'Plyr', clappr: 'Clappr' })[workPagePlayer] || workPagePlayer)}
           </p>
           <div className="mt-4 flex w-full items-center space-x-2">
             <Input
@@ -117,8 +116,6 @@ export default function TestPage() {
         <div className="w-full max-w-4xl aspect-video bg-black">
           {workPagePlayer === 'clappr' ? (
               <CdnClapprPlayer key={source} source={source} autoPlay={true} />
-          ) : workPagePlayer === 'dplayer' ? (
-              <DPlayer key={source} source={source} autoPlay={true} />
           ) : (
               <PlyrPlayer key={source} source={source} autoPlay={true} />
           )}
