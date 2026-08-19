@@ -27,6 +27,8 @@ const PlyrPlayer = forwardRef(({ source, poster, autoPlay = true, thumbnailVttUr
   const isMobile = useIsMobile();
   const [isLoading, setIsLoading] = useState(true);
   const playerReadyRef = useRef(false);
+  const onLoadedRef = useRef(onLoaded);
+  onLoadedRef.current = onLoaded;
 
   // Expose the player instance via the passed ref
   useImperativeHandle(ref, () => playerRef.current, []);
@@ -81,6 +83,7 @@ const PlyrPlayer = forwardRef(({ source, poster, autoPlay = true, thumbnailVttUr
                 });
                 element.addEventListener('canplay', () => {
                   if (isMounted) setIsLoading(false);
+                  onLoadedRef.current?.();
                 });
             }
 
@@ -91,7 +94,7 @@ const PlyrPlayer = forwardRef(({ source, poster, autoPlay = true, thumbnailVttUr
             const onPlayerReady = () => {
                 playerReadyRef.current = true;
                 if (isMounted) setIsLoading(false);
-                onLoaded?.();
+                onLoadedRef.current?.();
             };
             const onPlayerError = () => {
                 if (isMounted) setIsLoading(false);
