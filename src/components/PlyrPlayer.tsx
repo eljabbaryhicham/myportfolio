@@ -17,18 +17,15 @@ interface PlyrPlayerProps {
   poster?: string;
   autoPlay?: boolean;
   thumbnailVttUrl?: string;
-  onLoaded?: () => void;
 }
 
-const PlyrPlayer = forwardRef(({ source, poster, autoPlay = true, thumbnailVttUrl, onLoaded }: PlyrPlayerProps, ref) => {
+const PlyrPlayer = forwardRef(({ source, poster, autoPlay = true, thumbnailVttUrl }: PlyrPlayerProps, ref) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const playerRef = useRef<PlyrInstance | null>(null);
   const hlsRef = useRef<Hls | null>(null);
   const isMobile = useIsMobile();
   const [isLoading, setIsLoading] = useState(true);
   const playerReadyRef = useRef(false);
-  const onLoadedRef = useRef(onLoaded);
-  onLoadedRef.current = onLoaded;
 
   // Expose the player instance via the passed ref
   useImperativeHandle(ref, () => playerRef.current, []);
@@ -83,7 +80,6 @@ const PlyrPlayer = forwardRef(({ source, poster, autoPlay = true, thumbnailVttUr
                 });
                 element.addEventListener('canplay', () => {
                   if (isMounted) setIsLoading(false);
-                  onLoadedRef.current?.();
                 });
             }
 
@@ -94,7 +90,6 @@ const PlyrPlayer = forwardRef(({ source, poster, autoPlay = true, thumbnailVttUr
             const onPlayerReady = () => {
                 playerReadyRef.current = true;
                 if (isMounted) setIsLoading(false);
-                onLoadedRef.current?.();
             };
             const onPlayerError = () => {
                 if (isMounted) setIsLoading(false);
@@ -168,12 +163,6 @@ const PlyrPlayer = forwardRef(({ source, poster, autoPlay = true, thumbnailVttUr
 
                 hls.attachMedia(element as HTMLVideoElement);
                 hlsRef.current = hls;
-
-                hls.on(Hls.Events.ERROR, (event, data) => {
-                    if (isMounted && data.fatal) {
-                        setIsLoading(false);
-                    }
-                });
             } else {
                 player = new Plyr(element, playerConfig);
                 (element as HTMLVideoElement).src = source;
@@ -253,6 +242,8 @@ const PlyrPlayer = forwardRef(({ source, poster, autoPlay = true, thumbnailVttUr
                 }
             }
         };
+    } else {
+        setIsLoading(false);
     }
   }, [autoPlay, isLoading]);
 

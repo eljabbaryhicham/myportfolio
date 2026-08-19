@@ -18,6 +18,7 @@ import TrustedBy from "./TrustedBy";
 import { useDoc, useFirestore, useMemoFirebase } from "@/firebase";
 import { doc } from "firebase/firestore";
 import { useTranslation } from "@/lib/i18n/useTranslation";
+import Hls from "hls.js";
 
 const HERO_VIDEO_URL = "https://res.cloudinary.com/dsq1lxrqi/video/upload/sp_auto/pg_5/v1778867307/Ovi_Motion_Design_v3kfy0.m3u8";
 
@@ -126,6 +127,7 @@ export default function HomePageContent() {
   const firestore = useFirestore();
   const { t } = useTranslation();
   const ctaRef = useRef<HTMLButtonElement | null>(null);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
 
   const contactDocRef = useMemoFirebase(
     () => (firestore ? doc(firestore, 'contact', 'details') : null),
@@ -140,8 +142,6 @@ export default function HomePageContent() {
   const { data: homeSettings, isLoading: isLoadingSettings } = useDoc<HomePageSettings>(settingsDocRef);
   
   const isLoading = isLoadingContact || isLoadingSettings;
-  const [isVideoLoaded, setIsVideoLoaded] = useState(false);
-  const showPreloader = isLoading || !isVideoLoaded;
 
   const siteLogoUrl = contactInfo?.logoUrl;
   const homeLogoUrl = homeSettings?.homePageLogoUrl || siteLogoUrl;
@@ -155,29 +155,40 @@ export default function HomePageContent() {
     return () => { document.body.style.cursor = ''; s.remove(); };
   }, []);
 
+  useEffect(() => {
+    const videoUrl = homeSettings?.heroVideoUrl || HERO_VIDEO_URL;
+    const video = videoRef.current;
+    if (!video || !videoUrl) return;
+
+    if (videoUrl.includes('.m3u8') && Hls.isSupported()) {
+      const hls = new Hls();
+      hls.loadSource(videoUrl);
+      hls.attachMedia(video);
+      hls.on(Hls.Events.MANIFEST_PARSED, () => {
+        video.play().catch(() => {});
+      });
+      return () => { hls.destroy(); };
+    }
+  }, [homeSettings?.heroVideoUrl]);
+
   return (
     <div className="fixed inset-0 overflow-y-auto overflow-x-hidden">
       <style>{`*,*::before,*::after,:root,html,video,canvas,svg{ cursor: none !important; }`}</style>
-      <div className="relative z-10 h-full w-full flex flex-col items-center px-4 transition-opacity duration-1000">
+      <div className="relative z-10 min-h-full w-full flex items-center justify-center transition-opacity duration-1000">
         <CursorArrow targetRef={ctaRef} />
 
         <Particles />
 
-        {showPreloader && (
+        {isLoading && (
           <div className="absolute inset-0 z-30 flex items-center justify-center bg-black/50">
             <Preloader />
           </div>
         )}
 
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+        <div className="flex flex-col items-center gap-1 sm:gap-2 md:gap-3 w-full px-4">
           <motion.div
-            style={{
-              width: "88%",
-              maxWidth: 1024,
-              aspectRatio: "4/3",
-              position: "relative",
-              cursor: "none",
-            }}
+            className="w-[min(80vw,500px)] md:w-[min(70vw,600px)]"
+            style={{ aspectRatio: "16/9", position: "relative", cursor: "none" }}
             animate={{ y: [0, -8, 0] }}
             transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
           >
@@ -186,8 +197,8 @@ export default function HomePageContent() {
               overflow: "hidden",
               boxShadow: "0 0 60px rgba(0,0,0,0.4)",
               border: "0.5px solid rgba(255,255,255,0.5)",
-              maskImage: "linear-gradient(to bottom, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0.8) 8%, black 18%, black 20%, rgba(0,0,0,0.5) 35%, transparent 55%, transparent 100%)",
-              WebkitMaskImage: "linear-gradient(to bottom, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0.8) 8%, black 18%, black 20%, rgba(0,0,0,0.5) 35%, transparent 55%, transparent 100%)",
+              maskImage: "linear-gradient(to bottom, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0.8) 8%, black 18%, black 20%, rgba(0,0,0,0.5) 70%, transparent 95%)",
+              WebkitMaskImage: "linear-gradient(to bottom, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0.8) 8%, black 18%, black 20%, rgba(0,0,0,0.5) 70%, transparent 95%)",
             }}>
               <div style={{
                 position: "absolute",
@@ -196,9 +207,7 @@ export default function HomePageContent() {
                 background: "radial-gradient(ellipse at center, rgba(255,255,255,0.08) 0%, transparent 70%)",
                 filter: "blur(50px)",
               }} />
-              <video autoPlay muted loop playsInline className="absolute inset-0 w-full h-full object-cover" key={homeSettings?.heroVideoUrl || HERO_VIDEO_URL} style={{ cursor: 'none', pointerEvents: 'none' }} onLoadedData={() => setIsVideoLoaded(true)}>
-                <source src={homeSettings?.heroVideoUrl || HERO_VIDEO_URL} type="application/x-mpegURL" />
-              </video>
+              <video ref={videoRef} autoPlay muted loop playsInline className="absolute inset-0 w-full h-full object-cover" key={homeSettings?.heroVideoUrl || HERO_VIDEO_URL} style={{ cursor: 'none', pointerEvents: 'none' }} />
               <div className="absolute inset-0 bg-black/60" />
               <div className="absolute inset-0" style={{ backdropFilter: "blur(1px)" }} />
             </div>
@@ -210,43 +219,41 @@ export default function HomePageContent() {
               </div>
             )}
           </motion.div>
-        </div>
 
-        <style>{`@media (max-width: 767px) { [data-content] { padding-top: calc(50vh + 60px) !important; justify-content: flex-start !important; min-height: 0 !important; } }`}</style>
-        <motion.div
-          data-content
-          className="relative z-20 flex flex-col items-center gap-6 w-full"
-          style={{ paddingTop: "calc(50vh + 60px)" }}
-          variants={contentVariants}
-          initial="hidden"
-          animate="visible"
-        >
-          <motion.div variants={itemVariants} className="text-center space-y-3 max-w-lg" style={{ textShadow: "0 2px 12px rgba(0,0,0,0.6)" }}>
-            <h2 className="text-xl md:text-2xl font-headline tracking-tight text-white/90">
-              {t('home.hero.heading')}
-            </h2>
-            <p className="text-sm md:text-base text-foreground/60 leading-relaxed" style={{ textShadow: "0 1px 8px rgba(0,0,0,0.5)" }}>
-              {t('home.hero.subtitle')}
-            </p>
+          <motion.div
+            data-content
+            className="flex flex-col items-center gap-2 sm:gap-3 md:gap-4 w-full"
+            variants={contentVariants}
+            initial="hidden"
+            animate="visible"
+          >
+            <motion.div variants={itemVariants} className="text-center space-y-1 max-w-lg px-4" style={{ textShadow: "0 2px 12px rgba(0,0,0,0.6)" }}>
+              <h2 className="text-sm sm:text-base md:text-2xl font-headline tracking-tight text-white/90">
+                {t('home.hero.heading')}
+              </h2>
+              <p className="text-[10px] sm:text-xs md:text-base text-foreground/60 leading-relaxed" style={{ textShadow: "0 1px 8px rgba(0,0,0,0.5)" }}>
+                {t('home.hero.subtitle')}
+              </p>
+            </motion.div>
+            <motion.div variants={itemVariants}>
+              <Button ref={ctaRef} asChild size="lg" className="group transition-shadow duration-300" style={{ boxShadow: "0 0 20px rgba(255,255,255,0.12)" }}
+                onMouseEnter={(e) => e.currentTarget.style.boxShadow = "0 0 35px rgba(255,255,255,0.25)"}
+                onMouseLeave={(e) => e.currentTarget.style.boxShadow = "0 0 20px rgba(255,255,255,0.12)"}
+              >
+                <Link href="/work">
+                  {t('home.hero.cta')}
+                  <FontAwesomeIcon icon={faArrowRight} className="ml-2 transition-transform group-hover:translate-x-1" />
+                </Link>
+              </Button>
+            </motion.div>
+            <motion.div variants={itemVariants} className="text-foreground/40 text-[10px] md:text-xs animate-pulse" style={{ textShadow: "0 1px 8px rgba(0,0,0,0.5)" }}>
+              {t('home.hero.scroll')}
+            </motion.div>
+            <motion.div variants={itemVariants} className="w-full">
+              <TrustedBy />
+            </motion.div>
           </motion.div>
-          <motion.div variants={itemVariants}>
-            <Button ref={ctaRef} asChild size="lg" className="group transition-shadow duration-300" style={{ boxShadow: "0 0 20px rgba(255,255,255,0.12)" }}
-              onMouseEnter={(e) => e.currentTarget.style.boxShadow = "0 0 35px rgba(255,255,255,0.25)"}
-              onMouseLeave={(e) => e.currentTarget.style.boxShadow = "0 0 20px rgba(255,255,255,0.12)"}
-            >
-              <Link href="/work">
-                {t('home.hero.cta')}
-                <FontAwesomeIcon icon={faArrowRight} className="ml-2 transition-transform group-hover:translate-x-1" />
-              </Link>
-            </Button>
-          </motion.div>
-          <motion.div variants={itemVariants} className="pt-4 text-foreground/40 text-xs animate-pulse" style={{ textShadow: "0 1px 8px rgba(0,0,0,0.5)" }}>
-            {t('home.hero.scroll')}
-          </motion.div>
-          <motion.div variants={itemVariants} className="mt-6 w-full">
-            <TrustedBy />
-          </motion.div>
-        </motion.div>
+        </div>
       </div>
     </div>
   );

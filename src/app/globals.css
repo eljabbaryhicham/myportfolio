@@ -171,6 +171,15 @@
 /* Plyr Theme Overrides */
 .plyr {
   --plyr-color-main: hsl(var(--destructive));
+  width: 100%;
+  height: 100%;
+}
+.plyr__video-wrapper {
+  height: 100%;
+}
+.plyr video {
+  object-fit: contain !important;
+  height: 100% !important;
 }
 
 /* Watermark styles */

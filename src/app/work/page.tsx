@@ -57,13 +57,63 @@ const MemoizedPortfolioMedia = memo(({
   plyrRef: React.Ref<any>;
 }) => {
   const { t } = useTranslation();
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (item.type !== 'video') {
+      onMediaLoaded();
+      return;
+    }
+
+    const container = containerRef.current;
+    if (!container) { onMediaLoaded(); return; }
+
+    let disposed = false;
+
+    const onReady = () => { if (!disposed) onMediaLoaded(); };
+
+    const findMedia = () => {
+      const v = container.querySelector('video');
+      if (v) return { tag: 'video' as const, el: v };
+      const f = container.querySelector('iframe');
+      if (f) return { tag: 'iframe' as const, el: f };
+      return null;
+    };
+
+    const attach = (m: NonNullable<ReturnType<typeof findMedia>>) => {
+      if (m.tag === 'video') {
+        const v = m.el as HTMLVideoElement;
+        if (v.readyState >= 2) { onReady(); return; }
+        v.addEventListener('canplay', onReady, { once: true });
+        return () => v.removeEventListener('canplay', onReady);
+      } else {
+        m.el.addEventListener('load', onReady, { once: true });
+        return () => m.el.removeEventListener('load', onReady);
+      }
+    };
+
+    const existing = findMedia();
+    if (existing) {
+      const cleanup = attach(existing);
+      return () => { disposed = true; cleanup?.(); };
+    }
+
+    const observer = new MutationObserver(() => {
+      const m = findMedia();
+      if (m) { observer.disconnect(); attach(m); }
+    });
+    observer.observe(container, { childList: true, subtree: true });
+
+    return () => { disposed = true; observer.disconnect(); };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [item.id, item.type, item.sourceUrl, onMediaLoaded]);
 
   if (item.type === 'video') {
     const isVimeo = item.sourceUrl?.includes('vimeo.com');
     const isYoutube = item.sourceUrl?.includes('youtube.com') || item.sourceUrl?.includes('youtu.be');
 
     return (
-      <div className="relative aspect-video bg-black flex items-center justify-center w-full">
+      <div ref={containerRef} className="relative aspect-video bg-black flex items-center justify-center w-full overflow-hidden">
         {item.sourceUrl && (
           (isVimeo || isYoutube) ? (
             <MemoizedPlyrPlayer
@@ -73,7 +123,6 @@ const MemoizedPortfolioMedia = memo(({
                 poster={item.useVideoFrameAsPoster ? undefined : item.thumbnailUrl}
                 autoPlay={autoPlay}
                 thumbnailVttUrl={item.thumbnailVttUrl}
-                onLoaded={onMediaLoaded}
             />
           ) : playerType === 'plyr' ? (
               <MemoizedPlyrPlayer
@@ -83,7 +132,6 @@ const MemoizedPortfolioMedia = memo(({
                   poster={item.useVideoFrameAsPoster ? undefined : item.thumbnailUrl}
                   autoPlay={autoPlay}
                   thumbnailVttUrl={item.thumbnailVttUrl}
-                  onLoaded={onMediaLoaded}
               />
           ) : (
               <MemoizedCdnClapprPlayer
@@ -92,7 +140,6 @@ const MemoizedPortfolioMedia = memo(({
                   poster={item.useVideoFrameAsPoster ? undefined : item.thumbnailUrl}
                   watermark={watermark}
                   autoPlay={autoPlay}
-                  onLoaded={onMediaLoaded}
               />
           )
         )}

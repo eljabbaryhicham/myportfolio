@@ -1,6 +1,6 @@
 
 'use client';
-import { useEffect, useRef, useState, useId } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Preloader from './preloader';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
@@ -21,7 +21,6 @@ interface CdnClapprPlayerProps {
   poster?: string;
   autoPlay?: boolean;
   watermark?: string;
-  onLoaded?: () => void;
 }
 
 const loadScript = (src: string, id: string): Promise<void> => {
@@ -40,16 +39,13 @@ const loadScript = (src: string, id: string): Promise<void> => {
     });
 };
 
-export default function CdnClapprPlayer({ source, poster, autoPlay = true, watermark, onLoaded }: CdnClapprPlayerProps) {
+export default function CdnClapprPlayer({ source, poster, autoPlay = true, watermark }: CdnClapprPlayerProps) {
   const playerContainerRef = useRef<HTMLDivElement>(null);
   const playerRef = useRef<any>(null);
-  const containerId = useId().replace(/:/g, '');
-
+  
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
   const isMobile = useIsMobile();
-  const onLoadedRef = useRef(onLoaded);
-  onLoadedRef.current = onLoaded;
 
   useEffect(() => {
     let isMounted = true;
@@ -61,7 +57,7 @@ export default function CdnClapprPlayer({ source, poster, autoPlay = true, water
 
       try {
         await loadScript('https://cdn.jsdelivr.net/npm/@clappr/player@latest/dist/clappr.min.js', 'clappr-script');
-
+        
         if (!isMounted) return;
 
         await Promise.all([
@@ -71,7 +67,7 @@ export default function CdnClapprPlayer({ source, poster, autoPlay = true, water
         ]);
 
         if (!isMounted || !container) return;
-
+        
         const plugins = [];
         if (window.DashShakaPlayback) plugins.push(window.DashShakaPlayback);
         if (window.LevelSelector) plugins.push(window.LevelSelector);
@@ -101,7 +97,9 @@ export default function CdnClapprPlayer({ source, poster, autoPlay = true, water
                 rebufferingGoal: 15
               }
             },
-            hlsjsConfig: {},
+            hlsjsConfig: {
+              // HLS.js configuration options
+            },
             mediacontrol: {
               seekbar: "hsl(var(--destructive))",
               buttons: playerButtons,
@@ -109,23 +107,32 @@ export default function CdnClapprPlayer({ source, poster, autoPlay = true, water
             levelSelectorConfig: {
               title: 'Quality',
               labels: {
-                  2: 'High',
-                  1: 'Med',
-                  0: 'Low',
+                  2: 'High', // e.g., 1080p
+                  1: 'Med', // e.g., 720p
+                  0: 'Low', // e.g., 360p
               },
             },
             playbackRateConfig: {
                 defaultRate: 1.0,
                 rates: [0.5, 1.0, 1.5, 2.0]
             },
+            events: {
+              onReady: () => {
+                if (isMounted) setIsLoading(false)
+              },
+              onPlay: () => {
+                if (isMounted) setIsLoading(false)
+              },
+              onError: (e: any) => {
+                if (isMounted) {
+                  setIsLoading(false);
+                  console.error("Clappr player error:", e);
+                }
+              },
+            }
         });
-
+        
         playerRef.current = newPlayer;
-
-        if (isMounted) {
-          setIsLoading(false);
-          onLoadedRef.current?.();
-        }
 
       } catch (error: any) {
         console.error(error);
@@ -137,11 +144,10 @@ export default function CdnClapprPlayer({ source, poster, autoPlay = true, water
             duration: 9000,
           });
           setIsLoading(false);
-          onLoadedRef.current?.();
         }
       }
     };
-
+    
     initPlayer();
 
     return () => {
@@ -158,7 +164,19 @@ export default function CdnClapprPlayer({ source, poster, autoPlay = true, water
       playerRef.current = null;
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [source]);
+  }, [source]); 
+
+  // Effect to control playback based on autoPlay prop
+  useEffect(() => {
+    const player = playerRef.current;
+    if (player && player.core) { // Ensure player core is available
+      if (autoPlay) {
+        player.play();
+      } else {
+        player.pause();
+      }
+    }
+  }, [autoPlay, isLoading]); // Re-run when isLoading changes to ensure play is called after ready
 
   return (
     <div className="w-full h-full relative bg-black">
@@ -167,10 +185,10 @@ export default function CdnClapprPlayer({ source, poster, autoPlay = true, water
             <Preloader />
         </div>
       )}
-      <div
-        id={containerId}
-        ref={playerContainerRef}
-        className={cn("w-full h-full transition-opacity duration-300", isLoading ? 'opacity-0' : 'opacity-100')}
+      <div 
+        id={`cdn-clappr-player-${Math.random().toString(36).substring(7)}`}
+        ref={playerContainerRef} 
+        className={cn("w-full h-full transition-opacity duration-300", isLoading ? 'opacity-0' : 'opacity-100')} 
       />
     </div>
   );
