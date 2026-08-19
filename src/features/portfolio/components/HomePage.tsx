@@ -140,6 +140,8 @@ export default function HomePageContent() {
   const { data: homeSettings, isLoading: isLoadingSettings } = useDoc<HomePageSettings>(settingsDocRef);
   
   const isLoading = isLoadingContact || isLoadingSettings;
+  const [isVideoLoaded, setIsVideoLoaded] = useState(false);
+  const showPreloader = isLoading || !isVideoLoaded;
 
   const siteLogoUrl = contactInfo?.logoUrl;
   const homeLogoUrl = homeSettings?.homePageLogoUrl || siteLogoUrl;
@@ -161,7 +163,7 @@ export default function HomePageContent() {
 
         <Particles />
 
-        {isLoading && (
+        {showPreloader && (
           <div className="absolute inset-0 z-30 flex items-center justify-center bg-black/50">
             <Preloader />
           </div>
@@ -194,7 +196,7 @@ export default function HomePageContent() {
                 background: "radial-gradient(ellipse at center, rgba(255,255,255,0.08) 0%, transparent 70%)",
                 filter: "blur(50px)",
               }} />
-              <video autoPlay muted loop playsInline className="absolute inset-0 w-full h-full object-cover" key={homeSettings?.heroVideoUrl || HERO_VIDEO_URL} style={{ cursor: 'none', pointerEvents: 'none' }}>
+              <video autoPlay muted loop playsInline className="absolute inset-0 w-full h-full object-cover" key={homeSettings?.heroVideoUrl || HERO_VIDEO_URL} style={{ cursor: 'none', pointerEvents: 'none' }} onLoadedData={() => setIsVideoLoaded(true)}>
                 <source src={homeSettings?.heroVideoUrl || HERO_VIDEO_URL} type="application/x-mpegURL" />
               </video>
               <div className="absolute inset-0 bg-black/60" />
