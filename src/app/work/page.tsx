@@ -58,10 +58,6 @@ const MemoizedPortfolioMedia = memo(({
 }) => {
   const { t } = useTranslation();
 
-  useEffect(() => {
-    onMediaLoaded();
-  }, [item.id, onMediaLoaded]);
-
   if (item.type === 'video') {
     const isVimeo = item.sourceUrl?.includes('vimeo.com');
     const isYoutube = item.sourceUrl?.includes('youtube.com') || item.sourceUrl?.includes('youtu.be');
@@ -77,6 +73,7 @@ const MemoizedPortfolioMedia = memo(({
                 poster={item.useVideoFrameAsPoster ? undefined : item.thumbnailUrl}
                 autoPlay={autoPlay}
                 thumbnailVttUrl={item.thumbnailVttUrl}
+                onLoaded={onMediaLoaded}
             />
           ) : playerType === 'plyr' ? (
               <MemoizedPlyrPlayer
@@ -86,6 +83,7 @@ const MemoizedPortfolioMedia = memo(({
                   poster={item.useVideoFrameAsPoster ? undefined : item.thumbnailUrl}
                   autoPlay={autoPlay}
                   thumbnailVttUrl={item.thumbnailVttUrl}
+                  onLoaded={onMediaLoaded}
               />
           ) : (
               <MemoizedCdnClapprPlayer
@@ -94,6 +92,7 @@ const MemoizedPortfolioMedia = memo(({
                   poster={item.useVideoFrameAsPoster ? undefined : item.thumbnailUrl}
                   watermark={watermark}
                   autoPlay={autoPlay}
+                  onLoaded={onMediaLoaded}
               />
           )
         )}

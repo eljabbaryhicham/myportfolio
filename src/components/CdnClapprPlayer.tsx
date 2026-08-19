@@ -21,6 +21,7 @@ interface CdnClapprPlayerProps {
   poster?: string;
   autoPlay?: boolean;
   watermark?: string;
+  onLoaded?: () => void;
 }
 
 const loadScript = (src: string, id: string): Promise<void> => {
@@ -39,7 +40,7 @@ const loadScript = (src: string, id: string): Promise<void> => {
     });
 };
 
-export default function CdnClapprPlayer({ source, poster, autoPlay = true, watermark }: CdnClapprPlayerProps) {
+export default function CdnClapprPlayer({ source, poster, autoPlay = true, watermark, onLoaded }: CdnClapprPlayerProps) {
   const playerContainerRef = useRef<HTMLDivElement>(null);
   const playerRef = useRef<any>(null);
   
@@ -118,10 +119,11 @@ export default function CdnClapprPlayer({ source, poster, autoPlay = true, water
             },
             events: {
               onReady: () => {
-                if (isMounted) setIsLoading(false)
+                if (isMounted) setIsLoading(false);
+                onLoaded?.();
               },
               onPlay: () => {
-                if (isMounted) setIsLoading(false)
+                if (isMounted) setIsLoading(false);
               },
               onError: (e: any) => {
                 if (isMounted) {

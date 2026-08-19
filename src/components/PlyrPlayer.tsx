@@ -17,9 +17,10 @@ interface PlyrPlayerProps {
   poster?: string;
   autoPlay?: boolean;
   thumbnailVttUrl?: string;
+  onLoaded?: () => void;
 }
 
-const PlyrPlayer = forwardRef(({ source, poster, autoPlay = true, thumbnailVttUrl }: PlyrPlayerProps, ref) => {
+const PlyrPlayer = forwardRef(({ source, poster, autoPlay = true, thumbnailVttUrl, onLoaded }: PlyrPlayerProps, ref) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const playerRef = useRef<PlyrInstance | null>(null);
   const hlsRef = useRef<Hls | null>(null);
@@ -90,6 +91,7 @@ const PlyrPlayer = forwardRef(({ source, poster, autoPlay = true, thumbnailVttUr
             const onPlayerReady = () => {
                 playerReadyRef.current = true;
                 if (isMounted) setIsLoading(false);
+                onLoaded?.();
             };
             const onPlayerError = () => {
                 if (isMounted) setIsLoading(false);
