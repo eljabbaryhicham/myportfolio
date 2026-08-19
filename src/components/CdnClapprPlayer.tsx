@@ -47,6 +47,8 @@ export default function CdnClapprPlayer({ source, poster, autoPlay = true, water
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
   const isMobile = useIsMobile();
+  const onLoadedRef = useRef(onLoaded);
+  onLoadedRef.current = onLoaded;
 
   useEffect(() => {
     let isMounted = true;
@@ -120,7 +122,7 @@ export default function CdnClapprPlayer({ source, poster, autoPlay = true, water
             events: {
               onReady: () => {
                 if (isMounted) setIsLoading(false);
-                onLoaded?.();
+                onLoadedRef.current?.();
               },
               onPlay: () => {
                 if (isMounted) setIsLoading(false);
