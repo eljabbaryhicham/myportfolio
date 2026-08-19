@@ -110,29 +110,28 @@ export default function CdnClapprPlayer({ source, poster, autoPlay = true, water
             levelSelectorConfig: {
               title: 'Quality',
               labels: {
-                  2: 'High', // e.g., 1080p
-                  1: 'Med', // e.g., 720p
-                  0: 'Low', // e.g., 360p
+                  2: 'High', // e.g. 1080p
+                  1: 'Med', // e.g. 720p
+                  0: 'Low', // e.g. 360p
               },
             },
             playbackRateConfig: {
                 defaultRate: 1.0,
                 rates: [0.5, 1.0, 1.5, 2.0]
             },
-            events: {
-              onReady: () => {
-                if (isMounted) setIsLoading(false);
-                onLoadedRef.current?.();
-              },
-              onPlay: () => {
-                if (isMounted) setIsLoading(false);
-              },
-              onError: (e: any) => {
-                if (isMounted) {
-                  setIsLoading(false);
-                  console.error("Clappr player error:", e);
-                }
-              },
+        });
+
+        newPlayer.on(window.Clappr.Events.PLAYER_READY, () => {
+            if (isMounted) setIsLoading(false);
+            onLoadedRef.current?.();
+        });
+        newPlayer.on(window.Clappr.Events.PLAYER_PLAY, () => {
+            if (isMounted) setIsLoading(false);
+        });
+        newPlayer.on(window.Clappr.Events.PLAYER_ERROR, (e: any) => {
+            if (isMounted) {
+                setIsLoading(false);
+                console.error("Clappr player error:", e);
             }
         });
         
