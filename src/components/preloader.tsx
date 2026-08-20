@@ -84,8 +84,12 @@ const Preloader = ({ settings }: { settings?: PreloaderSettings }) => {
     }
   }, [settings, remoteSettings]);
 
-  const type = resolved?.preloaderType || 'default';
-  const url = resolved?.preloaderUrl || '';
+  const active = settings || resolved;
+
+  if (!active) return null;
+
+  const type = active.preloaderType || 'default';
+  const url = active.preloaderUrl || '';
 
   if (type === 'gif' && url) return <GifLoader url={url} />;
   if (type === 'webm' && url) return <WebmLoader url={url} />;
