@@ -109,10 +109,23 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onCho
       name: 'sourceUrl',
     });
 
+    function deriveVideoThumbnail(url: string): string | null {
+      const ytMatch = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+      if (ytMatch) return `https://img.youtube.com/vi/${ytMatch[1]}/maxresdefault.jpg`;
+
+      const vimeoMatch = url.match(/vimeo\.com\/(?:video\/)?(\d+)/);
+      if (vimeoMatch) return `https://vumbnail.com/${vimeoMatch[1]}.jpg`;
+
+      const extReplaced = url.replace(/\.(mp4|m3u8|webm)(\?.*)?$/i, '.jpg');
+      if (extReplaced !== url) return extReplaced;
+
+      return null;
+    }
+
     useEffect(() => {
       if (useVideoFrame && sourceUrl && itemType === 'video') {
-        const frameUrl = sourceUrl.replace(/\.(mp4|m3u8|webm)$/, '.jpg');
-        if (frameUrl !== sourceUrl) {
+        const frameUrl = deriveVideoThumbnail(sourceUrl);
+        if (frameUrl) {
           form.setValue('thumbnailUrl', frameUrl, { shouldValidate: true });
         }
       }
