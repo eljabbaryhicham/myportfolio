@@ -58,6 +58,7 @@ interface HomePageSettings {
     homePageLogoUrl?: string;
     isHomePageLogoVisible?: boolean;
     homePageLogoScale?: number;
+    homePageLogoColor?: string;
     themeColor?: string;
     heroVideoUrl?: string;
     preloaderType?: 'default' | 'lottie' | 'gif' | 'webm';
@@ -72,6 +73,7 @@ const settingsSchema = z.object({
   homePageLogoUrl: z.string().optional(),
   isHomePageLogoVisible: z.boolean().optional(),
                                         homePageLogoScale: z.number().min(0.1).max(5).optional(),
+  homePageLogoColor: z.string().optional(),
   themeColor: z.string().optional(),
   homePageBackgroundType: z.enum(['video', 'image']).optional(),
   homePageBackgroundMediaId: z.string().optional(),
@@ -136,6 +138,7 @@ export default function HomeAdmin() {
       homePageLogoUrl: '',
       isHomePageLogoVisible: true,
       homePageLogoScale: 1,
+      homePageLogoColor: '',
       themeColor: '#d81e38',
       heroVideoUrl: '',
       preloaderType: 'default',
@@ -162,6 +165,7 @@ export default function HomeAdmin() {
         homePageLogoUrl: homeSettings.homePageLogoUrl || '',
         isHomePageLogoVisible: homeSettings.isHomePageLogoVisible ?? true,
         homePageLogoScale: homeSettings.homePageLogoScale || 1,
+        homePageLogoColor: homeSettings.homePageLogoColor || '',
         themeColor: homeSettings.themeColor || '#d81e38',
         heroVideoUrl: homeSettings.heroVideoUrl || '',
         preloaderType: homeSettings.preloaderType || 'default',
@@ -321,6 +325,25 @@ export default function HomeAdmin() {
                                                 </FormControl>
                                                 <FormDescription>
                                                     {t('homeAdmin.logoScaleDescription') || 'Adjust the homepage logo size'}
+                                                </FormDescription>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                    <FormField
+                                        control={control}
+                                        name="homePageLogoColor"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>{t('homeAdmin.logoColor') || 'Logo Color'}</FormLabel>
+                                                <div className="flex items-center gap-4">
+                                                    <FormControl>
+                                                        <Input type="color" {...field} value={field.value || '#ffffff'} className="p-1 h-10 w-14 cursor-pointer" />
+                                                    </FormControl>
+                                                    <Input type="text" {...field} placeholder="#ffffff" />
+                                                </div>
+                                                <FormDescription>
+                                                    {t('homeAdmin.logoColorDescription') || 'Leave empty or white for original logo color'}
                                                 </FormDescription>
                                                 <FormMessage />
                                             </FormItem>

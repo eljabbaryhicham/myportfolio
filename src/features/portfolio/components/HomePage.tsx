@@ -30,6 +30,7 @@ interface HomePageSettings {
     homePageLogoUrl?: string;
     isHomePageLogoVisible?: boolean;
     homePageLogoScale?: number;
+    homePageLogoColor?: string;
     heroVideoUrl?: string;
     cursorLottieUrl?: string;
     tickLottieUrl?: string;
@@ -172,6 +173,7 @@ export default function HomePageContent() {
   const homeLogoUrl = siteLogoUrl;
   const isLogoVisible = homeSettings?.isHomePageLogoVisible ?? true;
   const logoScale = homeSettings?.homePageLogoScale || 1;
+  const logoColor = homeSettings?.homePageLogoColor || '';
 
   useEffect(() => {
     document.body.style.cursor = 'none';
@@ -240,7 +242,7 @@ export default function HomePageContent() {
             {isLogoVisible && homeLogoUrl && (
               <div className="absolute inset-0 flex items-center justify-center" style={{ zIndex: 10 }}>
                 <div className="w-full max-w-sm px-4" style={{ transform: `scale(${logoScale})` }}>
-                  <Logo src={homeLogoUrl} />
+                  <Logo src={homeLogoUrl} color={logoColor || undefined} />
                 </div>
               </div>
             )}
