@@ -529,10 +529,7 @@ export default function HomeAdmin() {
                                                 </FormDescription>
                                                 <FormControl>
                                                     <RadioGroup
-                                                        onValueChange={(value) => {
-                                                            field.onChange(value);
-                                                            if (value === 'default') setValue('preloaderUrl', '');
-                                                        }}
+                                                        onValueChange={field.onChange}
                                                         value={field.value}
                                                         className="flex flex-wrap items-center gap-4"
                                                     >
@@ -558,6 +555,42 @@ export default function HomeAdmin() {
                                             </FormItem>
                                         )}
                                     />
+
+                                    {watch('preloaderType') === 'default' && (
+                                        <FormField
+                                            control={control}
+                                            name="preloaderUrl"
+                                            render={({ field }) => {
+                                                const lottieAssets = mediaAssets?.filter(a => a.resource_type === 'raw' || a.filename?.endsWith('.json'));
+                                                return (
+                                                    <FormItem>
+                                                        <FormLabel>Custom Default Lottie (optional)</FormLabel>
+                                                        <FormDescription>
+                                                            Upload a Lottie JSON to replace the built-in default. Leave empty to keep the original.
+                                                        </FormDescription>
+                                                        <div className="flex gap-2">
+                                                            <FormControl>
+                                                                <Input placeholder="Leave empty for built-in default" {...field} className="flex-1" />
+                                                            </FormControl>
+                                                            <Select onValueChange={(val) => field.onChange(val)} value="">
+                                                                <SelectTrigger className="w-auto whitespace-nowrap">
+                                                                    <SelectValue placeholder={t('homeAdmin.chooseFromLibrary')} />
+                                                                </SelectTrigger>
+                                                                <SelectContent>
+                                                                    {lottieAssets?.map((asset) => (
+                                                                        <SelectItem key={asset.id} value={asset.url}>
+                                                                            {asset.title || asset.filename}
+                                                                        </SelectItem>
+                                                                    ))}
+                                                                </SelectContent>
+                                                            </Select>
+                                                        </div>
+                                                        <FormMessage />
+                                                    </FormItem>
+                                                );
+                                            }}
+                                        />
+                                    )}
 
                                     {watch('preloaderType') !== 'default' && (
                                         <FormField

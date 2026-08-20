@@ -90,7 +90,7 @@ const Preloader = ({ settings }: { settings?: PreloaderSettings }) => {
   if (type === 'gif' && url) return <GifLoader url={url} />;
   if (type === 'webm' && url) return <WebmLoader url={url} />;
   if (type === 'lottie') return <DefaultLottie url={url || undefined} />;
-  return <DefaultLottie />;
+  return <DefaultLottie url={url || undefined} />;
 };
 
 export default Preloader;
