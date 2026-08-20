@@ -183,9 +183,9 @@ export default function AboutPage() {
                         {services.map((service, index) => {
                             let gridClasses = '';
                             switch(index) {
-                                case 0: gridClasses = 'col-span-2'; break;
-                                case 1: gridClasses = 'col-span-2'; break;
-                                case 2: gridClasses = 'col-span-2'; break;
+                                case 0: gridClasses = 'col-span-3 sm:col-span-2'; break;
+                                case 1: gridClasses = 'col-span-3 sm:col-span-2'; break;
+                                case 2: gridClasses = 'col-span-3 sm:col-span-2'; break;
                                 case 3: gridClasses = 'col-span-3'; break;
                                 case 4: gridClasses = 'col-span-3'; break;
                             }
