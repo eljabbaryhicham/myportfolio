@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Toaster } from '@/components/ui/toaster';
 import { FirebaseClientProvider } from '@/firebase/client-provider';
 import { LayoutProvider } from '@/components/layout/layout-provider';
@@ -12,12 +12,13 @@ import { LanguageProvider } from '@/components/layout/language-switcher';
 
 function LoadingGate({ children }: { children: React.ReactNode }) {
   const firestore = useFirestore();
+  const [dismissed, setDismissed] = useState(false);
 
   const settingsRef = useMemoFirebase(
     () => (firestore ? doc(firestore, 'homepage', 'settings') : null),
     [firestore]
   );
-  const { isLoading: loadingSettings } = useDoc(settingsRef);
+  const { data: settingsData, isLoading: loadingSettings } = useDoc(settingsRef);
 
   const contactRef = useMemoFirebase(
     () => (firestore ? doc(firestore, 'contact', 'details') : null),
@@ -29,19 +30,24 @@ function LoadingGate({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (isReady) {
-      document.body.style.background = '';
+      const t = setTimeout(() => {
+        document.body.style.background = '';
+        setDismissed(true);
+      }, 800);
+      return () => clearTimeout(t);
     }
   }, [isReady]);
 
-  if (!isReady) {
-    return (
-      <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black">
-        <Preloader />
-      </div>
-    );
-  }
+  if (dismissed) return <>{children}</>;
 
-  return <>{children}</>;
+  return (
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black">
+      <Preloader settings={settingsData ? {
+        preloaderType: settingsData.preloaderType,
+        preloaderUrl: settingsData.preloaderUrl,
+      } : undefined} />
+    </div>
+  );
 }
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
