@@ -29,6 +29,7 @@ import Preloader from '@/components/preloader';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import type { AppUser } from '@/firebase/auth/use-user';
 import { Switch } from '@/components/ui/switch';
+import { Slider } from '@/components/ui/slider';
 import { Separator } from '@/components/ui/separator';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
@@ -56,6 +57,7 @@ interface HomePageSettings {
     isTestPageEnabled?: boolean;
     homePageLogoUrl?: string;
     isHomePageLogoVisible?: boolean;
+    homePageLogoScale?: number;
     themeColor?: string;
     heroVideoUrl?: string;
     preloaderType?: 'default' | 'lottie' | 'gif' | 'webm';
@@ -67,6 +69,7 @@ const settingsSchema = z.object({
   isTestPageEnabled: z.boolean().optional(),
   homePageLogoUrl: z.string().optional(),
   isHomePageLogoVisible: z.boolean().optional(),
+  homePageLogoScale: z.number().min(0.5).max(5).optional(),
   themeColor: z.string().optional(),
   homePageBackgroundType: z.enum(['video', 'image']).optional(),
   homePageBackgroundMediaId: z.string().optional(),
@@ -128,6 +131,7 @@ export default function HomeAdmin() {
       isTestPageEnabled: false,
       homePageLogoUrl: '',
       isHomePageLogoVisible: true,
+      homePageLogoScale: 1,
       themeColor: '#d81e38',
       heroVideoUrl: '',
       preloaderType: 'default',
@@ -151,6 +155,7 @@ export default function HomeAdmin() {
         isTestPageEnabled: homeSettings.isTestPageEnabled ?? false,
         homePageLogoUrl: homeSettings.homePageLogoUrl || '',
         isHomePageLogoVisible: homeSettings.isHomePageLogoVisible ?? true,
+        homePageLogoScale: homeSettings.homePageLogoScale || 1,
         themeColor: homeSettings.themeColor || '#d81e38',
         heroVideoUrl: homeSettings.heroVideoUrl || '',
         preloaderType: homeSettings.preloaderType || 'default',
@@ -288,6 +293,28 @@ export default function HomeAdmin() {
                                                 <FormControl>
                                                     <Switch checked={field.value} onCheckedChange={field.onChange} />
                                                 </FormControl>
+                                            </FormItem>
+                                        )}
+                                    />
+                                    <FormField
+                                        control={control}
+                                        name="homePageLogoScale"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>{t('homeAdmin.logoScale') || 'Logo Size'} — {Math.round((field.value || 1) * 100)}%</FormLabel>
+                                                <FormControl>
+                                                    <Slider
+                                                        value={[field.value || 1]}
+                                                        onValueChange={(value) => field.onChange(value[0])}
+                                                        min={0.5}
+                                                        max={3}
+                                                        step={0.05}
+                                                    />
+                                                </FormControl>
+                                                <FormDescription>
+                                                    {t('homeAdmin.logoScaleDescription') || 'Adjust the homepage logo size'}
+                                                </FormDescription>
+                                                <FormMessage />
                                             </FormItem>
                                         )}
                                     />

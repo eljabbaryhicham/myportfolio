@@ -29,6 +29,7 @@ interface ContactInfo {
 interface HomePageSettings {
     homePageLogoUrl?: string;
     isHomePageLogoVisible?: boolean;
+    homePageLogoScale?: number;
     heroVideoUrl?: string;
 }
 
@@ -146,6 +147,7 @@ export default function HomePageContent() {
   const siteLogoUrl = homeSettings?.homePageLogoUrl;
   const homeLogoUrl = siteLogoUrl;
   const isLogoVisible = homeSettings?.isHomePageLogoVisible ?? true;
+  const logoScale = homeSettings?.homePageLogoScale || 1;
 
   useEffect(() => {
     document.body.style.cursor = 'none';
@@ -213,7 +215,7 @@ export default function HomePageContent() {
             </div>
             {isLogoVisible && homeLogoUrl && (
               <div className="absolute inset-0 flex items-center justify-center" style={{ zIndex: 10 }}>
-                <div className="w-full max-w-sm px-4">
+                <div className="w-full max-w-sm px-4" style={{ transform: `scale(${logoScale})` }}>
                   <Logo src={homeLogoUrl} />
                 </div>
               </div>
