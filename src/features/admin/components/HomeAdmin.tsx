@@ -67,6 +67,7 @@ interface HomePageSettings {
     tickLottieUrl?: string;
     homePageTitle?: string;
     homePageSubtitle?: string;
+    homePageTitleColor?: string;
 }
 
 const settingsSchema = z.object({
@@ -90,6 +91,7 @@ const settingsSchema = z.object({
   tickLottieUrl: z.string().optional(),
   homePageTitle: z.string().optional(),
   homePageSubtitle: z.string().optional(),
+  homePageTitleColor: z.string().optional(),
 });
 
 type SettingsFormValues = z.infer<typeof settingsSchema>;
@@ -151,6 +153,7 @@ export default function HomeAdmin() {
       tickLottieUrl: '',
       homePageTitle: '',
       homePageSubtitle: '',
+      homePageTitleColor: '',
     },
   });
 
@@ -180,6 +183,7 @@ export default function HomeAdmin() {
         tickLottieUrl: homeSettings.tickLottieUrl || '',
         homePageTitle: homeSettings.homePageTitle || '',
         homePageSubtitle: homeSettings.homePageSubtitle || '',
+        homePageTitleColor: homeSettings.homePageTitleColor || '',
       });
     }
   }, [homeSettings, form]);
@@ -324,6 +328,25 @@ export default function HomeAdmin() {
                                                 <FormControl>
                                                     <Input placeholder={t('homeAdmin.homePageSubtitlePlaceholder') || 'Leave empty for default subtitle'} {...field} />
                                                 </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                    <FormField
+                                        control={control}
+                                        name="homePageTitleColor"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>{t('homeAdmin.homePageTitleColor') || 'Title Color'}</FormLabel>
+                                                <div className="flex items-center gap-4">
+                                                    <FormControl>
+                                                        <Input type="color" {...field} value={field.value || '#ffffff'} className="p-1 h-10 w-14 cursor-pointer" />
+                                                    </FormControl>
+                                                    <Input type="text" {...field} placeholder="#ffffff" />
+                                                </div>
+                                                <FormDescription>
+                                                    {t('homeAdmin.homePageTitleColorDescription') || 'Leave empty for default color'}
+                                                </FormDescription>
                                                 <FormMessage />
                                             </FormItem>
                                         )}
