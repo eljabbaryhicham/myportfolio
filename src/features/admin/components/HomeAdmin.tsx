@@ -58,6 +58,8 @@ interface HomePageSettings {
     isHomePageLogoVisible?: boolean;
     themeColor?: string;
     heroVideoUrl?: string;
+    preloaderType?: 'default' | 'lottie' | 'gif' | 'webm';
+    preloaderUrl?: string;
 }
 
 const settingsSchema = z.object({
@@ -73,6 +75,8 @@ const settingsSchema = z.object({
   isHomePageVideoEnabled: z.boolean().optional(),
   isWebsiteVideoEnabled: z.boolean().optional(),
   heroVideoUrl: z.string().optional(),
+  preloaderType: z.enum(['default', 'lottie', 'gif', 'webm']).optional(),
+  preloaderUrl: z.string().optional(),
 });
 
 type SettingsFormValues = z.infer<typeof settingsSchema>;
@@ -126,6 +130,8 @@ export default function HomeAdmin() {
       isHomePageLogoVisible: true,
       themeColor: '#d81e38',
       heroVideoUrl: '',
+      preloaderType: 'default',
+      preloaderUrl: '',
     },
   });
 
@@ -147,6 +153,8 @@ export default function HomeAdmin() {
         isHomePageLogoVisible: homeSettings.isHomePageLogoVisible ?? true,
         themeColor: homeSettings.themeColor || '#d81e38',
         heroVideoUrl: homeSettings.heroVideoUrl || '',
+        preloaderType: homeSettings.preloaderType || 'default',
+        preloaderUrl: homeSettings.preloaderUrl || '',
       });
     }
   }, [homeSettings, form]);
@@ -507,6 +515,94 @@ export default function HomeAdmin() {
                                             </FormItem>
                                         )}
                                     />
+
+                                    <Separator />
+
+                                    <FormField
+                                        control={control}
+                                        name="preloaderType"
+                                        render={({ field }) => (
+                                            <FormItem className="space-y-3">
+                                                <FormLabel>{t('homeAdmin.preloaderType') || 'Preloader Type'}</FormLabel>
+                                                <FormDescription>
+                                                    {t('homeAdmin.preloaderTypeDescription') || 'Choose the loading animation shown across your website'}
+                                                </FormDescription>
+                                                <FormControl>
+                                                    <RadioGroup
+                                                        onValueChange={(value) => {
+                                                            field.onChange(value);
+                                                            if (value === 'default') setValue('preloaderUrl', '');
+                                                        }}
+                                                        value={field.value}
+                                                        className="flex flex-wrap items-center gap-4"
+                                                    >
+                                                        <FormItem className="flex items-center space-x-2 space-y-0">
+                                                            <FormControl><RadioGroupItem value="default" /></FormControl>
+                                                            <FormLabel className="font-normal">Default Lottie</FormLabel>
+                                                        </FormItem>
+                                                        <FormItem className="flex items-center space-x-2 space-y-0">
+                                                            <FormControl><RadioGroupItem value="lottie" /></FormControl>
+                                                            <FormLabel className="font-normal">Custom Lottie URL</FormLabel>
+                                                        </FormItem>
+                                                        <FormItem className="flex items-center space-x-2 space-y-0">
+                                                            <FormControl><RadioGroupItem value="gif" /></FormControl>
+                                                            <FormLabel className="font-normal">GIF</FormLabel>
+                                                        </FormItem>
+                                                        <FormItem className="flex items-center space-x-2 space-y-0">
+                                                            <FormControl><RadioGroupItem value="webm" /></FormControl>
+                                                            <FormLabel className="font-normal">WebM Video</FormLabel>
+                                                        </FormItem>
+                                                    </RadioGroup>
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+
+                                    {watch('preloaderType') !== 'default' && (
+                                        <FormField
+                                            control={control}
+                                            name="preloaderUrl"
+                                            render={({ field }) => {
+                                                const preloaderType = watch('preloaderType');
+                                                const filteredAssets = preloaderType === 'lottie'
+                                                    ? mediaAssets?.filter(a => a.resource_type === 'raw' || a.filename?.endsWith('.json'))
+                                                    : preloaderType === 'gif'
+                                                    ? mediaAssets?.filter(a => a.resource_type === 'image' || a.filename?.endsWith('.gif'))
+                                                    : mediaAssets?.filter(a => a.resource_type === 'video');
+
+                                                return (
+                                                    <FormItem>
+                                                        <FormLabel>
+                                                            {preloaderType === 'lottie' ? 'Lottie JSON URL' : preloaderType === 'gif' ? 'GIF URL' : 'WebM Video URL'}
+                                                        </FormLabel>
+                                                        <div className="flex gap-2">
+                                                            <FormControl>
+                                                                <Input placeholder={
+                                                                    preloaderType === 'lottie' ? 'https://example.com/animation.json' :
+                                                                    preloaderType === 'gif' ? 'https://example.com/loader.gif' :
+                                                                    'https://example.com/loader.webm'
+                                                                } {...field} className="flex-1" />
+                                                            </FormControl>
+                                                            <Select onValueChange={(val) => field.onChange(val)} value="">
+                                                                <SelectTrigger className="w-auto whitespace-nowrap">
+                                                                    <SelectValue placeholder={t('homeAdmin.chooseFromLibrary')} />
+                                                                </SelectTrigger>
+                                                                <SelectContent>
+                                                                    {filteredAssets?.map((asset) => (
+                                                                        <SelectItem key={asset.id} value={asset.url}>
+                                                                            {asset.title || asset.filename}
+                                                                        </SelectItem>
+                                                                    ))}
+                                                                </SelectContent>
+                                                            </Select>
+                                                        </div>
+                                                        <FormMessage />
+                                                    </FormItem>
+                                                );
+                                            }}
+                                        />
+                                    )}
                                 </div>
                             </fieldset>
                         </div>

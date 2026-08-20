@@ -419,6 +419,7 @@ export default function MediaAdmin(props: MediaAdminProps) {
       'image/*': ['.jpeg', '.jpg', '.png', '.gif', '.webp', '.svg'],
       'video/*': ['.mp4', '.mov', '.webm'],
       'text/vtt': ['.vtt'],
+      'application/json': ['.json'],
     },
     disabled: !canUpload || isUploading,
   });
