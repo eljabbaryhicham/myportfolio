@@ -99,6 +99,25 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onCho
       name: 'type',
     });
 
+    const useVideoFrame = useWatch({
+      control: form.control,
+      name: 'useVideoFrameAsPoster',
+    });
+
+    const sourceUrl = useWatch({
+      control: form.control,
+      name: 'sourceUrl',
+    });
+
+    useEffect(() => {
+      if (useVideoFrame && sourceUrl && itemType === 'video') {
+        const frameUrl = sourceUrl.replace(/\.(mp4|m3u8|webm)$/, '.jpg');
+        if (frameUrl !== sourceUrl) {
+          form.setValue('thumbnailUrl', frameUrl, { shouldValidate: true });
+        }
+      }
+    }, [useVideoFrame, sourceUrl, itemType, form]);
+
     useEffect(() => {
       if (isOpen) {
         const defaultValues = item ? {
@@ -261,14 +280,14 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onCho
                                 <FormLabel>{t('portfolioForm.thumbnailUrl')}</FormLabel>
                                 <div className="flex items-center gap-2">
                                   <FormControl>
-                                      <Input placeholder={t('portfolioForm.thumbnailUrlPlaceholder')} {...field} />
+                                      <Input placeholder={t('portfolioForm.thumbnailUrlPlaceholder')} {...field} disabled={!!useVideoFrame} />
                                   </FormControl>
-                                  <Button type="button" variant="outline" size="sm" onClick={handleChooseThumbnail}>
+                                  <Button type="button" variant="outline" size="sm" onClick={handleChooseThumbnail} disabled={!!useVideoFrame}>
                                       <FontAwesomeIcon icon={faImages} />
                                       <span className="ml-2 hidden sm:inline">{t('portfolioForm.library')}</span>
                                   </Button>
                                 </div>
-                                <FormDescription>{t('portfolioForm.thumbnailDescription')}</FormDescription>
+                                <FormDescription>{useVideoFrame ? t('portfolioForm.useVideoFrameAsPosterDescription') : t('portfolioForm.thumbnailDescription')}</FormDescription>
                                 <FormMessage />
                               </FormItem>
                           )}
