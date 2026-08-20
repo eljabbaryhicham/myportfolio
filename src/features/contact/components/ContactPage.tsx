@@ -83,19 +83,19 @@ export default function ContactPage() {
   return (
     <div className="h-full w-full flex flex-col">
       {!isLoading && <ScrollIndicator scrollRef={scrollRef} />}
-      <div className="p-8 flex-shrink-0">
+      <div className="p-4 md:p-8 flex-shrink-0">
         <div className="container mx-auto px-0">
-          <div className="mb-8 text-center">
-            <h1 className="text-3xl md:text-4xl font-headline tracking-tight">{t('contact.heading')}</h1>
-            <p className="mt-2 max-w-2xl mx-auto text-base md:text-lg text-foreground/70">
+          <div className="mb-4 md:mb-8 text-center">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-headline tracking-tight">{t('contact.heading')}</h1>
+            <p className="mt-2 max-w-2xl mx-auto text-sm sm:text-base md:text-lg text-foreground/70">
               {t('contact.subtitle')}
             </p>
           </div>
         </div>
       </div>
       <Separator className="bg-white/10 flex-shrink-0" />
-      <div ref={scrollRef} className="flex-1 min-h-0 overflow-y-auto no-scrollbar">
-        <div className="p-8 flex items-center justify-center min-h-full">
+      <div ref={scrollRef} className="flex-1 min-h-0 overflow-y-auto">
+        <div className="p-4 md:p-8 flex items-center justify-center min-h-full">
             <div className="container mx-auto px-0">
               {isLoading ? (
                 <div className="flex justify-center items-center h-64">
@@ -103,32 +103,32 @@ export default function ContactPage() {
                 </div>
               ) : contactInfo ? (
                 <motion.div
-                  className="flex flex-col md:flex-row gap-8 items-center md:items-start justify-center text-center"
+                  className="flex flex-col gap-4 md:gap-6 items-center justify-center [@media_(orientation:landscape)]:flex-row [@media_(orientation:landscape)]:items-start"
                   variants={containerVariants}
                   initial="hidden"
                   animate="visible"
                 >
-                  <motion.div className="w-full md:w-1/2 flex justify-center" variants={itemVariants}>
-                    <Card className="glass-effect p-6 sm:p-8 h-full flex flex-col justify-center w-full max-w-md">
+                  <motion.div className="w-full [@media_(orientation:landscape)]:w-1/2 flex justify-center" variants={itemVariants}>
+                    <Card className="glass-effect p-4 sm:p-6 md:p-8 h-full flex flex-col justify-center w-full max-w-md">
                       <CardContent className="p-0 flex flex-col items-center">
                           <ContactForm />
                       </CardContent>
                     </Card>
                   </motion.div>
-                  <motion.div className="w-full md:w-1/2 flex justify-center" variants={itemVariants}>
-                    <Card className="glass-effect p-6 flex flex-col h-full w-full max-w-md">
+                  <motion.div className="w-full [@media_(orientation:landscape)]:w-1/2 flex justify-center" variants={itemVariants}>
+                    <Card className="glass-effect p-4 sm:p-6 flex flex-col h-full w-full max-w-md">
                       <CardContent className="flex flex-col items-center text-center p-0">
-                        <Avatar className="border-2 border-white mb-4 w-16 h-16 md:w-20 md:h-20">
+                        <Avatar className="border-2 border-white mb-4 w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20">
                           <AvatarImage src={contactInfo.avatarUrl} alt={contactInfo.name} />
                           <AvatarFallback>{contactInfo.name?.substring(0, 2)}</AvatarFallback>
                         </Avatar>
-                        <h3 className="text-lg md:text-xl font-headline">{contactInfo.name}</h3>
-                        <p className="text-sm md:text-base text-foreground/70">{contactInfo.title}</p>
+                        <h3 className="text-base sm:text-lg md:text-xl font-headline">{contactInfo.name}</h3>
+                        <p className="text-xs sm:text-sm md:text-base text-foreground/70">{contactInfo.title}</p>
                         
                         <Separator className="my-4 bg-white/20" />
                         
                         <div className="w-full flex flex-col items-center">
-                          <div className="space-y-4">
+                          <div className="space-y-3 md:space-y-4">
                               {contactLinks.map((link) => (
                               link.href && link.value && (
                                   <Link
@@ -138,12 +138,12 @@ export default function ContactPage() {
                                     target="_blank"
                                     rel="noopener noreferrer"
                                   >
-                                      <div className={cn("w-10 h-10 md:w-12 md:h-12 flex-shrink-0 rounded-full flex items-center justify-center glass-effect transition-colors duration-300 text-white", link.color)}>
-                                          <Icon icon={link.icon} className="w-5 h-5 md:w-6 md:h-6" />
+                                      <div className={cn("w-9 h-9 sm:w-10 sm:h-10 md:w-12 md:h-12 flex-shrink-0 rounded-full flex items-center justify-center glass-effect transition-colors duration-300 text-white", link.color)}>
+                                          <Icon icon={link.icon} className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6" />
                                       </div>
                                       <div className="mt-2 md:mt-0 md:ml-4 break-words">
-                                          <p className="text-xs md:text-sm text-foreground/70">{link.label}</p>
-                                          <p className="text-sm md:text-base font-medium group-hover:text-primary transition-colors">{link.value}</p>
+                                          <p className="text-[10px] sm:text-xs md:text-sm text-foreground/70">{link.label}</p>
+                                          <p className="text-xs sm:text-sm md:text-base font-medium group-hover:text-primary transition-colors">{link.value}</p>
                                       </div>
                                   </Link>
                               )
@@ -178,7 +178,7 @@ export default function ContactPage() {
               )}
               {contactInfo && (
                 <motion.div 
-                  className="flex items-center justify-center gap-4 mt-8 flex-shrink-0"
+                  className="flex items-center justify-center gap-3 sm:gap-4 mt-6 md:mt-8 flex-shrink-0"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ delay: 0.6, duration: 0.5}}
@@ -189,13 +189,13 @@ export default function ContactPage() {
                         href={social.href} 
                         key={social.id} 
                         className={cn(
-                          "w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center text-white transition-all duration-300 hover:scale-110 glass-effect",
+                          "w-9 h-9 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center text-white transition-all duration-300 hover:scale-110 glass-effect",
                           social.hoverColor
                         )}
                         target="_blank" 
                         rel="noopener noreferrer"
                       >
-                        <FontAwesomeIcon icon={social.icon} className="w-5 h-5 md:w-6 md:h-6" />
+                        <FontAwesomeIcon icon={social.icon} className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6" />
                       </Link>
                     )
                   ))}

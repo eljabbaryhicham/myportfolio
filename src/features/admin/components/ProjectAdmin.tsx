@@ -30,6 +30,9 @@ import { faPlusCircle, faEllipsisH, faCloudUploadAlt, faGripVertical, faEye, faE
 import Preloader from '@/components/preloader';
 import type { AppUser } from '@/firebase/auth/use-user';
 import { useTranslation } from '@/lib/i18n/useTranslation';
+import { Checkbox } from '@/components/ui/checkbox';
+import BulkActionBar from './BulkActionBar';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 
 interface ProjectAdminProps {
   setSelectedItem: (item: PortfolioItem | null) => void;
@@ -51,6 +54,8 @@ function ProjectAdmin({ setSelectedItem, setIsSheetOpen }: ProjectAdminProps) {
   const { data: items, isLoading } = useCollection<PortfolioItem>(projectsCollection);
 
   const [sortedItems, setSortedItems] = useState<PortfolioItem[]>([]);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [isBulkDeleteOpen, setIsBulkDeleteOpen] = useState(false);
   
   const draggingItem = useRef<string | null>(null);
   const dragOverItem = useRef<string | null>(null);
@@ -118,6 +123,54 @@ function ProjectAdmin({ setSelectedItem, setIsSheetOpen }: ProjectAdminProps) {
         title: t('projectAdmin.toast.visibilityChanged.title').replace('{visibility}', newVisibility ? t('projectAdmin.show') : t('projectAdmin.hide')),
         description: t('projectAdmin.toast.visibilityChanged.description').replace('{title}', item.title).replace('{visibility}', newVisibility ? 'visible' : 'hidden'),
     });
+  };
+
+  const allVisible = sortedItems.length > 0 && sortedItems.every(item => item.isVisible !== false);
+
+  const handleSelectAll = () => {
+    if (selectedIds.size === sortedItems.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(sortedItems.map(item => item.id)));
+    }
+  };
+
+  const handleToggleSelect = (id: string) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) { next.delete(id); } else { next.add(id); }
+      return next;
+    });
+  };
+
+  const handleBulkDelete = () => {
+    if (!firestore || !canEditProjects) return;
+    const batch = writeBatch(firestore);
+    selectedIds.forEach(id => {
+      batch.delete(doc(firestore, 'projects', id));
+    });
+    batch.commit().then(() => {
+      toast({ title: t('projectAdmin.toast.deleted.title'), description: `Deleted ${selectedIds.size} items.` });
+    }).catch(() => {
+      errorEmitter.emit('permission-error', new FirestorePermissionError({ path: 'projects', operation: 'delete', requestResourceData: { note: `Batch delete ${selectedIds.size} documents.` } }));
+    });
+    setSelectedIds(new Set());
+    setIsBulkDeleteOpen(false);
+  };
+
+  const handleBulkToggleVisibility = () => {
+    if (!firestore || !canEditProjects) return;
+    const batch = writeBatch(firestore);
+    const newVisibility = !allVisible;
+    selectedIds.forEach(id => {
+      batch.update(doc(firestore, 'projects', id), { isVisible: newVisibility });
+    });
+    batch.commit().then(() => {
+      toast({ title: t('projectAdmin.toast.visibilityChanged.title').replace('{visibility}', newVisibility ? t('projectAdmin.show') : t('projectAdmin.hide')), description: `Updated ${selectedIds.size} items.` });
+    }).catch(() => {
+      errorEmitter.emit('permission-error', new FirestorePermissionError({ path: 'projects', operation: 'update', requestResourceData: { note: `Batch update ${selectedIds.size} documents.` } }));
+    });
+    setSelectedIds(new Set());
   };
 
   const handleDragEnd = () => {
@@ -222,7 +275,15 @@ function ProjectAdmin({ setSelectedItem, setIsSheetOpen }: ProjectAdminProps) {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-[40px] text-center"></TableHead>
+                  <TableHead className="w-[40px] text-center">
+                    {sortedItems.length > 0 && (
+                      <Checkbox
+                        checked={selectedIds.size === sortedItems.length && sortedItems.length > 0}
+                        onCheckedChange={handleSelectAll}
+                        disabled={!canEditProjects}
+                      />
+                    )}
+                  </TableHead>
                   <TableHead className="w-[80px] text-center">{t('projectAdmin.col.image')}</TableHead>
                   <TableHead className="text-center">{t('projectAdmin.col.title')}</TableHead>
                   <TableHead className="hidden md:table-cell text-center">{t('projectAdmin.col.type')}</TableHead>
@@ -259,7 +320,14 @@ function ProjectAdmin({ setSelectedItem, setIsSheetOpen }: ProjectAdminProps) {
                     )}
                   >
                     <TableCell className="text-center">
-                      <FontAwesomeIcon icon={faGripVertical} className={cn("h-5 w-5 text-foreground/50", !canEditProjects && "opacity-20")} />
+                      <div className="flex items-center justify-center gap-1">
+                        <Checkbox
+                          checked={selectedIds.has(item.id)}
+                          onCheckedChange={() => handleToggleSelect(item.id)}
+                          disabled={!canEditProjects}
+                        />
+                        <FontAwesomeIcon icon={faGripVertical} className={cn("h-5 w-5 text-foreground/50", !canEditProjects && "opacity-20")} />
+                      </div>
                     </TableCell>
                     <TableCell className="flex justify-center">
                       <Image
@@ -305,6 +373,31 @@ function ProjectAdmin({ setSelectedItem, setIsSheetOpen }: ProjectAdminProps) {
             </Table>
         </ScrollArea>
       </div>
+
+      <BulkActionBar
+        selectedCount={selectedIds.size}
+        onClearSelection={() => setSelectedIds(new Set())}
+        onDelete={() => setIsBulkDeleteOpen(true)}
+        onToggleVisibility={handleBulkToggleVisibility}
+        allSelectedVisible={allVisible}
+      />
+
+      <AlertDialog open={isBulkDeleteOpen} onOpenChange={setIsBulkDeleteOpen}>
+        <AlertDialogContent className="w-[80vw]">
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t('projectAdmin.confirmBulkDelete') || 'Delete selected items?'}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t('projectAdmin.confirmBulkDeleteDescription') || `This will permanently delete ${selectedIds.size} items.`}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t('projectAdmin.cancel') || 'Cancel'}</AlertDialogCancel>
+            <AlertDialogAction onClick={handleBulkDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              {t('projectAdmin.delete') || 'Delete'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

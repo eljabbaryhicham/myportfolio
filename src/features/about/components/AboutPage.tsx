@@ -125,19 +125,19 @@ export default function AboutPage() {
   return (
     <div className="h-full w-full flex flex-col">
       {!isLoading && <ScrollIndicator scrollRef={scrollRef} />}
-      <div className="p-8 flex-shrink-0">
+      <div className="p-4 md:p-8 flex-shrink-0">
         <div className="container mx-auto px-0">
-            <div className="mb-8 text-center">
-              <h1 className="text-3xl md:text-4xl font-headline tracking-tight">{t('about.heading')}</h1>
-              <p className="mt-2 max-w-2xl mx-auto text-base md:text-lg text-foreground/70">
+            <div className="mb-4 md:mb-8 text-center">
+              <h1 className="text-2xl sm:text-3xl md:text-4xl font-headline tracking-tight">{t('about.heading')}</h1>
+              <p className="mt-2 max-w-2xl mx-auto text-sm sm:text-base md:text-lg text-foreground/70">
                 {t('about.subtitle')}
               </p>
             </div>
         </div>
       </div>
       <Separator className="bg-white/10 flex-shrink-0" />
-      <div ref={scrollRef} className="flex-1 min-h-0 overflow-y-auto no-scrollbar">
-        <div className="p-8 flex items-center justify-center min-h-full">
+      <div ref={scrollRef} className="flex-1 min-h-0 overflow-y-auto">
+        <div className="p-4 md:p-8 flex items-center justify-center min-h-full">
           <div className="container mx-auto px-0 text-center">
             {isLoading ? (
               <div className="flex justify-center items-center h-full min-h-[50vh]">
@@ -145,23 +145,23 @@ export default function AboutPage() {
               </div>
             ) : (
               <motion.div 
-                  className="space-y-12 md:space-y-24"
+                  className="space-y-8 md:space-y-12 [@media_(orientation:landscape)]:space-y-24"
                   variants={containerVariants}
                   initial="hidden"
                   animate="visible"
                 >
                 <motion.div 
                     variants={itemVariants}
-                    className="flex flex-col md:flex-row gap-8 md:gap-12 items-center md:items-stretch"
+                    className="flex flex-col gap-6 md:gap-8 items-center justify-center [@media_(orientation:landscape)]:flex-row [@media_(orientation:landscape)]:items-stretch [@media_(orientation:landscape)]:gap-12"
                   >
-                    <div className="md:w-1/2 text-center p-8 flex flex-col justify-center">
+                    <div className="w-full [@media_(orientation:landscape)]:w-1/2 text-center p-4 sm:p-6 md:p-8 flex flex-col justify-center">
                         {logoUrl && (
                             <div className="w-32 mx-auto mb-4" style={{ transform: `scale(${logoScale})` }}>
                                 <Logo src={logoUrl} />
                             </div>
                         )}
-                        <h2 className="text-2xl md:text-3xl font-headline tracking-tight mb-4">{aboutContent?.title}</h2>
-                        <p className="text-foreground/70 leading-relaxed mb-6 text-center">{aboutContent?.content}</p>
+                        <h2 className="text-xl sm:text-2xl md:text-3xl font-headline tracking-tight mb-3 md:mb-4">{aboutContent?.title}</h2>
+                        <p className="text-sm sm:text-base text-foreground/70 leading-relaxed mb-4 md:mb-6 text-center">{aboutContent?.content}</p>
                         <div className="hidden sm:flex flex-col sm:flex-row gap-4 justify-center">
                             <Button asChild>
                                 <Link href="/contact">
@@ -177,9 +177,9 @@ export default function AboutPage() {
                             </Button>
                         </div>
                     </div>
-                    <div className="md:w-1/2 flex flex-col justify-center">
-                       <h2 className="text-2xl md:text-3xl font-headline tracking-tight mb-6 text-center">{t('about.whatYouGet')}</h2>
-                       <div className="grid grid-cols-6 grid-rows-2 gap-4 h-full">
+                    <div className="w-full [@media_(orientation:landscape)]:w-1/2 flex flex-col justify-center">
+                       <h2 className="text-2xl md:text-3xl font-headline tracking-tight mb-4 md:mb-6 text-center">{t('about.whatYouGet')}</h2>
+                       <div className="grid grid-cols-3 sm:grid-cols-6 grid-rows-2 gap-3 md:gap-4 h-full">
                         {services.map((service, index) => {
                             let gridClasses = '';
                             switch(index) {

@@ -24,6 +24,8 @@ import type { AppUser } from '@/firebase/auth/use-user';
 import CdnClapprPlayer from '@/components/CdnClapprPlayer';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
+import { Checkbox } from '@/components/ui/checkbox';
+import BulkActionBar from './BulkActionBar';
 
 
 // Type for the media stored in Firestore
@@ -52,6 +54,9 @@ const MediaFileCard = ({
   canDelete,
   canEditContact,
   canEditHome,
+  isSelected,
+  onToggleSelect,
+  showCheckbox,
 }: {
   file: MediaAsset;
   onDelete: (publicId: string, id: string, resourceType: string, libraryId: 'primary' | 'extented') => void;
@@ -65,6 +70,9 @@ const MediaFileCard = ({
   canDelete: boolean;
   canEditContact: boolean;
   canEditHome: boolean;
+  isSelected?: boolean;
+  onToggleSelect?: (id: string) => void;
+  showCheckbox?: boolean;
 }) => {
   const { t } = useTranslation();
   
@@ -83,10 +91,20 @@ const MediaFileCard = ({
       <div 
         className={cn(
           "relative group aspect-square border rounded-lg overflow-hidden glass-effect p-1",
-          isSelectionMode && "cursor-pointer"
+          isSelectionMode && "cursor-pointer",
+          isSelected && "ring-2 ring-primary"
         )}
         onClick={isSelectionMode ? handleSelect : undefined}
       >
+        {showCheckbox && !isSelectionMode && (
+          <div className="absolute top-2 left-2 z-20" onClick={(e) => e.stopPropagation()}>
+            <Checkbox
+              checked={isSelected}
+              onCheckedChange={() => onToggleSelect?.(file.id)}
+              className="bg-background/80 backdrop-blur-sm"
+            />
+          </div>
+        )}
         <div className="relative w-full h-full rounded-md overflow-hidden">
           {file.resource_type === 'image' ? (
             <Image src={file.url} alt={file.public_id} fill className="object-cover" />
@@ -217,6 +235,8 @@ export default function MediaAdmin(props: MediaAdminProps) {
   const [isChoosingVideoFormat, setIsChoosingVideoFormat] = useState(false);
   const [filesToUpload, setFilesToUpload] = useState<File[]>([]);
   const [uploadVideoFormat, setUploadVideoFormat] = useState<'mp4' | 'm3u8'>('mp4');
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [isBulkDeleteOpen, setIsBulkDeleteOpen] = useState(false);
   
   // State for setting background
   const [isSetBackgroundOpen, setIsSetBackgroundOpen] = useState(false);
@@ -437,6 +457,28 @@ export default function MediaAdmin(props: MediaAdminProps) {
         props.onMediaSelect(url, type, filename);
     }
   };
+
+  const showBulkSelect = canDelete && !(props.isDialog && props.isSelectionMode);
+
+  const handleToggleSelect = (id: string) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) { next.delete(id); } else { next.add(id); }
+      return next;
+    });
+  };
+
+  const handleBulkDelete = async () => {
+    if (!firestore || !canDelete) return;
+    const batch = writeBatch(firestore);
+    selectedIds.forEach(id => {
+      batch.delete(doc(firestore, 'media', id));
+    });
+    await batch.commit();
+    toast({ title: t('mediaAdmin.toast.fileRemoved.title'), description: `Deleted ${selectedIds.size} files.` });
+    setSelectedIds(new Set());
+    setIsBulkDeleteOpen(false);
+  };
   
   const handleUrlUploadComplete = (mediaId: string, resourceType: 'image' | 'video' | 'raw', libraryId: 'primary' | 'extented') => {
     if (!props.isDialog && props.onUploadComplete) {
@@ -539,6 +581,9 @@ export default function MediaAdmin(props: MediaAdminProps) {
                   canDelete={canDelete}
                   canEditContact={canEditContact}
                   canEditHome={canEditHome}
+                  isSelected={selectedIds.has(file.id)}
+                  onToggleSelect={handleToggleSelect}
+                  showCheckbox={showBulkSelect}
                 />
             ))}
         </div>
@@ -614,6 +659,14 @@ export default function MediaAdmin(props: MediaAdminProps) {
                   {renderLibrary(otherAssets, 'raw')}
               </TabsContent>
           </ScrollArea>
+          {showBulkSelect && (
+            <BulkActionBar
+              selectedCount={selectedIds.size}
+              onClearSelection={() => setSelectedIds(new Set())}
+              onDelete={() => setIsBulkDeleteOpen(true)}
+              className="!relative !bottom-auto !left-auto !translate-x-0 mx-4 mb-4"
+            />
+          )}
       </Tabs>
       <DialogClose className={cn(
           "absolute right-4 top-4 h-8 w-8",
@@ -689,6 +742,22 @@ export default function MediaAdmin(props: MediaAdminProps) {
             onUploadComplete={handleUrlUploadComplete}
           />
           {setBackgroundDialog}
+          <AlertDialog open={isBulkDeleteOpen} onOpenChange={setIsBulkDeleteOpen}>
+            <AlertDialogContent className="w-[80vw]">
+              <AlertDialogHeader>
+                <AlertDialogTitle>{t('mediaAdmin.confirmDelete')}</AlertDialogTitle>
+                <AlertDialogDescription>
+                  {t('mediaAdmin.confirmDeleteDescription')} ({selectedIds.size} files)
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>{t('mediaAdmin.cancel')}</AlertDialogCancel>
+                <AlertDialogAction onClick={handleBulkDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                  {t('mediaAdmin.delete')}
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </>
       );
   }
@@ -788,6 +857,27 @@ export default function MediaAdmin(props: MediaAdminProps) {
             </DialogFooter>
         </DialogContent>
       </Dialog>
+      <BulkActionBar
+        selectedCount={selectedIds.size}
+        onClearSelection={() => setSelectedIds(new Set())}
+        onDelete={() => setIsBulkDeleteOpen(true)}
+      />
+      <AlertDialog open={isBulkDeleteOpen} onOpenChange={setIsBulkDeleteOpen}>
+        <AlertDialogContent className="w-[80vw]">
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t('mediaAdmin.confirmDelete')}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t('mediaAdmin.confirmDeleteDescription')} ({selectedIds.size} files)
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t('mediaAdmin.cancel')}</AlertDialogCancel>
+            <AlertDialogAction onClick={handleBulkDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              {t('mediaAdmin.delete')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }

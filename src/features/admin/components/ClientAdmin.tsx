@@ -36,6 +36,9 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import MediaAdmin from './MediaAdmin';
 import type { AppUser } from '@/firebase/auth/use-user';
+import { Checkbox } from '@/components/ui/checkbox';
+import BulkActionBar from './BulkActionBar';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 
 interface Client {
   id: string;
@@ -157,6 +160,8 @@ export default function ClientAdmin() {
   const [sortedClients, setSortedClients] = useState<Client[]>([]);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [selectedClient, setSelectedClient] = useState<Partial<Client> | null>(null);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [isBulkDeleteOpen, setIsBulkDeleteOpen] = useState(false);
   
   const [isLibraryOpen, setIsLibraryOpen] = useState(false);
   const [librarySelectionConfig, setLibrarySelectionConfig] = useState<{ onSelect: (url: string, type: 'image' | 'video' | 'raw', filename: string) => void } | null>(null);
@@ -219,6 +224,54 @@ export default function ClientAdmin() {
         title: t('clientAdmin.toast.visibilityChanged.title').replace('{visibility}', newVisibility ? 'visible' : 'hidden'),
         description: t('clientAdmin.toast.visibilityChanged.description').replace('{name}', item.name).replace('{visibility}', newVisibility ? 'visible' : 'hidden'),
     });
+  };
+
+  const allVisible = sortedClients.length > 0 && sortedClients.every(c => c.isVisible !== false);
+
+  const handleSelectAll = () => {
+    if (selectedIds.size === sortedClients.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(sortedClients.map(c => c.id)));
+    }
+  };
+
+  const handleToggleSelect = (id: string) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) { next.delete(id); } else { next.add(id); }
+      return next;
+    });
+  };
+
+  const handleBulkDelete = () => {
+    if (!firestore || !canEdit) return;
+    const batch = writeBatch(firestore);
+    selectedIds.forEach(id => {
+      batch.delete(doc(firestore, 'clients', id));
+    });
+    batch.commit().then(() => {
+      toast({ title: t('clientAdmin.toast.deleted.title'), description: `Deleted ${selectedIds.size} items.` });
+    }).catch(() => {
+      errorEmitter.emit('permission-error', new FirestorePermissionError({ path: 'clients', operation: 'delete', requestResourceData: { note: `Batch delete ${selectedIds.size} documents.` } }));
+    });
+    setSelectedIds(new Set());
+    setIsBulkDeleteOpen(false);
+  };
+
+  const handleBulkToggleVisibility = () => {
+    if (!firestore || !canEdit) return;
+    const batch = writeBatch(firestore);
+    const newVisibility = !allVisible;
+    selectedIds.forEach(id => {
+      batch.update(doc(firestore, 'clients', id), { isVisible: newVisibility });
+    });
+    batch.commit().then(() => {
+      toast({ title: t('clientAdmin.toast.visibilityChanged.title').replace('{visibility}', newVisibility ? 'visible' : 'hidden'), description: `Updated ${selectedIds.size} items.` });
+    }).catch(() => {
+      errorEmitter.emit('permission-error', new FirestorePermissionError({ path: 'clients', operation: 'update', requestResourceData: { note: `Batch update ${selectedIds.size} documents.` } }));
+    });
+    setSelectedIds(new Set());
   };
   
   const handleFormSubmit = (values: ClientFormValues) => {
@@ -360,6 +413,11 @@ export default function ClientAdmin() {
                                 className={cn("p-4 rounded-lg bg-black/10 border border-white/10 flex items-center justify-between relative", (client.isVisible === false) && "opacity-50 hover:opacity-80")}
                             >
                                 <div className="flex items-center gap-4">
+                                    <Checkbox
+                                      checked={selectedIds.has(client.id)}
+                                      onCheckedChange={() => handleToggleSelect(client.id)}
+                                      disabled={!canEdit}
+                                    />
                                     <FontAwesomeIcon icon={faGripVertical} className={cn("h-5 w-5 text-foreground/50", !canEdit && "opacity-20", canEdit && "cursor-grab")} />
                                     <Image
                                         src={client.logoUrl}
@@ -395,7 +453,15 @@ export default function ClientAdmin() {
                         <Table>
                             <TableHeader>
                             <TableRow>
-                                <TableHead className="w-[40px]"></TableHead>
+                                <TableHead className="w-[40px]">
+                                  {sortedClients.length > 0 && (
+                                    <Checkbox
+                                      checked={selectedIds.size === sortedClients.length && sortedClients.length > 0}
+                                      onCheckedChange={handleSelectAll}
+                                      disabled={!canEdit}
+                                    />
+                                  )}
+                                </TableHead>
                                 <TableHead className="w-[100px] text-center">{t('clientAdmin.col.logo')}</TableHead>
                                 <TableHead>{t('clientAdmin.col.name')}</TableHead>
                                 <TableHead className="text-right w-[100px]">{t('clientAdmin.col.actions')}</TableHead>
@@ -413,7 +479,14 @@ export default function ClientAdmin() {
                                     className={cn("border-b-0 transition-all relative", canEdit && "cursor-grab", (client.isVisible === false) && "opacity-50 hover:opacity-80")}
                                 >
                                 <TableCell className="text-center">
-                                  <FontAwesomeIcon icon={faGripVertical} className={cn("h-5 w-5 text-foreground/50", !canEdit && "opacity-20")} />
+                                  <div className="flex items-center justify-center gap-1">
+                                    <Checkbox
+                                      checked={selectedIds.has(client.id)}
+                                      onCheckedChange={() => handleToggleSelect(client.id)}
+                                      disabled={!canEdit}
+                                    />
+                                    <FontAwesomeIcon icon={faGripVertical} className={cn("h-5 w-5 text-foreground/50", !canEdit && "opacity-20")} />
+                                  </div>
                                 </TableCell>
                                 <TableCell className="flex justify-center">
                                     <Image
@@ -487,6 +560,31 @@ export default function ClientAdmin() {
           </DialogContent>
         </Dialog>
       </div>
+      
+      <BulkActionBar
+        selectedCount={selectedIds.size}
+        onClearSelection={() => setSelectedIds(new Set())}
+        onDelete={() => setIsBulkDeleteOpen(true)}
+        onToggleVisibility={handleBulkToggleVisibility}
+        allSelectedVisible={allVisible}
+      />
+
+      <AlertDialog open={isBulkDeleteOpen} onOpenChange={setIsBulkDeleteOpen}>
+        <AlertDialogContent className="w-[80vw]">
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t('clientAdmin.confirmBulkDelete') || 'Delete selected clients?'}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t('clientAdmin.confirmBulkDeleteDescription') || `This will permanently delete ${selectedIds.size} clients.`}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t('clientAdmin.cancel') || 'Cancel'}</AlertDialogCancel>
+            <AlertDialogAction onClick={handleBulkDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              {t('clientAdmin.delete') || 'Delete'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
       
       <MediaAdmin
           isDialog={true}
