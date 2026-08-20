@@ -437,8 +437,8 @@ export default function MediaAdmin(props: MediaAdminProps) {
 
   const handleSetLogo = (url: string) => {
     if (!firestore || !canEditContact) return;
-    const contactDocRef = doc(firestore, 'contact', 'details');
-    setDocumentNonBlocking(contactDocRef, { logoUrl: url }, { merge: true });
+    const settingsDocRef = doc(firestore, 'homepage', 'settings');
+    setDocumentNonBlocking(settingsDocRef, { homePageLogoUrl: url }, { merge: true });
     toast({
         title: t('mediaAdmin.toast.logoUpdated.title'),
         description: t('mediaAdmin.toast.logoUpdated.description'),

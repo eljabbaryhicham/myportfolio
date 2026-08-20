@@ -36,7 +36,7 @@ const formSchema = z.object({
   instagramUrl: z.string().url().optional().or(z.literal('')),
   facebookUrl: z.string().url().optional().or(z.literal('')),
   twitterUrl: z.string().url().optional().or(z.literal('')),
-  logoUrl: z.string().url({ message: 'Please enter a valid URL for the logo.' }).optional().or(z.literal('')),
+
 });
 
 type ContactInfo = z.infer<typeof formSchema>;
@@ -53,7 +53,6 @@ const defaultFormValues: ContactInfo = {
     instagramUrl: '',
     facebookUrl: '',
     twitterUrl: '',
-    logoUrl: '',
 };
 
 export default function ContactAdmin() {
@@ -91,7 +90,6 @@ export default function ContactAdmin() {
             instagramUrl: contactInfo.instagramUrl || '',
             facebookUrl: contactInfo.facebookUrl || '',
             twitterUrl: contactInfo.twitterUrl || '',
-            logoUrl: contactInfo.logoUrl || '',
         };
       form.reset(values);
     } else if (!isLoading) {
@@ -138,20 +136,6 @@ export default function ContactAdmin() {
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
                     <fieldset disabled={!canEditContact} className="group">
-                    <FormField
-                        control={form.control}
-                        name="logoUrl"
-                        render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>{t('contactAdmin.siteLogoUrl')}</FormLabel>
-                            <FormControl>
-                            <Input placeholder={t('contactAdmin.siteLogoUrlPlaceholder')} {...field} />
-                            </FormControl>
-                            <FormDescription>{t('contactAdmin.siteLogoUrlDescription')}</FormDescription>
-                            <FormMessage />
-                        </FormItem>
-                        )}
-                    />
                     <FormField
                         control={form.control}
                         name="name"

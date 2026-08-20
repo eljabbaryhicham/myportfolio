@@ -143,8 +143,8 @@ export default function HomePageContent() {
   
   const isLoading = isLoadingContact || isLoadingSettings;
 
-  const siteLogoUrl = contactInfo?.logoUrl;
-  const homeLogoUrl = homeSettings?.homePageLogoUrl || siteLogoUrl;
+  const siteLogoUrl = homeSettings?.homePageLogoUrl;
+  const homeLogoUrl = siteLogoUrl;
   const isLogoVisible = homeSettings?.isHomePageLogoVisible ?? true;
 
   useEffect(() => {
