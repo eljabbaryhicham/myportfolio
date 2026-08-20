@@ -104,11 +104,6 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onCho
       name: 'useVideoFrameAsPoster',
     });
 
-    const sourceUrl = useWatch({
-      control: form.control,
-      name: 'sourceUrl',
-    });
-
     function deriveVideoThumbnail(url: string): string | null {
       const ytMatch = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
       if (ytMatch) return `https://img.youtube.com/vi/${ytMatch[1]}/maxresdefault.jpg`;
@@ -122,14 +117,17 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onCho
       return null;
     }
 
-    useEffect(() => {
-      if (useVideoFrame && sourceUrl && itemType === 'video') {
-        const frameUrl = deriveVideoThumbnail(sourceUrl);
-        if (frameUrl) {
-          form.setValue('thumbnailUrl', frameUrl, { shouldValidate: true });
+    const applyVideoFrameThumbnail = (checked: boolean) => {
+      if (checked) {
+        const currentSource = form.getValues('sourceUrl');
+        if (currentSource) {
+          const frameUrl = deriveVideoThumbnail(currentSource);
+          if (frameUrl) {
+            form.setValue('thumbnailUrl', frameUrl, { shouldValidate: true });
+          }
         }
       }
-    }, [useVideoFrame, sourceUrl, itemType, form]);
+    };
 
     useEffect(() => {
       if (isOpen) {
@@ -199,6 +197,12 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onCho
             if (!item?.id) {
                 const title = filename.split('.').slice(0, -1).join('.');
                 form.setValue('title', title, { shouldValidate: true });
+            }
+            if (form.getValues('useVideoFrameAsPoster')) {
+                const frameUrl = deriveVideoThumbnail(url);
+                if (frameUrl) {
+                    form.setValue('thumbnailUrl', frameUrl, { shouldValidate: true });
+                }
             }
         });
     };
@@ -300,6 +304,9 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onCho
                                       <span className="ml-2 hidden sm:inline">{t('portfolioForm.library')}</span>
                                   </Button>
                                 </div>
+                                {useVideoFrame && field.value && (
+                                    <img src={field.value} alt="Video frame thumbnail" className="mt-2 h-20 rounded-md object-cover" />
+                                )}
                                 <FormDescription>{useVideoFrame ? t('portfolioForm.useVideoFrameAsPosterDescription') : t('portfolioForm.thumbnailDescription')}</FormDescription>
                                 <FormMessage />
                               </FormItem>
@@ -322,9 +329,12 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onCho
                                           </div>
                                           <FormControl>
                                               <Switch
-                                                  checked={field.value}
-                                                  onCheckedChange={field.onChange}
-                                              />
+                                                   checked={field.value}
+                                                   onCheckedChange={(checked) => {
+                                                       field.onChange(checked);
+                                                       applyVideoFrameThumbnail(checked);
+                                                   }}
+                                               />
                                           </FormControl>
                                       </FormItem>
                                   )}
