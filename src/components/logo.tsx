@@ -16,7 +16,8 @@ function hexToFilter(hex: string) {
       case b: h = ((r - g) / d + 4) / 6; break;
     }
   }
-  return `brightness(0) sepia(1) saturate(${Math.round(s * 1000)}%) hue-rotate(${Math.round(h * 360)}deg) brightness(${Math.round(l * 200)}%)`;
+  const bFactor = max > 0 ? 255 / (max * 255) : 1;
+  return `brightness(0) sepia(1) saturate(${Math.round(s * 1000)}%) hue-rotate(${Math.round(h * 360)}deg) brightness(${Math.round(bFactor * 100)}%)`;
 }
 
 const Logo = (props: { src: string; className?: string; color?: string }) => (
