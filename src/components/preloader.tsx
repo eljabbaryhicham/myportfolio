@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Lottie from 'lottie-react';
-import animationData from '@/lib/preloader-animation.json';
+const FALLBACK_GIF = 'https://cssbud.com/wp-content/uploads/2021/08/wave-spinner.gif';
 import { useDoc, useFirestore, useMemoFirebase } from '@/firebase';
 import { doc } from 'firebase/firestore';
 
@@ -16,26 +16,37 @@ let cacheTimestamp = 0;
 const CACHE_TTL = 30000;
 
 const DefaultLottie = ({ url }: { url?: string }) => {
-  const [lottieData, setLottieData] = useState<any>(animationData);
-  const [customData, setCustomData] = useState<any>(null);
+  const [lottieData, setLottieData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!url) { setCustomData(null); return; }
+    if (!url) {
+      setLoading(false);
+      return;
+    }
     let disposed = false;
+    setLoading(true);
     fetch(url)
       .then(r => r.json())
-      .then(data => { if (!disposed) setCustomData(data); })
-      .catch(() => {});
+      .then(data => { if (!disposed) { setLottieData(data); setLoading(false); } })
+      .catch(() => { if (!disposed) setLoading(false); });
     return () => { disposed = true; };
   }, [url]);
 
-  const display = customData || lottieData;
+  if (lottieData) {
+    return (
+      <div className="flex items-center justify-center w-full h-full">
+        <div className="w-1/4 h-1/4">
+          <Lottie animationData={lottieData} loop={true} />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex items-center justify-center w-full h-full">
-      <div className="w-1/4 h-1/4">
-        <Lottie animationData={display} loop={true} />
-      </div>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src={FALLBACK_GIF} alt="Loading" className="w-16 h-16 object-contain" />
     </div>
   );
 };
