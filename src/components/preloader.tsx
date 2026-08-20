@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import Lottie from 'lottie-react';
 import animationData from '@/lib/preloader-animation.json';
 import { useDoc, useFirestore, useMemoFirebase } from '@/firebase';
@@ -86,10 +86,8 @@ const Preloader = ({ settings }: { settings?: PreloaderSettings }) => {
 
   const active = settings || resolved;
 
-  if (!active) return null;
-
-  const type = active.preloaderType || 'default';
-  const url = active.preloaderUrl || '';
+  const type = active?.preloaderType || 'default';
+  const url = active?.preloaderUrl || '';
 
   if (type === 'gif' && url) return <GifLoader url={url} />;
   if (type === 'webm' && url) return <WebmLoader url={url} />;
