@@ -18,7 +18,7 @@ function LoadingGate({ children }: { children: React.ReactNode }) {
     () => (firestore ? doc(firestore, 'homepage', 'settings') : null),
     [firestore]
   );
-  const { data: settingsData, isLoading: loadingSettings } = useDoc(settingsRef);
+  const { isLoading: loadingSettings } = useDoc(settingsRef);
 
   const contactRef = useMemoFirebase(
     () => (firestore ? doc(firestore, 'contact', 'details') : null),
@@ -42,12 +42,7 @@ function LoadingGate({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black">
-      {settingsData && (
-        <Preloader settings={{
-          preloaderType: settingsData.preloaderType,
-          preloaderUrl: settingsData.preloaderUrl,
-        }} />
-      )}
+      <Preloader />
     </div>
   );
 }
