@@ -34,6 +34,8 @@ interface HomePageSettings {
     heroVideoUrl?: string;
     cursorLottieUrl?: string;
     tickLottieUrl?: string;
+    homePageTitle?: string;
+    homePageSubtitle?: string;
 }
 
 function Particles() {
@@ -257,10 +259,10 @@ export default function HomePageContent() {
           >
             <motion.div variants={itemVariants} className="text-center space-y-1 max-w-lg px-4" style={{ textShadow: "0 2px 12px rgba(0,0,0,0.6)" }}>
               <h2 className="text-sm sm:text-base md:text-2xl font-headline tracking-tight text-white/90">
-                {t('home.hero.heading')}
+                {homeSettings?.homePageTitle || t('home.hero.heading')}
               </h2>
               <p className="text-[10px] sm:text-xs md:text-base text-foreground/60 leading-relaxed" style={{ textShadow: "0 1px 8px rgba(0,0,0,0.5)" }}>
-                {t('home.hero.subtitle')}
+                {homeSettings?.homePageSubtitle || t('home.hero.subtitle')}
               </p>
             </motion.div>
             <motion.div variants={itemVariants}>

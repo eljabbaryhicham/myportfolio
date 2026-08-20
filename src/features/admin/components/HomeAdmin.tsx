@@ -65,6 +65,8 @@ interface HomePageSettings {
     preloaderUrl?: string;
     cursorLottieUrl?: string;
     tickLottieUrl?: string;
+    homePageTitle?: string;
+    homePageSubtitle?: string;
 }
 
 const settingsSchema = z.object({
@@ -86,6 +88,8 @@ const settingsSchema = z.object({
   preloaderUrl: z.string().optional(),
   cursorLottieUrl: z.string().optional(),
   tickLottieUrl: z.string().optional(),
+  homePageTitle: z.string().optional(),
+  homePageSubtitle: z.string().optional(),
 });
 
 type SettingsFormValues = z.infer<typeof settingsSchema>;
@@ -145,6 +149,8 @@ export default function HomeAdmin() {
       preloaderUrl: '',
       cursorLottieUrl: '',
       tickLottieUrl: '',
+      homePageTitle: '',
+      homePageSubtitle: '',
     },
   });
 
@@ -172,6 +178,8 @@ export default function HomeAdmin() {
         preloaderUrl: homeSettings.preloaderUrl || '',
         cursorLottieUrl: homeSettings.cursorLottieUrl || '',
         tickLottieUrl: homeSettings.tickLottieUrl || '',
+        homePageTitle: homeSettings.homePageTitle || '',
+        homePageSubtitle: homeSettings.homePageSubtitle || '',
       });
     }
   }, [homeSettings, form]);
@@ -290,6 +298,32 @@ export default function HomeAdmin() {
                                                     </Select>
                                                 </div>
                                                 <FormDescription>{t('homeAdmin.heroVideoUrlDescription')}</FormDescription>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                    <FormField
+                                        control={control}
+                                        name="homePageTitle"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>{t('homeAdmin.homePageTitle') || 'Homepage Title'}</FormLabel>
+                                                <FormControl>
+                                                    <Input placeholder={t('homeAdmin.homePageTitlePlaceholder') || 'Leave empty for default title'} {...field} />
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                    <FormField
+                                        control={control}
+                                        name="homePageSubtitle"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>{t('homeAdmin.homePageSubtitle') || 'Homepage Subtitle'}</FormLabel>
+                                                <FormControl>
+                                                    <Input placeholder={t('homeAdmin.homePageSubtitlePlaceholder') || 'Leave empty for default subtitle'} {...field} />
+                                                </FormControl>
                                                 <FormMessage />
                                             </FormItem>
                                         )}
