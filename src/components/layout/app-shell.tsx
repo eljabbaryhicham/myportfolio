@@ -42,10 +42,12 @@ function LoadingGate({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black">
-      <Preloader settings={settingsData ? {
-        preloaderType: settingsData.preloaderType,
-        preloaderUrl: settingsData.preloaderUrl,
-      } : undefined} />
+      {settingsData && (
+        <Preloader settings={{
+          preloaderType: settingsData.preloaderType,
+          preloaderUrl: settingsData.preloaderUrl,
+        }} />
+      )}
     </div>
   );
 }
