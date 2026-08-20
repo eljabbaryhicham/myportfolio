@@ -16,24 +16,25 @@ let cacheTimestamp = 0;
 const CACHE_TTL = 30000;
 
 const DefaultLottie = ({ url }: { url?: string }) => {
-  const [lottieData, setLottieData] = useState<any>(url ? null : animationData);
+  const [lottieData, setLottieData] = useState<any>(animationData);
+  const [customData, setCustomData] = useState<any>(null);
 
   useEffect(() => {
-    if (!url) return;
+    if (!url) { setCustomData(null); return; }
     let disposed = false;
     fetch(url)
       .then(r => r.json())
-      .then(data => { if (!disposed) setLottieData(data); })
+      .then(data => { if (!disposed) setCustomData(data); })
       .catch(() => {});
     return () => { disposed = true; };
   }, [url]);
 
-  if (!lottieData) return null;
+  const display = customData || lottieData;
 
   return (
     <div className="flex items-center justify-center w-full h-full">
       <div className="w-1/4 h-1/4">
-        <Lottie animationData={lottieData} loop={true} />
+        <Lottie animationData={display} loop={true} />
       </div>
     </div>
   );
