@@ -32,6 +32,7 @@ interface HomePageSettings {
     homePageLogoScale?: number;
     heroVideoUrl?: string;
     cursorLottieUrl?: string;
+    tickLottieUrl?: string;
 }
 
 function Particles() {
@@ -57,11 +58,12 @@ function Particles() {
   return <div className="absolute inset-0 pointer-events-none overflow-hidden">{circles}</div>;
 }
 
-function CursorArrow({ targetRef, cursorLottieUrl }: { targetRef: React.RefObject<HTMLButtonElement | null>; cursorLottieUrl?: string }) {
+function CursorArrow({ targetRef, cursorLottieUrl, tickLottieUrl }: { targetRef: React.RefObject<HTMLButtonElement | null>; cursorLottieUrl?: string; tickLottieUrl?: string }) {
   const arrowRef = useRef<HTMLDivElement>(null);
   const angleRef = useRef(0);
   const [isOver, setIsOver] = useState(false);
   const [customCursor, setCustomCursor] = useState<any>(null);
+  const [customTick, setCustomTick] = useState<any>(null);
 
   useEffect(() => {
     const el = arrowRef.current;
@@ -111,6 +113,16 @@ function CursorArrow({ targetRef, cursorLottieUrl }: { targetRef: React.RefObjec
     return () => { disposed = true; };
   }, [cursorLottieUrl]);
 
+  useEffect(() => {
+    if (!tickLottieUrl) { setCustomTick(null); return; }
+    let disposed = false;
+    fetch(tickLottieUrl)
+      .then(r => r.json())
+      .then(data => { if (!disposed) setCustomTick(data); })
+      .catch(() => {});
+    return () => { disposed = true; };
+  }, [tickLottieUrl]);
+
   return (
     <div
       ref={arrowRef}
@@ -118,7 +130,7 @@ function CursorArrow({ targetRef, cursorLottieUrl }: { targetRef: React.RefObjec
       style={{ left: -100, top: -100, opacity: 0 }}
     >
       {isOver ? (
-        <Lottie key="tick" animationData={tickAnimationData} loop={false} />
+        <Lottie key="tick" animationData={customTick || tickAnimationData} loop={false} />
       ) : (
         <Lottie key="arrow" animationData={customCursor || cursorArrowData} loop={true} />
       )}
@@ -189,7 +201,7 @@ export default function HomePageContent() {
     <div className="fixed inset-0 overflow-y-auto overflow-x-hidden">
       <style>{`*,*::before,*::after,:root,html,video,canvas,svg{ cursor: none !important; }`}</style>
       <div className="relative z-10 min-h-full w-full flex items-center justify-center transition-opacity duration-1000">
-        <CursorArrow targetRef={ctaRef} cursorLottieUrl={homeSettings?.cursorLottieUrl} />
+        <CursorArrow targetRef={ctaRef} cursorLottieUrl={homeSettings?.cursorLottieUrl} tickLottieUrl={homeSettings?.tickLottieUrl} />
 
         <Particles />
 

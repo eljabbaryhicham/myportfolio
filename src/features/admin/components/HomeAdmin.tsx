@@ -63,6 +63,7 @@ interface HomePageSettings {
     preloaderType?: 'default' | 'lottie' | 'gif' | 'webm';
     preloaderUrl?: string;
     cursorLottieUrl?: string;
+    tickLottieUrl?: string;
 }
 
 const settingsSchema = z.object({
@@ -82,6 +83,7 @@ const settingsSchema = z.object({
   preloaderType: z.enum(['default', 'lottie', 'gif', 'webm']).optional(),
   preloaderUrl: z.string().optional(),
   cursorLottieUrl: z.string().optional(),
+  tickLottieUrl: z.string().optional(),
 });
 
 type SettingsFormValues = z.infer<typeof settingsSchema>;
@@ -139,6 +141,7 @@ export default function HomeAdmin() {
       preloaderType: 'default',
       preloaderUrl: '',
       cursorLottieUrl: '',
+      tickLottieUrl: '',
     },
   });
 
@@ -164,6 +167,7 @@ export default function HomeAdmin() {
         preloaderType: homeSettings.preloaderType || 'default',
         preloaderUrl: homeSettings.preloaderUrl || '',
         cursorLottieUrl: homeSettings.cursorLottieUrl || '',
+        tickLottieUrl: homeSettings.tickLottieUrl || '',
       });
     }
   }, [homeSettings, form]);
@@ -684,6 +688,39 @@ export default function HomeAdmin() {
                                                     <div className="flex gap-2">
                                                         <FormControl>
                                                             <Input placeholder="Leave empty for default cursor" {...field} className="flex-1" />
+                                                        </FormControl>
+                                                        <Select onValueChange={(val) => field.onChange(val)} value="">
+                                                            <SelectTrigger className="w-auto whitespace-nowrap">
+                                                                <SelectValue placeholder={t('homeAdmin.chooseFromLibrary')} />
+                                                            </SelectTrigger>
+                                                            <SelectContent>
+                                                                {lottieAssets?.map((asset) => (
+                                                                    <SelectItem key={asset.id} value={asset.url}>
+                                                                        {asset.title || asset.filename}
+                                                                    </SelectItem>
+                                                                ))}
+                                                            </SelectContent>
+                                                        </Select>
+                                                    </div>
+                                                    <FormMessage />
+                                                </FormItem>
+                                            );
+                                        }}
+                                    />
+                                    <FormField
+                                        control={control}
+                                        name="tickLottieUrl"
+                                        render={({ field }) => {
+                                            const lottieAssets = mediaAssets?.filter(a => a.resource_type === 'raw' || a.filename?.endsWith('.json'));
+                                            return (
+                                                <FormItem>
+                                                    <FormLabel>{t('homeAdmin.tickLottieUrl') || 'Button Hover Lottie'}</FormLabel>
+                                                    <FormDescription>
+                                                        {t('homeAdmin.tickLottieUrlDescription') || 'Custom Lottie JSON shown when hovering directly over the button. Leave empty for default.'}
+                                                    </FormDescription>
+                                                    <div className="flex gap-2">
+                                                        <FormControl>
+                                                            <Input placeholder="Leave empty for default hover animation" {...field} className="flex-1" />
                                                         </FormControl>
                                                         <Select onValueChange={(val) => field.onChange(val)} value="">
                                                             <SelectTrigger className="w-auto whitespace-nowrap">
