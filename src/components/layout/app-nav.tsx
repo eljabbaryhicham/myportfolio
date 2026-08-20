@@ -27,6 +27,7 @@ const navItems = [
 
 interface HomePageSettings {
     isTestPageEnabled?: boolean;
+    homePageLogoUrl?: string;
 }
 
 export function AppNav() {
@@ -50,7 +51,7 @@ export function AppNav() {
   const { data: homeSettings } = useDoc<HomePageSettings>(settingsDocRef);
 
 
-  const logoUrl = contactInfo?.logoUrl;
+  const logoUrl = homeSettings?.homePageLogoUrl || contactInfo?.logoUrl;
 
   const accessibleNavItems = navItems.filter(item => {
     if (item.href === '/test') {

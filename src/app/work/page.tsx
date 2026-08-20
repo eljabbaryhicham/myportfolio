@@ -272,6 +272,7 @@ const PortfolioGridItem = ({ item, onClick, onEditClick, isAdmin, isSuperAdmin, 
 
 interface HomePageSettings {
     workPagePlayer?: 'plyr' | 'clappr';
+    homePageLogoUrl?: string;
 }
 
 const slugify = (text: string) => text.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, '');
@@ -616,7 +617,7 @@ export default function WorkPage() {
     ? { gridTemplateColumns: 'repeat(2, 1fr)' } 
     : { gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))' };
 
-  const logoUrl = contactInfo?.logoUrl;
+  const logoUrl = homeSettings?.homePageLogoUrl || contactInfo?.logoUrl;
   const workPagePlayer = homeSettings?.workPagePlayer || 'clappr';
 
   return (
