@@ -23,7 +23,7 @@ import { Label } from '@/components/ui/label';
 const formSchema = z.object({
   mediaUrl: z.string().url({ message: 'Please enter a valid URL.' }),
   libraryId: z.enum(['primary', 'extented']),
-  videoFormat: z.enum(['mp4', 'm3u8']).optional(),
+  videoFormat: z.enum(['mp4', 'm3u8', 'webm']).optional(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -205,6 +205,14 @@ export default function AddFromUrlDialog({ isOpen, onOpenChange, onUploadComplet
                             </FormControl>
                             <FormLabel className="font-normal">
                               {t('addFromUrl.m3u8')}
+                            </FormLabel>
+                          </FormItem>
+                          <FormItem className="flex items-center space-x-3 space-y-0">
+                            <FormControl>
+                              <RadioGroupItem value="webm" />
+                            </FormControl>
+                            <FormLabel className="font-normal">
+                              {t('addFromUrl.webm')}
                             </FormLabel>
                           </FormItem>
                         </RadioGroup>

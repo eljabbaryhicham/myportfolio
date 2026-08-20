@@ -37,7 +37,7 @@ interface MediaAsset {
     created_at: string;
     filename: string;
     libraryId?: 'primary' | 'extented';
-    videoFormat?: 'mp4' | 'm3u8';
+    videoFormat?: 'mp4' | 'm3u8' | 'webm';
     title?: string;
 }
 
@@ -234,7 +234,7 @@ export default function MediaAdmin(props: MediaAdminProps) {
   const [isChoosingLibrary, setIsChoosingLibrary] = useState(false);
   const [isChoosingVideoFormat, setIsChoosingVideoFormat] = useState(false);
   const [filesToUpload, setFilesToUpload] = useState<File[]>([]);
-  const [uploadVideoFormat, setUploadVideoFormat] = useState<'mp4' | 'm3u8'>('mp4');
+  const [uploadVideoFormat, setUploadVideoFormat] = useState<'mp4' | 'm3u8' | 'webm'>('mp4');
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [isBulkDeleteOpen, setIsBulkDeleteOpen] = useState(false);
   
@@ -352,6 +352,8 @@ export default function MediaAdmin(props: MediaAdminProps) {
           let finalUrl = response.secure_url;
           if (response.resource_type === 'video' && uploadVideoFormat === 'm3u8') {
              finalUrl = `https://res.cloudinary.com/${cloudName}/video/upload/sp_auto/v${response.version}/${response.public_id}.m3u8`;
+          } else if (response.resource_type === 'video' && uploadVideoFormat === 'webm') {
+             finalUrl = finalUrl.replace(`/upload/`, `/upload/f_webm,q_auto/`);
           } else if (response.resource_type === 'video' || response.resource_type === 'image') {
              finalUrl = finalUrl.replace(`/upload/`, `/upload/f_auto,q_auto/`);
           }
@@ -827,7 +829,7 @@ export default function MediaAdmin(props: MediaAdminProps) {
                 <DialogTitle>{t('mediaAdmin.chooseVideoFormat')}</DialogTitle>
                 <DialogDescription>{t('mediaAdmin.chooseVideoFormatDescription')}</DialogDescription>
             </DialogHeader>
-            <RadioGroup defaultValue="mp4" onValueChange={(value: 'mp4' | 'm3u8') => setUploadVideoFormat(value)}>
+            <RadioGroup defaultValue="mp4" onValueChange={(value: 'mp4' | 'm3u8' | 'webm') => setUploadVideoFormat(value)}>
                 <div className="flex items-center space-x-2">
                     <RadioGroupItem value="mp4" id="r1" />
                     <Label htmlFor="r1">{t('mediaAdmin.mp4')}</Label>
@@ -835,6 +837,10 @@ export default function MediaAdmin(props: MediaAdminProps) {
                 <div className="flex items-center space-x-2">
                     <RadioGroupItem value="m3u8" id="r2" />
                     <Label htmlFor="r2">{t('mediaAdmin.m3u8')}</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="webm" id="r3" />
+                    <Label htmlFor="r3">{t('mediaAdmin.webm')}</Label>
                 </div>
             </RadioGroup>
             <DialogFooter>

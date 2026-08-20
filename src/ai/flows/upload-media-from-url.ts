@@ -11,7 +11,7 @@ import { initializeServerApp } from '@/firebase/server-init';
 const UploadMediaFromUrlInputSchema = z.object({
   mediaUrl: z.string().url(),
   libraryId: z.enum(['primary', 'extented']),
-  videoFormat: z.enum(['mp4', 'm3u8']).optional(),
+  videoFormat: z.enum(['mp4', 'm3u8', 'webm']).optional(),
 });
 export type UploadMediaFromUrlInput = z.infer<typeof UploadMediaFromUrlInputSchema>;
 
@@ -89,6 +89,14 @@ const uploadMediaFromUrlFlow = ai.defineFlow(
       if (uploadResult.resource_type === 'video' && videoFormat === 'm3u8') {
           finalUrl = `https://res.cloudinary.com/${cloudName}/video/upload/sp_auto/v${uploadResult.version}/${uploadResult.public_id}.m3u8`;
           console.log(`Generated adaptive streaming (HLS) URL: ${finalUrl}`);
+      } else if (uploadResult.resource_type === 'video' && videoFormat === 'webm') {
+          finalUrl = cloudinary.url(uploadResult.public_id, {
+              format: 'webm',
+              quality: 'auto',
+              secure: true,
+              resource_type: 'video',
+          });
+          console.log(`Generated WebM URL: ${finalUrl}`);
       } else if (uploadResult.resource_type === 'image' || uploadResult.resource_type === 'video') {
           finalUrl = cloudinary.url(uploadResult.public_id, {
               fetch_format: 'auto',
