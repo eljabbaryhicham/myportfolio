@@ -31,6 +31,7 @@ interface HomePageSettings {
     isHomePageLogoVisible?: boolean;
     homePageLogoScale?: number;
     heroVideoUrl?: string;
+    cursorLottieUrl?: string;
 }
 
 function Particles() {
@@ -56,10 +57,11 @@ function Particles() {
   return <div className="absolute inset-0 pointer-events-none overflow-hidden">{circles}</div>;
 }
 
-function CursorArrow({ targetRef }: { targetRef: React.RefObject<HTMLButtonElement | null> }) {
+function CursorArrow({ targetRef, cursorLottieUrl }: { targetRef: React.RefObject<HTMLButtonElement | null>; cursorLottieUrl?: string }) {
   const arrowRef = useRef<HTMLDivElement>(null);
   const angleRef = useRef(0);
   const [isOver, setIsOver] = useState(false);
+  const [customCursor, setCustomCursor] = useState<any>(null);
 
   useEffect(() => {
     const el = arrowRef.current;
@@ -99,6 +101,16 @@ function CursorArrow({ targetRef }: { targetRef: React.RefObject<HTMLButtonEleme
     };
   }, [targetRef]);
 
+  useEffect(() => {
+    if (!cursorLottieUrl) { setCustomCursor(null); return; }
+    let disposed = false;
+    fetch(cursorLottieUrl)
+      .then(r => r.json())
+      .then(data => { if (!disposed) setCustomCursor(data); })
+      .catch(() => {});
+    return () => { disposed = true; };
+  }, [cursorLottieUrl]);
+
   return (
     <div
       ref={arrowRef}
@@ -108,7 +120,7 @@ function CursorArrow({ targetRef }: { targetRef: React.RefObject<HTMLButtonEleme
       {isOver ? (
         <Lottie key="tick" animationData={tickAnimationData} loop={false} />
       ) : (
-        <Lottie key="arrow" animationData={cursorArrowData} loop={true} />
+        <Lottie key="arrow" animationData={customCursor || cursorArrowData} loop={true} />
       )}
     </div>
   );
@@ -177,7 +189,7 @@ export default function HomePageContent() {
     <div className="fixed inset-0 overflow-y-auto overflow-x-hidden">
       <style>{`*,*::before,*::after,:root,html,video,canvas,svg{ cursor: none !important; }`}</style>
       <div className="relative z-10 min-h-full w-full flex items-center justify-center transition-opacity duration-1000">
-        <CursorArrow targetRef={ctaRef} />
+        <CursorArrow targetRef={ctaRef} cursorLottieUrl={homeSettings?.cursorLottieUrl} />
 
         <Particles />
 

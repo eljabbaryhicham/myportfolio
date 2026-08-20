@@ -62,6 +62,7 @@ interface HomePageSettings {
     heroVideoUrl?: string;
     preloaderType?: 'default' | 'lottie' | 'gif' | 'webm';
     preloaderUrl?: string;
+    cursorLottieUrl?: string;
 }
 
 const settingsSchema = z.object({
@@ -69,7 +70,7 @@ const settingsSchema = z.object({
   isTestPageEnabled: z.boolean().optional(),
   homePageLogoUrl: z.string().optional(),
   isHomePageLogoVisible: z.boolean().optional(),
-  homePageLogoScale: z.number().min(0.5).max(5).optional(),
+                                        homePageLogoScale: z.number().min(0.1).max(5).optional(),
   themeColor: z.string().optional(),
   homePageBackgroundType: z.enum(['video', 'image']).optional(),
   homePageBackgroundMediaId: z.string().optional(),
@@ -80,6 +81,7 @@ const settingsSchema = z.object({
   heroVideoUrl: z.string().optional(),
   preloaderType: z.enum(['default', 'lottie', 'gif', 'webm']).optional(),
   preloaderUrl: z.string().optional(),
+  cursorLottieUrl: z.string().optional(),
 });
 
 type SettingsFormValues = z.infer<typeof settingsSchema>;
@@ -136,6 +138,7 @@ export default function HomeAdmin() {
       heroVideoUrl: '',
       preloaderType: 'default',
       preloaderUrl: '',
+      cursorLottieUrl: '',
     },
   });
 
@@ -160,6 +163,7 @@ export default function HomeAdmin() {
         heroVideoUrl: homeSettings.heroVideoUrl || '',
         preloaderType: homeSettings.preloaderType || 'default',
         preloaderUrl: homeSettings.preloaderUrl || '',
+        cursorLottieUrl: homeSettings.cursorLottieUrl || '',
       });
     }
   }, [homeSettings, form]);
@@ -306,7 +310,7 @@ export default function HomeAdmin() {
                                                     <Slider
                                                         value={[field.value || 1]}
                                                         onValueChange={(value) => field.onChange(value[0])}
-                                                        min={0.5}
+                                                        min={0.1}
                                                         max={3}
                                                         step={0.05}
                                                     />
@@ -663,6 +667,42 @@ export default function HomeAdmin() {
                                             }}
                                         />
                                     )}
+
+                                    <Separator />
+
+                                    <FormField
+                                        control={control}
+                                        name="cursorLottieUrl"
+                                        render={({ field }) => {
+                                            const lottieAssets = mediaAssets?.filter(a => a.resource_type === 'raw' || a.filename?.endsWith('.json'));
+                                            return (
+                                                <FormItem>
+                                                    <FormLabel>{t('homeAdmin.cursorLottieUrl') || 'Pointer Cursor Lottie'}</FormLabel>
+                                                    <FormDescription>
+                                                        {t('homeAdmin.cursorLottieUrlDescription') || 'Custom Lottie JSON for the pointer cursor on buttons. Leave empty for default.'}
+                                                    </FormDescription>
+                                                    <div className="flex gap-2">
+                                                        <FormControl>
+                                                            <Input placeholder="Leave empty for default cursor" {...field} className="flex-1" />
+                                                        </FormControl>
+                                                        <Select onValueChange={(val) => field.onChange(val)} value="">
+                                                            <SelectTrigger className="w-auto whitespace-nowrap">
+                                                                <SelectValue placeholder={t('homeAdmin.chooseFromLibrary')} />
+                                                            </SelectTrigger>
+                                                            <SelectContent>
+                                                                {lottieAssets?.map((asset) => (
+                                                                    <SelectItem key={asset.id} value={asset.url}>
+                                                                        {asset.title || asset.filename}
+                                                                    </SelectItem>
+                                                                ))}
+                                                            </SelectContent>
+                                                        </Select>
+                                                    </div>
+                                                    <FormMessage />
+                                                </FormItem>
+                                            );
+                                        }}
+                                    />
                                 </div>
                             </fieldset>
                         </div>
