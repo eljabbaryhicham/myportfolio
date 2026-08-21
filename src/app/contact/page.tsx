@@ -1,15 +1,8 @@
 'use client';
 
-import dynamic from 'next/dynamic'
-import Preloader from '@/components/preloader'
+// Rendered directly (no next/dynamic wrapper): the app is already
+// client-only via the root layout, so a dynamic boundary here only added
+// a chunk waterfall and defeated <Link> prefetching.
+import ContactPage from '@/features/contact/components/ContactPage';
 
-const ContactPage = dynamic(() => import('@/features/contact/components/ContactPage'), {
-  loading: () => (
-    <div className="flex h-full w-full items-center justify-center">
-      <Preloader />
-    </div>
-  ),
-  ssr: false,
-})
-
-export default ContactPage
+export default ContactPage;

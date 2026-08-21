@@ -161,6 +161,11 @@ Firebase Firestore ← useDoc/useCollection hooks → React components
 | 2026-08-21 | FIX: work page "No projects yet" during load — removed server `orderBy('order')` (excluded docs lacking the field), client-side sort | ✅ |
 | 2026-08-21 | FIX: cold-session empty-state flash — projects query gated on auth settle (`isUserLoading`); `useCollection` ignores cache-only empty snapshots; fetch errors keep preloader + toast instead of fake empty state | ✅ |
 | 2026-08-21 | FIX: residual transient-empty flash — work page requires a confirmed-empty result to persist 2s before showing "no projects" (filter-specific empties still instant) | ✅ |
+| 2026-08-21 | PERF: /work route — auth-only gate (skips profile-doc wait); Plyr (hls.js) + ContactForm lazy-loaded out of initial chunk; contact page renders form instantly, info card streams in | ✅ |
+| 2026-08-21 | PERF: menubar logo hydrates instantly from localStorage cache instead of waiting on Firestore docs | ✅ |
+| 2026-08-21 | UI: default preloader fallback GIF swapped to honey badger animation | ✅ |
+| 2026-08-21 | PERF: contact route — removed redundant next/dynamic wrapper (chunk waterfall + broken Link prefetch); ContactPage now statically imported and preferrable | ✅ |
+| 2026-08-21 | PERF: shared `useCachedDoc` hook (localStorage mirror of useDoc); contact info card + social links hydrate instantly on repeat visits, socials animation delay 0.6s → 0.15s | ✅ |
 
 ## [ORPHANS & PENDING]
 

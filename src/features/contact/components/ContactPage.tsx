@@ -3,7 +3,8 @@
 
 import Link from 'next/link';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { useDoc, useFirestore, useMemoFirebase } from '@/firebase';
+import { useFirestore, useMemoFirebase } from '@/firebase';
+import { useCachedDoc } from '@/hooks/use-cached-doc';
 import { doc } from 'firebase/firestore';
 import { Separator } from '@/components/ui/separator';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -71,7 +72,9 @@ export default function ContactPage() {
     () => firestore ? doc(firestore, 'contact', 'details') : null,
     [firestore]
   );
-  const { data: contactInfo, isLoading } = useDoc<ContactInfo>(contactDocRef);
+  // Cached doc: info card + social links render instantly from localStorage
+  // on repeat visits while Firestore re-syncs in the background.
+  const { data: contactInfo, isLoading } = useCachedDoc<ContactInfo>(contactDocRef, 'contact-details');
 
   const contactLinks = contactInfo ? [
     { icon: faEnvelope, label: t('contact.email'), value: contactInfo.email, href: `mailto:${contactInfo.email}`, color: 'hover:text-blue-300' },
@@ -103,12 +106,8 @@ export default function ContactPage() {
       <div ref={scrollRef} className="flex-1 min-h-0 overflow-y-auto">
         <div className="p-4 md:p-8 flex items-center justify-center min-h-full">
             <div className="container mx-auto px-0">
-              {isLoading ? (
-                <div className="flex justify-center items-center h-64">
-                  <Preloader />
-                </div>
-              ) : contactInfo ? (
-                <motion.div
+            {/* Render instantly — only the info card waits on Firestore */}
+            <motion.div
                   className="flex flex-col gap-4 md:gap-6 items-center justify-center lg:flex-row lg:items-start"
                   variants={containerVariants}
                   initial="hidden"
@@ -122,6 +121,7 @@ export default function ContactPage() {
                     </Card>
                   </motion.div>
                   <motion.div className="w-full lg:w-1/2 flex justify-center" variants={itemVariants}>
+                    {contactInfo ? (
                     <Card className="glass-effect p-4 sm:p-6 flex flex-col h-full w-full max-w-md">
                       <CardContent className="flex flex-col items-center text-center p-0">
                         <Avatar className="border-2 border-white mb-4 w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20">
@@ -175,19 +175,25 @@ export default function ContactPage() {
                         )}
                       </CardContent>
                     </Card>
+                    ) : isLoading ? (
+                      <Card className="glass-effect p-4 sm:p-6 flex flex-col items-center justify-center w-full max-w-md min-h-[280px]">
+                        <CardContent className="p-0 flex items-center justify-center w-full">
+                          <Preloader />
+                        </CardContent>
+                      </Card>
+                    ) : (
+                      <div className="text-center py-12 text-muted-foreground">
+                          <p>{t('contact.notAvailable')}</p>
+                      </div>
+                    )}
                   </motion.div>
                 </motion.div>
-              ) : (
-                  <div className="text-center py-12 text-muted-foreground">
-                      <p>{t('contact.notAvailable')}</p>
-                  </div>
-              )}
               {contactInfo && (
-                <motion.div 
+                <motion.div
                   className="flex items-center justify-center gap-3 sm:gap-4 mt-6 md:mt-8 flex-shrink-0"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 0.6, duration: 0.5}}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.15, duration: 0.5, ease: 'easeOut' }}
                 >
                   {socialLinks.map((social) => (
                     social.href && (

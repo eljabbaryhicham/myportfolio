@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Lottie from 'lottie-react';
-const FALLBACK_GIF = 'https://res.cloudinary.com/dsq1lxrqi/image/upload/f_auto,q_auto/v1787346242/2090900309524422657_2_h5puoc.gif';
+const FALLBACK_GIF = 'https://res.cloudinary.com/dsq1lxrqi/image/upload/f_auto,q_auto/v1787348899/honey_badger_alive__gyx22e.gif';
 import { useDoc, useFirestore, useMemoFirebase } from '@/firebase';
 import { doc } from 'firebase/firestore';
 

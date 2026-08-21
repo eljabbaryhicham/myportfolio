@@ -10,11 +10,11 @@ import {
   DialogDescription,
   DialogClose,
 } from '@/components/ui/dialog';
-import { useState, memo, useEffect, useMemo, useRef, useCallback } from 'react';
+import { useState, memo, useEffect, useMemo, useRef, useCallback, lazy, Suspense } from 'react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { useCollection, useFirestore, useMemoFirebase, useUser, setDocumentNonBlocking, addDocumentNonBlocking, useDoc } from '@/firebase';
+import { useCollection, useFirestore, useMemoFirebase, useUser, setDocumentNonBlocking, addDocumentNonBlocking, useDoc, useFirebase } from '@/firebase';
 import { collection, doc } from 'firebase/firestore';
 import type { PortfolioItem } from '@/features/portfolio/data/portfolio-data';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -28,15 +28,16 @@ import MediaAdmin from '@/features/admin/components/MediaAdmin';
 import { useToast } from '@/hooks/use-toast';
 import { motion, AnimatePresence, PanInfo } from 'framer-motion';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
-import ContactForm from '@/features/contact/components/ContactForm';
 import type { AppUser } from '@/firebase/auth/use-user';
-import PlyrPlayer from '@/components/PlyrPlayer';
 import CdnClapprPlayer from '@/components/CdnClapprPlayer';
 import { useTranslation } from '@/lib/i18n/useTranslation';
 
 const MemoizedImage = memo(Image);
-const MemoizedPlyrPlayer = memo(PlyrPlayer);
+// Lazy: keeps hls.js + plyr CSS out of the /work route chunk until a video
+// dialog actually opens. ContactForm (zod + react-hook-form + lottie) likewise.
+const MemoizedPlyrPlayer = memo(lazy(() => import('@/components/PlyrPlayer')));
 const MemoizedCdnClapprPlayer = memo(CdnClapprPlayer);
+const LazyContactForm = lazy(() => import('@/features/contact/components/ContactForm'));
 
 
 const MemoizedPortfolioMedia = memo(({
@@ -279,7 +280,10 @@ const slugify = (text: string) => text.toLowerCase().replace(/\s+/g, '-').replac
 
 export default function WorkPage() {
   const firestore = useFirestore();
-  const { user, isUserLoading } = useUser();
+  const { user } = useUser();
+  // Auth-settle only: Firestore rules need the auth token, not the user
+  // profile doc, so don't wait for useUser()'s extra profile read.
+  const { isUserLoading: isAuthSettling } = useFirebase();
   const { toast } = useToast();
   const router = useRouter();
   const pathname = usePathname();
@@ -297,8 +301,8 @@ export default function WorkPage() {
   // (refresh → navigate from home) can hit security rules before the token
   // is restored and fail the first read.
   const projectsQuery = useMemoFirebase(
-    () => (firestore && !isUserLoading ? collection(firestore, 'projects') : null),
-    [firestore, isUserLoading]
+    () => (firestore && !isAuthSettling ? collection(firestore, 'projects') : null),
+    [firestore, isAuthSettling]
   );
   const {
     data: portfolioItems,
@@ -822,15 +826,17 @@ export default function WorkPage() {
                         <div className="relative flex flex-col justify-center h-full">
                           <div className={cn("w-full transition-opacity duration-300", isDialogMediaLoading && "opacity-0")}>
                             {isClient && (
-                              <MemoizedPortfolioMedia
-                                item={selectedItem}
-                                onFullscreenClick={setFullscreenImageUrl}
-                                onMediaLoaded={() => setIsDialogMediaLoading(false)}
-                                watermark={logoUrl}
-                                playerType={workPagePlayer}
-                                autoPlay={!isDialogOpen}
-                                plyrRef={plyrRef}
-                              />
+                              <Suspense fallback={null}>
+                                <MemoizedPortfolioMedia
+                                  item={selectedItem}
+                                  onFullscreenClick={setFullscreenImageUrl}
+                                  onMediaLoaded={() => setIsDialogMediaLoading(false)}
+                                  watermark={logoUrl}
+                                  playerType={workPagePlayer}
+                                  autoPlay={!isDialogOpen}
+                                  plyrRef={plyrRef}
+                                />
+                              </Suspense>
                             )}
                           </div>
                             
@@ -907,10 +913,12 @@ export default function WorkPage() {
                 {t('work.details.contactDescription').replace('{title}', selectedItem?.title || '')}
               </DialogDescription>
             </DialogHeader>
-            <ContactForm
-                onSuccess={() => setIsContactFormOpen(false)}
-                defaultMessage={selectedItem ? t('work.details.contactDefaultMessage').replace('{title}', selectedItem.title) : ''}
-            />
+            <Suspense fallback={<div className="h-64" />}>
+              <LazyContactForm
+                  onSuccess={() => setIsContactFormOpen(false)}
+                  defaultMessage={selectedItem ? t('work.details.contactDefaultMessage').replace('{title}', selectedItem.title) : ''}
+              />
+            </Suspense>
             <DialogClose className={cn(
                 "absolute right-4 top-4 h-10 w-10",
                 "flex items-center justify-center rounded-full transition-opacity",

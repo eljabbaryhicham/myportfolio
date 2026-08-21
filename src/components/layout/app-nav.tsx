@@ -30,6 +30,8 @@ interface HomePageSettings {
     menubarLogoSize?: number;
 }
 
+const MENUBAR_LOGO_CACHE_KEY = 'menubar-logo-url';
+
 export function AppNav() {
   const pathname = usePathname();
   const { user } = useUser();
@@ -50,8 +52,31 @@ export function AppNav() {
   );
   const { data: homeSettings } = useDoc<HomePageSettings>(settingsDocRef);
 
+  // Hydrate the logo instantly from a local cache instead of waiting for the
+  // Firestore settings/contact docs to resolve on every page load.
+  const [cachedLogoUrl, setCachedLogoUrl] = React.useState<string | null>(() => {
+    if (typeof window === 'undefined') return null;
+    try {
+      return window.localStorage.getItem(MENUBAR_LOGO_CACHE_KEY);
+    } catch {
+      return null;
+    }
+  });
 
-  const logoUrl = homeSettings?.homePageLogoUrl || contactInfo?.logoUrl;
+  React.useEffect(() => {
+    const resolved = homeSettings?.homePageLogoUrl || contactInfo?.logoUrl;
+    if (resolved && resolved !== cachedLogoUrl) {
+      setCachedLogoUrl(resolved);
+      try {
+        window.localStorage.setItem(MENUBAR_LOGO_CACHE_KEY, resolved);
+      } catch {
+        // storage unavailable (e.g. private mode) — cache is best-effort
+      }
+    }
+  }, [homeSettings?.homePageLogoUrl, contactInfo?.logoUrl, cachedLogoUrl]);
+
+
+  const logoUrl = homeSettings?.homePageLogoUrl || contactInfo?.logoUrl || cachedLogoUrl;
 
   const accessibleNavItems = navItems.filter(item => {
     if (item.href === '/test') {
