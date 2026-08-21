@@ -197,24 +197,16 @@ export default function HomePageContent() {
   const logoColor = homeSettings?.homePageLogoColor || '';
 
   useEffect(() => {
-    const hide = (e: MouseEvent) => {
-      document.body.style.cursor = 'none';
-    };
-    document.body.style.cursor = 'none';
-    document.documentElement.style.cursor = 'none';
-    window.addEventListener('mousemove', hide);
-    window.addEventListener('mousedown', hide);
-    window.addEventListener('pointerdown', hide);
+    const transparentCursor = 'url("data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7") 1 1, none';
+    document.documentElement.style.cursor = transparentCursor;
+    document.body.style.cursor = transparentCursor;
     const s = document.createElement('style');
     s.id = 'hide-cursor';
-    s.textContent = '*,*::before,*::after,:root,html,body,video,canvas,svg,input,textarea,button,a,label,select,option,[role="button"],[role="link"]{ cursor: none !important; }';
+    s.textContent = `*,*::before,*::after,:root,html,body,video,canvas,svg,input,textarea,button,a,label,select,option,[role="button"],[role="link"],dialog,[data-radix-popper-content-wrapper]{ cursor: ${transparentCursor} !important; }`;
     document.head.appendChild(s);
     return () => {
-      document.body.style.cursor = '';
       document.documentElement.style.cursor = '';
-      window.removeEventListener('mousemove', hide);
-      window.removeEventListener('mousedown', hide);
-      window.removeEventListener('pointerdown', hide);
+      document.body.style.cursor = '';
       s.remove();
     };
   }, []);
@@ -236,7 +228,7 @@ export default function HomePageContent() {
   }, [homeSettings?.heroVideoUrl]);
 
   return (
-    <div className="fixed inset-0 overflow-y-auto overflow-x-hidden" style={{ cursor: 'none' }}>
+    <div className="fixed inset-0 overflow-y-auto overflow-x-hidden" style={{ cursor: 'url("data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7") 1 1, none' }}>
       <div className="relative z-10 min-h-full w-full flex items-center justify-center transition-opacity duration-1000">
         <CursorArrow targetRef={ctaRef} cursorLottieUrl={homeSettings?.cursorLottieUrl} tickLottieUrl={homeSettings?.tickLottieUrl} />
 
@@ -251,7 +243,7 @@ export default function HomePageContent() {
         <div className="flex flex-col items-center gap-1 sm:gap-2 md:gap-3 w-full px-4">
           <motion.div
             className="w-[min(80vw,500px)] md:w-[min(70vw,600px)]"
-            style={{ aspectRatio: "16/9", position: "relative", cursor: "none" }}
+            style={{ aspectRatio: "16/9", position: "relative", cursor: 'url("data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7") 1 1, none' }}
             animate={{ y: [0, -8, 0] }}
             transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
           >
@@ -270,7 +262,7 @@ export default function HomePageContent() {
                 background: "radial-gradient(ellipse at center, rgba(255,255,255,0.08) 0%, transparent 70%)",
                 filter: "blur(50px)",
               }} />
-              <video ref={videoRef} autoPlay muted loop playsInline className="absolute inset-0 w-full h-full object-cover" key={homeSettings?.heroVideoUrl || HERO_VIDEO_URL} style={{ cursor: 'none', pointerEvents: 'none' }} />
+              <video ref={videoRef} autoPlay muted loop playsInline className="absolute inset-0 w-full h-full object-cover" key={homeSettings?.heroVideoUrl || HERO_VIDEO_URL} style={{ cursor: 'url("data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7") 1 1, none', pointerEvents: 'none' }} />
               <div className="absolute inset-0 bg-black/60" />
               <div className="absolute inset-0" style={{ backdropFilter: "blur(1px)" }} />
             </div>
