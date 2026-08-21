@@ -22,10 +22,6 @@ import Hls from "hls.js";
 
 const HERO_VIDEO_URL = "https://res.cloudinary.com/dsq1lxrqi/video/upload/sp_auto/pg_5/v1778867307/Ovi_Motion_Design_v3kfy0.m3u8";
 
-interface ContactInfo {
-    logoUrl?: string;
-}
-
 interface HomePageSettings {
     homePageLogoUrl?: string;
     isHomePageLogoVisible?: boolean;
@@ -179,19 +175,13 @@ export default function HomePageContent() {
   const ctaRef = useRef<HTMLButtonElement | null>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
 
-  const contactDocRef = useMemoFirebase(
-    () => (firestore ? doc(firestore, 'contact', 'details') : null),
-    [firestore]
-  );
-  const { data: contactInfo, isLoading: isLoadingContact } = useDoc<ContactInfo>(contactDocRef);
-
   const settingsDocRef = useMemoFirebase(
     () => (firestore ? doc(firestore, 'homepage', 'settings') : null),
     [firestore]
   );
   const { data: homeSettings, isLoading: isLoadingSettings } = useDoc<HomePageSettings>(settingsDocRef);
   
-  const isLoading = isLoadingContact || isLoadingSettings;
+  const isLoading = isLoadingSettings;
 
   const homeLogoUrl = homeSettings?.homePageLogoUrl;
   const isLogoVisible = homeSettings?.isHomePageLogoVisible ?? true;
@@ -230,7 +220,7 @@ export default function HomePageContent() {
         <Particles />
 
         {isLoading && (
-          <div className="absolute inset-0 z-30 flex items-center justify-center bg-black/50">
+          <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50">
             <Preloader />
           </div>
         )}
