@@ -286,15 +286,10 @@ tr.drag-over-bottom {
   border-bottom: 2px solid hsl(var(--primary) / 0.2);
 }
 
-@keyframes hide-cursor-boop {
-  0%, 100% { cursor: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVQI12NgAAIABQABNjN9GQAAAABJRU5ErkJggg==") 0 0, none; }
-}
-
 html.hide-cursor,
 html.hide-cursor body,
 html.hide-cursor body *,
 html.hide-cursor body *::before,
 html.hide-cursor body *::after {
-  animation: hide-cursor-boop 1s infinite !important;
-  cursor: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVQI12NgAAIABQABNjN9GQAAAABJRU5ErkJggg==") 0 0, none !important;
+  cursor: url("/cursor-none.png") 0 0, none !important;
 }
