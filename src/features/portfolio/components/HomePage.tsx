@@ -197,34 +197,8 @@ export default function HomePageContent() {
   const logoColor = homeSettings?.homePageLogoColor || '';
 
   useEffect(() => {
-    const c = 'url("data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7") 0 0, none';
-    const html = document.documentElement;
-    const body = document.body;
-    html.classList.add('hide-cursor');
-    html.style.setProperty('cursor', c, 'important');
-    body.style.setProperty('cursor', c, 'important');
-
-    let mx = -1, my = -1;
-    const track = (e: MouseEvent) => { mx = e.clientX; my = e.clientY; };
-    document.addEventListener('mousemove', track, true);
-
-    let raf: number;
-    const tick = () => {
-      if (mx >= 0 && my >= 0) {
-        const el = document.elementFromPoint(mx, my);
-        if (el) (el as HTMLElement).style.setProperty('cursor', c, 'important');
-      }
-      raf = requestAnimationFrame(tick);
-    };
-    raf = requestAnimationFrame(tick);
-
-    return () => {
-      cancelAnimationFrame(raf);
-      document.removeEventListener('mousemove', track, true);
-      html.classList.remove('hide-cursor');
-      html.style.removeProperty('cursor');
-      body.style.removeProperty('cursor');
-    };
+    document.documentElement.classList.add('hide-cursor');
+    return () => { document.documentElement.classList.remove('hide-cursor'); };
   }, []);
 
   useEffect(() => {
