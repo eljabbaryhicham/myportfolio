@@ -68,6 +68,8 @@ function CursorArrow({ targetRef, cursorLottieUrl, tickLottieUrl }: { targetRef:
   const [isOver, setIsOver] = useState(false);
   const [customCursor, setCustomCursor] = useState<any>(null);
   const [customTick, setCustomTick] = useState<any>(null);
+  const [cursorGif, setCursorGif] = useState<string | null>(null);
+  const [tickGif, setTickGif] = useState<string | null>(null);
 
   useEffect(() => {
     const el = arrowRef.current;
@@ -108,24 +110,40 @@ function CursorArrow({ targetRef, cursorLottieUrl, tickLottieUrl }: { targetRef:
   }, [targetRef]);
 
   useEffect(() => {
-    if (!cursorLottieUrl) { setCustomCursor(null); return; }
+    if (!cursorLottieUrl) { setCustomCursor(null); setCursorGif(null); return; }
+    const isGif = /\.gif$/i.test(cursorLottieUrl);
+    if (isGif) {
+      setCursorGif(cursorLottieUrl);
+      setCustomCursor(null);
+      return;
+    }
     let disposed = false;
     fetch(cursorLottieUrl)
       .then(r => r.json())
-      .then(data => { if (!disposed) setCustomCursor(data); })
+      .then(data => { if (!disposed) { setCustomCursor(data); setCursorGif(null); } })
       .catch(() => {});
     return () => { disposed = true; };
   }, [cursorLottieUrl]);
 
   useEffect(() => {
-    if (!tickLottieUrl) { setCustomTick(null); return; }
+    if (!tickLottieUrl) { setCustomTick(null); setTickGif(null); return; }
+    const isGif = /\.gif$/i.test(tickLottieUrl);
+    if (isGif) {
+      setTickGif(tickLottieUrl);
+      setCustomTick(null);
+      return;
+    }
     let disposed = false;
     fetch(tickLottieUrl)
       .then(r => r.json())
-      .then(data => { if (!disposed) setCustomTick(data); })
+      .then(data => { if (!disposed) { setCustomTick(data); setTickGif(null); } })
       .catch(() => {});
     return () => { disposed = true; };
   }, [tickLottieUrl]);
+
+  const showTick = isOver;
+  const useGif = showTick ? tickGif : cursorGif;
+  const useLottie = showTick ? (customTick || tickAnimationData) : (customCursor || cursorArrowData);
 
   return (
     <div
@@ -133,10 +151,10 @@ function CursorArrow({ targetRef, cursorLottieUrl, tickLottieUrl }: { targetRef:
       className="pointer-events-none fixed z-50 w-10 h-10"
       style={{ left: -100, top: -100, opacity: 0 }}
     >
-      {isOver ? (
-        <Lottie key="tick" animationData={customTick || tickAnimationData} loop={false} />
+      {useGif ? (
+        <img key={showTick ? 'tick-gif' : 'cursor-gif'} src={useGif} alt="" className="w-full h-full object-contain" />
       ) : (
-        <Lottie key="arrow" animationData={customCursor || cursorArrowData} loop={true} />
+        <Lottie key={showTick ? 'tick' : 'arrow'} animationData={useLottie} loop={!showTick} />
       )}
     </div>
   );

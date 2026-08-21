@@ -758,12 +758,12 @@ export default function HomeAdmin() {
                                         control={control}
                                         name="cursorLottieUrl"
                                         render={({ field }) => {
-                                            const lottieAssets = mediaAssets?.filter(a => a.resource_type === 'raw' || a.filename?.endsWith('.json'));
+                                            const lottieAssets = mediaAssets?.filter(a => a.resource_type === 'raw' || a.filename?.endsWith('.json') || a.filename?.endsWith('.gif'));
                                             return (
                                                 <FormItem>
-                                                    <FormLabel>{t('homeAdmin.cursorLottieUrl') || 'Pointer Cursor Lottie'}</FormLabel>
+                                                    <FormLabel>{t('homeAdmin.cursorLottieUrl') || 'Pointer Cursor Animation'}</FormLabel>
                                                     <FormDescription>
-                                                        {t('homeAdmin.cursorLottieUrlDescription') || 'Custom Lottie JSON for the pointer cursor on buttons. Leave empty for default.'}
+                                                        {t('homeAdmin.cursorLottieUrlDescription') || 'Custom Lottie JSON or GIF for the pointer cursor on buttons. Leave empty for default.'}
                                                     </FormDescription>
                                                     <div className="flex gap-2">
                                                         <FormControl>
@@ -791,12 +791,12 @@ export default function HomeAdmin() {
                                         control={control}
                                         name="tickLottieUrl"
                                         render={({ field }) => {
-                                            const lottieAssets = mediaAssets?.filter(a => a.resource_type === 'raw' || a.filename?.endsWith('.json'));
+                                            const lottieAssets = mediaAssets?.filter(a => a.resource_type === 'raw' || a.filename?.endsWith('.json') || a.filename?.endsWith('.gif'));
                                             return (
                                                 <FormItem>
-                                                    <FormLabel>{t('homeAdmin.tickLottieUrl') || 'Button Hover Lottie'}</FormLabel>
+                                                    <FormLabel>{t('homeAdmin.tickLottieUrl') || 'Button Hover Animation'}</FormLabel>
                                                     <FormDescription>
-                                                        {t('homeAdmin.tickLottieUrlDescription') || 'Custom Lottie JSON shown when hovering directly over the button. Leave empty for default.'}
+                                                        {t('homeAdmin.tickLottieUrlDescription') || 'Custom Lottie JSON or GIF shown when hovering over the button. Leave empty for default.'}
                                                     </FormDescription>
                                                     <div className="flex gap-2">
                                                         <FormControl>

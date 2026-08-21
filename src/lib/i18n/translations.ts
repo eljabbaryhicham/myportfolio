@@ -159,6 +159,10 @@ const en: Record<string, string> = {
   'homeAdmin.heroVideoUrlPlaceholder': 'https://res.cloudinary.com/.../video.m3u8',
   'homeAdmin.heroVideoUrlDescription': 'Enter a direct URL or choose from the media library below.',
   'homeAdmin.chooseFromLibrary': 'Library',
+  'homeAdmin.cursorLottieUrl': 'Pointer Cursor Animation',
+  'homeAdmin.cursorLottieUrlDescription': 'Custom Lottie JSON or GIF for the pointer cursor on buttons. Leave empty for default.',
+  'homeAdmin.tickLottieUrl': 'Button Hover Animation',
+  'homeAdmin.tickLottieUrlDescription': 'Custom Lottie JSON or GIF shown when hovering over the button. Leave empty for default.',
 
   /* ContactAdmin */
   'contactAdmin.title': 'Contact Page & Site Settings',
@@ -649,6 +653,10 @@ const fr: Record<string, string> = {
   'homeAdmin.heroVideoUrlPlaceholder': 'https://res.cloudinary.com/.../video.m3u8',
   'homeAdmin.heroVideoUrlDescription': 'Entrez une URL directe ou choisissez depuis la bibliothèque ci-dessous.',
   'homeAdmin.chooseFromLibrary': 'Bibliothèque',
+  'homeAdmin.cursorLottieUrl': 'Animation du curseur',
+  'homeAdmin.cursorLottieUrlDescription': 'Lottie JSON ou GIF personnalisé pour le curseur sur les boutons. Laisser vide pour la valeur par défaut.',
+  'homeAdmin.tickLottieUrl': 'Animation au survol du bouton',
+  'homeAdmin.tickLottieUrlDescription': 'Lottie JSON ou GIF affiché au survol du bouton. Laisser vide pour la valeur par défaut.',
 
   /* ContactAdmin */
   'contactAdmin.title': 'Page de contact & Paramètres du site',
