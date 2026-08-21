@@ -136,6 +136,7 @@ export default function HomeAdmin() {
   const [isLibraryOpen, setIsLibraryOpen] = useState(false);
   const [libraryField, setLibraryField] = useState<'homePageLogoUrl' | 'heroVideoUrl' | 'preloaderUrl' | 'cursorLottieUrl' | 'tickLottieUrl' | null>(null);
   const [libraryTab, setLibraryTab] = useState<'images' | 'videos' | 'files'>('images');
+  const [libraryCollection, setLibraryCollection] = useState<'primary' | 'extented'>('primary');
 
   const videoItems = portfolioItems?.filter(item => item.type === 'video') || [];
   const imageAssets = mediaAssets?.filter(asset => asset.resource_type === 'image') || [];
@@ -824,8 +825,8 @@ export default function HomeAdmin() {
             }}
             activeTab={libraryTab}
             setActiveTab={setLibraryTab}
-            activeLibrary={'primary'}
-            setActiveLibrary={() => {}}
+            activeLibrary={libraryCollection}
+            setActiveLibrary={setLibraryCollection}
             newlyUploadedId={null}
         />
     </div>
