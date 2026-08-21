@@ -197,11 +197,14 @@ export default function HomePageContent() {
   const logoColor = homeSettings?.homePageLogoColor || '';
 
   useEffect(() => {
+    const el = document.documentElement;
+    el.style.cursor = 'none';
     document.body.style.cursor = 'none';
     const s = document.createElement('style');
-    s.textContent = '*,*::before,*::after,:root,html,video,canvas,svg{ cursor: none !important; }';
-    document.head.prepend(s);
-    return () => { document.body.style.cursor = ''; s.remove(); };
+    s.id = 'hide-cursor';
+    s.textContent = '*,*::before,*::after,:root,html,body,video,canvas,svg,input,textarea,button,a{ cursor: none !important; }';
+    document.head.appendChild(s);
+    return () => { el.style.cursor = ''; document.body.style.cursor = ''; s.remove(); };
   }, []);
 
   useEffect(() => {
@@ -222,7 +225,7 @@ export default function HomePageContent() {
 
   return (
     <div className="fixed inset-0 overflow-y-auto overflow-x-hidden">
-      <style>{`*,*::before,*::after,:root,html,video,canvas,svg{ cursor: none !important; }`}</style>
+      <style>{`*,*::before,*::after,:root,html,body,video,canvas,svg,input,textarea,button,a{ cursor: none !important; }`}</style>
       <div className="relative z-10 min-h-full w-full flex items-center justify-center transition-opacity duration-1000">
         <CursorArrow targetRef={ctaRef} cursorLottieUrl={homeSettings?.cursorLottieUrl} tickLottieUrl={homeSettings?.tickLottieUrl} />
 
