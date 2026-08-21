@@ -15,15 +15,17 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { useDoc, useFirestore, useMemoFirebase, setDocumentNonBlocking, useUser, useCollection } from '@/firebase';
 import { collection, doc } from 'firebase/firestore';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import Preloader from '@/components/preloader';
 import type { AppUser } from '@/firebase/auth/use-user';
 import { useTranslation } from '@/lib/i18n/useTranslation';
+import MediaAdmin from './MediaAdmin';
+import { faImages } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 const formSchema = z.object({
   avatarUrl: z.string().url().optional().or(z.literal('')),
@@ -87,6 +89,8 @@ export default function ContactAdmin() {
   const { data: mediaAssets } = useCollection<MediaAsset>(mediaCollectionRef);
   const imageAssets = mediaAssets?.filter(a => a.resource_type === 'image') || [];
 
+  const [isLibraryOpen, setIsLibraryOpen] = useState(false);
+
   const form = useForm<ContactInfo>({
     resolver: zodResolver(formSchema),
     defaultValues: defaultFormValues,
@@ -139,6 +143,7 @@ export default function ContactAdmin() {
   }
 
   return (
+    <>
     <div className="flex-1 flex flex-col h-full">
       <div className="mb-6">
           <h2 className="text-xl font-headline">{t('contactAdmin.title')}</h2>
@@ -184,22 +189,13 @@ export default function ContactAdmin() {
                         render={({ field }) => (
                         <FormItem>
                             <FormLabel>{t('contactAdmin.avatarUrl')}</FormLabel>
-                            <div className="flex gap-2">
+                            <div className="flex items-center gap-2">
                                 <FormControl>
                                     <Input placeholder={t('contactAdmin.avatarUrlPlaceholder')} {...field} className="flex-1" />
                                 </FormControl>
-                                <Select onValueChange={(val) => field.onChange(val)} value="">
-                                    <SelectTrigger className="w-auto whitespace-nowrap">
-                                        <SelectValue placeholder={t('homeAdmin.chooseFromLibrary')} />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {imageAssets.map((asset) => (
-                                            <SelectItem key={asset.id} value={asset.url}>
-                                                {asset.title || asset.filename}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
+                                <Button type="button" variant="outline" size="icon" onClick={() => setIsLibraryOpen(true)}>
+                                    <FontAwesomeIcon icon={faImages} />
+                                </Button>
                             </div>
                             <FormDescription>{t('contactAdmin.avatarUrlDescription')}</FormDescription>
                             <FormMessage />
@@ -319,6 +315,25 @@ export default function ContactAdmin() {
               </div>
           </ScrollArea>
       </div>
-    </div>
+      </div>
+      <MediaAdmin
+          isDialog={true}
+          isOpen={isLibraryOpen}
+          onOpenChange={setIsLibraryOpen}
+          onMediaSelect={(url, type) => {
+              if (type === 'image') {
+                  form.setValue('avatarUrl', url, { shouldValidate: true });
+              }
+              setIsLibraryOpen(false);
+          }}
+          isSelectionMode={isLibraryOpen}
+          onSelectionComplete={() => setIsLibraryOpen(false)}
+          activeTab={'images'}
+          setActiveTab={() => {}}
+          activeLibrary={'primary'}
+          setActiveLibrary={() => {}}
+          newlyUploadedId={null}
+      />
+    </>
   );
 }

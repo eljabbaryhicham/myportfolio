@@ -4,6 +4,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import * as z from 'zod';
+import { Button } from '@/components/ui/button';
 import {
   Form,
   FormControl,
@@ -35,6 +36,9 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { useTranslation } from '@/lib/i18n/useTranslation';
+import MediaAdmin from './MediaAdmin';
+import { faImages } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 function debounce<T extends (...args: any[]) => void>(fn: T, delay: number): T & { cancel: () => void } {
   let timer: ReturnType<typeof setTimeout>;
@@ -128,6 +132,9 @@ export default function HomeAdmin() {
   
   const mediaCollection = useMemoFirebase(() => firestore ? collection(firestore, 'media') : null, [firestore]);
   const { data: mediaAssets, isLoading: isLoadingMedia } = useCollection<MediaAsset>(mediaCollection);
+
+  const [isLibraryOpen, setIsLibraryOpen] = useState(false);
+  const [libraryField, setLibraryField] = useState<'homePageLogoUrl' | null>(null);
 
   const videoItems = portfolioItems?.filter(item => item.type === 'video') || [];
   const imageAssets = mediaAssets?.filter(asset => asset.resource_type === 'image') || [];
@@ -275,22 +282,13 @@ export default function HomeAdmin() {
                                         render={({ field }) => (
                                             <FormItem>
                                                 <FormLabel>{t('homeAdmin.homepageLogoUrl')}</FormLabel>
-                                                <div className="flex gap-2">
+                                                <div className="flex items-center gap-2">
                                                     <FormControl>
                                                         <Input placeholder={t('homeAdmin.homepageLogoUrlPlaceholder')} {...field} className="flex-1" />
                                                     </FormControl>
-                                                    <Select onValueChange={(val) => field.onChange(val)} value="">
-                                                        <SelectTrigger className="w-auto whitespace-nowrap">
-                                                            <SelectValue placeholder={t('homeAdmin.chooseFromLibrary')} />
-                                                        </SelectTrigger>
-                                                        <SelectContent>
-                                                            {imageAssets.map((asset) => (
-                                                                <SelectItem key={asset.id} value={asset.url}>
-                                                                    {asset.title || asset.filename}
-                                                                </SelectItem>
-                                                            ))}
-                                                        </SelectContent>
-                                                    </Select>
+                                                    <Button type="button" variant="outline" size="icon" onClick={() => { setLibraryField('homePageLogoUrl'); setIsLibraryOpen(true); }}>
+                                                        <FontAwesomeIcon icon={faImages} />
+                                                    </Button>
                                                 </div>
                                                 <FormMessage />
                                             </FormItem>
@@ -867,6 +865,30 @@ export default function HomeAdmin() {
                 </div>
             </ScrollArea>
         </div>
+        <MediaAdmin
+            isDialog={true}
+            isOpen={isLibraryOpen}
+            onOpenChange={setIsLibraryOpen}
+            onMediaSelect={(url, type, filename) => {
+                if (libraryField === 'homePageLogoUrl') {
+                    if (type === 'image') {
+                        setValue('homePageLogoUrl', url);
+                    }
+                }
+                setIsLibraryOpen(false);
+                setLibraryField(null);
+            }}
+            isSelectionMode={!!libraryField}
+            onSelectionComplete={() => {
+                setIsLibraryOpen(false);
+                setLibraryField(null);
+            }}
+            activeTab={'images'}
+            setActiveTab={() => {}}
+            activeLibrary={'primary'}
+            setActiveLibrary={() => {}}
+            newlyUploadedId={null}
+        />
     </div>
   );
 }
