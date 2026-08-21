@@ -163,6 +163,8 @@ const en: Record<string, string> = {
   'homeAdmin.cursorLottieUrlDescription': 'Custom Lottie JSON or GIF for the pointer cursor on buttons. Leave empty for default.',
   'homeAdmin.tickLottieUrl': 'Button Hover Animation',
   'homeAdmin.tickLottieUrlDescription': 'Custom Lottie JSON or GIF shown when hovering over the button. Leave empty for default.',
+  'homeAdmin.menubarLogoSize': 'Navbar Logo Size',
+  'homeAdmin.menubarLogoSizeDescription': 'Adjust the size of the logo in the navigation bar.',
 
   /* ContactAdmin */
   'contactAdmin.title': 'Contact Page & Site Settings',
@@ -657,6 +659,8 @@ const fr: Record<string, string> = {
   'homeAdmin.cursorLottieUrlDescription': 'Lottie JSON ou GIF personnalisé pour le curseur sur les boutons. Laisser vide pour la valeur par défaut.',
   'homeAdmin.tickLottieUrl': 'Animation au survol du bouton',
   'homeAdmin.tickLottieUrlDescription': 'Lottie JSON ou GIF affiché au survol du bouton. Laisser vide pour la valeur par défaut.',
+  'homeAdmin.menubarLogoSize': 'Taille du logo de la barre de navigation',
+  'homeAdmin.menubarLogoSizeDescription': 'Ajustez la taille du logo dans la barre de navigation.',
 
   /* ContactAdmin */
   'contactAdmin.title': 'Page de contact & Paramètres du site',

@@ -68,6 +68,7 @@ interface HomePageSettings {
     homePageTitle?: string;
     homePageSubtitle?: string;
     homePageTitleColor?: string;
+    menubarLogoSize?: number;
 }
 
 const settingsSchema = z.object({
@@ -92,6 +93,7 @@ const settingsSchema = z.object({
   homePageTitle: z.string().optional(),
   homePageSubtitle: z.string().optional(),
   homePageTitleColor: z.string().optional(),
+  menubarLogoSize: z.number().min(24).max(80).optional(),
 });
 
 type SettingsFormValues = z.infer<typeof settingsSchema>;
@@ -154,6 +156,7 @@ export default function HomeAdmin() {
       homePageTitle: '',
       homePageSubtitle: '',
       homePageTitleColor: '',
+      menubarLogoSize: 48,
     },
   });
 
@@ -184,6 +187,7 @@ export default function HomeAdmin() {
         homePageTitle: homeSettings.homePageTitle || '',
         homePageSubtitle: homeSettings.homePageSubtitle || '',
         homePageTitleColor: homeSettings.homePageTitleColor || '',
+        menubarLogoSize: homeSettings.menubarLogoSize || 48,
       });
     }
   }, [homeSettings, form]);
@@ -401,6 +405,28 @@ export default function HomeAdmin() {
                                                 </div>
                                                 <FormDescription>
                                                     {t('homeAdmin.logoColorDescription') || 'Leave empty or white for original logo color'}
+                                                </FormDescription>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                    <FormField
+                                        control={control}
+                                        name="menubarLogoSize"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>{t('homeAdmin.menubarLogoSize') || 'Navbar Logo Size'} — {field.value || 48}px</FormLabel>
+                                                <FormControl>
+                                                    <Slider
+                                                        value={[field.value || 48]}
+                                                        onValueChange={(value) => field.onChange(value[0])}
+                                                        min={24}
+                                                        max={80}
+                                                        step={1}
+                                                    />
+                                                </FormControl>
+                                                <FormDescription>
+                                                    {t('homeAdmin.menubarLogoSizeDescription') || 'Adjust the size of the logo in the navigation bar'}
                                                 </FormDescription>
                                                 <FormMessage />
                                             </FormItem>
