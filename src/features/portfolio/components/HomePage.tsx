@@ -204,17 +204,26 @@ export default function HomePageContent() {
     html.style.setProperty('cursor', c, 'important');
     body.style.setProperty('cursor', c, 'important');
 
-    const force = (e: MouseEvent) => {
-      const el = e.target as HTMLElement;
-      if (el) el.style.setProperty('cursor', c, 'important');
+    let mx = -1, my = -1;
+    const track = (e: MouseEvent) => { mx = e.clientX; my = e.clientY; };
+    document.addEventListener('mousemove', track, true);
+
+    let raf: number;
+    const tick = () => {
+      if (mx >= 0 && my >= 0) {
+        const el = document.elementFromPoint(mx, my);
+        if (el) (el as HTMLElement).style.setProperty('cursor', c, 'important');
+      }
+      raf = requestAnimationFrame(tick);
     };
-    document.addEventListener('mouseover', force, true);
+    raf = requestAnimationFrame(tick);
 
     return () => {
+      cancelAnimationFrame(raf);
+      document.removeEventListener('mousemove', track, true);
       html.classList.remove('hide-cursor');
       html.style.removeProperty('cursor');
       body.style.removeProperty('cursor');
-      document.removeEventListener('mouseover', force, true);
     };
   }, []);
 
