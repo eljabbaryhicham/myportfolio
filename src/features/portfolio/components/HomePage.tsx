@@ -62,7 +62,7 @@ function Particles() {
   return <div className="absolute inset-0 pointer-events-none overflow-hidden">{circles}</div>;
 }
 
-function CursorArrow({ targetRef, cursorLottieUrl, tickLottieUrl, lockRef }: { targetRef: React.RefObject<HTMLButtonElement | null>; cursorLottieUrl?: string; tickLottieUrl?: string; lockRef: React.MutableRefObject<{ x: number; y: number; locked: boolean }> }) {
+function CursorArrow({ targetRef, cursorLottieUrl, tickLottieUrl }: { targetRef: React.RefObject<HTMLButtonElement | null>; cursorLottieUrl?: string; tickLottieUrl?: string }) {
   const arrowRef = useRef<HTMLDivElement>(null);
   const angleRef = useRef(0);
   const [isOver, setIsOver] = useState(false);
@@ -70,16 +70,14 @@ function CursorArrow({ targetRef, cursorLottieUrl, tickLottieUrl, lockRef }: { t
   const [customTick, setCustomTick] = useState<any>(null);
   const [cursorGif, setCursorGif] = useState<string | null>(null);
   const [tickGif, setTickGif] = useState<string | null>(null);
-  const lastElRef = useRef<Element | null>(null);
 
   useEffect(() => {
     const el = arrowRef.current;
     if (!el) return;
 
     const update = (e: MouseEvent) => {
-      const pos = lockRef.current;
-      const cx = pos.locked ? pos.x : e.clientX;
-      const cy = pos.locked ? pos.y : e.clientY;
+      const cx = e.clientX;
+      const cy = e.clientY;
 
       if (!targetRef.current) return;
       const rect = targetRef.current.getBoundingClientRect();
@@ -102,15 +100,6 @@ function CursorArrow({ targetRef, cursorLottieUrl, tickLottieUrl, lockRef }: { t
       el.style.left = `${cx}px`;
       el.style.top = `${cy}px`;
       el.style.opacity = "1";
-
-      if (pos.locked) {
-        const underEl = document.elementFromPoint(cx, cy);
-        if (underEl !== lastElRef.current) {
-          if (lastElRef.current) lastElRef.current.dispatchEvent(new PointerEvent('pointerleave', { bubbles: true, clientX: cx, clientY: cy }));
-          if (underEl) underEl.dispatchEvent(new PointerEvent('pointerenter', { bubbles: true, clientX: cx, clientY: cy }));
-          lastElRef.current = underEl;
-        }
-      }
     };
 
     const hide = () => { if (arrowRef.current) arrowRef.current.style.opacity = "0"; };
@@ -121,7 +110,7 @@ function CursorArrow({ targetRef, cursorLottieUrl, tickLottieUrl, lockRef }: { t
       window.removeEventListener("mousemove", update);
       window.removeEventListener("mouseleave", hide);
     };
-  }, [targetRef, lockRef]);
+  }, [targetRef]);
 
   useEffect(() => {
     if (!cursorLottieUrl) { setCustomCursor(null); setCursorGif(null); return; }
@@ -189,7 +178,6 @@ export default function HomePageContent() {
   const { t } = useTranslation();
   const ctaRef = useRef<HTMLButtonElement | null>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
-  const lockRef = useRef({ x: 0, y: 0, locked: false });
 
   const contactDocRef = useMemoFirebase(
     () => (firestore ? doc(firestore, 'contact', 'details') : null),
@@ -212,59 +200,31 @@ export default function HomePageContent() {
   const logoColor = homeSettings?.homePageLogoColor || '';
 
   useEffect(() => {
-    document.documentElement.classList.add('hide-cursor');
-    let locked = false;
-    let lastX = window.innerWidth / 2;
-    let lastY = window.innerHeight / 2;
-
-    const onMove = (e: MouseEvent) => {
-      if (!locked) {
-        lastX = e.clientX;
-        lastY = e.clientY;
-        lockRef.current.x = e.clientX;
-        lockRef.current.y = e.clientY;
-      }
-    };
-    const onLockMove = (e: MouseEvent) => {
-      if (locked) {
-        lockRef.current.x = Math.max(0, Math.min(window.innerWidth, lockRef.current.x + e.movementX));
-        lockRef.current.y = Math.max(0, Math.min(window.innerHeight, lockRef.current.y + e.movementY));
-      }
-    };
-    const requestLock = () => {
-      if (!locked && document.documentElement.classList.contains('hide-cursor')) {
-        lockRef.current.x = lastX;
-        lockRef.current.y = lastY;
-        document.body.requestPointerLock();
-      }
-    };
-    const onLockChange = () => {
-      locked = document.pointerLockElement === document.body;
-      lockRef.current.locked = locked;
-    };
-    const onClick = (e: MouseEvent) => {
-      if (locked) {
-        const target = document.elementFromPoint(lockRef.current.x, lockRef.current.y);
-        if (target && target !== document.body && target !== document.documentElement) {
-          target.dispatchEvent(new MouseEvent(e.type, { bubbles: true, clientX: lockRef.current.x, clientY: lockRef.current.y, button: e.button }));
+    const html = document.documentElement;
+    const body = document.body;
+    const c = 'url("/cursor-none.png") 0 0, none';
+    html.style.setProperty('cursor', c, 'important');
+    body.style.setProperty('cursor', c, 'important');
+    document.querySelectorAll('*').forEach((el) => {
+      (el as HTMLElement).style.setProperty('cursor', c, 'important');
+    });
+    const obs = new MutationObserver((mutations) => {
+      for (const m of mutations) {
+        for (const node of m.addedNodes) {
+          if (node instanceof HTMLElement) {
+            node.style.setProperty('cursor', c, 'important');
+            node.querySelectorAll('*').forEach((el) => {
+              (el as HTMLElement).style.setProperty('cursor', c, 'important');
+            });
+          }
         }
-      } else {
-        requestLock();
       }
-    };
-
-    document.addEventListener('mousemove', onMove, { passive: true });
-    document.addEventListener('mousemove', onLockMove, { passive: true });
-    document.addEventListener('click', onClick);
-    document.addEventListener('pointerlockchange', onLockChange);
-
+    });
+    obs.observe(body, { childList: true, subtree: true });
     return () => {
-      document.documentElement.classList.remove('hide-cursor');
-      document.removeEventListener('mousemove', onMove);
-      document.removeEventListener('mousemove', onLockMove);
-      document.removeEventListener('click', onClick);
-      document.removeEventListener('pointerlockchange', onLockChange);
-      if (locked) document.exitPointerLock();
+      obs.disconnect();
+      html.style.removeProperty('cursor');
+      body.style.removeProperty('cursor');
     };
   }, []);
 
@@ -287,7 +247,7 @@ export default function HomePageContent() {
   return (
     <div className="fixed inset-0 overflow-y-auto overflow-x-hidden">
       <div className="relative z-10 min-h-full w-full flex items-center justify-center transition-opacity duration-1000">
-        <CursorArrow targetRef={ctaRef} cursorLottieUrl={homeSettings?.cursorLottieUrl} tickLottieUrl={homeSettings?.tickLottieUrl} lockRef={lockRef} />
+        <CursorArrow targetRef={ctaRef} cursorLottieUrl={homeSettings?.cursorLottieUrl} tickLottieUrl={homeSettings?.tickLottieUrl} />
 
         <Particles />
 
