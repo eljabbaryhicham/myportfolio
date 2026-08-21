@@ -278,10 +278,10 @@ export default function HomePageContent() {
                 {homeSettings?.homePageSubtitle || t('home.hero.subtitle')}
               </p>
             </motion.div>
-            <motion.div variants={itemVariants} className="flex items-center gap-3 sm:gap-4">
-              <Button asChild size="sm" className="group transition-shadow duration-300 rounded-full px-4 sm:px-5" style={{ boxShadow: "0 0 15px rgba(255,255,255,0.1)" }}>
+            <motion.div variants={itemVariants} className="flex items-center gap-2 sm:gap-3">
+              <Button asChild className="group transition-shadow duration-300 rounded-full h-8 px-3 sm:px-4 text-[10px] sm:text-xs" style={{ boxShadow: "0 0 15px rgba(255,255,255,0.1)" }}>
                 <Link href="/about">
-                  <FontAwesomeIcon icon={faCircleInfo} className="mr-1.5 h-3 w-3" />
+                  <FontAwesomeIcon icon={faCircleInfo} className="mr-1 h-2.5 w-2.5" />
                   {t('nav.about')}
                 </Link>
               </Button>
@@ -294,10 +294,10 @@ export default function HomePageContent() {
                   <FontAwesomeIcon icon={faArrowRight} className="ml-2 transition-transform group-hover:translate-x-1" />
                 </Link>
               </Button>
-              <Button asChild size="sm" className="group transition-shadow duration-300 rounded-full px-4 sm:px-5" style={{ boxShadow: "0 0 15px rgba(255,255,255,0.1)" }}>
+              <Button asChild className="group transition-shadow duration-300 rounded-full h-8 px-3 sm:px-4 text-[10px] sm:text-xs" style={{ boxShadow: "0 0 15px rgba(255,255,255,0.1)" }}>
                 <Link href="/contact">
                   {t('nav.contact')}
-                  <FontAwesomeIcon icon={faEnvelope} className="ml-1.5 h-3 w-3" />
+                  <FontAwesomeIcon icon={faEnvelope} className="ml-1 h-2.5 w-2.5" />
                 </Link>
               </Button>
             </motion.div>
