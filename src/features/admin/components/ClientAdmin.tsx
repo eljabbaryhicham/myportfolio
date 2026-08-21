@@ -165,6 +165,8 @@ export default function ClientAdmin() {
   
   const [isLibraryOpen, setIsLibraryOpen] = useState(false);
   const [librarySelectionConfig, setLibrarySelectionConfig] = useState<{ onSelect: (url: string, type: 'image' | 'video' | 'raw', filename: string) => void } | null>(null);
+  const [libraryTab, setLibraryTab] = useState<'images' | 'videos' | 'files'>('images');
+  const [libraryCollection, setLibraryCollection] = useState<'primary' | 'extented'>('primary');
 
   const draggingItem = useRef<string | null>(null);
   const dragOverItem = useRef<string | null>(null);
@@ -601,10 +603,10 @@ export default function ClientAdmin() {
               setIsLibraryOpen(false);
               setLibrarySelectionConfig(null);
           }}
-          activeTab={'images'}
-          setActiveTab={() => {}}
-          activeLibrary={'primary'}
-          setActiveLibrary={() => {}}
+          activeTab={libraryTab}
+          setActiveTab={setLibraryTab}
+          activeLibrary={libraryCollection}
+          setActiveLibrary={setLibraryCollection}
           newlyUploadedId={null}
       />
     </>

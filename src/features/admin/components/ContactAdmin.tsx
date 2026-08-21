@@ -102,6 +102,8 @@ export default function ContactAdmin() {
   const imageAssets = mediaAssets?.filter(a => a.resource_type === 'image') || [];
 
   const [isLibraryOpen, setIsLibraryOpen] = useState(false);
+  const [libraryTab, setLibraryTab] = useState<'images' | 'videos' | 'files'>('images');
+  const [libraryCollection, setLibraryCollection] = useState<'primary' | 'extented'>('primary');
 
   const form = useForm<ContactInfo>({
     resolver: zodResolver(formSchema),
@@ -444,10 +446,10 @@ export default function ContactAdmin() {
           }}
           isSelectionMode={isLibraryOpen}
           onSelectionComplete={() => setIsLibraryOpen(false)}
-          activeTab={'images'}
-          setActiveTab={() => {}}
-          activeLibrary={'primary'}
-          setActiveLibrary={() => {}}
+          activeTab={libraryTab}
+          setActiveTab={setLibraryTab}
+          activeLibrary={libraryCollection}
+          setActiveLibrary={setLibraryCollection}
           newlyUploadedId={null}
       />
     </>
