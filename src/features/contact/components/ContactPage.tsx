@@ -27,11 +27,17 @@ interface ContactInfo {
   email?: string;
   whatsApp?: string;
   behanceUrl?: string;
+  behanceName?: string;
   linkedinUrl?: string;
+  linkedinName?: string;
   fiverrUrl?: string;
+  fiverrName?: string;
   instagramUrl?: string;
+  instagramName?: string;
   facebookUrl?: string;
+  facebookName?: string;
   twitterUrl?: string;
+  twitterName?: string;
 }
 
 const containerVariants = {
@@ -69,8 +75,8 @@ export default function ContactPage() {
 
   const contactLinks = contactInfo ? [
     { icon: faEnvelope, label: t('contact.email'), value: contactInfo.email, href: `mailto:${contactInfo.email}`, color: 'hover:text-blue-300' },
-    { icon: faBehance, label: t('contact.behance'), value: '@BeLofted', href: contactInfo.behanceUrl, color: 'hover:text-purple-300' },
-    { icon: faLinkedin, label: t('contact.linkedin'), value: 'Hicham Eljabbary', href: contactInfo.linkedinUrl, color: 'hover:text-sky-300' },
+    { icon: faBehance, label: t('contact.behance'), value: contactInfo.behanceName || '@BeLofted', href: contactInfo.behanceUrl, color: 'hover:text-purple-300' },
+    { icon: faLinkedin, label: t('contact.linkedin'), value: contactInfo.linkedinName || 'Hicham Eljabbary', href: contactInfo.linkedinUrl, color: 'hover:text-sky-300' },
   ] : [];
 
   const socialLinks = contactInfo ? [

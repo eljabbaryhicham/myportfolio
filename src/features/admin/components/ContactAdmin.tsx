@@ -34,11 +34,17 @@ const formSchema = z.object({
   email: z.string().email().optional().or(z.literal('')),
   whatsApp: z.string().optional().or(z.literal('')),
   behanceUrl: z.string().url().optional().or(z.literal('')),
+  behanceName: z.string().optional().or(z.literal('')),
   linkedinUrl: z.string().url().optional().or(z.literal('')),
+  linkedinName: z.string().optional().or(z.literal('')),
   fiverrUrl: z.string().url().optional().or(z.literal('')),
+  fiverrName: z.string().optional().or(z.literal('')),
   instagramUrl: z.string().url().optional().or(z.literal('')),
+  instagramName: z.string().optional().or(z.literal('')),
   facebookUrl: z.string().url().optional().or(z.literal('')),
+  facebookName: z.string().optional().or(z.literal('')),
   twitterUrl: z.string().url().optional().or(z.literal('')),
+  twitterName: z.string().optional().or(z.literal('')),
 
 });
 
@@ -51,11 +57,17 @@ const defaultFormValues: ContactInfo = {
     email: '',
     whatsApp: '',
     behanceUrl: '',
+    behanceName: '',
     linkedinUrl: '',
+    linkedinName: '',
     fiverrUrl: '',
+    fiverrName: '',
     instagramUrl: '',
+    instagramName: '',
     facebookUrl: '',
+    facebookName: '',
     twitterUrl: '',
+    twitterName: '',
 };
 
 interface MediaAsset {
@@ -107,11 +119,17 @@ export default function ContactAdmin() {
             email: contactInfo.email || '',
             whatsApp: contactInfo.whatsApp || '',
             behanceUrl: contactInfo.behanceUrl || '',
+            behanceName: contactInfo.behanceName || '',
             linkedinUrl: contactInfo.linkedinUrl || '',
+            linkedinName: contactInfo.linkedinName || '',
             fiverrUrl: contactInfo.fiverrUrl || '',
+            fiverrName: contactInfo.fiverrName || '',
             instagramUrl: contactInfo.instagramUrl || '',
+            instagramName: contactInfo.instagramName || '',
             facebookUrl: contactInfo.facebookUrl || '',
+            facebookName: contactInfo.facebookName || '',
             twitterUrl: contactInfo.twitterUrl || '',
+            twitterName: contactInfo.twitterName || '',
         };
       form.reset(values);
     } else if (!isLoading) {
@@ -267,12 +285,38 @@ export default function ContactAdmin() {
                     />
                     <FormField
                         control={form.control}
+                        name="behanceName"
+                        render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>{t('contactAdmin.behanceName') || 'Behance Display Name'}</FormLabel>
+                            <FormControl>
+                            <Input placeholder={t('contactAdmin.behanceNamePlaceholder') || '@BeLofted'} {...field} />
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                        )}
+                    />
+                    <FormField
+                        control={form.control}
                         name="linkedinUrl"
                         render={({ field }) => (
                         <FormItem>
                             <FormLabel>{t('contactAdmin.linkedinUrl')}</FormLabel>
                             <FormControl>
                             <Input placeholder={t('contactAdmin.linkedinUrlPlaceholder')} {...field} />
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                        )}
+                    />
+                    <FormField
+                        control={form.control}
+                        name="linkedinName"
+                        render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>{t('contactAdmin.linkedinName') || 'LinkedIn Display Name'}</FormLabel>
+                            <FormControl>
+                            <Input placeholder={t('contactAdmin.linkedinNamePlaceholder') || 'Hicham Eljabbary'} {...field} />
                             </FormControl>
                             <FormMessage />
                         </FormItem>
@@ -293,12 +337,38 @@ export default function ContactAdmin() {
                     />
                     <FormField
                         control={form.control}
+                        name="fiverrName"
+                        render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>{t('contactAdmin.fiverrName') || 'Fiverr Display Name'}</FormLabel>
+                            <FormControl>
+                            <Input placeholder={t('contactAdmin.fiverrNamePlaceholder') || 'your_username'} {...field} />
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                        )}
+                    />
+                    <FormField
+                        control={form.control}
                         name="instagramUrl"
                         render={({ field }) => (
                         <FormItem>
                             <FormLabel>{t('contactAdmin.instagramUrl')}</FormLabel>
                             <FormControl>
                             <Input placeholder={t('contactAdmin.instagramUrlPlaceholder')} {...field} />
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                        )}
+                    />
+                    <FormField
+                        control={form.control}
+                        name="instagramName"
+                        render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>{t('contactAdmin.instagramName') || 'Instagram Display Name'}</FormLabel>
+                            <FormControl>
+                            <Input placeholder={t('contactAdmin.instagramNamePlaceholder') || '@your_username'} {...field} />
                             </FormControl>
                             <FormMessage />
                         </FormItem>
@@ -319,12 +389,38 @@ export default function ContactAdmin() {
                     />
                     <FormField
                         control={form.control}
+                        name="facebookName"
+                        render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>{t('contactAdmin.facebookName') || 'Facebook Display Name'}</FormLabel>
+                            <FormControl>
+                            <Input placeholder={t('contactAdmin.facebookNamePlaceholder') || 'Your Page Name'} {...field} />
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                        )}
+                    />
+                    <FormField
+                        control={form.control}
                         name="twitterUrl"
                         render={({ field }) => (
                         <FormItem>
                             <FormLabel>{t('contactAdmin.twitterUrl')}</FormLabel>
                             <FormControl>
                             <Input placeholder={t('contactAdmin.twitterUrlPlaceholder')} {...field} />
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                        )}
+                    />
+                    <FormField
+                        control={form.control}
+                        name="twitterName"
+                        render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>{t('contactAdmin.twitterName') || 'Twitter Display Name'}</FormLabel>
+                            <FormControl>
+                            <Input placeholder={t('contactAdmin.twitterNamePlaceholder') || '@your_username'} {...field} />
                             </FormControl>
                             <FormMessage />
                         </FormItem>
