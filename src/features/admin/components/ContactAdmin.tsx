@@ -18,7 +18,7 @@ import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { useDoc, useFirestore, useMemoFirebase, setDocumentNonBlocking, useUser, useCollection } from '@/firebase';
 import { collection, doc } from 'firebase/firestore';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import Preloader from '@/components/preloader';
 import type { AppUser } from '@/firebase/auth/use-user';
@@ -96,6 +96,8 @@ export default function ContactAdmin() {
     defaultValues: defaultFormValues,
   });
 
+  const { watch } = form;
+
   useEffect(() => {
     if (contactInfo) {
         const values: ContactInfo = {
@@ -125,14 +127,37 @@ export default function ContactAdmin() {
     }
   }, [canEditContact, form]);
 
-  const onSubmit = (values: ContactInfo) => {
-    if (!contactDocRef || !canEditContact) return;
-    setDocumentNonBlocking(contactDocRef, values, { merge: true });
-    toast({
-      title: t('contactAdmin.toast.saved.title'),
-      description: t('contactAdmin.toast.saved.description'),
+  const [isMounted, setIsMounted] = useState(false);
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!canEditContact || !isMounted || !contactDocRef) return;
+
+    let timer: ReturnType<typeof setTimeout>;
+    const debouncedSave = (fieldName: string, value: any) => {
+        clearTimeout(timer);
+        timer = setTimeout(() => {
+            setDocumentNonBlocking(contactDocRef, { [fieldName]: value }, { merge: true });
+            toast({
+                title: t('homeAdmin.toast.saved.title'),
+                description: t('homeAdmin.toast.saved.description'),
+            });
+        }, 500);
+    };
+
+    const subscription = watch((value, { name, type }) => {
+      if (type === 'change' && name) {
+        debouncedSave(name, value[name as keyof ContactInfo]);
+      }
     });
-  };
+
+    return () => {
+      subscription.unsubscribe();
+      clearTimeout(timer);
+    };
+  }, [watch, contactDocRef, canEditContact, toast, isMounted]);
 
   if (isLoading) {
     return (
@@ -155,8 +180,7 @@ export default function ContactAdmin() {
           <ScrollArea className="h-full">
               <div className="p-6">
                 <Form {...form}>
-                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-                    <fieldset disabled={!canEditContact} className="group">
+                    <div className="space-y-8">
                     <FormField
                         control={form.control}
                         name="name"
@@ -306,11 +330,7 @@ export default function ContactAdmin() {
                         </FormItem>
                         )}
                     />
-                    <div className="flex justify-end pt-4">
-                        <Button type="submit" disabled={!canEditContact}>{t('contactAdmin.save')}</Button>
                     </div>
-                    </fieldset>
-                    </form>
                 </Form>
               </div>
           </ScrollArea>
