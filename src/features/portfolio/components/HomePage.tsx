@@ -197,14 +197,26 @@ export default function HomePageContent() {
   const logoColor = homeSettings?.homePageLogoColor || '';
 
   useEffect(() => {
-    const el = document.documentElement;
-    el.style.cursor = 'none';
+    const hide = (e: MouseEvent) => {
+      document.body.style.cursor = 'none';
+    };
     document.body.style.cursor = 'none';
+    document.documentElement.style.cursor = 'none';
+    window.addEventListener('mousemove', hide);
+    window.addEventListener('mousedown', hide);
+    window.addEventListener('pointerdown', hide);
     const s = document.createElement('style');
     s.id = 'hide-cursor';
-    s.textContent = '*,*::before,*::after,:root,html,body,video,canvas,svg,input,textarea,button,a{ cursor: none !important; }';
+    s.textContent = '*,*::before,*::after,:root,html,body,video,canvas,svg,input,textarea,button,a,label,select,option,[role="button"],[role="link"]{ cursor: none !important; }';
     document.head.appendChild(s);
-    return () => { el.style.cursor = ''; document.body.style.cursor = ''; s.remove(); };
+    return () => {
+      document.body.style.cursor = '';
+      document.documentElement.style.cursor = '';
+      window.removeEventListener('mousemove', hide);
+      window.removeEventListener('mousedown', hide);
+      window.removeEventListener('pointerdown', hide);
+      s.remove();
+    };
   }, []);
 
   useEffect(() => {
@@ -224,8 +236,7 @@ export default function HomePageContent() {
   }, [homeSettings?.heroVideoUrl]);
 
   return (
-    <div className="fixed inset-0 overflow-y-auto overflow-x-hidden">
-      <style>{`*,*::before,*::after,:root,html,body,video,canvas,svg,input,textarea,button,a{ cursor: none !important; }`}</style>
+    <div className="fixed inset-0 overflow-y-auto overflow-x-hidden" style={{ cursor: 'none' }}>
       <div className="relative z-10 min-h-full w-full flex items-center justify-center transition-opacity duration-1000">
         <CursorArrow targetRef={ctaRef} cursorLottieUrl={homeSettings?.cursorLottieUrl} tickLottieUrl={homeSettings?.tickLottieUrl} />
 
