@@ -1,6 +1,5 @@
 
 @import url('https://fonts.googleapis.com/css2?family=Bungee&family=Quicksand:wght@400;500;700&family=Dancing+Script:wght@700&display=swap');
-@import url('https://fonts.googleapis.com/icon?family=Material+Icons+Outlined');
 
 @tailwind base;
 @tailwind components;
@@ -8,9 +7,7 @@
 
 @layer base {
   html,
-  body,
-  #root,
-  #__next {
+  body {
     @apply h-full w-full;
   }
   
@@ -238,39 +235,6 @@
 
 .animate-glow {
   animation: glow 1.5s ease-in-out infinite;
-}
-
-@keyframes green-glow {
-  0%, 100% {
-    box-shadow: 0 0 5px hsla(142, 71%, 45%, 0), 0 0 10px hsla(142, 71%, 45%, 0);
-  }
-  50% {
-    box-shadow: 0 0 15px hsla(142, 71%, 45%, 0.8), 0 0 20px hsla(142, 71%, 45%, 0.6);
-  }
-}
-
-.animate-green-glow {
-  animation: green-glow 1.5s ease-in-out infinite;
-}
-
-@keyframes marquee {
-  from {
-    transform: translateX(0);
-  }
-  to {
-    transform: translateX(-100%);
-  }
-}
-
-.animate-marquee {
-  animation: marquee 20s linear infinite;
-}
-
-@keyframes icon-wobble {
-    0%, 100% { transform: rotate(0deg); }
-    25% { transform: rotate(15deg); }
-    50% { transform: rotate(-10deg); }
-    75% { transform: rotate(5deg); }
 }
 
 tr.dragging {

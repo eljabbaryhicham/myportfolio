@@ -59,12 +59,9 @@ export const useUser = (): { user: AppUser | null, isUserLoading: boolean, userE
     if (userDoc) {
       // If a document exists in Firestore, combine it with the auth data.
       setAppUser({
+        ...userDoc,
         uid: authUser.uid,
         email: authUser.email,
-        username: userDoc.username,
-        role: userDoc.role,
-        permissions: userDoc.permissions,
-        ...userDoc
       });
     } else {
         // If no document exists, fall back to just auth data.

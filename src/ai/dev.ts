@@ -1,6 +1,4 @@
 
-import * as dotenv from 'dotenv';
-dotenv.config();
-
-// Flows will be imported for their side effects in this file.
+// Genkit dev runner — flows imported for side effects.
+// Env vars loaded via Next.js .env files natively.
 import './flows/upload-media-from-url';

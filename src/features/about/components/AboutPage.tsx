@@ -145,16 +145,16 @@ export default function AboutPage() {
               </div>
             ) : (
               <motion.div 
-                  className="space-y-8 md:space-y-12 [@media_(orientation:landscape)]:space-y-24"
+                  className="space-y-8 md:space-y-12 lg:space-y-16"
                   variants={containerVariants}
                   initial="hidden"
                   animate="visible"
                 >
                 <motion.div 
                     variants={itemVariants}
-                    className="flex flex-col gap-6 md:gap-8 items-center justify-center [@media_(orientation:landscape)]:flex-row [@media_(orientation:landscape)]:items-stretch [@media_(orientation:landscape)]:gap-12"
+                    className="flex flex-col gap-6 md:gap-8 items-center justify-center lg:flex-row lg:items-stretch lg:gap-12"
                   >
-                    <div className="w-full [@media_(orientation:landscape)]:w-1/2 text-center p-4 sm:p-6 md:p-8 flex flex-col justify-center">
+                    <div className="w-full lg:w-1/2 text-center p-4 sm:p-6 md:p-8 flex flex-col justify-center">
                         {logoUrl && (
                             <div className="w-32 mx-auto mb-4" style={{ transform: `scale(${logoScale})` }}>
                                 <Logo src={logoUrl} />
@@ -177,7 +177,7 @@ export default function AboutPage() {
                             </Button>
                         </div>
                     </div>
-                    <div className="w-full [@media_(orientation:landscape)]:w-1/2 flex flex-col justify-center">
+                    <div className="w-full lg:w-1/2 flex flex-col justify-center">
                        <h2 className="text-2xl md:text-3xl font-headline tracking-tight mb-4 md:mb-6 text-center">{t('about.whatYouGet')}</h2>
                        <div className="grid grid-cols-3 sm:grid-cols-6 grid-rows-2 gap-3 md:gap-4 h-full">
                         {services.map((service, index) => {

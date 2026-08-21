@@ -109,19 +109,19 @@ export default function ContactPage() {
                 </div>
               ) : contactInfo ? (
                 <motion.div
-                  className="flex flex-col gap-4 md:gap-6 items-center justify-center [@media_(orientation:landscape)]:flex-row [@media_(orientation:landscape)]:items-start"
+                  className="flex flex-col gap-4 md:gap-6 items-center justify-center lg:flex-row lg:items-start"
                   variants={containerVariants}
                   initial="hidden"
                   animate="visible"
                 >
-                  <motion.div className="w-full [@media_(orientation:landscape)]:w-1/2 flex justify-center" variants={itemVariants}>
+                  <motion.div className="w-full lg:w-1/2 flex justify-center" variants={itemVariants}>
                     <Card className="glass-effect p-4 sm:p-6 md:p-8 h-full flex flex-col justify-center w-full max-w-md">
                       <CardContent className="p-0 flex flex-col items-center">
                           <ContactForm />
                       </CardContent>
                     </Card>
                   </motion.div>
-                  <motion.div className="w-full [@media_(orientation:landscape)]:w-1/2 flex justify-center" variants={itemVariants}>
+                  <motion.div className="w-full lg:w-1/2 flex justify-center" variants={itemVariants}>
                     <Card className="glass-effect p-4 sm:p-6 flex flex-col h-full w-full max-w-md">
                       <CardContent className="flex flex-col items-center text-center p-0">
                         <Avatar className="border-2 border-white mb-4 w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20">
@@ -144,11 +144,11 @@ export default function ContactPage() {
                                     target="_blank"
                                     rel="noopener noreferrer"
                                   >
-                                      <div className={cn("w-9 h-9 sm:w-10 sm:h-10 md:w-12 md:h-12 flex-shrink-0 rounded-full flex items-center justify-center glass-effect transition-colors duration-300 text-white", link.color)}>
+                                          <div className={cn("w-11 h-11 sm:w-10 sm:h-10 md:w-12 md:h-12 flex-shrink-0 rounded-full flex items-center justify-center glass-effect transition-colors duration-300 text-white", link.color)}>
                                           <Icon icon={link.icon} className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6" />
                                       </div>
                                       <div className="mt-2 md:mt-0 md:ml-4 break-words">
-                                          <p className="text-[10px] sm:text-xs md:text-sm text-foreground/70">{link.label}</p>
+                                          <p className="text-xs sm:text-xs md:text-sm text-foreground/70">{link.label}</p>
                                           <p className="text-xs sm:text-sm md:text-base font-medium group-hover:text-primary transition-colors">{link.value}</p>
                                       </div>
                                   </Link>
@@ -162,7 +162,7 @@ export default function ContactPage() {
                             <Separator className="my-4 bg-white/20" />
                             <div className="flex justify-center">
                                 <Button asChild className="bg-gradient-to-r from-green-500 to-emerald-600 animate-shake" size="lg">
-                                    <Link href={`https://wa.me/${contactInfo.whatsApp.replace(/\\D/g, '')}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2">
+                                    <Link href={`https://wa.me/${contactInfo.whatsApp.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2">
                                         <FontAwesomeIcon icon={faWhatsapp} className="h-5 w-5" />
                                         <div className="text-left">
                                             <p className="text-xs font-light leading-tight">{t('contact.whatsApp')}</p>
@@ -195,7 +195,7 @@ export default function ContactPage() {
                         href={social.href} 
                         key={social.id} 
                         className={cn(
-                          "w-9 h-9 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center text-white transition-all duration-300 hover:scale-110 glass-effect",
+                          "w-11 h-11 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center text-white transition-all duration-300 hover:scale-110 glass-effect",
                           social.hoverColor
                         )}
                         target="_blank" 

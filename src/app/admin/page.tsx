@@ -20,7 +20,7 @@ import HomeAdmin from '@/features/admin/components/HomeAdmin';
 import type { PortfolioItem } from '@/features/portfolio/data/portfolio-data';
 import { PortfolioItemFormSheet } from '@/features/admin/components/PortfolioItemForm';
 import { addDocumentNonBlocking, setDocumentNonBlocking } from '@/firebase/non-blocking-updates';
-import { collection, doc } from 'firebase/firestore';
+import { collection, doc, getDocs, query, orderBy, limit } from 'firebase/firestore';
 import { useFirestore, useUser } from '@/firebase';
 import AdminManagement from '@/features/admin/components/AdminManagement';
 import AboutAdmin from '@/features/admin/components/AboutAdmin';
@@ -99,7 +99,7 @@ function AdminPage() {
     }
   };
 
-  const handlePortfolioFormSubmit = (values: PortfolioItem, minOrder: number) => {
+  const handlePortfolioFormSubmit = async (values: PortfolioItem) => {
     if (!firestore || !canEditProjects) return;
 
     if (values.id) {
@@ -112,7 +112,10 @@ function AdminPage() {
         description: t('admin.toast.changesSaved.description'),
       });
     } else {
-      // New item, place it at the beginning
+      // New item — query Firestore for min order
+      const q = query(collection(firestore, 'projects'), orderBy('order', 'asc'), limit(1));
+      const snap = await getDocs(q);
+      const minOrder = snap.empty ? 0 : (snap.docs[0].data().order ?? 0);
       const dataToSave = { ...values, order: minOrder - 1 };
       addDocumentNonBlocking(collection(firestore, 'projects'), dataToSave);
        toast({
@@ -254,7 +257,7 @@ function AdminPage() {
         isOpen={isPortfolioSheetOpen}
         setIsOpen={handlePortfolioSheetOpenChange}
         item={selectedPortfolioItem}
-        onSubmit={(values) => handlePortfolioFormSubmit(values, 0)} // Note: minOrder logic is now in ProjectAdmin, may need to pass it up
+        onSubmit={(values) => handlePortfolioFormSubmit(values)}
         onChooseFromLibrary={handleOpenLibraryForSelection}
         canEdit={canEditProjects}
       />

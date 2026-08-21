@@ -18,7 +18,7 @@ import { useCollection, useFirestore, useMemoFirebase, useUser, setDocumentNonBl
 import { collection, query, orderBy, doc } from 'firebase/firestore';
 import type { PortfolioItem } from '@/features/portfolio/data/portfolio-data';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faUpDown, faXmark, faExpand, faPalette, faFilm, faArrowLeft, faArrowRight, faPencilAlt, faEnvelope, faPlus, faArrowDown, faSyncAlt } from '@fortawesome/free-solid-svg-icons';
+import { faUpDown, faXmark, faExpand, faPalette, faFilm, faArrowLeft, faArrowRight, faPencilAlt, faArrowDown, faSyncAlt } from '@fortawesome/free-solid-svg-icons';
 import { Separator } from '@/components/ui/separator';
 import Preloader from '@/components/preloader';
 import { useIsExtraWide } from '@/hooks/use-is-extra-wide';
@@ -159,7 +159,7 @@ const MemoizedPortfolioMedia = memo(({
         <Button
             variant="ghost"
             size="icon"
-            className="absolute inset-0 m-auto z-10 h-12 w-12 md:h-16 md:w-16 text-white bg-black/50 opacity-0 md:group-hover:opacity-100 transition-opacity"
+            className="absolute inset-0 m-auto z-10 h-12 w-12 md:h-16 md:w-16 text-white bg-black/50 opacity-70 md:opacity-0 md:group-hover:opacity-100 transition-opacity"
             onClick={() => onFullscreenClick(item.sourceUrl || item.thumbnailUrl)}
           >
             <FontAwesomeIcon icon={faExpand} className="h-6 w-6 md:h-8 md:w-8" />
@@ -623,7 +623,7 @@ export default function WorkPage() {
   return (
     <>
       <div className="h-full w-full flex flex-col">
-        <div className="p-8 pb-4">
+        <div className="p-4 md:p-8 pb-4">
           <div className="container mx-auto px-0">
             <div className="mb-8 text-center">
               <h1 className="text-3xl md:text-4xl font-headline tracking-tight">{t('work.heading')}</h1>
@@ -649,7 +649,7 @@ export default function WorkPage() {
         <Separator className="bg-white/10" />
 
         <ScrollArea className="flex-1">
-          <div className="p-8 pt-4 flex items-center justify-center min-h-full">
+          <div className="p-4 md:p-8 pt-4 flex items-center justify-center min-h-full">
             <div className="container mx-auto px-0 min-h-full flex items-center justify-center">
               <AnimatePresence>
                 <motion.div
@@ -723,7 +723,7 @@ export default function WorkPage() {
             className={cn(
               "glass-effect p-0 flex flex-col group overflow-hidden",
               "w-[90vw] max-w-7xl",
-              isExtraWide || isDescriptionLong ? "h-[90vh]" : "max-h-[90vh]"
+              isExtraWide || isDescriptionLong ? "h-[90dvh]" : "max-h-[90dvh]"
             )}
             onMouseMove={handleDialogMouseMove}
             onMouseEnter={handleDialogMouseEnter}
@@ -770,7 +770,7 @@ export default function WorkPage() {
                               size="icon"
                               onClick={handlePreviousProject}
                               disabled={filteredItems.length <= 1}
-                              className="z-30 md:absolute md:left-16 md:top-1/2 md:-translate-y-1/2 h-8 w-8 md:h-10 md:w-10"
+                              className="z-30 md:absolute md:left-16 md:top-1/2 md:-translate-y-1/2 h-10 w-10 md:h-10 md:w-10"
                           >
                               <FontAwesomeIcon icon={faArrowLeft} className="h-4 w-4 md:h-5 md:w-5" />
                               <span className="sr-only">{t('work.details.previous')}</span>
@@ -780,7 +780,7 @@ export default function WorkPage() {
                               size="icon"
                               onClick={handleNextProject}
                               disabled={filteredItems.length <= 1}
-                              className="z-30 md:absolute md:right-16 md:top-1/2 md:-translate-y-1/2 h-8 w-8 md:h-10 md:w-10"
+                              className="z-30 md:absolute md:right-16 md:top-1/2 md:-translate-y-1/2 h-10 w-10 md:h-10 md:w-10"
                           >
                               <FontAwesomeIcon icon={faArrowRight} className="h-4 w-4 md:h-5 md:w-5" />
                               <span className="sr-only">{t('work.details.next')}</span>
@@ -832,7 +832,7 @@ export default function WorkPage() {
             </AnimatePresence>
             </motion.div>
             <DialogClose className={cn(
-                "absolute right-4 top-4 z-30 h-8 w-8 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center ring-offset-background transition-opacity focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 md:hover:opacity-100",
+                "absolute right-4 top-4 z-30 h-10 w-10 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center ring-offset-background transition-opacity focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 md:hover:opacity-100",
                 isMobile ? "opacity-70" : (isCloseButtonVisible ? "opacity-70" : "opacity-0")
             )}>
               <FontAwesomeIcon icon={faXmark} className="h-4 w-4" />
@@ -843,7 +843,7 @@ export default function WorkPage() {
       
       {/* Nested Dialog for Details */}
       <Dialog open={isDetailsModalOpen} onOpenChange={setDetailsModalOpen}>
-        <DialogContent className="w-[80vw] h-[80vh] md:h-[90vh] glass-effect p-0 flex flex-col group"
+        <DialogContent className="w-[80vw] h-[80dvh] md:h-[90dvh] glass-effect p-0 flex flex-col group"
           onMouseMove={handleDialogMouseMove}
           onMouseEnter={handleDialogMouseEnter}
           onMouseLeave={handleDialogMouseLeave}
@@ -859,10 +859,10 @@ export default function WorkPage() {
                     </div>
                 </ScrollArea>
                  <DialogClose className={cn(
-                    "absolute top-4 right-4 z-[101] h-8 w-8 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center md:hover:!opacity-100 ring-offset-background transition-opacity focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+                    "absolute top-4 right-4 z-[101] h-10 w-10 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center md:hover:!opacity-100 ring-offset-background transition-opacity focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
                     isMobile ? "opacity-70" : (isCloseButtonVisible ? "opacity-70" : "opacity-0")
                   )}>
-                    <FontAwesomeIcon icon={faXmark} className="h-4 w-4" />
+                    <FontAwesomeIcon icon={faXmark} className="h-5 w-5" />
                     <span className="sr-only">{t('work.details.close')}</span>
                 </DialogClose>
                 </>
@@ -884,13 +884,13 @@ export default function WorkPage() {
                 defaultMessage={selectedItem ? t('work.details.contactDefaultMessage').replace('{title}', selectedItem.title) : ''}
             />
             <DialogClose className={cn(
-                "absolute right-4 top-4 h-8 w-8",
+                "absolute right-4 top-4 h-10 w-10",
                 "flex items-center justify-center rounded-full transition-opacity",
                 "bg-destructive text-destructive-foreground opacity-70 hover:opacity-100",
                 "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
                 "disabled:pointer-events-none"
             )}>
-                <FontAwesomeIcon icon={faXmark} className="h-4 w-4" />
+                <FontAwesomeIcon icon={faXmark} className="h-5 w-5" />
                 <span className="sr-only">{t('work.details.close')}</span>
             </DialogClose>
         </DialogContent>
@@ -898,7 +898,7 @@ export default function WorkPage() {
 
       {/* Fullscreen Image Dialog */}
       <Dialog open={!!fullscreenImageUrl} onOpenChange={(open) => !open && setFullscreenImageUrl(null)}>
-        <DialogContent className="w-[80vw] h-[90vh] glass-effect p-0 flex flex-col items-center justify-center bg-black/80 border-0 group"
+        <DialogContent className="w-[80vw] h-[90dvh] glass-effect p-0 flex flex-col items-center justify-center bg-black/80 border-0 group"
           onMouseMove={handleDialogMouseMove}
           onMouseEnter={handleDialogMouseEnter}
           onMouseLeave={handleDialogMouseLeave}
@@ -916,10 +916,10 @@ export default function WorkPage() {
             </div>
           )}
           <DialogClose className={cn(
-              "absolute top-4 right-4 z-[101] h-8 w-8 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center md:hover:!opacity-100 ring-offset-background transition-opacity focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+              "absolute top-4 right-4 z-[101] h-10 w-10 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center md:hover:!opacity-100 ring-offset-background transition-opacity focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
               isMobile ? "opacity-70" : (isCloseButtonVisible ? "opacity-70" : "opacity-0")
           )}>
-              <FontAwesomeIcon icon={faXmark} className="h-4 w-4" />
+              <FontAwesomeIcon icon={faXmark} className="h-5 w-5" />
               <span className="sr-only">{t('work.details.close')}</span>
           </DialogClose>
         </DialogContent>

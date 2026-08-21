@@ -9,7 +9,7 @@ import tickAnimationData from "@/lib/tick-animation.json";
 
 import { Button } from "@/components/ui/button";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faArrowRight, faArrowLeft, faCircleInfo, faEnvelope } from '@fortawesome/free-solid-svg-icons';
+import { faArrowRight, faCircleInfo, faEnvelope } from '@fortawesome/free-solid-svg-icons';
 import { cn } from "@/lib/utils";
 
 import Preloader from "@/components/preloader";
@@ -193,8 +193,7 @@ export default function HomePageContent() {
   
   const isLoading = isLoadingContact || isLoadingSettings;
 
-  const siteLogoUrl = homeSettings?.homePageLogoUrl;
-  const homeLogoUrl = siteLogoUrl;
+  const homeLogoUrl = homeSettings?.homePageLogoUrl;
   const isLogoVisible = homeSettings?.isHomePageLogoVisible ?? true;
   const logoScale = homeSettings?.homePageLogoScale || 1;
   const logoColor = homeSettings?.homePageLogoColor || '';
@@ -204,14 +203,22 @@ export default function HomePageContent() {
     const video = videoRef.current;
     if (!video || !videoUrl) return;
 
-    if (videoUrl.includes('.m3u8') && Hls.isSupported()) {
-      const hls = new Hls();
-      hls.loadSource(videoUrl);
-      hls.attachMedia(video);
-      hls.on(Hls.Events.MANIFEST_PARSED, () => {
+    if (videoUrl.includes('.m3u8')) {
+      if (Hls.isSupported()) {
+        const hls = new Hls();
+        hls.loadSource(videoUrl);
+        hls.attachMedia(video);
+        hls.on(Hls.Events.MANIFEST_PARSED, () => {
+          video.play().catch(() => {});
+        });
+        return () => { hls.destroy(); };
+      } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+        video.src = videoUrl;
         video.play().catch(() => {});
-      });
-      return () => { hls.destroy(); };
+      }
+    } else {
+      video.src = videoUrl;
+      video.play().catch(() => {});
     }
   }, [homeSettings?.heroVideoUrl]);
 
@@ -279,13 +286,13 @@ export default function HomePageContent() {
               </p>
             </motion.div>
             <motion.div variants={itemVariants} className="flex items-center gap-2 sm:gap-3 md:gap-4">
-              <Button asChild className="group transition-shadow duration-300 rounded-full h-6 md:h-8 px-2 sm:px-2.5 md:px-4 text-[9px] sm:text-[10px] md:text-sm gap-1" style={{ boxShadow: "0 0 15px rgba(255,255,255,0.1)" }}>
+              <Button asChild className="group transition-shadow duration-300 rounded-full min-h-[44px] h-11 md:h-8 px-3 sm:px-3 md:px-4 text-[11px] sm:text-[11px] md:text-sm gap-1.5" style={{ boxShadow: "0 0 15px rgba(255,255,255,0.1)" }}>
                 <Link href="/about">
-                  <FontAwesomeIcon icon={faCircleInfo} className="h-2 w-2 md:h-3 md:w-3" />
+                  <FontAwesomeIcon icon={faCircleInfo} className="h-3 w-3 md:h-3 md:w-3" />
                   {t('nav.about')}
                 </Link>
               </Button>
-              <Button ref={ctaRef} asChild size="lg" className="group transition-shadow duration-300 md:h-12 md:px-8 md:text-lg" style={{ boxShadow: "0 0 20px rgba(255,255,255,0.12)" }}
+              <Button ref={ctaRef} asChild size="lg" className="group transition-shadow duration-300 min-h-[44px] md:h-12 md:px-8 md:text-lg" style={{ boxShadow: "0 0 20px rgba(255,255,255,0.12)" }}
                 onMouseEnter={(e) => e.currentTarget.style.boxShadow = "0 0 35px rgba(255,255,255,0.25)"}
                 onMouseLeave={(e) => e.currentTarget.style.boxShadow = "0 0 20px rgba(255,255,255,0.12)"}
               >
@@ -294,14 +301,14 @@ export default function HomePageContent() {
                   <FontAwesomeIcon icon={faArrowRight} className="ml-2 transition-transform group-hover:translate-x-1" />
                 </Link>
               </Button>
-              <Button asChild className="group transition-shadow duration-300 rounded-full h-6 md:h-8 px-2 sm:px-2.5 md:px-4 text-[9px] sm:text-[10px] md:text-sm gap-1" style={{ boxShadow: "0 0 15px rgba(255,255,255,0.1)" }}>
+              <Button asChild className="group transition-shadow duration-300 rounded-full min-h-[44px] h-11 md:h-8 px-3 sm:px-3 md:px-4 text-[11px] sm:text-[11px] md:text-sm gap-1.5" style={{ boxShadow: "0 0 15px rgba(255,255,255,0.1)" }}>
                 <Link href="/contact">
                   {t('nav.contact')}
-                  <FontAwesomeIcon icon={faEnvelope} className="h-2 w-2 md:h-3 md:w-3" />
+                  <FontAwesomeIcon icon={faEnvelope} className="h-3 w-3 md:h-3 md:w-3" />
                 </Link>
               </Button>
             </motion.div>
-            <motion.div variants={itemVariants} className="text-foreground/40 text-[10px] md:text-sm lg:text-base animate-pulse" style={{ textShadow: "0 1px 8px rgba(0,0,0,0.5)" }}>
+            <motion.div variants={itemVariants} className="text-foreground/40 text-xs md:text-sm lg:text-base animate-pulse" style={{ textShadow: "0 1px 8px rgba(0,0,0,0.5)" }}>
               {t('home.hero.scroll')}
             </motion.div>
             <motion.div variants={itemVariants} className="w-full">

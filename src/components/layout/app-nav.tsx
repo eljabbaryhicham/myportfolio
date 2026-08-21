@@ -9,7 +9,7 @@ import { motion } from "framer-motion";
 import React from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faHouse, faImage, faCircleInfo, faEnvelope, faShieldHalved, faVial } from "@fortawesome/free-solid-svg-icons";
+import { faHouse, faImage, faCircleInfo, faEnvelope, faShieldHalved } from "@fortawesome/free-solid-svg-icons";
 import Logo from "../logo";
 import { doc } from "firebase/firestore";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -22,7 +22,6 @@ const navItems = [
   { href: "/about", key: "nav.about", icon: faCircleInfo, public: true },
   { href: "/contact", key: "nav.contact", icon: faEnvelope, public: true },
   { href: "/admin", key: "nav.admin", icon: faShieldHalved, public: false, adminOnly: true },
-  { href: "/test", key: "nav.test", icon: faVial, public: false, adminOnly: true },
 ];
 
 interface HomePageSettings {
@@ -67,8 +66,7 @@ export function AppNav() {
   const renderNavItem = (item: (typeof navItems)[0]) => {
     const isActive = item.href === "/" ? pathname === item.href : pathname.startsWith(item.href);
     const isAdminButton = item.href === '/admin';
-    const isTestButton = item.href === '/test';
-    const isSpecialButton = isAdminButton || isTestButton;
+    const isSpecialButton = isAdminButton;
     const label = t(item.key);
 
     const navButtonContent = (
@@ -87,11 +85,9 @@ export function AppNav() {
               layoutId="active-nav-highlight"
               className={cn(
                 "absolute inset-0 rounded-full",
-                isTestButton
-                  ? "bg-blue-500 shadow-[0_0_15px_#3b82f680,_0_0_20px_#3b82f660]"
-                  : isAdminButton
-                    ? "bg-green-500 shadow-[0_0_15px_#22c55e80,_0_0_20px_#22c55e60]"
-                    : "bg-destructive shadow-[0_0_15px_hsl(var(--primary)/0.8),_0_0_20px_hsl(var(--primary)/0.6)]"
+                isAdminButton
+                  ? "bg-green-500 shadow-[0_0_15px_#22c55e80,_0_0_20px_#22c55e60]"
+                  : "bg-destructive shadow-[0_0_15px_hsl(var(--primary)/0.8),_0_0_20px_hsl(var(--primary)/0.6)]"
               )}
               transition={{ type: "spring", stiffness: 300, damping: 25 }}
             />
@@ -141,10 +137,10 @@ export function AppNav() {
         <div className={cn(
           "flex h-[7vh] min-h-[60px] flex-row items-center justify-between rounded-lg border border-border/50 glass-effect"
           )}>
-          <nav className="flex h-full flex-1 items-center justify-between px-[5vw] sm:px-[15vw]">
+          <nav className="flex h-full flex-1 items-center justify-between px-[4vw]">
             {accessibleNavItems.map(renderNavItem)}
           </nav>
-          <LanguageSwitcher className="px-2" />
+          <LanguageSwitcher className="px-2 min-h-[44px]" />
         </div>
       </motion.div>
     );
@@ -164,7 +160,7 @@ export function AppNav() {
             const size = homeSettings?.menubarLogoSize || 48;
             const innerSize = size - 8;
             return (
-                <Link href="/" className="hidden md:block relative group mt-4">
+                <Link href="/" className="relative group mt-4">
                     <div className="relative flex items-center justify-center" style={{ width: size, height: size }}>
                         <div className="absolute inset-0 rounded-full animate-spinning-circle-border bg-gradient-to-r from-primary via-transparent to-transparent"></div>
                         <div className="relative bg-transparent rounded-full p-1 flex items-center justify-center" style={{ width: innerSize, height: innerSize }}>
@@ -180,8 +176,8 @@ export function AppNav() {
            {accessibleNavItems.map(renderNavItem)}
         </nav>
         <div className="flex flex-col items-center gap-2">
-          <LanguageSwitcher className="hidden md:block" />
-          <div className="h-8 w-8 hidden md:block"></div>
+          <LanguageSwitcher />
+          <div className="h-8 w-8"></div>
         </div>
       </div>
     </motion.aside>
