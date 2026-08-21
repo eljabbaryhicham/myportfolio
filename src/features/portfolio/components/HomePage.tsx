@@ -3,7 +3,7 @@
 import { useRef, useEffect, useState } from "react";
 import Link from "next/link";
 import Lottie from "lottie-react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import cursorArrowData from "@/lib/cursor-arrow.json";
 import tickAnimationData from "@/lib/tick-animation.json";
 
@@ -220,11 +220,19 @@ export default function HomePageContent() {
 
         <Particles />
 
-        {isLoading && (
-          <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black">
-            <Preloader />
-          </div>
-        )}
+        <AnimatePresence>
+          {isLoading && (
+            <motion.div
+              key="home-preloader"
+              className="fixed inset-0 z-[9999] flex items-center justify-center bg-black"
+              initial={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.35 }}
+            >
+              <Preloader />
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         <div className="flex flex-col items-center gap-1 sm:gap-2 md:gap-3 w-full px-4">
           <motion.div
@@ -266,7 +274,7 @@ export default function HomePageContent() {
             className="flex flex-col items-center gap-3 sm:gap-4 md:gap-5 lg:gap-6 w-full"
             variants={contentVariants}
             initial="hidden"
-            animate="visible"
+            animate={isLoading ? "hidden" : "visible"}
           >
             <motion.div variants={itemVariants} className="text-center space-y-2 max-w-lg md:max-w-xl lg:max-w-2xl px-4" style={{ textShadow: "0 2px 12px rgba(0,0,0,0.6)" }}>
               <h2 className="text-base sm:text-lg md:text-3xl lg:text-4xl font-headline tracking-tight" style={{ color: homeSettings?.homePageTitleColor || 'rgba(255,255,255,0.9)' }}>

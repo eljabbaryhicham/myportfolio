@@ -177,8 +177,11 @@ export default function ContactPage() {
                     </Card>
                     ) : isLoading ? (
                       <Card className="glass-effect p-4 sm:p-6 flex flex-col items-center justify-center w-full max-w-md min-h-[280px]">
-                        <CardContent className="p-0 flex items-center justify-center w-full">
-                          <Preloader />
+                        <CardContent className="p-0 flex items-center justify-center w-full h-44">
+                          {/* Preloader sizes itself in % — needs an explicit height to be visible */}
+                          <div className="w-full h-full">
+                            <Preloader />
+                          </div>
                         </CardContent>
                       </Card>
                     ) : (

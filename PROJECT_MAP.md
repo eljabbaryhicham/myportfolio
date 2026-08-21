@@ -166,6 +166,7 @@ Firebase Firestore ← useDoc/useCollection hooks → React components
 | 2026-08-21 | UI: default preloader fallback GIF swapped to honey badger animation | ✅ |
 | 2026-08-21 | PERF: contact route — removed redundant next/dynamic wrapper (chunk waterfall + broken Link prefetch); ContactPage now statically imported and preferrable | ✅ |
 | 2026-08-21 | PERF: shared `useCachedDoc` hook (localStorage mirror of useDoc); contact info card + social links hydrate instantly on repeat visits, socials animation delay 0.6s → 0.15s | ✅ |
+| 2026-08-21 | FIX: homepage — content stagger animation now waits for preloader exit; overlay crossfades out (0.35s) instead of hiding finished animations | ✅ |
 
 ## [ORPHANS & PENDING]
 
