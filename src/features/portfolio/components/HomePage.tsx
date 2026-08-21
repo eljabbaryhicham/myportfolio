@@ -200,35 +200,6 @@ export default function HomePageContent() {
   const logoColor = homeSettings?.homePageLogoColor || '';
 
   useEffect(() => {
-    const html = document.documentElement;
-    const body = document.body;
-    const c = 'url("/cursor-none.png") 0 0, none';
-    html.style.setProperty('cursor', c, 'important');
-    body.style.setProperty('cursor', c, 'important');
-    document.querySelectorAll('*').forEach((el) => {
-      (el as HTMLElement).style.setProperty('cursor', c, 'important');
-    });
-    const obs = new MutationObserver((mutations) => {
-      for (const m of mutations) {
-        for (const node of m.addedNodes) {
-          if (node instanceof HTMLElement) {
-            node.style.setProperty('cursor', c, 'important');
-            node.querySelectorAll('*').forEach((el) => {
-              (el as HTMLElement).style.setProperty('cursor', c, 'important');
-            });
-          }
-        }
-      }
-    });
-    obs.observe(body, { childList: true, subtree: true });
-    return () => {
-      obs.disconnect();
-      html.style.removeProperty('cursor');
-      body.style.removeProperty('cursor');
-    };
-  }, []);
-
-  useEffect(() => {
     const videoUrl = homeSettings?.heroVideoUrl || HERO_VIDEO_URL;
     const video = videoRef.current;
     if (!video || !videoUrl) return;
@@ -245,7 +216,7 @@ export default function HomePageContent() {
   }, [homeSettings?.heroVideoUrl]);
 
   return (
-    <div className="fixed inset-0 overflow-y-auto overflow-x-hidden">
+    <div className="hide-cursor-homepage fixed inset-0 overflow-y-auto overflow-x-hidden">
       <div className="relative z-10 min-h-full w-full flex items-center justify-center transition-opacity duration-1000">
         <CursorArrow targetRef={ctaRef} cursorLottieUrl={homeSettings?.cursorLottieUrl} tickLottieUrl={homeSettings?.tickLottieUrl} />
 
