@@ -200,16 +200,21 @@ export default function HomePageContent() {
     const c = 'url("data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7") 0 0, none';
     const html = document.documentElement;
     const body = document.body;
-    const apply = () => {
-      html.style.setProperty('cursor', c, 'important');
-      body.style.setProperty('cursor', c, 'important');
+    html.classList.add('hide-cursor');
+    html.style.setProperty('cursor', c, 'important');
+    body.style.setProperty('cursor', c, 'important');
+
+    const force = (e: MouseEvent) => {
+      const el = e.target as HTMLElement;
+      if (el) el.style.setProperty('cursor', c, 'important');
     };
-    apply();
-    const id = window.setInterval(apply, 100);
+    document.addEventListener('mouseover', force, true);
+
     return () => {
+      html.classList.remove('hide-cursor');
       html.style.removeProperty('cursor');
       body.style.removeProperty('cursor');
-      window.clearInterval(id);
+      document.removeEventListener('mouseover', force, true);
     };
   }, []);
 
