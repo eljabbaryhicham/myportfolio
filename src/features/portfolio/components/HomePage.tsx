@@ -265,27 +265,27 @@ export default function HomePageContent() {
 
           <motion.div
             data-content
-            className="flex flex-col items-center gap-2 sm:gap-3 md:gap-4 w-full"
+            className="flex flex-col items-center gap-3 sm:gap-4 md:gap-5 lg:gap-6 w-full"
             variants={contentVariants}
             initial="hidden"
             animate="visible"
           >
-            <motion.div variants={itemVariants} className="text-center space-y-1 max-w-lg px-4" style={{ textShadow: "0 2px 12px rgba(0,0,0,0.6)" }}>
-              <h2 className="text-sm sm:text-base md:text-2xl font-headline tracking-tight" style={{ color: homeSettings?.homePageTitleColor || 'rgba(255,255,255,0.9)' }}>
+            <motion.div variants={itemVariants} className="text-center space-y-2 max-w-lg md:max-w-xl lg:max-w-2xl px-4" style={{ textShadow: "0 2px 12px rgba(0,0,0,0.6)" }}>
+              <h2 className="text-base sm:text-lg md:text-3xl lg:text-4xl font-headline tracking-tight" style={{ color: homeSettings?.homePageTitleColor || 'rgba(255,255,255,0.9)' }}>
                 {homeSettings?.homePageTitle || t('home.hero.heading')}
               </h2>
-              <p className="text-[10px] sm:text-xs md:text-base text-foreground/60 leading-relaxed" style={{ textShadow: "0 1px 8px rgba(0,0,0,0.5)" }}>
+              <p className="text-xs sm:text-sm md:text-lg lg:text-xl text-foreground/60 leading-relaxed" style={{ textShadow: "0 1px 8px rgba(0,0,0,0.5)" }}>
                 {homeSettings?.homePageSubtitle || t('home.hero.subtitle')}
               </p>
             </motion.div>
-            <motion.div variants={itemVariants} className="flex items-center gap-2 sm:gap-3">
-              <Button asChild className="group transition-shadow duration-300 rounded-full h-6 px-2 sm:px-2.5 text-[9px] sm:text-[10px] gap-1" style={{ boxShadow: "0 0 15px rgba(255,255,255,0.1)" }}>
+            <motion.div variants={itemVariants} className="flex items-center gap-2 sm:gap-3 md:gap-4">
+              <Button asChild className="group transition-shadow duration-300 rounded-full h-6 md:h-8 px-2 sm:px-2.5 md:px-4 text-[9px] sm:text-[10px] md:text-sm gap-1" style={{ boxShadow: "0 0 15px rgba(255,255,255,0.1)" }}>
                 <Link href="/about">
-                  <FontAwesomeIcon icon={faCircleInfo} className="h-2 w-2" />
+                  <FontAwesomeIcon icon={faCircleInfo} className="h-2 w-2 md:h-3 md:w-3" />
                   {t('nav.about')}
                 </Link>
               </Button>
-              <Button ref={ctaRef} asChild size="lg" className="group transition-shadow duration-300" style={{ boxShadow: "0 0 20px rgba(255,255,255,0.12)" }}
+              <Button ref={ctaRef} asChild size="lg" className="group transition-shadow duration-300 md:h-12 md:px-8 md:text-lg" style={{ boxShadow: "0 0 20px rgba(255,255,255,0.12)" }}
                 onMouseEnter={(e) => e.currentTarget.style.boxShadow = "0 0 35px rgba(255,255,255,0.25)"}
                 onMouseLeave={(e) => e.currentTarget.style.boxShadow = "0 0 20px rgba(255,255,255,0.12)"}
               >
@@ -294,14 +294,14 @@ export default function HomePageContent() {
                   <FontAwesomeIcon icon={faArrowRight} className="ml-2 transition-transform group-hover:translate-x-1" />
                 </Link>
               </Button>
-              <Button asChild className="group transition-shadow duration-300 rounded-full h-6 px-2 sm:px-2.5 text-[9px] sm:text-[10px] gap-1" style={{ boxShadow: "0 0 15px rgba(255,255,255,0.1)" }}>
+              <Button asChild className="group transition-shadow duration-300 rounded-full h-6 md:h-8 px-2 sm:px-2.5 md:px-4 text-[9px] sm:text-[10px] md:text-sm gap-1" style={{ boxShadow: "0 0 15px rgba(255,255,255,0.1)" }}>
                 <Link href="/contact">
                   {t('nav.contact')}
-                  <FontAwesomeIcon icon={faEnvelope} className="h-2 w-2" />
+                  <FontAwesomeIcon icon={faEnvelope} className="h-2 w-2 md:h-3 md:w-3" />
                 </Link>
               </Button>
             </motion.div>
-            <motion.div variants={itemVariants} className="text-foreground/40 text-[10px] md:text-xs animate-pulse" style={{ textShadow: "0 1px 8px rgba(0,0,0,0.5)" }}>
+            <motion.div variants={itemVariants} className="text-foreground/40 text-[10px] md:text-sm lg:text-base animate-pulse" style={{ textShadow: "0 1px 8px rgba(0,0,0,0.5)" }}>
               {t('home.hero.scroll')}
             </motion.div>
             <motion.div variants={itemVariants} className="w-full">
