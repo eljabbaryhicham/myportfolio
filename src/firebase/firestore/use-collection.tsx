@@ -82,6 +82,12 @@ export function useCollection<T = any>(
         for (const doc of snapshot.docs) {
           results.push({ ...(doc.data() as T), id: doc.id });
         }
+        // Ignore empty snapshots served from local cache before the server
+        // has responded — otherwise callers may flash their "empty" state
+        // mid-load. Wait for the confirmed server result instead.
+        if (results.length === 0 && snapshot.metadata.fromCache) {
+          return;
+        }
         setData(results);
         setError(null);
         setIsLoading(false);

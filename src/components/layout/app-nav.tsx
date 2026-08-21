@@ -156,9 +156,14 @@ export function AppNav() {
       <div className={cn(
         "flex h-full flex-row md:flex-col items-center justify-between rounded-lg border border-border/50 px-2 py-4 md:p-4 glass-effect"
         )}>
-        {logoUrl && (() => {
+        {(() => {
+            // Always reserve the logo slot so nav items don't shift when
+            // the logo URL resolves asynchronously.
             const size = homeSettings?.menubarLogoSize || 48;
             const innerSize = size - 8;
+            if (!logoUrl) {
+              return <div className="mt-4" style={{ width: size, height: size }} aria-hidden="true" />;
+            }
             return (
                 <Link href="/" className="relative group mt-4">
                     <div className="relative flex items-center justify-center" style={{ width: size, height: size }}>

@@ -15,7 +15,7 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useCollection, useFirestore, useMemoFirebase, useUser, setDocumentNonBlocking, addDocumentNonBlocking, useDoc } from '@/firebase';
-import { collection, query, orderBy, doc } from 'firebase/firestore';
+import { collection, doc } from 'firebase/firestore';
 import type { PortfolioItem } from '@/features/portfolio/data/portfolio-data';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUpDown, faXmark, faExpand, faPalette, faFilm, faArrowLeft, faArrowRight, faPencilAlt, faArrowDown, faSyncAlt } from '@fortawesome/free-solid-svg-icons';
@@ -279,7 +279,7 @@ const slugify = (text: string) => text.toLowerCase().replace(/\s+/g, '-').replac
 
 export default function WorkPage() {
   const firestore = useFirestore();
-  const { user } = useUser();
+  const { user, isUserLoading } = useUser();
   const { toast } = useToast();
   const router = useRouter();
   const pathname = usePathname();
@@ -290,14 +290,20 @@ export default function WorkPage() {
   const isSuperAdmin = typedUser?.email === 'eljabbaryhicham@example.com';
   const canEditProjects = isSuperAdmin || (typedUser?.permissions?.canEditProjects ?? true);
 
+  // NOTE: no server-side orderBy — Firestore silently excludes documents that
+  // are missing the 'order' field, which made the page show "no projects"
+  // even when projects existed. We sort client-side instead.
+  // Also wait for auth to settle before subscribing, otherwise a cold session
+  // (refresh → navigate from home) can hit security rules before the token
+  // is restored and fail the first read.
   const projectsQuery = useMemoFirebase(
-    () =>
-      firestore
-        ? query(collection(firestore, 'projects'), orderBy('order'))
-        : null,
-    [firestore]
+    () => (firestore && !isUserLoading ? collection(firestore, 'projects') : null),
+    [firestore, isUserLoading]
   );
-  const { data: portfolioItems, isLoading: isPortfolioLoading } = useCollection<PortfolioItem>(projectsQuery);
+  const {
+    data: portfolioItems,
+    isLoading: isPortfolioLoading,
+  } = useCollection<PortfolioItem>(projectsQuery);
 
   const contactDocRef = useMemoFirebase(
     () => (firestore ? doc(firestore, 'contact', 'details') : null),
@@ -343,7 +349,10 @@ export default function WorkPage() {
   const isDialogOpen = isDetailsModalOpen || isContactFormOpen;
 
   const allItems = useMemo(() => {
-    return portfolioItems?.filter(item => item.isVisible !== false) || [];
+    const visible = (portfolioItems || []).filter(item => item.isVisible !== false);
+    return [...visible].sort(
+      (a, b) => (a.order ?? Number.MAX_SAFE_INTEGER) - (b.order ?? Number.MAX_SAFE_INTEGER)
+    );
   }, [portfolioItems]);
 
   const filteredItems = useMemo(() => {
@@ -575,7 +584,26 @@ export default function WorkPage() {
 
   const showMoreButtonNeeded = visibleItemsCount !== null && filteredItems.length > effectiveItemsCount;
 
-  const isLoading = isPortfolioLoading || portfolioItems === null;
+  // Preloader while fetching (also while auth settles / on fetch errors —
+  // a toast already reports blocked reads). A confirmed-empty result must
+  // survive a short grace period before we trust it: Firestore can deliver
+  // a transient empty snapshot on a cold session right before the real docs.
+  // Filter-specific empties (e.g. no videos) are shown immediately.
+  const [emptyResultConfirmed, setEmptyResultConfirmed] = useState(false);
+  const isProjectListEmpty =
+    !isPortfolioLoading && portfolioItems !== null && allItems.length === 0;
+
+  useEffect(() => {
+    if (!isProjectListEmpty) {
+      setEmptyResultConfirmed(false);
+      return;
+    }
+    const timer = setTimeout(() => setEmptyResultConfirmed(true), 2000);
+    return () => clearTimeout(timer);
+  }, [isProjectListEmpty]);
+
+  const isLoading =
+    isPortfolioLoading || portfolioItems === null || (isProjectListEmpty && !emptyResultConfirmed);
 
   const variants = {
     enter: (direction: 'next' | 'prev' | null) => ({

@@ -1,6 +1,6 @@
 # PROJECT_MAP — Liquid Folio
 
-> Last updated: 2026-05-14
+> Last updated: 2026-08-21
 
 ---
 
@@ -157,6 +157,10 @@ Firebase Firestore ← useDoc/useCollection hooks → React components
 | 2026-05-15 | Moved Google Fonts `<link>` → `@import` in globals.css (fix no-page-custom-font) | ✅ |
 | 2026-05-15 | Suppressed `@next/next/no-img-element` in PlyrPlayer watermark | ✅ |
 | 2026-05-15 | feat: add Vidstack player as third option in Work Page Video Player | ✅ |
+| 2026-08-21 | FIX: nav bar flash/jump on refresh — `useIsMobile` syncs from `matchMedia` on first render; AppNav reserves logo slot | ✅ |
+| 2026-08-21 | FIX: work page "No projects yet" during load — removed server `orderBy('order')` (excluded docs lacking the field), client-side sort | ✅ |
+| 2026-08-21 | FIX: cold-session empty-state flash — projects query gated on auth settle (`isUserLoading`); `useCollection` ignores cache-only empty snapshots; fetch errors keep preloader + toast instead of fake empty state | ✅ |
+| 2026-08-21 | FIX: residual transient-empty flash — work page requires a confirmed-empty result to persist 2s before showing "no projects" (filter-specific empties still instant) | ✅ |
 
 ## [ORPHANS & PENDING]
 
