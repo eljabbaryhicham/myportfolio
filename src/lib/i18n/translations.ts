@@ -165,6 +165,9 @@ const en: Record<string, string> = {
   'homeAdmin.tickLottieUrlDescription': 'Custom Lottie JSON or GIF shown when hovering over the button. Leave empty for default.',
   'homeAdmin.menubarLogoSize': 'Navbar Logo Size',
   'homeAdmin.menubarLogoSizeDescription': 'Adjust the size of the logo in the navigation bar.',
+  'homeAdmin.menubarLogoUrl': 'Menubar Logo URL',
+  'homeAdmin.menubarLogoUrlPlaceholder': 'https://example.com/menubar-logo.png (empty = homepage logo)',
+  'homeAdmin.menubarLogoUrlDescription': 'Optional separate logo for the navigation bar. Leave empty to reuse the homepage logo.',
 
   /* ContactAdmin */
   'contactAdmin.title': 'Contact Page & Site Settings',
@@ -673,6 +676,9 @@ const fr: Record<string, string> = {
   'homeAdmin.tickLottieUrlDescription': 'Lottie JSON ou GIF affiché au survol du bouton. Laisser vide pour la valeur par défaut.',
   'homeAdmin.menubarLogoSize': 'Taille du logo de la barre de navigation',
   'homeAdmin.menubarLogoSizeDescription': 'Ajustez la taille du logo dans la barre de navigation.',
+  'homeAdmin.menubarLogoUrl': 'URL du logo de la barre de navigation',
+  'homeAdmin.menubarLogoUrlPlaceholder': 'https://exemple.com/logo-barre.png (vide = logo de l\'accueil)',
+  'homeAdmin.menubarLogoUrlDescription': 'Logo séparé facultatif pour la barre de navigation. Laissez vide pour réutiliser le logo de la page d\'accueil.',
 
   /* ContactAdmin */
   'contactAdmin.title': 'Page de contact & Paramètres du site',

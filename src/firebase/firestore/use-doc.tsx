@@ -65,10 +65,13 @@ export function useDoc<T = any>(
       (snapshot: DocumentSnapshot<DocumentData>) => {
         if (snapshot.exists()) {
           setData({ ...(snapshot.data() as T), id: snapshot.id });
-        } else {
-          // Document does not exist
+        } else if (!snapshot.metadata.fromCache) {
+          // Non-existent AND confirmed by the server → genuinely deleted.
           setData(null);
         }
+        // else: cache-only snapshot claiming the doc doesn't exist (common
+        // after mobile suspend/resume). Ignore it — keep previous state and
+        // wait for the server snapshot, otherwise consumers flash empty.
         setError(null); // Clear any previous error on successful snapshot (even if doc doesn't exist)
         setIsLoading(false);
       },

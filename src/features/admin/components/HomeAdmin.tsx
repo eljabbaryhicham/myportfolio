@@ -74,6 +74,7 @@ interface HomePageSettings {
     homePageSubtitle?: string;
     homePageTitleColor?: string;
     menubarLogoSize?: number;
+    menubarLogoUrl?: string;
 }
 
 const settingsSchema = z.object({
@@ -100,6 +101,7 @@ const settingsSchema = z.object({
   homePageSubtitle: z.string().optional(),
   homePageTitleColor: z.string().optional(),
   menubarLogoSize: z.number().min(24).max(80).optional(),
+  menubarLogoUrl: z.string().optional(),
 });
 
 type SettingsFormValues = z.infer<typeof settingsSchema>;
@@ -136,7 +138,7 @@ export default function HomeAdmin() {
   const { data: mediaAssets, isLoading: isLoadingMedia } = useCollection<MediaAsset>(mediaCollection);
 
   const [isLibraryOpen, setIsLibraryOpen] = useState(false);
-  const [libraryField, setLibraryField] = useState<'homePageLogoUrl' | 'heroVideoUrl' | 'preloaderUrl' | 'cursorLottieUrl' | 'tickLottieUrl' | null>(null);
+  const [libraryField, setLibraryField] = useState<'homePageLogoUrl' | 'menubarLogoUrl' | 'heroVideoUrl' | 'preloaderUrl' | 'cursorLottieUrl' | 'tickLottieUrl' | null>(null);
   const [libraryTab, setLibraryTab] = useState<'images' | 'videos' | 'files'>('images');
   const [libraryCollection, setLibraryCollection] = useState<'primary' | 'extented'>('primary');
 
@@ -169,6 +171,7 @@ export default function HomeAdmin() {
       homePageSubtitle: '',
       homePageTitleColor: '',
       menubarLogoSize: 48,
+      menubarLogoUrl: '',
     },
   });
 
@@ -201,6 +204,7 @@ export default function HomeAdmin() {
         homePageSubtitle: homeSettings.homePageSubtitle || '',
         homePageTitleColor: homeSettings.homePageTitleColor || '',
         menubarLogoSize: homeSettings.menubarLogoSize || 48,
+        menubarLogoUrl: homeSettings.menubarLogoUrl || '',
       });
     }
   }, [homeSettings, form]);
@@ -296,6 +300,25 @@ export default function HomeAdmin() {
                                                         <FontAwesomeIcon icon={faImages} />
                                                     </Button>
                                                 </div>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                    <FormField
+                                        control={control}
+                                        name="menubarLogoUrl"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>{t('homeAdmin.menubarLogoUrl')}</FormLabel>
+                                                <div className="flex items-center gap-2">
+                                                    <FormControl>
+                                                        <Input placeholder={t('homeAdmin.menubarLogoUrlPlaceholder')} {...field} className="flex-1" />
+                                                    </FormControl>
+                                                    <Button type="button" variant="outline" size="icon" onClick={() => { setLibraryField('menubarLogoUrl'); setIsLibraryOpen(true); }}>
+                                                        <FontAwesomeIcon icon={faImages} />
+                                                    </Button>
+                                                </div>
+                                                <FormDescription>{t('homeAdmin.menubarLogoUrlDescription')}</FormDescription>
                                                 <FormMessage />
                                             </FormItem>
                                         )}

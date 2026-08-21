@@ -167,6 +167,10 @@ Firebase Firestore ← useDoc/useCollection hooks → React components
 | 2026-08-21 | PERF: contact route — removed redundant next/dynamic wrapper (chunk waterfall + broken Link prefetch); ContactPage now statically imported and preferrable | ✅ |
 | 2026-08-21 | PERF: shared `useCachedDoc` hook (localStorage mirror of useDoc); contact info card + social links hydrate instantly on repeat visits, socials animation delay 0.6s → 0.15s | ✅ |
 | 2026-08-21 | FIX: homepage — content stagger animation now waits for preloader exit; overlay crossfades out (0.35s) instead of hiding finished animations | ✅ |
+| 2026-08-21 | FIX: contact — cold load (no cache + pending Firestore) now shows a large centered preloader over the whole content area, not a small side-slot spinner | ✅ |
+| 2026-08-22 | REFACTOR: contact page adopts the About page loading pattern exactly — plain `useDoc`, full-area `min-h-[50vh]` preloader until Firestore answers, then cards + socials animate in; removed `useCachedDoc` smart-hydration (hook deleted) | ✅ |
+| 2026-08-22 | FEATURE: admin Home panel — new "Menubar Logo URL" field on `homepage/settings` (`menubarLogoUrl`), with media-library picker + EN/FR labels; navbar prefers it and falls back to homepage logo → contact logo → localStorage cache | ✅ |
+| 2026-08-22 | FIX: mobile background video disappearing — `useDoc` no longer treats cache-only empty snapshots (mobile suspend/resume) as deletions, matching the `useCollection` guard; video layer promoted with `translateZ(0)` + `preload=auto` against iOS compositing drops | ✅ |
 
 ## [ORPHANS & PENDING]
 

@@ -28,6 +28,7 @@ interface HomePageSettings {
     isTestPageEnabled?: boolean;
     homePageLogoUrl?: string;
     menubarLogoSize?: number;
+    menubarLogoUrl?: string;
 }
 
 const MENUBAR_LOGO_CACHE_KEY = 'menubar-logo-url';
@@ -64,7 +65,7 @@ export function AppNav() {
   });
 
   React.useEffect(() => {
-    const resolved = homeSettings?.homePageLogoUrl || contactInfo?.logoUrl;
+    const resolved = homeSettings?.menubarLogoUrl || homeSettings?.homePageLogoUrl || contactInfo?.logoUrl;
     if (resolved && resolved !== cachedLogoUrl) {
       setCachedLogoUrl(resolved);
       try {
@@ -73,10 +74,10 @@ export function AppNav() {
         // storage unavailable (e.g. private mode) — cache is best-effort
       }
     }
-  }, [homeSettings?.homePageLogoUrl, contactInfo?.logoUrl, cachedLogoUrl]);
+  }, [homeSettings?.menubarLogoUrl, homeSettings?.homePageLogoUrl, contactInfo?.logoUrl, cachedLogoUrl]);
 
 
-  const logoUrl = homeSettings?.homePageLogoUrl || contactInfo?.logoUrl || cachedLogoUrl;
+  const logoUrl = homeSettings?.menubarLogoUrl || homeSettings?.homePageLogoUrl || contactInfo?.logoUrl || cachedLogoUrl;
 
   const accessibleNavItems = navItems.filter(item => {
     if (item.href === '/test') {

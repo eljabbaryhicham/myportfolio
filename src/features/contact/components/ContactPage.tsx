@@ -3,8 +3,7 @@
 
 import Link from 'next/link';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { useFirestore, useMemoFirebase } from '@/firebase';
-import { useCachedDoc } from '@/hooks/use-cached-doc';
+import { useDoc, useFirestore, useMemoFirebase } from '@/firebase';
 import { doc } from 'firebase/firestore';
 import { Separator } from '@/components/ui/separator';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -72,9 +71,7 @@ export default function ContactPage() {
     () => firestore ? doc(firestore, 'contact', 'details') : null,
     [firestore]
   );
-  // Cached doc: info card + social links render instantly from localStorage
-  // on repeat visits while Firestore re-syncs in the background.
-  const { data: contactInfo, isLoading } = useCachedDoc<ContactInfo>(contactDocRef, 'contact-details');
+  const { data: contactInfo, isLoading } = useDoc<ContactInfo>(contactDocRef);
 
   const contactLinks = contactInfo ? [
     { icon: faEnvelope, label: t('contact.email'), value: contactInfo.email, href: `mailto:${contactInfo.email}`, color: 'hover:text-blue-300' },
@@ -106,7 +103,13 @@ export default function ContactPage() {
       <div ref={scrollRef} className="flex-1 min-h-0 overflow-y-auto">
         <div className="p-4 md:p-8 flex items-center justify-center min-h-full">
             <div className="container mx-auto px-0">
-            {/* Render instantly — only the info card waits on Firestore */}
+            {/* Same loading pattern as the About page */}
+            {isLoading ? (
+              <div className="flex justify-center items-center h-full min-h-[50vh]">
+                <Preloader />
+              </div>
+            ) : (
+            <>
             <motion.div
                   className="flex flex-col gap-4 md:gap-6 items-center justify-center lg:flex-row lg:items-start"
                   variants={containerVariants}
@@ -175,15 +178,6 @@ export default function ContactPage() {
                         )}
                       </CardContent>
                     </Card>
-                    ) : isLoading ? (
-                      <Card className="glass-effect p-4 sm:p-6 flex flex-col items-center justify-center w-full max-w-md min-h-[280px]">
-                        <CardContent className="p-0 flex items-center justify-center w-full h-44">
-                          {/* Preloader sizes itself in % — needs an explicit height to be visible */}
-                          <div className="w-full h-full">
-                            <Preloader />
-                          </div>
-                        </CardContent>
-                      </Card>
                     ) : (
                       <div className="text-center py-12 text-muted-foreground">
                           <p>{t('contact.notAvailable')}</p>
@@ -191,6 +185,8 @@ export default function ContactPage() {
                     )}
                   </motion.div>
                 </motion.div>
+            </>
+            )}
               {contactInfo && (
                 <motion.div
                   className="flex items-center justify-center gap-3 sm:gap-4 mt-6 md:mt-8 flex-shrink-0"
