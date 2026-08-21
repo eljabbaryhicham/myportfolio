@@ -134,7 +134,8 @@ export default function HomeAdmin() {
   const { data: mediaAssets, isLoading: isLoadingMedia } = useCollection<MediaAsset>(mediaCollection);
 
   const [isLibraryOpen, setIsLibraryOpen] = useState(false);
-  const [libraryField, setLibraryField] = useState<'homePageLogoUrl' | null>(null);
+  const [libraryField, setLibraryField] = useState<'homePageLogoUrl' | 'heroVideoUrl' | 'preloaderUrl' | 'cursorLottieUrl' | 'tickLottieUrl' | null>(null);
+  const [libraryTab, setLibraryTab] = useState<'images' | 'videos' | 'files'>('images');
 
   const videoItems = portfolioItems?.filter(item => item.type === 'video') || [];
   const imageAssets = mediaAssets?.filter(asset => asset.resource_type === 'image') || [];
@@ -300,22 +301,13 @@ export default function HomeAdmin() {
                                         render={({ field }) => (
                                             <FormItem>
                                                 <FormLabel>{t('homeAdmin.heroVideoUrl')}</FormLabel>
-                                                <div className="flex gap-2">
+                                                <div className="flex items-center gap-2">
                                                     <FormControl>
                                                         <Input placeholder={t('homeAdmin.heroVideoUrlPlaceholder')} {...field} className="flex-1" />
                                                     </FormControl>
-                                                    <Select onValueChange={(val) => field.onChange(val)} value="">
-                                                        <SelectTrigger className="w-auto whitespace-nowrap">
-                                                            <SelectValue placeholder={t('homeAdmin.chooseFromLibrary')} />
-                                                        </SelectTrigger>
-                                                        <SelectContent>
-                                                            {mediaAssets?.filter(a => a.resource_type === 'video').map((asset) => (
-                                                                <SelectItem key={asset.id} value={asset.url}>
-                                                                    {asset.title || asset.filename}
-                                                                </SelectItem>
-                                                            ))}
-                                                        </SelectContent>
-                                                    </Select>
+                                                    <Button type="button" variant="outline" size="icon" onClick={() => { setLibraryField('heroVideoUrl'); setLibraryTab('videos'); setIsLibraryOpen(true); }}>
+                                                        <FontAwesomeIcon icon={faImages} />
+                                                    </Button>
                                                 </div>
                                                 <FormDescription>{t('homeAdmin.heroVideoUrlDescription')}</FormDescription>
                                                 <FormMessage />
@@ -713,35 +705,23 @@ export default function HomeAdmin() {
                                         <FormField
                                             control={control}
                                             name="preloaderUrl"
-                                            render={({ field }) => {
-                                                const lottieAssets = mediaAssets?.filter(a => a.resource_type === 'raw' || a.filename?.endsWith('.json'));
-                                                return (
+                                            render={({ field }) => (
                                                     <FormItem>
                                                         <FormLabel>Custom Default Lottie (optional)</FormLabel>
                                                         <FormDescription>
                                                             Upload a Lottie JSON to replace the built-in default. Leave empty to keep the original.
                                                         </FormDescription>
-                                                        <div className="flex gap-2">
+                                                        <div className="flex items-center gap-2">
                                                             <FormControl>
                                                                 <Input placeholder="Leave empty for built-in default" {...field} className="flex-1" />
                                                             </FormControl>
-                                                            <Select onValueChange={(val) => field.onChange(val)} value="">
-                                                                <SelectTrigger className="w-auto whitespace-nowrap">
-                                                                    <SelectValue placeholder={t('homeAdmin.chooseFromLibrary')} />
-                                                                </SelectTrigger>
-                                                                <SelectContent>
-                                                                    {lottieAssets?.map((asset) => (
-                                                                        <SelectItem key={asset.id} value={asset.url}>
-                                                                            {asset.title || asset.filename}
-                                                                        </SelectItem>
-                                                                    ))}
-                                                                </SelectContent>
-                                                            </Select>
+                                                            <Button type="button" variant="outline" size="icon" onClick={() => { setLibraryField('preloaderUrl'); setLibraryTab('files'); setIsLibraryOpen(true); }}>
+                                                                <FontAwesomeIcon icon={faImages} />
+                                                            </Button>
                                                         </div>
                                                         <FormMessage />
                                                     </FormItem>
-                                                );
-                                            }}
+                                            )}
                                         />
                                     )}
 
@@ -751,18 +731,12 @@ export default function HomeAdmin() {
                                             name="preloaderUrl"
                                             render={({ field }) => {
                                                 const preloaderType = watch('preloaderType');
-                                                const filteredAssets = preloaderType === 'lottie'
-                                                    ? mediaAssets?.filter(a => a.resource_type === 'raw' || a.filename?.endsWith('.json'))
-                                                    : preloaderType === 'gif'
-                                                    ? mediaAssets?.filter(a => a.resource_type === 'image' || a.filename?.endsWith('.gif'))
-                                                    : mediaAssets?.filter(a => a.resource_type === 'video');
-
                                                 return (
                                                     <FormItem>
                                                         <FormLabel>
                                                             {preloaderType === 'lottie' ? 'Lottie JSON URL' : preloaderType === 'gif' ? 'GIF URL' : 'WebM Video URL'}
                                                         </FormLabel>
-                                                        <div className="flex gap-2">
+                                                        <div className="flex items-center gap-2">
                                                             <FormControl>
                                                                 <Input placeholder={
                                                                     preloaderType === 'lottie' ? 'https://example.com/animation.json' :
@@ -770,18 +744,9 @@ export default function HomeAdmin() {
                                                                     'https://example.com/loader.webm'
                                                                 } {...field} className="flex-1" />
                                                             </FormControl>
-                                                            <Select onValueChange={(val) => field.onChange(val)} value="">
-                                                                <SelectTrigger className="w-auto whitespace-nowrap">
-                                                                    <SelectValue placeholder={t('homeAdmin.chooseFromLibrary')} />
-                                                                </SelectTrigger>
-                                                                <SelectContent>
-                                                                    {filteredAssets?.map((asset) => (
-                                                                        <SelectItem key={asset.id} value={asset.url}>
-                                                                            {asset.title || asset.filename}
-                                                                        </SelectItem>
-                                                                    ))}
-                                                                </SelectContent>
-                                                            </Select>
+                                                            <Button type="button" variant="outline" size="icon" onClick={() => { setLibraryField('preloaderUrl'); setLibraryTab(preloaderType === 'webm' ? 'videos' : preloaderType === 'gif' ? 'images' : 'files'); setIsLibraryOpen(true); }}>
+                                                                <FontAwesomeIcon icon={faImages} />
+                                                            </Button>
                                                         </div>
                                                         <FormMessage />
                                                     </FormItem>
@@ -795,68 +760,44 @@ export default function HomeAdmin() {
                                     <FormField
                                         control={control}
                                         name="cursorLottieUrl"
-                                        render={({ field }) => {
-                                            const lottieAssets = mediaAssets?.filter(a => a.resource_type === 'raw' || a.filename?.endsWith('.json') || a.filename?.endsWith('.gif'));
-                                            return (
+                                        render={({ field }) => (
                                                 <FormItem>
                                                     <FormLabel>{t('homeAdmin.cursorLottieUrl') || 'Pointer Cursor Animation'}</FormLabel>
                                                     <FormDescription>
                                                         {t('homeAdmin.cursorLottieUrlDescription') || 'Custom Lottie JSON or GIF for the pointer cursor on buttons. Leave empty for default.'}
                                                     </FormDescription>
-                                                    <div className="flex gap-2">
+                                                    <div className="flex items-center gap-2">
                                                         <FormControl>
                                                             <Input placeholder="Leave empty for default cursor" {...field} className="flex-1" />
                                                         </FormControl>
-                                                        <Select onValueChange={(val) => field.onChange(val)} value="">
-                                                            <SelectTrigger className="w-auto whitespace-nowrap">
-                                                                <SelectValue placeholder={t('homeAdmin.chooseFromLibrary')} />
-                                                            </SelectTrigger>
-                                                            <SelectContent>
-                                                                {lottieAssets?.map((asset) => (
-                                                                    <SelectItem key={asset.id} value={asset.url}>
-                                                                        {asset.title || asset.filename}
-                                                                    </SelectItem>
-                                                                ))}
-                                                            </SelectContent>
-                                                        </Select>
+                                                        <Button type="button" variant="outline" size="icon" onClick={() => { setLibraryField('cursorLottieUrl'); setLibraryTab('files'); setIsLibraryOpen(true); }}>
+                                                            <FontAwesomeIcon icon={faImages} />
+                                                        </Button>
                                                     </div>
                                                     <FormMessage />
                                                 </FormItem>
-                                            );
-                                        }}
+                                        )}
                                     />
                                     <FormField
                                         control={control}
                                         name="tickLottieUrl"
-                                        render={({ field }) => {
-                                            const lottieAssets = mediaAssets?.filter(a => a.resource_type === 'raw' || a.filename?.endsWith('.json') || a.filename?.endsWith('.gif'));
-                                            return (
+                                        render={({ field }) => (
                                                 <FormItem>
                                                     <FormLabel>{t('homeAdmin.tickLottieUrl') || 'Button Hover Animation'}</FormLabel>
                                                     <FormDescription>
                                                         {t('homeAdmin.tickLottieUrlDescription') || 'Custom Lottie JSON or GIF shown when hovering over the button. Leave empty for default.'}
                                                     </FormDescription>
-                                                    <div className="flex gap-2">
+                                                    <div className="flex items-center gap-2">
                                                         <FormControl>
                                                             <Input placeholder="Leave empty for default hover animation" {...field} className="flex-1" />
                                                         </FormControl>
-                                                        <Select onValueChange={(val) => field.onChange(val)} value="">
-                                                            <SelectTrigger className="w-auto whitespace-nowrap">
-                                                                <SelectValue placeholder={t('homeAdmin.chooseFromLibrary')} />
-                                                            </SelectTrigger>
-                                                            <SelectContent>
-                                                                {lottieAssets?.map((asset) => (
-                                                                    <SelectItem key={asset.id} value={asset.url}>
-                                                                        {asset.title || asset.filename}
-                                                                    </SelectItem>
-                                                                ))}
-                                                            </SelectContent>
-                                                        </Select>
+                                                        <Button type="button" variant="outline" size="icon" onClick={() => { setLibraryField('tickLottieUrl'); setLibraryTab('files'); setIsLibraryOpen(true); }}>
+                                                            <FontAwesomeIcon icon={faImages} />
+                                                        </Button>
                                                     </div>
                                                     <FormMessage />
                                                 </FormItem>
-                                            );
-                                        }}
+                                        )}
                                     />
                                 </div>
                             </fieldset>
@@ -869,11 +810,9 @@ export default function HomeAdmin() {
             isDialog={true}
             isOpen={isLibraryOpen}
             onOpenChange={setIsLibraryOpen}
-            onMediaSelect={(url, type, filename) => {
-                if (libraryField === 'homePageLogoUrl') {
-                    if (type === 'image') {
-                        setValue('homePageLogoUrl', url);
-                    }
+            onMediaSelect={(url, type) => {
+                if (libraryField) {
+                    setValue(libraryField as any, url);
                 }
                 setIsLibraryOpen(false);
                 setLibraryField(null);
@@ -883,8 +822,8 @@ export default function HomeAdmin() {
                 setIsLibraryOpen(false);
                 setLibraryField(null);
             }}
-            activeTab={'images'}
-            setActiveTab={() => {}}
+            activeTab={libraryTab}
+            setActiveTab={setLibraryTab}
             activeLibrary={'primary'}
             setActiveLibrary={() => {}}
             newlyUploadedId={null}
