@@ -290,5 +290,5 @@ tr.drag-over-bottom {
 .hide-cursor *,
 .hide-cursor *::before,
 .hide-cursor *::after {
-  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1' height='1'%3E%3C/svg%3E") 0 0, none !important;
+  cursor: url("data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7") 0 0, none !important;
 }

@@ -197,8 +197,25 @@ export default function HomePageContent() {
   const logoColor = homeSettings?.homePageLogoColor || '';
 
   useEffect(() => {
+    const c = 'url("data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7") 0 0, none';
     document.body.classList.add('hide-cursor');
-    return () => { document.body.classList.remove('hide-cursor'); };
+    document.body.style.cursor = c;
+    document.documentElement.style.cursor = c;
+    const reapply = () => {
+      document.body.style.cursor = c;
+      document.documentElement.style.cursor = c;
+    };
+    window.addEventListener('mousemove', reapply);
+    window.addEventListener('mousedown', reapply);
+    window.addEventListener('pointerdown', reapply);
+    return () => {
+      document.body.classList.remove('hide-cursor');
+      document.body.style.cursor = '';
+      document.documentElement.style.cursor = '';
+      window.removeEventListener('mousemove', reapply);
+      window.removeEventListener('mousedown', reapply);
+      window.removeEventListener('pointerdown', reapply);
+    };
   }, []);
 
   useEffect(() => {
