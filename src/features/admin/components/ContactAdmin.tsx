@@ -15,9 +15,10 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { useDoc, useFirestore, useMemoFirebase, setDocumentNonBlocking, useUser } from '@/firebase';
-import { doc } from 'firebase/firestore';
+import { useDoc, useFirestore, useMemoFirebase, setDocumentNonBlocking, useUser, useCollection } from '@/firebase';
+import { collection, doc } from 'firebase/firestore';
 import { useEffect } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import Preloader from '@/components/preloader';
@@ -55,6 +56,14 @@ const defaultFormValues: ContactInfo = {
     twitterUrl: '',
 };
 
+interface MediaAsset {
+    id: string;
+    url: string;
+    filename: string;
+    title?: string;
+    resource_type: string;
+}
+
 export default function ContactAdmin() {
   const { t } = useTranslation();
   const { toast } = useToast();
@@ -70,6 +79,13 @@ export default function ContactAdmin() {
     [firestore]
   );
   const { data: contactInfo, isLoading } = useDoc<ContactInfo>(contactDocRef);
+
+  const mediaCollectionRef = useMemoFirebase(
+    () => (firestore ? collection(firestore, 'media') : null),
+    [firestore]
+  );
+  const { data: mediaAssets } = useCollection<MediaAsset>(mediaCollectionRef);
+  const imageAssets = mediaAssets?.filter(a => a.resource_type === 'image') || [];
 
   const form = useForm<ContactInfo>({
     resolver: zodResolver(formSchema),
@@ -168,9 +184,23 @@ export default function ContactAdmin() {
                         render={({ field }) => (
                         <FormItem>
                             <FormLabel>{t('contactAdmin.avatarUrl')}</FormLabel>
-                            <FormControl>
-                            <Input placeholder={t('contactAdmin.avatarUrlPlaceholder')} {...field} />
-                            </FormControl>
+                            <div className="flex gap-2">
+                                <FormControl>
+                                    <Input placeholder={t('contactAdmin.avatarUrlPlaceholder')} {...field} className="flex-1" />
+                                </FormControl>
+                                <Select onValueChange={(val) => field.onChange(val)} value="">
+                                    <SelectTrigger className="w-auto whitespace-nowrap">
+                                        <SelectValue placeholder={t('homeAdmin.chooseFromLibrary')} />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {imageAssets.map((asset) => (
+                                            <SelectItem key={asset.id} value={asset.url}>
+                                                {asset.title || asset.filename}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
                             <FormDescription>{t('contactAdmin.avatarUrlDescription')}</FormDescription>
                             <FormMessage />
                         </FormItem>

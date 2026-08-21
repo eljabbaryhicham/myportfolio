@@ -206,6 +206,16 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onCho
             }
         });
     };
+
+    const handleChooseVtt = () => {
+        onChooseFromLibrary((url, type) => {
+            if (type !== 'raw') {
+              toast({ variant: 'destructive', title: t('portfolioForm.toast.invalidThumbnail.title'), description: 'Please select a VTT file.'});
+              return;
+            }
+            form.setValue('thumbnailVttUrl', url, { shouldValidate: true });
+        });
+    };
     
     return (
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -345,9 +355,15 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onCho
                                 render={({ field }) => (
                                     <FormItem>
                                     <FormLabel>{t('portfolioForm.thumbnailsVttUrl')}</FormLabel>
-                                    <FormControl>
-                                        <Input placeholder={t('portfolioForm.thumbnailsVttUrlPlaceholder')} {...field} />
-                                    </FormControl>
+                                    <div className="flex gap-2">
+                                        <FormControl>
+                                            <Input placeholder={t('portfolioForm.thumbnailsVttUrlPlaceholder')} {...field} className="flex-1" />
+                                        </FormControl>
+                                        <Button type="button" variant="outline" onClick={handleChooseVtt}>
+                                            <FontAwesomeIcon icon={faImages} className="mr-2 h-4 w-4" />
+                                            {t('portfolioForm.library')}
+                                        </Button>
+                                    </div>
                                     <FormDescription>{t('portfolioForm.thumbnailsVttUrlDescription')}</FormDescription>
                                     <FormMessage />
                                     </FormItem>

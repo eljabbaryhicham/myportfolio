@@ -275,9 +275,23 @@ export default function HomeAdmin() {
                                         render={({ field }) => (
                                             <FormItem>
                                                 <FormLabel>{t('homeAdmin.homepageLogoUrl')}</FormLabel>
-                                                <FormControl>
-                                                    <Input placeholder={t('homeAdmin.homepageLogoUrlPlaceholder')} {...field} />
-                                                </FormControl>
+                                                <div className="flex gap-2">
+                                                    <FormControl>
+                                                        <Input placeholder={t('homeAdmin.homepageLogoUrlPlaceholder')} {...field} className="flex-1" />
+                                                    </FormControl>
+                                                    <Select onValueChange={(val) => field.onChange(val)} value="">
+                                                        <SelectTrigger className="w-auto whitespace-nowrap">
+                                                            <SelectValue placeholder={t('homeAdmin.chooseFromLibrary')} />
+                                                        </SelectTrigger>
+                                                        <SelectContent>
+                                                            {imageAssets.map((asset) => (
+                                                                <SelectItem key={asset.id} value={asset.url}>
+                                                                    {asset.title || asset.filename}
+                                                                </SelectItem>
+                                                            ))}
+                                                        </SelectContent>
+                                                    </Select>
+                                                </div>
                                                 <FormMessage />
                                             </FormItem>
                                         )}
