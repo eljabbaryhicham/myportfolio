@@ -198,23 +198,18 @@ export default function HomePageContent() {
 
   useEffect(() => {
     const c = 'url("data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7") 0 0, none';
-    document.body.classList.add('hide-cursor');
-    document.body.style.cursor = c;
-    document.documentElement.style.cursor = c;
-    const reapply = () => {
-      document.body.style.cursor = c;
-      document.documentElement.style.cursor = c;
+    const html = document.documentElement;
+    const body = document.body;
+    const apply = () => {
+      html.style.setProperty('cursor', c, 'important');
+      body.style.setProperty('cursor', c, 'important');
     };
-    window.addEventListener('mousemove', reapply);
-    window.addEventListener('mousedown', reapply);
-    window.addEventListener('pointerdown', reapply);
+    apply();
+    const id = window.setInterval(apply, 100);
     return () => {
-      document.body.classList.remove('hide-cursor');
-      document.body.style.cursor = '';
-      document.documentElement.style.cursor = '';
-      window.removeEventListener('mousemove', reapply);
-      window.removeEventListener('mousedown', reapply);
-      window.removeEventListener('pointerdown', reapply);
+      html.style.removeProperty('cursor');
+      body.style.removeProperty('cursor');
+      window.clearInterval(id);
     };
   }, []);
 

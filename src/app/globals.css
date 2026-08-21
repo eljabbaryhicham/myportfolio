@@ -286,9 +286,8 @@ tr.drag-over-bottom {
   border-bottom: 2px solid hsl(var(--primary) / 0.2);
 }
 
-.hide-cursor,
-.hide-cursor *,
-.hide-cursor *::before,
-.hide-cursor *::after {
+html.hide-cursor,
+html.hide-cursor body,
+html.hide-cursor body * {
   cursor: url("data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7") 0 0, none !important;
 }
