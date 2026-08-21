@@ -575,7 +575,7 @@ export default function WorkPage() {
 
   const showMoreButtonNeeded = visibleItemsCount !== null && filteredItems.length > effectiveItemsCount;
 
-  const isLoading = isPortfolioLoading || visibleItemsCount === null;
+  const isLoading = isPortfolioLoading || portfolioItems === null;
 
   const variants = {
     enter: (direction: 'next' | 'prev' | null) => ({
@@ -623,7 +623,7 @@ export default function WorkPage() {
   return (
     <>
       <div className="h-full w-full flex flex-col">
-        <div className="p-4 md:p-8 pb-4">
+        <div className="p-4 md:p-8 pb-4 flex-shrink-0">
           <div className="container mx-auto px-0">
             <div className="mb-8 text-center">
               <h1 className="text-3xl md:text-4xl font-headline tracking-tight">{t('work.heading')}</h1>
@@ -646,7 +646,7 @@ export default function WorkPage() {
             </div>
           </div>
         </div>
-        <Separator className="bg-white/10" />
+        <Separator className="bg-white/10 flex-shrink-0" />
 
         <ScrollArea className="flex-1">
           <div className="p-4 md:p-8 pt-4 flex items-center justify-center min-h-full">
