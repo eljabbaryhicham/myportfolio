@@ -148,7 +148,7 @@ export default function ContactAdmin() {
     };
 
     const subscription = watch((value, { name, type }) => {
-      if (type === 'change' && name) {
+      if (name) {
         debouncedSave(name, value[name as keyof ContactInfo]);
       }
     });

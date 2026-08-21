@@ -235,7 +235,7 @@ export default function HomeAdmin() {
     }, 500);
 
     const subscription = watch((value, { name, type }) => {
-      if (type === 'change' && name) {
+      if (name) {
         const fieldName = name as keyof SettingsFormValues;
         debouncedSave(fieldName, value[fieldName]);
       }
