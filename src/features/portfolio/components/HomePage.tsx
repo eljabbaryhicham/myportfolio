@@ -197,53 +197,61 @@ export default function HomePageContent() {
   const logoColor = homeSettings?.homePageLogoColor || '';
 
   useEffect(() => {
-    document.documentElement.classList.add('hide-cursor');
+    const HIDDEN = 'none';
+    document.documentElement.style.setProperty('cursor', HIDDEN, 'important');
+    document.body.style.setProperty('cursor', HIDDEN, 'important');
 
     const overlay = document.createElement('div');
     overlay.setAttribute('data-cursor-overlay', '');
-    const INVISIBLE = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVQI12NgAAIABQABNjN9GQAAAABJRU5ErkJggg==';
-    overlay.style.cssText = `position:fixed;inset:0;z-index:2147483647;cursor:url("${INVISIBLE}") 0 0, none;pointer-events:auto;background:transparent;`;
+    overlay.style.cssText = 'position:fixed;inset:0;z-index:2147483647;cursor:none;pointer-events:auto;background:transparent;';
     document.body.appendChild(overlay);
 
     let lastTarget: Element | null = null;
 
     const getTarget = (e: Event) => {
       const me = e as MouseEvent;
-      overlay.style.pointerEvents = 'none';
-      const el = document.elementFromPoint(me.clientX, me.clientY);
-      overlay.style.pointerEvents = 'auto';
-      return el;
+      const els = document.elementsFromPoint(me.clientX, me.clientY);
+      return els.find((el) => el !== overlay) ?? null;
     };
 
-    overlay.addEventListener('mousemove', (e: Event) => {
-      const me = e as MouseEvent;
+    overlay.addEventListener('pointerdown', (e: Event) => {
+      const me = e as PointerEvent;
+      try { overlay.setPointerCapture(me.pointerId); } catch {}
       const target = getTarget(me);
-      if (target !== lastTarget) {
-        if (lastTarget) lastTarget.dispatchEvent(new MouseEvent('mouseleave', { bubbles: true, clientX: me.clientX, clientY: me.clientY }));
-        if (target) target.dispatchEvent(new MouseEvent('mouseenter', { bubbles: true, clientX: me.clientX, clientY: me.clientY }));
-        lastTarget = target;
+      if (target) {
+        target.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, clientX: me.clientX, clientY: me.clientY, button: me.button, pointerId: me.pointerId }));
+        if (me.button === 0) target.dispatchEvent(new MouseEvent('click', { bubbles: true, clientX: me.clientX, clientY: me.clientY, button: me.button }));
       }
-      if (target) target.dispatchEvent(new MouseEvent('mousemove', { bubbles: true, clientX: me.clientX, clientY: me.clientY }));
     });
 
-    const forwardClick = (type: string) => {
-      overlay.addEventListener(type, (e: Event) => {
-        const me = e as MouseEvent;
-        const target = getTarget(me);
-        if (target) target.dispatchEvent(new MouseEvent(type, { bubbles: true, clientX: me.clientX, clientY: me.clientY, button: me.button }));
-      });
-    };
-    ['click', 'dblclick', 'mousedown', 'mouseup', 'contextmenu'].forEach(forwardClick);
+    overlay.addEventListener('pointermove', (e: Event) => {
+      const me = e as PointerEvent;
+      try { overlay.setPointerCapture(me.pointerId); } catch {}
+      const target = getTarget(me);
+      if (target !== lastTarget) {
+        if (lastTarget) lastTarget.dispatchEvent(new PointerEvent('pointerleave', { bubbles: true, clientX: me.clientX, clientY: me.clientY }));
+        if (target) target.dispatchEvent(new PointerEvent('pointerenter', { bubbles: true, clientX: me.clientX, clientY: me.clientY }));
+        lastTarget = target;
+      }
+      if (target) target.dispatchEvent(new PointerEvent('pointermove', { bubbles: true, clientX: me.clientX, clientY: me.clientY }));
+    });
+
+    overlay.addEventListener('pointerup', (e: Event) => {
+      const me = e as PointerEvent;
+      const target = getTarget(me);
+      if (target) target.dispatchEvent(new PointerEvent('pointerup', { bubbles: true, clientX: me.clientX, clientY: me.clientY, button: me.button, pointerId: me.pointerId }));
+    });
 
     overlay.addEventListener('wheel', (e: Event) => {
       const we = e as WheelEvent;
       const target = getTarget(we);
       if (target) target.dispatchEvent(new WheelEvent('wheel', { bubbles: true, deltaY: we.deltaY, deltaX: we.deltaX }));
-    });
+    }, { passive: true });
 
     return () => {
-      document.documentElement.classList.remove('hide-cursor');
       overlay.remove();
+      document.documentElement.style.removeProperty('cursor');
+      document.body.style.removeProperty('cursor');
     };
   }, []);
 
