@@ -665,7 +665,7 @@ export default function WorkPage() {
                       <div className="col-span-full h-full min-h-[50vh] flex items-center justify-center">
                         <Preloader />
                       </div>
-                    ) : itemsToShow.length === 0 ? (
+                    ) : filteredItems.length === 0 ? (
                       <div className="col-span-full h-full min-h-[50vh] flex flex-col items-center justify-center text-center gap-4">
                         <div className="text-foreground/40 text-lg">{t('work.empty.title')}</div>
                         <p className="text-foreground/30 text-sm max-w-md">
