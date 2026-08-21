@@ -189,13 +189,13 @@ export default function HomePageContent() {
   const logoColor = homeSettings?.homePageLogoColor || '';
 
   useEffect(() => {
-    const videoUrl = homeSettings?.heroVideoUrl || HERO_VIDEO_URL;
+    const videoUrl = homeSettings?.heroVideoUrl;
     const video = videoRef.current;
-    if (!video || !videoUrl) return;
+    if (!video || !videoUrl || videoUrl === HERO_VIDEO_URL) return;
 
     if (videoUrl.includes('.m3u8')) {
       if (Hls.isSupported()) {
-        const hls = new Hls();
+        const hls = new Hls({ startLevel: -1 });
         hls.loadSource(videoUrl);
         hls.attachMedia(video);
         hls.on(Hls.Events.MANIFEST_PARSED, () => {
@@ -247,7 +247,7 @@ export default function HomePageContent() {
                 background: "radial-gradient(ellipse at center, rgba(255,255,255,0.08) 0%, transparent 70%)",
                 filter: "blur(50px)",
               }} />
-              <video ref={videoRef} autoPlay muted loop playsInline className="absolute inset-0 w-full h-full object-cover" key={homeSettings?.heroVideoUrl || HERO_VIDEO_URL} style={{ pointerEvents: 'none' }} />
+              <video ref={videoRef} autoPlay muted loop playsInline preload="auto" src={HERO_VIDEO_URL} className="absolute inset-0 w-full h-full object-cover" style={{ pointerEvents: 'none' }} />
               <div className="absolute inset-0 bg-black/60" />
               <div className="absolute inset-0" style={{ backdropFilter: "blur(1px)" }} />
             </div>
