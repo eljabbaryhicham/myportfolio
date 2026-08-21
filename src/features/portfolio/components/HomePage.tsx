@@ -21,6 +21,7 @@ import { useTranslation } from "@/lib/i18n/useTranslation";
 import Hls from "hls.js";
 
 const HERO_VIDEO_URL = "https://res.cloudinary.com/dsq1lxrqi/video/upload/sp_auto/pg_5/v1778867307/Ovi_Motion_Design_v3kfy0.m3u8";
+const HERO_VIDEO_POSTER = "https://res.cloudinary.com/dsq1lxrqi/image/upload/so_0,f_auto,q_auto/v1778867307/Ovi_Motion_Design_v3kfy0.jpg";
 
 interface HomePageSettings {
     homePageLogoUrl?: string;
@@ -247,7 +248,7 @@ export default function HomePageContent() {
                 background: "radial-gradient(ellipse at center, rgba(255,255,255,0.08) 0%, transparent 70%)",
                 filter: "blur(50px)",
               }} />
-              <video ref={videoRef} autoPlay muted loop playsInline preload="auto" src={HERO_VIDEO_URL} className="absolute inset-0 w-full h-full object-cover" style={{ pointerEvents: 'none' }} />
+              <video ref={videoRef} autoPlay muted loop playsInline preload="auto" src={HERO_VIDEO_URL} poster={HERO_VIDEO_POSTER} className="absolute inset-0 w-full h-full object-cover" style={{ pointerEvents: 'none' }} />
               <div className="absolute inset-0 bg-black/60" />
               <div className="absolute inset-0" style={{ backdropFilter: "blur(1px)" }} />
             </div>
