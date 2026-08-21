@@ -67,6 +67,7 @@ interface HomePageSettings {
     heroVideoUrl?: string;
     preloaderType?: 'default' | 'lottie' | 'gif' | 'webm';
     preloaderUrl?: string;
+    preloaderSize?: number;
     cursorLottieUrl?: string;
     tickLottieUrl?: string;
     homePageTitle?: string;
@@ -92,6 +93,7 @@ const settingsSchema = z.object({
   heroVideoUrl: z.string().optional(),
   preloaderType: z.enum(['default', 'lottie', 'gif', 'webm']).optional(),
   preloaderUrl: z.string().optional(),
+  preloaderSize: z.number().min(5).max(100).optional(),
   cursorLottieUrl: z.string().optional(),
   tickLottieUrl: z.string().optional(),
   homePageTitle: z.string().optional(),
@@ -160,6 +162,7 @@ export default function HomeAdmin() {
       heroVideoUrl: '',
       preloaderType: 'default',
       preloaderUrl: '',
+      preloaderSize: 25,
       cursorLottieUrl: '',
       tickLottieUrl: '',
       homePageTitle: '',
@@ -191,6 +194,7 @@ export default function HomeAdmin() {
         heroVideoUrl: homeSettings.heroVideoUrl || '',
         preloaderType: homeSettings.preloaderType || 'default',
         preloaderUrl: homeSettings.preloaderUrl || '',
+        preloaderSize: homeSettings.preloaderSize || 25,
         cursorLottieUrl: homeSettings.cursorLottieUrl || '',
         tickLottieUrl: homeSettings.tickLottieUrl || '',
         homePageTitle: homeSettings.homePageTitle || '',
@@ -755,6 +759,32 @@ export default function HomeAdmin() {
                                             }}
                                         />
                                     )}
+
+                                    <FormField
+                                        control={control}
+                                        name="preloaderSize"
+                                        render={({ field }) => (
+                                            <FormItem className="space-y-3">
+                                                <FormLabel>{t('homeAdmin.preloaderSize') || 'Preloader Size'}</FormLabel>
+                                                <FormDescription>
+                                                    {t('homeAdmin.preloaderSizeDescription') || `Size of the loading animation (${field.value || 25}% of screen)`}
+                                                </FormDescription>
+                                                <div className="flex items-center gap-3">
+                                                    <FormControl>
+                                                        <Slider
+                                                            min={5}
+                                                            max={100}
+                                                            step={5}
+                                                            value={[field.value || 25]}
+                                                            onValueChange={(vals) => field.onChange(vals[0])}
+                                                        />
+                                                    </FormControl>
+                                                    <span className="text-sm text-muted-foreground w-12 text-right">{field.value || 25}%</span>
+                                                </div>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
 
                                     <Separator />
 
