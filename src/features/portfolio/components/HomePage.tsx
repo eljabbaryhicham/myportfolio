@@ -9,7 +9,7 @@ import tickAnimationData from "@/lib/tick-animation.json";
 
 import { Button } from "@/components/ui/button";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faArrowRight } from '@fortawesome/free-solid-svg-icons';
+import { faArrowRight, faArrowLeft, faCircleInfo, faEnvelope } from '@fortawesome/free-solid-svg-icons';
 import { cn } from "@/lib/utils";
 
 import Preloader from "@/components/preloader";
@@ -278,7 +278,13 @@ export default function HomePageContent() {
                 {homeSettings?.homePageSubtitle || t('home.hero.subtitle')}
               </p>
             </motion.div>
-            <motion.div variants={itemVariants}>
+            <motion.div variants={itemVariants} className="flex items-center gap-3 sm:gap-4">
+              <Button asChild size="sm" className="group transition-shadow duration-300 rounded-full px-4 sm:px-5" style={{ boxShadow: "0 0 15px rgba(255,255,255,0.1)" }}>
+                <Link href="/about">
+                  <FontAwesomeIcon icon={faCircleInfo} className="mr-1.5 h-3 w-3" />
+                  {t('nav.about')}
+                </Link>
+              </Button>
               <Button ref={ctaRef} asChild size="lg" className="group transition-shadow duration-300" style={{ boxShadow: "0 0 20px rgba(255,255,255,0.12)" }}
                 onMouseEnter={(e) => e.currentTarget.style.boxShadow = "0 0 35px rgba(255,255,255,0.25)"}
                 onMouseLeave={(e) => e.currentTarget.style.boxShadow = "0 0 20px rgba(255,255,255,0.12)"}
@@ -286,6 +292,12 @@ export default function HomePageContent() {
                 <Link href="/work">
                   {t('home.hero.cta')}
                   <FontAwesomeIcon icon={faArrowRight} className="ml-2 transition-transform group-hover:translate-x-1" />
+                </Link>
+              </Button>
+              <Button asChild size="sm" className="group transition-shadow duration-300 rounded-full px-4 sm:px-5" style={{ boxShadow: "0 0 15px rgba(255,255,255,0.1)" }}>
+                <Link href="/contact">
+                  {t('nav.contact')}
+                  <FontAwesomeIcon icon={faEnvelope} className="ml-1.5 h-3 w-3" />
                 </Link>
               </Button>
             </motion.div>
