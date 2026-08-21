@@ -62,7 +62,7 @@ function Particles() {
   return <div className="absolute inset-0 pointer-events-none overflow-hidden">{circles}</div>;
 }
 
-function CursorArrow({ targetRef, cursorLottieUrl, tickLottieUrl }: { targetRef: React.RefObject<HTMLButtonElement | null>; cursorLottieUrl?: string; tickLottieUrl?: string }) {
+function CursorArrow({ targetRef, cursorLottieUrl, tickLottieUrl, lockRef }: { targetRef: React.RefObject<HTMLButtonElement | null>; cursorLottieUrl?: string; tickLottieUrl?: string; lockRef: React.MutableRefObject<{ x: number; y: number; locked: boolean }> }) {
   const arrowRef = useRef<HTMLDivElement>(null);
   const angleRef = useRef(0);
   const [isOver, setIsOver] = useState(false);
@@ -70,21 +70,26 @@ function CursorArrow({ targetRef, cursorLottieUrl, tickLottieUrl }: { targetRef:
   const [customTick, setCustomTick] = useState<any>(null);
   const [cursorGif, setCursorGif] = useState<string | null>(null);
   const [tickGif, setTickGif] = useState<string | null>(null);
+  const lastElRef = useRef<Element | null>(null);
 
   useEffect(() => {
     const el = arrowRef.current;
     if (!el) return;
 
     const update = (e: MouseEvent) => {
+      const pos = lockRef.current;
+      const cx = pos.locked ? pos.x : e.clientX;
+      const cy = pos.locked ? pos.y : e.clientY;
+
       if (!targetRef.current) return;
       const rect = targetRef.current.getBoundingClientRect();
-      const cx = rect.left + rect.width / 2;
-      const cy = rect.top + rect.height / 2;
-      const dx = cx - e.clientX;
-      const dy = cy - e.clientY;
+      const tx = rect.left + rect.width / 2;
+      const ty = rect.top + rect.height / 2;
+      const dx = tx - cx;
+      const dy = ty - cy;
       const dist = Math.sqrt(dx * dx + dy * dy);
 
-      const over = e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.top && e.clientY <= rect.bottom;
+      const over = cx >= rect.left && cx <= rect.right && cy >= rect.top && cy <= rect.bottom;
       setIsOver(over);
 
       if (!over) {
@@ -94,9 +99,18 @@ function CursorArrow({ targetRef, cursorLottieUrl, tickLottieUrl }: { targetRef:
       } else {
         el.style.transform = `translate(-50%, -50%)`;
       }
-      el.style.left = `${e.clientX}px`;
-      el.style.top = `${e.clientY}px`;
+      el.style.left = `${cx}px`;
+      el.style.top = `${cy}px`;
       el.style.opacity = "1";
+
+      if (pos.locked) {
+        const underEl = document.elementFromPoint(cx, cy);
+        if (underEl !== lastElRef.current) {
+          if (lastElRef.current) lastElRef.current.dispatchEvent(new PointerEvent('pointerleave', { bubbles: true, clientX: cx, clientY: cy }));
+          if (underEl) underEl.dispatchEvent(new PointerEvent('pointerenter', { bubbles: true, clientX: cx, clientY: cy }));
+          lastElRef.current = underEl;
+        }
+      }
     };
 
     const hide = () => { if (arrowRef.current) arrowRef.current.style.opacity = "0"; };
@@ -107,7 +121,7 @@ function CursorArrow({ targetRef, cursorLottieUrl, tickLottieUrl }: { targetRef:
       window.removeEventListener("mousemove", update);
       window.removeEventListener("mouseleave", hide);
     };
-  }, [targetRef]);
+  }, [targetRef, lockRef]);
 
   useEffect(() => {
     if (!cursorLottieUrl) { setCustomCursor(null); setCursorGif(null); return; }
@@ -175,6 +189,7 @@ export default function HomePageContent() {
   const { t } = useTranslation();
   const ctaRef = useRef<HTMLButtonElement | null>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
+  const lockRef = useRef({ x: 0, y: 0, locked: false });
 
   const contactDocRef = useMemoFirebase(
     () => (firestore ? doc(firestore, 'contact', 'details') : null),
@@ -197,61 +212,59 @@ export default function HomePageContent() {
   const logoColor = homeSettings?.homePageLogoColor || '';
 
   useEffect(() => {
-    const HIDDEN = 'none';
-    document.documentElement.style.setProperty('cursor', HIDDEN, 'important');
-    document.body.style.setProperty('cursor', HIDDEN, 'important');
+    document.documentElement.classList.add('hide-cursor');
+    let locked = false;
+    let lastX = window.innerWidth / 2;
+    let lastY = window.innerHeight / 2;
 
-    const overlay = document.createElement('div');
-    overlay.setAttribute('data-cursor-overlay', '');
-    overlay.style.cssText = 'position:fixed;inset:0;z-index:2147483647;cursor:none;pointer-events:auto;background:transparent;';
-    document.body.appendChild(overlay);
-
-    let lastTarget: Element | null = null;
-
-    const getTarget = (e: Event) => {
-      const me = e as MouseEvent;
-      const els = document.elementsFromPoint(me.clientX, me.clientY);
-      return els.find((el) => el !== overlay) ?? null;
+    const onMove = (e: MouseEvent) => {
+      if (!locked) {
+        lastX = e.clientX;
+        lastY = e.clientY;
+        lockRef.current.x = e.clientX;
+        lockRef.current.y = e.clientY;
+      }
+    };
+    const onLockMove = (e: MouseEvent) => {
+      if (locked) {
+        lockRef.current.x = Math.max(0, Math.min(window.innerWidth, lockRef.current.x + e.movementX));
+        lockRef.current.y = Math.max(0, Math.min(window.innerHeight, lockRef.current.y + e.movementY));
+      }
+    };
+    const requestLock = () => {
+      if (!locked && document.documentElement.classList.contains('hide-cursor')) {
+        lockRef.current.x = lastX;
+        lockRef.current.y = lastY;
+        document.body.requestPointerLock();
+      }
+    };
+    const onLockChange = () => {
+      locked = document.pointerLockElement === document.body;
+      lockRef.current.locked = locked;
+    };
+    const onClick = (e: MouseEvent) => {
+      if (locked) {
+        const target = document.elementFromPoint(lockRef.current.x, lockRef.current.y);
+        if (target && target !== document.body && target !== document.documentElement) {
+          target.dispatchEvent(new MouseEvent(e.type, { bubbles: true, clientX: lockRef.current.x, clientY: lockRef.current.y, button: e.button }));
+        }
+      } else {
+        requestLock();
+      }
     };
 
-    overlay.addEventListener('pointerdown', (e: Event) => {
-      const me = e as PointerEvent;
-      try { overlay.setPointerCapture(me.pointerId); } catch {}
-      const target = getTarget(me);
-      if (target) {
-        target.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, clientX: me.clientX, clientY: me.clientY, button: me.button, pointerId: me.pointerId }));
-        if (me.button === 0) target.dispatchEvent(new MouseEvent('click', { bubbles: true, clientX: me.clientX, clientY: me.clientY, button: me.button }));
-      }
-    });
-
-    overlay.addEventListener('pointermove', (e: Event) => {
-      const me = e as PointerEvent;
-      try { overlay.setPointerCapture(me.pointerId); } catch {}
-      const target = getTarget(me);
-      if (target !== lastTarget) {
-        if (lastTarget) lastTarget.dispatchEvent(new PointerEvent('pointerleave', { bubbles: true, clientX: me.clientX, clientY: me.clientY }));
-        if (target) target.dispatchEvent(new PointerEvent('pointerenter', { bubbles: true, clientX: me.clientX, clientY: me.clientY }));
-        lastTarget = target;
-      }
-      if (target) target.dispatchEvent(new PointerEvent('pointermove', { bubbles: true, clientX: me.clientX, clientY: me.clientY }));
-    });
-
-    overlay.addEventListener('pointerup', (e: Event) => {
-      const me = e as PointerEvent;
-      const target = getTarget(me);
-      if (target) target.dispatchEvent(new PointerEvent('pointerup', { bubbles: true, clientX: me.clientX, clientY: me.clientY, button: me.button, pointerId: me.pointerId }));
-    });
-
-    overlay.addEventListener('wheel', (e: Event) => {
-      const we = e as WheelEvent;
-      const target = getTarget(we);
-      if (target) target.dispatchEvent(new WheelEvent('wheel', { bubbles: true, deltaY: we.deltaY, deltaX: we.deltaX }));
-    }, { passive: true });
+    document.addEventListener('mousemove', onMove, { passive: true });
+    document.addEventListener('mousemove', onLockMove, { passive: true });
+    document.addEventListener('click', onClick);
+    document.addEventListener('pointerlockchange', onLockChange);
 
     return () => {
-      overlay.remove();
-      document.documentElement.style.removeProperty('cursor');
-      document.body.style.removeProperty('cursor');
+      document.documentElement.classList.remove('hide-cursor');
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mousemove', onLockMove);
+      document.removeEventListener('click', onClick);
+      document.removeEventListener('pointerlockchange', onLockChange);
+      if (locked) document.exitPointerLock();
     };
   }, []);
 
@@ -274,7 +287,7 @@ export default function HomePageContent() {
   return (
     <div className="fixed inset-0 overflow-y-auto overflow-x-hidden">
       <div className="relative z-10 min-h-full w-full flex items-center justify-center transition-opacity duration-1000">
-        <CursorArrow targetRef={ctaRef} cursorLottieUrl={homeSettings?.cursorLottieUrl} tickLottieUrl={homeSettings?.tickLottieUrl} />
+        <CursorArrow targetRef={ctaRef} cursorLottieUrl={homeSettings?.cursorLottieUrl} tickLottieUrl={homeSettings?.tickLottieUrl} lockRef={lockRef} />
 
         <Particles />
 
