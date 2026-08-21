@@ -201,7 +201,8 @@ export default function HomePageContent() {
 
     const overlay = document.createElement('div');
     overlay.setAttribute('data-cursor-overlay', '');
-    overlay.style.cssText = 'position:fixed;inset:0;z-index:2147483647;cursor:none;pointer-events:auto;background:transparent;';
+    const INVISIBLE = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVQI12NgAAIABQABNjN9GQAAAABJRU5ErkJggg==';
+    overlay.style.cssText = `position:fixed;inset:0;z-index:2147483647;cursor:url("${INVISIBLE}") 0 0, none;pointer-events:auto;background:transparent;`;
     document.body.appendChild(overlay);
 
     let lastTarget: Element | null = null;

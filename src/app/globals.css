@@ -287,7 +287,7 @@ tr.drag-over-bottom {
 }
 
 @keyframes hide-cursor-boop {
-  0%, 100% { cursor: url("data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7") 0 0, none; }
+  0%, 100% { cursor: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVQI12NgAAIABQABNjN9GQAAAABJRU5ErkJggg==") 0 0, none; }
 }
 
 html.hide-cursor,
@@ -296,5 +296,5 @@ html.hide-cursor body *,
 html.hide-cursor body *::before,
 html.hide-cursor body *::after {
   animation: hide-cursor-boop 1s infinite !important;
-  cursor: url("data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7") 0 0, none !important;
+  cursor: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVQI12NgAAIABQABNjN9GQAAAABJRU5ErkJggg==") 0 0, none !important;
 }
