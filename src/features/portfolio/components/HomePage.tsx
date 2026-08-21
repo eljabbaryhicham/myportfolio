@@ -198,7 +198,52 @@ export default function HomePageContent() {
 
   useEffect(() => {
     document.documentElement.classList.add('hide-cursor');
-    return () => { document.documentElement.classList.remove('hide-cursor'); };
+
+    const overlay = document.createElement('div');
+    overlay.setAttribute('data-cursor-overlay', '');
+    overlay.style.cssText = 'position:fixed;inset:0;z-index:2147483647;cursor:none;pointer-events:auto;background:transparent;';
+    document.body.appendChild(overlay);
+
+    let lastTarget: Element | null = null;
+
+    const getTarget = (e: Event) => {
+      const me = e as MouseEvent;
+      overlay.style.pointerEvents = 'none';
+      const el = document.elementFromPoint(me.clientX, me.clientY);
+      overlay.style.pointerEvents = 'auto';
+      return el;
+    };
+
+    overlay.addEventListener('mousemove', (e: Event) => {
+      const me = e as MouseEvent;
+      const target = getTarget(me);
+      if (target !== lastTarget) {
+        if (lastTarget) lastTarget.dispatchEvent(new MouseEvent('mouseleave', { bubbles: true, clientX: me.clientX, clientY: me.clientY }));
+        if (target) target.dispatchEvent(new MouseEvent('mouseenter', { bubbles: true, clientX: me.clientX, clientY: me.clientY }));
+        lastTarget = target;
+      }
+      if (target) target.dispatchEvent(new MouseEvent('mousemove', { bubbles: true, clientX: me.clientX, clientY: me.clientY }));
+    });
+
+    const forwardClick = (type: string) => {
+      overlay.addEventListener(type, (e: Event) => {
+        const me = e as MouseEvent;
+        const target = getTarget(me);
+        if (target) target.dispatchEvent(new MouseEvent(type, { bubbles: true, clientX: me.clientX, clientY: me.clientY, button: me.button }));
+      });
+    };
+    ['click', 'dblclick', 'mousedown', 'mouseup', 'contextmenu'].forEach(forwardClick);
+
+    overlay.addEventListener('wheel', (e: Event) => {
+      const we = e as WheelEvent;
+      const target = getTarget(we);
+      if (target) target.dispatchEvent(new WheelEvent('wheel', { bubbles: true, deltaY: we.deltaY, deltaX: we.deltaX }));
+    });
+
+    return () => {
+      document.documentElement.classList.remove('hide-cursor');
+      overlay.remove();
+    };
   }, []);
 
   useEffect(() => {
