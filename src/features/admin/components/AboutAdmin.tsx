@@ -141,10 +141,9 @@ export default function AboutAdmin() {
       <div className="flex-1 flex flex-col h-full gap-8 min-h-0">
         <PageTextEditor
           titleKey="pageContent.aboutTitle"
-          descriptionKey="pageContent.aboutDescription"
           fields={[
-            { name: 'aboutHeading', labelKey: 'pageContent.aboutHeadingLabel', fallbackKey: 'about.heading' },
-            { name: 'aboutServicesHeading', labelKey: 'pageContent.servicesHeadingLabel', fallbackKey: 'about.whatYouGet' },
+            { name: 'aboutHeading', labelKey: 'pageContent.aboutHeadingLabel' },
+            { name: 'aboutSubtitle', labelKey: 'pageContent.subheadingLabel' },
           ]}
         />
         <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>

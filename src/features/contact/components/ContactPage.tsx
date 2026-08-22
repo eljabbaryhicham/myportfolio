@@ -97,17 +97,17 @@ export default function ContactPage() {
       {!isLoading && <ScrollIndicator scrollRef={scrollRef} />}
       <div className="p-4 md:p-8 flex-shrink-0">
         <div className="container mx-auto px-0">
-          <div className="mb-4 md:mb-8 text-center">
+          <div className="mb-[clamp(1rem,3vh,2rem)] text-center">
             <h1 className="text-2xl sm:text-3xl md:text-4xl font-headline tracking-tight">{pageSettings?.contactHeading || t('contact.heading')}</h1>
             <p className="mt-2 max-w-2xl mx-auto text-sm sm:text-base md:text-lg text-foreground/70">
-              {t('contact.subtitle')}
+              {pageSettings?.contactSubtitle || t('contact.subtitle')}
             </p>
           </div>
         </div>
       </div>
       <Separator className="bg-white/10 flex-shrink-0" />
       <div ref={scrollRef} className="flex-1 min-h-0 overflow-y-auto">
-        <div className="p-4 md:p-8 flex items-center justify-center min-h-full">
+        <div className="p-[clamp(1rem,3vh,2rem)] md:p-[clamp(1.5rem,4vh,2rem)] w-full flex items-center justify-center min-h-full">
             <div className="container mx-auto px-0">
             {/* Same loading pattern as the About page */}
             {isLoading ? (
@@ -117,33 +117,33 @@ export default function ContactPage() {
             ) : (
             <>
             <motion.div
-                  className="flex flex-col gap-4 md:gap-6 items-center justify-center lg:flex-row lg:items-start"
+                  className="w-full flex flex-col gap-[clamp(1rem,3vh,2rem)] items-center justify-center lg:flex-row lg:items-stretch"
                   variants={containerVariants}
                   initial="hidden"
                   animate="visible"
                 >
-                  <motion.div className="w-full lg:w-1/2 flex justify-center" variants={itemVariants}>
-                    <Card className="glass-effect p-4 sm:p-6 md:p-8 h-full flex flex-col justify-center w-full max-w-md">
+                  <motion.div className="w-full lg:w-1/2 lg:h-full flex justify-center" variants={itemVariants}>
+                    <Card className="glass-effect p-4 sm:p-6 md:p-[clamp(1.5rem,3vh,2rem)] h-full flex flex-col justify-center w-full max-w-md">
                       <CardContent className="p-0 flex flex-col items-center">
-                          <ContactForm submitLabel={pageSettings?.contactSendButtonLabel || undefined} />
+                          <ContactForm />
                       </CardContent>
                     </Card>
                   </motion.div>
-                  <motion.div className="w-full lg:w-1/2 flex justify-center" variants={itemVariants}>
+                  <motion.div className="w-full lg:w-1/2 lg:h-full flex justify-center" variants={itemVariants}>
                     {contactInfo ? (
-                    <Card className="glass-effect p-4 sm:p-6 flex flex-col h-full w-full max-w-md">
-                      <CardContent className="flex flex-col items-center text-center p-0">
-                        <Avatar className="border-2 border-white mb-4 w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20">
+                    <Card className="glass-effect p-4 sm:p-6 h-full w-full max-w-md">
+                      <CardContent className="flex flex-col items-center justify-center text-center p-0 h-full">
+                        <Avatar className="border-2 border-white mb-[clamp(0.75rem,2vh,1.25rem)] w-[clamp(3.5rem,9vh,5rem)] h-[clamp(3.5rem,9vh,5rem)]">
                           <AvatarImage src={contactInfo.avatarUrl} alt={contactInfo.name} />
                           <AvatarFallback>{contactInfo.name?.substring(0, 2)}</AvatarFallback>
                         </Avatar>
-                        <h3 className="text-base sm:text-lg md:text-xl font-headline">{contactInfo.name}</h3>
-                        <p className="text-xs sm:text-sm md:text-base text-foreground/70">{contactInfo.title}</p>
+                        <h3 className="text-[clamp(1rem,2.4vh,1.25rem)] font-headline">{contactInfo.name}</h3>
+                        <p className="text-[clamp(0.75rem,1.8vh,1rem)] text-foreground/70">{contactInfo.title}</p>
                         
-                        <Separator className="my-4 bg-white/20" />
+                        <Separator className="my-[clamp(0.75rem,2vh,1.25rem)] bg-white/20" />
                         
                         <div className="w-full flex flex-col items-center">
-                          <div className="space-y-3 md:space-y-4">
+                          <div className="space-y-[clamp(0.75rem,2vh,1.25rem)]">
                               {contactLinks.map((link) => (
                               link.href && link.value && (
                                   <Link
@@ -153,8 +153,8 @@ export default function ContactPage() {
                                     target="_blank"
                                     rel="noopener noreferrer"
                                   >
-                                          <div className={cn("w-11 h-11 sm:w-10 sm:h-10 md:w-12 md:h-12 flex-shrink-0 rounded-full flex items-center justify-center glass-effect transition-colors duration-300 text-white", link.color)}>
-                                          <Icon icon={link.icon} className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6" />
+                                          <div className={cn("w-[clamp(2.75rem,6.5vh,3rem)] h-[clamp(2.75rem,6.5vh,3rem)] flex-shrink-0 rounded-full flex items-center justify-center glass-effect transition-colors duration-300 text-white", link.color)}>
+                                          <Icon icon={link.icon} className="w-[clamp(1rem,2.6vh,1.5rem)] h-[clamp(1rem,2.6vh,1.5rem)]" />
                                       </div>
                                       <div className="mt-2 md:mt-0 md:ml-4 break-words">
                                           <p className="text-xs sm:text-xs md:text-sm text-foreground/70">{link.label}</p>
@@ -168,8 +168,8 @@ export default function ContactPage() {
                         
                         {contactInfo.whatsApp && (
                           <>
-                            <Separator className="my-4 bg-white/20" />
-                            <div className="flex justify-center">
+                            <Separator className="my-[clamp(0.75rem,2vh,1.25rem)] bg-white/20" />
+                            <div className="flex justify-center w-full">
                                 <Button asChild className="bg-gradient-to-r from-green-500 to-emerald-600 animate-shake" size="lg">
                                     <Link href={`https://wa.me/${contactInfo.whatsApp.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2">
                                         <FontAwesomeIcon icon={faWhatsapp} className="h-5 w-5" />

@@ -254,10 +254,9 @@ function ProjectAdmin({ setSelectedItem, setIsSheetOpen }: ProjectAdminProps) {
         <div className="mb-6">
           <PageTextEditor
             titleKey="pageContent.workTitle"
-            descriptionKey="pageContent.workDescription"
             fields={[
-              { name: 'workHeading', labelKey: 'pageContent.workHeadingLabel', fallbackKey: 'work.heading' },
-              { name: 'workDetailsButtonLabel', labelKey: 'pageContent.detailsButtonLabel', fallbackKey: 'work.details.showDetails' },
+              { name: 'workHeading', labelKey: 'pageContent.workHeadingLabel' },
+              { name: 'workSubtitle', labelKey: 'pageContent.subheadingLabel' },
             ]}
           />
         </div>

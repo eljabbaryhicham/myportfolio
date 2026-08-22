@@ -133,17 +133,17 @@ export default function AboutPage() {
       {!isLoading && <ScrollIndicator scrollRef={scrollRef} />}
       <div className="p-4 md:p-8 flex-shrink-0">
         <div className="container mx-auto px-0">
-            <div className="mb-4 md:mb-8 text-center">
+            <div className="mb-[clamp(1rem,3vh,2rem)] text-center">
               <h1 className="text-2xl sm:text-3xl md:text-4xl font-headline tracking-tight">{pageSettings?.aboutHeading || t('about.heading')}</h1>
               <p className="mt-2 max-w-2xl mx-auto text-sm sm:text-base md:text-lg text-foreground/70">
-                {t('about.subtitle')}
+                {pageSettings?.aboutSubtitle || t('about.subtitle')}
               </p>
             </div>
         </div>
       </div>
       <Separator className="bg-white/10 flex-shrink-0" />
       <div ref={scrollRef} className="flex-1 min-h-0 overflow-y-auto">
-        <div className="p-4 md:p-8 flex items-center justify-center min-h-full">
+        <div className="p-[clamp(1rem,3vh,2rem)] md:p-[clamp(1.5rem,4vh,2rem)] flex items-center justify-center min-h-full">
           <div className="container mx-auto px-0 text-center">
             {isLoading ? (
               <div className="flex justify-center items-center h-full min-h-[50vh]">
@@ -151,14 +151,14 @@ export default function AboutPage() {
               </div>
             ) : (
               <motion.div 
-                  className="space-y-8 md:space-y-12 lg:space-y-16"
+                  className="space-y-[clamp(2rem,6vh,4rem)]"
                   variants={containerVariants}
                   initial="hidden"
                   animate="visible"
                 >
                 <motion.div 
                     variants={itemVariants}
-                    className="flex flex-col gap-6 md:gap-8 items-center justify-center lg:flex-row lg:items-stretch lg:gap-12"
+                    className="flex flex-col gap-[clamp(1.5rem,4vh,3rem)] items-center justify-center lg:flex-row lg:items-stretch"
                   >
                     <div className="w-full lg:w-1/2 text-center p-4 sm:p-6 md:p-8 flex flex-col justify-center">
                         {logoUrl && (
@@ -166,8 +166,8 @@ export default function AboutPage() {
                                 <Logo src={logoUrl} />
                             </div>
                         )}
-                        <h2 className="text-xl sm:text-2xl md:text-3xl font-headline tracking-tight mb-3 md:mb-4">{aboutContent?.title}</h2>
-                        <p className="text-sm sm:text-base text-foreground/70 leading-relaxed mb-4 md:mb-6 text-center">{aboutContent?.content}</p>
+                        <h2 className="text-xl sm:text-2xl md:text-3xl font-headline tracking-tight mb-[clamp(0.75rem,2vh,1.25rem)]">{aboutContent?.title}</h2>
+                        <p className="text-sm sm:text-base text-foreground/70 leading-relaxed mb-[clamp(1rem,2.5vh,1.75rem)] text-center">{aboutContent?.content}</p>
                         <div className="hidden sm:flex flex-col sm:flex-row gap-4 justify-center">
                             <Button asChild>
                                 <Link href="/contact">
@@ -184,8 +184,8 @@ export default function AboutPage() {
                         </div>
                     </div>
                     <div className="w-full lg:w-1/2 flex flex-col justify-center">
-                       <h2 className="text-2xl md:text-3xl font-headline tracking-tight mb-4 md:mb-6 text-center">{pageSettings?.aboutServicesHeading || t('about.whatYouGet')}</h2>
-                       <div className="grid grid-cols-3 sm:grid-cols-6 grid-rows-2 gap-3 md:gap-4 h-full">
+                       <h2 className="text-2xl md:text-3xl font-headline tracking-tight mb-[clamp(1rem,3vh,1.75rem)] text-center">{t('about.whatYouGet')}</h2>
+                       <div className="grid grid-cols-3 sm:grid-cols-6 grid-rows-2 auto-rows-fr gap-[clamp(0.75rem,2vh,1.25rem)] h-full">
                         {services.map((service, index) => {
                             let gridClasses = '';
                             switch(index) {
@@ -199,11 +199,11 @@ export default function AboutPage() {
                                 <div 
                                     key={service.key}
                                     className={cn(
-                                      "glass-effect p-4 rounded-lg flex flex-col items-center justify-center text-center",
+                                      "glass-effect p-[clamp(1rem,2.5vh,1.5rem)] rounded-lg flex flex-col items-center justify-center text-center",
                                       gridClasses
                                     )}
                                 >
-                                    <service.icon className="w-8 h-8 md:w-10 md:h-10 text-primary mb-3" />
+                                    <service.icon className="w-[clamp(2rem,4.5vh,2.5rem)] h-[clamp(2rem,4.5vh,2.5rem)] text-primary mb-[clamp(0.5rem,1.5vh,0.875rem)]" />
                                     <p className="text-xs md:text-sm font-semibold">{t(service.key)}</p>
                                 </div>
                             );
@@ -213,7 +213,7 @@ export default function AboutPage() {
                   </motion.div>
 
                 <motion.div variants={itemVariants}>
-                  <div className="text-center mb-8">
+                  <div className="text-center mb-[clamp(1.5rem,4vh,2rem)]">
                     <h2 className="text-2xl font-headline tracking-tight">{t('about.ourClients')}</h2>
                     <Separator className="bg-white/10 max-w-xs mx-auto mt-2" />
                   </div>
@@ -234,7 +234,7 @@ export default function AboutPage() {
                     </div>
                   )}
                   
-                  <div className="text-center mt-8 md:mt-12">
+                  <div className="text-center mt-[clamp(1.5rem,4vh,3rem)]">
                     <p className="text-foreground/70">
                       {t('about.clientsTagline')}
                     </p>

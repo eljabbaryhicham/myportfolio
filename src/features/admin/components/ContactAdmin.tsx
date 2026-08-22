@@ -193,10 +193,9 @@ export default function ContactAdmin() {
     <div className="flex-1 flex flex-col h-full">
       <PageTextEditor
         titleKey="pageContent.contactTitle"
-        descriptionKey="pageContent.contactDescription"
         fields={[
-          { name: 'contactHeading', labelKey: 'pageContent.contactHeadingLabel', fallbackKey: 'contact.heading' },
-          { name: 'contactSendButtonLabel', labelKey: 'pageContent.sendButtonLabel', fallbackKey: 'contactForm.submit.send' },
+          { name: 'contactHeading', labelKey: 'pageContent.contactHeadingLabel' },
+          { name: 'contactSubtitle', labelKey: 'pageContent.subheadingLabel' },
         ]}
       />
       <div className="mb-6 mt-8">

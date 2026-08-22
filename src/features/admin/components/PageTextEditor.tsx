@@ -19,13 +19,10 @@ interface PageTextField {
   name: string;
   /** i18n label key */
   labelKey: string;
-  /** i18n key of the current default text (shown as placeholder) */
-  fallbackKey?: string;
 }
 
 interface PageTextEditorProps {
   titleKey: string;
-  descriptionKey?: string;
   fields: PageTextField[];
 }
 
@@ -47,7 +44,7 @@ function debounce<T extends (...args: any[]) => void>(fn: T, delay: number): T &
  * Used per admin tab to customize each public page's headings/button labels;
  * empty values fall back to the built-in translations on the public page.
  */
-export default function PageTextEditor({ titleKey, descriptionKey, fields }: PageTextEditorProps) {
+export default function PageTextEditor({ titleKey, fields }: PageTextEditorProps) {
   const { t } = useTranslation();
   const firestore = useFirestore();
   const settingsDocRef = useMemoFirebase(
@@ -101,7 +98,6 @@ export default function PageTextEditor({ titleKey, descriptionKey, fields }: Pag
         />
       </CollapsibleTrigger>
       <CollapsibleContent className="space-y-4 pt-4">
-        {descriptionKey && <p className="text-sm text-muted-foreground">{t(descriptionKey)}</p>}
         <Form {...form}>
           <fieldset className="space-y-4">
             {fields.map((f) => (
@@ -112,9 +108,6 @@ export default function PageTextEditor({ titleKey, descriptionKey, fields }: Pag
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>{t(f.labelKey)}</FormLabel>
-                    {f.fallbackKey && (
-                      <FormDescription>{t('pageContent.defaultHint').replace('{default}', t(f.fallbackKey))}</FormDescription>
-                    )}
                     <FormControl>
                       <Input {...field} value={field.value || ''} />
                     </FormControl>
