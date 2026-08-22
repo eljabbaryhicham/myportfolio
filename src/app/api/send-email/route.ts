@@ -50,8 +50,9 @@ export async function POST(req: NextRequest) {
   }
 
   const resend = new Resend(apiKey);
-  const TO_EMAIL = 'contact@mellivision.com';
   const FROM_EMAIL = 'contact@mellivision.com'; // Verified domain in Resend
+  // Customer messages land in BOTH inboxes; auto-reply always comes from the business address.
+  const TO_EMAILS = ['contact@mellivision.com', 'eljabbaryhicham@gmail.com'];
 
   let body;
   try {
@@ -77,8 +78,8 @@ export async function POST(req: NextRequest) {
       .replace(/\{\{message\}\}/g, escapeHtml(message));
 
     const { data, error } = await resend.emails.send({
-      from: `BELOFTED <${FROM_EMAIL}>`,
-      to: TO_EMAIL,
+      from: `MelliVision <${FROM_EMAIL}>`,
+      to: TO_EMAILS,
       subject: `New Message from ${name}`,
       reply_to: email,
       html,
@@ -100,7 +101,7 @@ export async function POST(req: NextRequest) {
       await resend.emails.send({
         from: `MelliVision <${FROM_EMAIL}>`,
         to: email,
-        reply_to: TO_EMAIL,
+        reply_to: FROM_EMAIL,
         subject: 'We have received your message',
         html: autoReplyHtml,
       });
