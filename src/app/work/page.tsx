@@ -43,6 +43,14 @@ const MemoizedPlyrPlayer = memo(lazy(() => import('@/components/PlyrPlayer')));
 const MemoizedCdnClapprPlayer = memo(CdnClapprPlayer);
 const LazyContactForm = lazy(() => import('@/features/contact/components/ContactForm'));
 
+// Markdown's raw-HTML parser follows real HTML rules where `<video ... />`
+// is an UNCLOSED tag (self-closing only exists for void elements like <img>).
+// Every subsequent video then nests inside the first one and only a single
+// player renders. Rewrite the self-closing form to explicit open+close tags
+// so embedded videos stay siblings.
+const normalizeSelfClosingMedia = (md: string) =>
+  md.replace(/<(video|audio)\b([^>]*?)\/>/gi, '<$1$2></$1>');
+
 // Renders project-details markdown; embedded <video> tags play through the
 // same player chosen for the work page (workPagePlayer setting). Memoized so
 // dialog mouse-move re-renders never reset playback.
@@ -53,17 +61,28 @@ const ProjectDetailsContent = memo(function ProjectDetailsContent({
   details: string;
   playerType?: 'plyr' | 'clappr';
 }) {
+  const normalizedDetails = useMemo(() => normalizeSelfClosingMedia(details), [details]);
+
   const components = useMemo(() => ({
     video: (props: any) => {
-      const { src, poster } = props;
-      if (!src) return <video {...props} />;
+      const { src, poster, children, ...rest } = props;
+      // Also accept the <video><source src="..." /></video> form
+      let videoSrc: string | undefined = src;
+      if (!videoSrc && children) {
+        const kids = Array.isArray(children) ? children : [children];
+        const sourceChild = kids.find(
+          (c: any) => c?.props?.src && typeof c.type === 'string' && c.type === 'source'
+        );
+        if (sourceChild) videoSrc = sourceChild.props.src;
+      }
+      if (!videoSrc) return <video {...rest}>{children}</video>;
       return (
         <div className="relative aspect-video w-full my-4 overflow-hidden rounded-md bg-black">
           <Suspense fallback={<Preloader />}>
             {playerType === 'plyr' ? (
-              <MemoizedPlyrPlayer source={src} poster={poster} autoPlay={false} />
+              <MemoizedPlyrPlayer source={videoSrc} poster={poster} autoPlay={false} />
             ) : (
-              <CdnClapprPlayer source={src} poster={poster} autoPlay={false} />
+              <CdnClapprPlayer source={videoSrc} poster={poster} autoPlay={false} />
             )}
           </Suspense>
         </div>
@@ -77,7 +96,7 @@ const ProjectDetailsContent = memo(function ProjectDetailsContent({
       rehypePlugins={[rehypeRaw, [rehypeSanitize, detailsSanitizeSchema]]}
       components={components}
     >
-      {details}
+      {normalizedDetails}
     </ReactMarkdown>
   );
 });

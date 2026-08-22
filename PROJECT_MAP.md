@@ -173,6 +173,7 @@ Firebase Firestore ← useDoc/useCollection hooks → React components
 | 2026-08-22 | FIX: mobile background video disappearing — `useDoc` no longer treats cache-only empty snapshots (mobile suspend/resume) as deletions, matching the `useCollection` guard; video layer promoted with `translateZ(0)` + `preload=auto` against iOS compositing drops | ✅ |
 | 2026-08-22 | FEATURE: project details popup now renders Markdown + raw HTML media (`react-markdown` + `remark-gfm` + `rehype-raw`, sanitized via `rehype-sanitize` schema extended for `<video>/<audio>/<source>`); responsive media CSS in globals.css; legacy single-newline text preserved via `breaks: true`. Installed `react-markdown` + `remark-gfm` | ✅ |
 | 2026-08-22 | FEATURE: `<video>` embeds inside project details play through the work page's chosen player (`workPagePlayer`: Plyr incl. YouTube/Vimeo URLs, or Clappr) via memoized `ProjectDetailsContent` renderer; autoplay off, sized 16:9 | ✅ |
+| 2026-08-22 | FIX: multiple videos in project details — self-closing `<video ... />` parsed as one unclosed tag nesting all following videos inside the first (only 1 player shown); preprocessor rewrites to explicit `<video></video>` pairs + `<source>` child support | ✅ |
 
 ## [ORPHANS & PENDING]
 
