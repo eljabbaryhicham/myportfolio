@@ -22,6 +22,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Separator } from '@/components/ui/separator';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import AddFromUrlDialog from './AddFromUrlDialog';
+import { deleteMediaAsset } from '@/ai/flows/delete-media';
 import type { AppUser } from '@/firebase/auth/use-user';
 import CdnClapprPlayer from '@/components/CdnClapprPlayer';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
@@ -509,10 +510,23 @@ export default function MediaAdmin(props: MediaAdminProps) {
   
   const handleDelete = async (publicId: string, docId: string, resourceType: string, libraryId: 'primary' | 'extented') => {
     if (!firestore || !canDelete) return;
-    
+
     try {
+        // 1. Destroy the binary asset in Cloudinary (signed server-side call).
+        const result = await deleteMediaAsset({
+          publicId,
+          resourceType: (['image', 'video', 'raw'].includes(resourceType) ? resourceType : 'image') as 'image' | 'video' | 'raw',
+          libraryId,
+        });
+
+        // 2. Remove the Firestore metadata doc either way — the library must stay consistent.
         await deleteDocumentNonBlocking(doc(firestore, 'media', docId));
-        toast({ title: t('mediaAdmin.toast.fileRemoved.title'), description: t('mediaAdmin.toast.fileRemoved.description')});
+
+        if (result.success) {
+            toast({ title: t('mediaAdmin.toast.fileRemoved.title'), description: t('mediaAdmin.toast.fileRemoved.description')});
+        } else {
+            toast({ variant: 'destructive', title: t('mediaAdmin.toast.cloudinaryCleanupFailed.title'), description: t('mediaAdmin.toast.cloudinaryCleanupFailed.description').replace('{error}', result.message)});
+        }
     } catch(e: any) {
         toast({ variant: 'destructive', title: t('mediaAdmin.toast.deletionFailed.title'), description: t('mediaAdmin.toast.deletionFailed.description').replace('{error}', e.message)});
     }
@@ -554,12 +568,31 @@ export default function MediaAdmin(props: MediaAdminProps) {
 
   const handleBulkDelete = async () => {
     if (!firestore || !canDelete) return;
+
+    // Destroy each binary asset in Cloudinary first (best-effort, in parallel).
+    const results = await Promise.allSettled(
+      (mediaAssets || [])
+        .filter(a => selectedIds.has(a.id))
+        .map(a => deleteMediaAsset({
+          publicId: a.public_id,
+          resourceType: (['image', 'video', 'raw'].includes(a.resource_type) ? a.resource_type : 'image') as 'image' | 'video' | 'raw',
+          libraryId: a.libraryId || 'primary',
+        }))
+    );
+
+    const failedCount = results.filter(r => r.status === 'rejected' || !r.value.success).length;
+
     const batch = writeBatch(firestore);
     selectedIds.forEach(id => {
       batch.delete(doc(firestore, 'media', id));
     });
     await batch.commit();
-    toast({ title: t('mediaAdmin.toast.fileRemoved.title'), description: `Deleted ${selectedIds.size} files.` });
+
+    if (failedCount > 0) {
+      toast({ variant: 'destructive', title: t('mediaAdmin.toast.cloudinaryCleanupFailed.title'), description: t('mediaAdmin.toast.cloudinaryCleanupFailed.bulk').replace('{count}', String(failedCount)) });
+    } else {
+      toast({ title: t('mediaAdmin.toast.fileRemoved.title'), description: `Deleted ${selectedIds.size} files.` });
+    }
     setSelectedIds(new Set());
     setIsBulkDeleteOpen(false);
   };
