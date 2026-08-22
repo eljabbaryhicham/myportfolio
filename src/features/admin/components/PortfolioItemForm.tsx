@@ -42,6 +42,14 @@ import { Switch } from '@/components/ui/switch';
 import { useTranslation } from '@/lib/i18n/useTranslation';
 
 
+// Pre-filled Details content for NEW projects (existing projects untouched).
+const DEFAULT_DETAILS_TEMPLATE = `Project Name : 
+Project Type : 
+Realisation Time : 
+Video Duration : 
+Tools Used : 
+Realisateur : MelliVision | Driven By Detail`;
+
 const formSchema = z.object({
   title: z.string().min(2, {
     message: 'Title must be at least 2 characters.',
@@ -88,7 +96,7 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onCho
         sourceUrl: '',
         thumbnailHint: '',
         featured: false,
-        details: '',
+        details: DEFAULT_DETAILS_TEMPLATE,
         order: undefined,
         isVisible: true,
         useVideoFrameAsPoster: false,
@@ -153,7 +161,7 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onCho
             previewUrl: '',
             thumbnailHint: '',
             featured: false,
-            details: '',
+            details: DEFAULT_DETAILS_TEMPLATE,
             order: undefined, // Let parent component decide the order for new items
             isVisible: true,
             useVideoFrameAsPoster: false,

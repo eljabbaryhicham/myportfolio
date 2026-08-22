@@ -94,6 +94,12 @@ export default function AboutPage() {
     [firestore]
   );
   const { data: allClients, isLoading: isLoadingClients } = useCollection<Client>(clientsQuery);
+
+  const settingsDocRef = useMemoFirebase(
+    () => (firestore ? doc(firestore, 'homepage', 'settings') : null),
+    [firestore]
+  );
+  const { data: pageSettings } = useDoc<Record<string, string>>(settingsDocRef);
   
   const aboutContentRef = useMemoFirebase(
     () => firestore ? doc(firestore, 'about', 'content') : null,
@@ -128,7 +134,7 @@ export default function AboutPage() {
       <div className="p-4 md:p-8 flex-shrink-0">
         <div className="container mx-auto px-0">
             <div className="mb-4 md:mb-8 text-center">
-              <h1 className="text-2xl sm:text-3xl md:text-4xl font-headline tracking-tight">{t('about.heading')}</h1>
+              <h1 className="text-2xl sm:text-3xl md:text-4xl font-headline tracking-tight">{pageSettings?.aboutHeading || t('about.heading')}</h1>
               <p className="mt-2 max-w-2xl mx-auto text-sm sm:text-base md:text-lg text-foreground/70">
                 {t('about.subtitle')}
               </p>
@@ -178,7 +184,7 @@ export default function AboutPage() {
                         </div>
                     </div>
                     <div className="w-full lg:w-1/2 flex flex-col justify-center">
-                       <h2 className="text-2xl md:text-3xl font-headline tracking-tight mb-4 md:mb-6 text-center">{t('about.whatYouGet')}</h2>
+                       <h2 className="text-2xl md:text-3xl font-headline tracking-tight mb-4 md:mb-6 text-center">{pageSettings?.aboutServicesHeading || t('about.whatYouGet')}</h2>
                        <div className="grid grid-cols-3 sm:grid-cols-6 grid-rows-2 gap-3 md:gap-4 h-full">
                         {services.map((service, index) => {
                             let gridClasses = '';

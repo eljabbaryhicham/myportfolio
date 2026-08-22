@@ -63,8 +63,10 @@ function renderEmailPreview(template?: string): string {
 interface HomePageSettings {
     homePageBackgroundType?: 'video' | 'image';
     homePageBackgroundMediaId?: string;
+    homePageBackgroundUrl?: string;
     websiteBackgroundType?: 'video' | 'image';
     websiteBackgroundMediaId?: string;
+    websiteBackgroundUrl?: string;
     isHomePageVideoEnabled?: boolean;
     isWebsiteVideoEnabled?: boolean;
     workPagePlayer?: 'plyr' | 'clappr';
@@ -89,6 +91,7 @@ interface HomePageSettings {
     autoReplyTemplateHtml?: string;
     isArrowAnimationEnabled?: boolean;
     arrowLottieUrl?: string;
+    faviconUrl?: string;
 }
 
 const settingsSchema = z.object({
@@ -101,8 +104,10 @@ const settingsSchema = z.object({
   themeColor: z.string().optional(),
   homePageBackgroundType: z.enum(['video', 'image']).optional(),
   homePageBackgroundMediaId: z.string().optional(),
+  homePageBackgroundUrl: z.string().optional(),
   websiteBackgroundType: z.enum(['video', 'image']).optional(),
   websiteBackgroundMediaId: z.string().optional(),
+  websiteBackgroundUrl: z.string().optional(),
   isHomePageVideoEnabled: z.boolean().optional(),
   isWebsiteVideoEnabled: z.boolean().optional(),
   heroVideoUrl: z.string().optional(),
@@ -120,6 +125,7 @@ const settingsSchema = z.object({
   autoReplyTemplateHtml: z.string().optional(),
   isArrowAnimationEnabled: z.boolean().optional(),
   arrowLottieUrl: z.string().optional(),
+  faviconUrl: z.string().optional(),
 });
 
 type SettingsFormValues = z.infer<typeof settingsSchema>;
@@ -156,22 +162,21 @@ export default function HomeAdmin() {
   const { data: mediaAssets, isLoading: isLoadingMedia } = useCollection<MediaAsset>(mediaCollection);
 
   const [isLibraryOpen, setIsLibraryOpen] = useState(false);
-  const [libraryField, setLibraryField] = useState<'homePageLogoUrl' | 'menubarLogoUrl' | 'heroVideoUrl' | 'preloaderUrl' | 'cursorLottieUrl' | 'tickLottieUrl' | 'arrowLottieUrl' | null>(null);
+  const [libraryField, setLibraryField] = useState<'homePageLogoUrl' | 'menubarLogoUrl' | 'heroVideoUrl' | 'preloaderUrl' | 'cursorLottieUrl' | 'tickLottieUrl' | 'arrowLottieUrl' | 'faviconUrl' | 'homePageBackgroundUrl' | 'websiteBackgroundUrl' | null>(null);
   const [libraryTab, setLibraryTab] = useState<'images' | 'videos' | 'files'>('images');
   const [libraryCollection, setLibraryCollection] = useState<'primary' | 'extented'>('primary');
   const [isEmailPreviewOpen, setIsEmailPreviewOpen] = useState(false);
   const [emailPreviewField, setEmailPreviewField] = useState<'emailTemplateHtml' | 'autoReplyTemplateHtml'>('emailTemplateHtml');
-
-  const videoItems = portfolioItems?.filter(item => item.type === 'video') || [];
-  const imageAssets = mediaAssets?.filter(asset => asset.resource_type === 'image') || [];
 
   const form = useForm<SettingsFormValues>({
     resolver: zodResolver(settingsSchema),
     defaultValues: {
       homePageBackgroundType: 'video',
       homePageBackgroundMediaId: '',
+      homePageBackgroundUrl: '',
       websiteBackgroundType: 'video',
       websiteBackgroundMediaId: '',
+      websiteBackgroundUrl: '',
       isHomePageVideoEnabled: true,
       isWebsiteVideoEnabled: true,
       workPagePlayer: 'clappr',
@@ -196,6 +201,7 @@ export default function HomeAdmin() {
       autoReplyTemplateHtml: '',
       isArrowAnimationEnabled: true,
       arrowLottieUrl: '',
+      faviconUrl: '',
     },
   });
 
@@ -207,8 +213,10 @@ export default function HomeAdmin() {
       form.reset({
         homePageBackgroundType: homeSettings.homePageBackgroundType || 'video',
         homePageBackgroundMediaId: homeSettings.homePageBackgroundMediaId || '',
+        homePageBackgroundUrl: homeSettings.homePageBackgroundUrl || '',
         websiteBackgroundType: homeSettings.websiteBackgroundType || 'video',
         websiteBackgroundMediaId: homeSettings.websiteBackgroundMediaId || '',
+        websiteBackgroundUrl: homeSettings.websiteBackgroundUrl || '',
         isHomePageVideoEnabled: homeSettings.isHomePageVideoEnabled ?? true,
         isWebsiteVideoEnabled: homeSettings.isWebsiteVideoEnabled ?? true,
         workPagePlayer: homeSettings.workPagePlayer || 'clappr',
@@ -233,6 +241,7 @@ export default function HomeAdmin() {
         autoReplyTemplateHtml: homeSettings.autoReplyTemplateHtml || '',
         isArrowAnimationEnabled: homeSettings.isArrowAnimationEnabled ?? true,
         arrowLottieUrl: homeSettings.arrowLottieUrl || '',
+        faviconUrl: homeSettings.faviconUrl || '',
       });
     }
   }, [homeSettings, form]);
@@ -240,42 +249,49 @@ export default function HomeAdmin() {
   useEffect(() => {
     if (!canEditHome || !isMounted) return;
 
-    const debouncedSave = debounce((fieldName: string, value: any) => {
-        if (settingsDocRef) {
-            const dataToSave = { [fieldName]: value };
-            setDocumentNonBlocking(settingsDocRef, dataToSave, { merge: true });
-            if (fieldName === 'themeColor' && value) {
-                try {
-                    const hex = value.replace('#', '');
-                    const r = parseInt(hex.substring(0, 2), 16) / 255;
-                    const g = parseInt(hex.substring(2, 4), 16) / 255;
-                    const b = parseInt(hex.substring(4, 6), 16) / 255;
-                    const max = Math.max(r, g, b), min = Math.min(r, g, b);
-                    let h = 0, s = 0, l = (max + min) / 2;
-                    if (max !== min) {
-                        const d = max - min;
-                        s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
-                        switch (max) {
-                            case r: h = ((g - b) / d + (g < b ? 6 : 0)) / 6; break;
-                            case g: h = ((b - r) / d + 2) / 6; break;
-                            case b: h = ((r - g) / d + 4) / 6; break;
-                        }
+    // Batch ALL pending field changes into one merged write. A single shared
+    // debounce timer that saves only the last-changed field silently DROPPED
+    // earlier edits (e.g. pick a background image then switch type <500ms
+    // later → the URL write was lost).
+    const pendingRef: { current: Record<string, any> } = { current: {} };
+
+    const debouncedSave = debounce(() => {
+        if (!settingsDocRef || Object.keys(pendingRef.current).length === 0) return;
+        const changes = pendingRef.current;
+        pendingRef.current = {};
+        setDocumentNonBlocking(settingsDocRef, changes, { merge: true });
+        const themeColor = changes.themeColor;
+        if (themeColor) {
+            try {
+                const hex = themeColor.replace('#', '');
+                const r = parseInt(hex.substring(0, 2), 16) / 255;
+                const g = parseInt(hex.substring(2, 4), 16) / 255;
+                const b = parseInt(hex.substring(4, 6), 16) / 255;
+                const max = Math.max(r, g, b), min = Math.min(r, g, b);
+                let h = 0, s = 0, l = (max + min) / 2;
+                if (max !== min) {
+                    const d = max - min;
+                    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+                    switch (max) {
+                        case r: h = ((g - b) / d + (g < b ? 6 : 0)) / 6; break;
+                        case g: h = ((b - r) / d + 2) / 6; break;
+                        case b: h = ((r - g) / d + 4) / 6; break;
                     }
-                    const hsl = `${Math.round(h * 360)} ${Math.round(s * 100)}% ${Math.round(l * 100)}%`;
-                    localStorage.setItem('belofted_theme_hsl', hsl);
-                } catch {}
-            }
-            toast({
-                title: t('homeAdmin.toast.saved.title'),
-                description: t('homeAdmin.toast.saved.description'),
-            });
+                }
+                const hsl = `${Math.round(h * 360)} ${Math.round(s * 100)}% ${Math.round(l * 100)}%`;
+                localStorage.setItem('belofted_theme_hsl', hsl);
+            } catch {}
         }
+        toast({
+            title: t('homeAdmin.toast.saved.title'),
+            description: t('homeAdmin.toast.saved.description'),
+        });
     }, 500);
 
-    const subscription = watch((value, { name, type }) => {
+    const subscription = watch((value, { name }) => {
       if (name) {
-        const fieldName = name as keyof SettingsFormValues;
-        debouncedSave(fieldName, value[fieldName]);
+        pendingRef.current[name as string] = value[name];
+        debouncedSave();
       }
     });
 
@@ -488,15 +504,37 @@ export default function HomeAdmin() {
                                                 <FormDescription>
                                                     {t('homeAdmin.menubarLogoSizeDescription') || 'Adjust the size of the logo in the navigation bar'}
                                                 </FormDescription>
+                                                 <FormMessage />
+                                             </FormItem>
+                                         )}
+                                     />
+
+                                    <FormField
+                                        control={control}
+                                        name="faviconUrl"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>{t('homeAdmin.faviconUrl')}</FormLabel>
+                                                <FormDescription>{t('homeAdmin.faviconUrlDescription')}</FormDescription>
+                                                <div className="flex items-center gap-2">
+                                                    <FormControl>
+                                                        <Input placeholder={t('homeAdmin.faviconUrlPlaceholder')} {...field} className="flex-1" />
+                                                    </FormControl>
+                                                    <Button type="button" variant="outline" size="icon" onClick={() => { setLibraryField('faviconUrl'); setLibraryTab('images'); setIsLibraryOpen(true); }}>
+                                                        <FontAwesomeIcon icon={faImages} />
+                                                    </Button>
+                                                </div>
                                                 <FormMessage />
                                             </FormItem>
                                         )}
                                     />
-                                    
-                                    <Separator />
-                                    
-                                    <h3 className="font-headline text-lg pt-4">{t('homeAdmin.homepageBackground')}</h3>
-                                    <FormField
+                                      <Separator />
+
+                                     <h3 className="font-headline text-lg pt-4">{t('homeAdmin.backgroundsHeading')}</h3>
+
+                                     {/* Homepage background */}
+                                     <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground pt-2">{t('homeAdmin.homepageBackground')}</h4>
+                                     <FormField
                                       control={control}
                                       name="homePageBackgroundType"
                                       render={({ field }) => (
@@ -527,24 +565,19 @@ export default function HomeAdmin() {
 
                                     <FormField
                                         control={control}
-                                        name="homePageBackgroundMediaId"
+                                        name="homePageBackgroundUrl"
                                         render={({ field }) => (
                                         <FormItem>
                                             <FormLabel>{t('homeAdmin.backgroundMedia')}</FormLabel>
-                                            <Select onValueChange={field.onChange} value={field.value}>
+                                            <FormDescription>{t('homeAdmin.backgroundMediaHelp')}</FormDescription>
+                                            <div className="flex items-center gap-2">
                                                 <FormControl>
-                                                <SelectTrigger>
-                                                    <SelectValue placeholder={t('homeAdmin.backgroundMediaPlaceholder').replace('{type}', watch('homePageBackgroundType') || 'video')} />
-                                                </SelectTrigger>
+                                                    <Input placeholder={t('homeAdmin.backgroundMediaPlaceholder')} {...field} className="flex-1" />
                                                 </FormControl>
-                                                <SelectContent>
-                                                {(watch('homePageBackgroundType') === 'video' ? videoItems : imageAssets).map((item) => (
-                                                    <SelectItem key={item.id} value={item.id}>
-                                                        {item.title || item.filename}
-                                                    </SelectItem>
-                                                ))}
-                                                </SelectContent>
-                                            </Select>
+                                                <Button type="button" variant="outline" size="icon" onClick={() => { setLibraryField('homePageBackgroundUrl'); setLibraryTab(watch('homePageBackgroundType') === 'image' ? 'images' : 'videos'); setIsLibraryOpen(true); }}>
+                                                    <FontAwesomeIcon icon={faImages} />
+                                                </Button>
+                                            </div>
                                             <FormMessage />
                                         </FormItem>
                                         )}
@@ -565,13 +598,10 @@ export default function HomeAdmin() {
                                             )}
                                         />
                                     )}
-                                </div>
+                                    <Separator />
 
-                                <Separator />
-
-                                {/* Website Background Settings */}
-                                <div className="space-y-4 p-4 rounded-lg border glass-effect">
-                                     <h3 className="font-headline text-lg">{t('homeAdmin.otherPagesBackground')}</h3>
+                                    {/* Other pages background */}
+                                    <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{t('homeAdmin.otherPagesBackground')}</h4>
                                     <FormField
                                       control={control}
                                       name="websiteBackgroundType"
@@ -603,24 +633,19 @@ export default function HomeAdmin() {
 
                                     <FormField
                                         control={control}
-                                        name="websiteBackgroundMediaId"
+                                        name="websiteBackgroundUrl"
                                         render={({ field }) => (
                                         <FormItem>
                                             <FormLabel>{t('homeAdmin.websiteBackgroundMedia')}</FormLabel>
-                                            <Select onValueChange={field.onChange} value={field.value}>
+                                            <FormDescription>{t('homeAdmin.backgroundMediaHelp')}</FormDescription>
+                                            <div className="flex items-center gap-2">
                                                 <FormControl>
-                                                <SelectTrigger>
-                                                    <SelectValue placeholder={t('homeAdmin.websiteBackgroundMediaPlaceholder').replace('{type}', watch('websiteBackgroundType') || 'video')} />
-                                                </SelectTrigger>
+                                                    <Input placeholder={t('homeAdmin.websiteBackgroundMediaPlaceholder')} {...field} className="flex-1" />
                                                 </FormControl>
-                                                <SelectContent>
-                                                {(watch('websiteBackgroundType') === 'video' ? videoItems : imageAssets).map((item) => (
-                                                    <SelectItem key={item.id} value={item.id}>
-                                                        {item.title || item.filename}
-                                                    </SelectItem>
-                                                ))}
-                                                </SelectContent>
-                                            </Select>
+                                                <Button type="button" variant="outline" size="icon" onClick={() => { setLibraryField('websiteBackgroundUrl'); setLibraryTab(watch('websiteBackgroundType') === 'image' ? 'images' : 'videos'); setIsLibraryOpen(true); }}>
+                                                    <FontAwesomeIcon icon={faImages} />
+                                                </Button>
+                                            </div>
                                             <FormMessage />
                                         </FormItem>
                                         )}
@@ -922,9 +947,10 @@ export default function HomeAdmin() {
                                     />
                                 </div>
 
-                                {/* Contact Email Template */}
+                                {/* Email Templates */}
                                 <div className="space-y-4 p-4 rounded-lg border glass-effect">
-                                    <h3 className="font-headline text-lg">{t('homeAdmin.emailTemplate.heading')}</h3>
+                                    <h3 className="font-headline text-lg">{t('homeAdmin.emailTemplatesHeading')}</h3>
+                                    <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{t('homeAdmin.emailTemplate.heading')}</h4>
                                     <FormField
                                         control={control}
                                         name="emailTemplateHtml"
@@ -953,11 +979,11 @@ export default function HomeAdmin() {
                                             <FontAwesomeIcon icon={faRotateLeft} className="mr-2" />{t('homeAdmin.emailTemplate.resetDefault')}
                                         </Button>
                                     </div>
-                                </div>
 
-                                {/* Customer Auto-Reply Template */}
-                                <div className="space-y-4 p-4 rounded-lg border glass-effect">
-                                    <h3 className="font-headline text-lg">{t('homeAdmin.autoReplyTemplate.heading')}</h3>
+                                    <Separator />
+
+                                    {/* Customer Auto-Reply */}
+                                    <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{t('homeAdmin.autoReplyTemplate.heading')}</h4>
                                     <FormField
                                         control={control}
                                         name="autoReplyTemplateHtml"

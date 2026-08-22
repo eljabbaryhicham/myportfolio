@@ -409,6 +409,8 @@ const PortfolioGridItem = ({ item, onClick, onEditClick, isAdmin, isSuperAdmin, 
 interface HomePageSettings {
     workPagePlayer?: 'plyr' | 'clappr';
     homePageLogoUrl?: string;
+    workHeading?: string;
+    workDetailsButtonLabel?: string;
 }
 
 const slugify = (text: string) => text.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, '');
@@ -793,7 +795,7 @@ export default function WorkPage() {
         <div className="p-4 md:p-8 pb-4 flex-shrink-0">
           <div className="container mx-auto px-0">
             <div className="mb-8 text-center">
-              <h1 className="text-3xl md:text-4xl font-headline tracking-tight">{t('work.heading')}</h1>
+              <h1 className="text-3xl md:text-4xl font-headline tracking-tight">{homeSettings?.workHeading || t('work.heading')}</h1>
               <p className="mt-2 max-w-2xl mx-auto text-base md:text-lg text-foreground/70">
                 {t('work.subtitle')}
               </p>
@@ -983,7 +985,7 @@ export default function WorkPage() {
                                     onClick={() => setDetailsModalOpen(true)}
                                   >
                                     <FontAwesomeIcon icon={faUpDown} className="mr-2" />
-                                    {t('work.details.showDetails')}
+                                    {homeSettings?.workDetailsButtonLabel || t('work.details.showDetails')}
                                   </Button>
                                   {hasDetailsMedia(selectedItem.details) && (
                                     <span

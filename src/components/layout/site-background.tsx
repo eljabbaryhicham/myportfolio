@@ -11,11 +11,16 @@ import { cn } from '@/lib/utils';
 interface HomePageSettings {
     homePageBackgroundType?: 'video' | 'image';
     homePageBackgroundMediaId?: string;
+    homePageBackgroundUrl?: string;
     websiteBackgroundType?: 'video' | 'image';
     websiteBackgroundMediaId?: string;
+    websiteBackgroundUrl?: string;
     isHomePageVideoEnabled?: boolean;
     isWebsiteVideoEnabled?: boolean;
     themeColor?: string;
+    menubarLogoUrl?: string;
+    homePageLogoUrl?: string;
+    faviconUrl?: string;
 }
 
 interface MediaAsset {
@@ -41,6 +46,12 @@ export function SiteBackground() {
         ? homeSettings.homePageBackgroundMediaId 
         : homeSettings.websiteBackgroundMediaId) : null;
 
+    // Direct URL (new library-picker flow) wins; legacy mediaId lookups kept
+    // as fallback for backgrounds set through the media library.
+    const directUrl = homeSettings ? (isHomePage
+        ? homeSettings.homePageBackgroundUrl
+        : homeSettings.websiteBackgroundUrl) : null;
+
     const backgroundProjectRef = useMemoFirebase(
         () => (firestore && backgroundMediaId && backgroundType === 'video' ? doc(firestore, 'projects', backgroundMediaId) : null),
         [firestore, backgroundMediaId, backgroundType]
@@ -57,18 +68,20 @@ export function SiteBackground() {
       ? homeSettings.isHomePageVideoEnabled ?? true
       : homeSettings.isWebsiteVideoEnabled ?? true) : true;
 
-    const mediaUrl = backgroundType === 'video' 
+    const mediaUrl = directUrl || (backgroundType === 'video'
       ? backgroundProject?.sourceUrl
-      : backgroundMedia?.url;
+      : backgroundMedia?.url);
 
-    if (!homeSettings || !backgroundType || !backgroundMediaId || !mediaUrl) return null;
+    // NOTE: no backgroundMediaId requirement — the library-picker flow stores a direct URL.
+    if (!homeSettings || !backgroundType || !mediaUrl) return null;
 
     return (
         <div className="absolute inset-0 -z-10 w-full h-full">
-            <div className="w-full h-full bg-black">
+                <div className="relative w-full h-full bg-black">
                 {backgroundType === 'video' && isVideoEnabled ? (
                     <video
                         key={mediaUrl}
+                        src={mediaUrl}
                         className="w-full h-full object-cover"
                         style={{ transform: 'translateZ(0)' }}
                         autoPlay
@@ -76,9 +89,7 @@ export function SiteBackground() {
                         muted
                         playsInline
                         preload="auto"
-                    >
-                        <source src={mediaUrl} type="video/mp4" />
-                    </video>
+                    />
                 ) : backgroundType === 'image' ? (
                     <Image
                       src={mediaUrl}
@@ -135,8 +146,7 @@ function hexToHsl(hex: string): string | null {
 
 const STORAGE_KEY = 'belofted_theme_hsl';
 
-export function DynamicThemeStyles() {
-    const firestore = useFirestore();
+export function DynamicThemeStyles() {    const firestore = useFirestore();
     const settingsDocRef = useMemoFirebase(
       () => (firestore ? doc(firestore, 'homepage', 'settings') : null),
       [firestore]
@@ -170,4 +180,30 @@ export function DynamicThemeStyles() {
         }
       `}</style>
     );
+}
+
+// Keeps the browser tab favicon in sync with the admin-configured logo
+// (menubar logo first, homepage logo as fallback).
+export function DynamicFavicon() {
+    const firestore = useFirestore();
+    const settingsDocRef = useMemoFirebase(
+      () => (firestore ? doc(firestore, 'homepage', 'settings') : null),
+      [firestore]
+    );
+    const { data: homeSettings } = useDoc<HomePageSettings>(settingsDocRef);
+
+    useEffect(() => {
+        const logoUrl = homeSettings?.faviconUrl || homeSettings?.menubarLogoUrl || homeSettings?.homePageLogoUrl;
+        if (!logoUrl) return;
+        let link = document.querySelector<HTMLLinkElement>("link[rel~='icon']");
+        if (!link) {
+            link = document.createElement('link');
+            link.rel = 'icon';
+            document.head.appendChild(link);
+        }
+        link.type = logoUrl.endsWith('.svg') ? 'image/svg+xml' : '';
+        link.href = logoUrl;
+    }, [homeSettings?.faviconUrl, homeSettings?.menubarLogoUrl, homeSettings?.homePageLogoUrl]);
+
+    return null;
 }

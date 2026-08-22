@@ -2,6 +2,7 @@
 'use client';
 
 import { useMemo, useState, useEffect, useRef } from 'react';
+import PageTextEditor from '@/features/admin/components/PageTextEditor';
 import { Button } from '@/components/ui/button';
 import {
   Table,
@@ -250,6 +251,16 @@ function ProjectAdmin({ setSelectedItem, setIsSheetOpen }: ProjectAdminProps) {
 
   return (
     <div className="flex-1 flex flex-col h-full">
+        <div className="mb-6">
+          <PageTextEditor
+            titleKey="pageContent.workTitle"
+            descriptionKey="pageContent.workDescription"
+            fields={[
+              { name: 'workHeading', labelKey: 'pageContent.workHeadingLabel', fallbackKey: 'work.heading' },
+              { name: 'workDetailsButtonLabel', labelKey: 'pageContent.detailsButtonLabel', fallbackKey: 'work.details.showDetails' },
+            ]}
+          />
+        </div>
         <div className="flex items-start justify-between mb-6">
             <div className="text-left">
                 <h2 className="text-xl font-headline">{t('projectAdmin.title')}</h2>

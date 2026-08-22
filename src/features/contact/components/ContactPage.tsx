@@ -73,6 +73,12 @@ export default function ContactPage() {
   );
   const { data: contactInfo, isLoading } = useDoc<ContactInfo>(contactDocRef);
 
+  const settingsDocRef = useMemoFirebase(
+    () => (firestore ? doc(firestore, 'homepage', 'settings') : null),
+    [firestore]
+  );
+  const { data: pageSettings } = useDoc<Record<string, string>>(settingsDocRef);
+
   const contactLinks = contactInfo ? [
     { icon: faEnvelope, label: t('contact.email'), value: contactInfo.email, href: `mailto:${contactInfo.email}`, color: 'hover:text-blue-300' },
     { icon: faBehance, label: t('contact.behance'), value: contactInfo.behanceName || '@BeLofted', href: contactInfo.behanceUrl, color: 'hover:text-purple-300' },
@@ -92,7 +98,7 @@ export default function ContactPage() {
       <div className="p-4 md:p-8 flex-shrink-0">
         <div className="container mx-auto px-0">
           <div className="mb-4 md:mb-8 text-center">
-            <h1 className="text-2xl sm:text-3xl md:text-4xl font-headline tracking-tight">{t('contact.heading')}</h1>
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-headline tracking-tight">{pageSettings?.contactHeading || t('contact.heading')}</h1>
             <p className="mt-2 max-w-2xl mx-auto text-sm sm:text-base md:text-lg text-foreground/70">
               {t('contact.subtitle')}
             </p>
@@ -119,7 +125,7 @@ export default function ContactPage() {
                   <motion.div className="w-full lg:w-1/2 flex justify-center" variants={itemVariants}>
                     <Card className="glass-effect p-4 sm:p-6 md:p-8 h-full flex flex-col justify-center w-full max-w-md">
                       <CardContent className="p-0 flex flex-col items-center">
-                          <ContactForm />
+                          <ContactForm submitLabel={pageSettings?.contactSendButtonLabel || undefined} />
                       </CardContent>
                     </Card>
                   </motion.div>

@@ -37,9 +37,10 @@ interface ContactInfo {
 interface ContactFormProps {
     onSuccess?: () => void;
     defaultMessage?: string;
+    submitLabel?: string;
 }
 
-export default function ContactForm({ onSuccess, defaultMessage = '' }: ContactFormProps) {
+export default function ContactForm({ onSuccess, defaultMessage = '', submitLabel }: ContactFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSent, setIsSent] = useState(false);
   const firestore = useFirestore();
@@ -197,7 +198,7 @@ export default function ContactForm({ onSuccess, defaultMessage = '' }: ContactF
             )}
             />
             <Button type="submit" size="lg" className="w-full glass-effect" disabled={isSubmitting}>
-            {isSubmitting ? t('contactForm.submit.sending') : t('contactForm.submit.send')}
+            {isSubmitting ? t('contactForm.submit.sending') : (submitLabel || t('contactForm.submit.send'))}
             </Button>
         </form>
         </Form>

@@ -2,6 +2,7 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
+import PageTextEditor from '@/features/admin/components/PageTextEditor';
 import { useForm } from 'react-hook-form';
 import * as z from 'zod';
 import { Button } from '@/components/ui/button';
@@ -196,6 +197,14 @@ export default function ContactAdmin() {
               {t('contactAdmin.description')}
           </p>
       </div>
+      <PageTextEditor
+        titleKey="pageContent.contactTitle"
+        descriptionKey="pageContent.contactDescription"
+        fields={[
+          { name: 'contactHeading', labelKey: 'pageContent.contactHeadingLabel', fallbackKey: 'contact.heading' },
+          { name: 'contactSendButtonLabel', labelKey: 'pageContent.sendButtonLabel', fallbackKey: 'contactForm.submit.send' },
+        ]}
+      />
       <div className="flex-1 border rounded-lg overflow-hidden glass-effect">
           <ScrollArea className="h-full">
               <div className="p-6">

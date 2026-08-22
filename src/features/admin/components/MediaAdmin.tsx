@@ -647,10 +647,12 @@ export default function MediaAdmin(props: MediaAdminProps) {
     const settingsDocRef = doc(firestore, 'homepage', 'settings');
     const fieldToUpdateId = backgroundTarget === 'home' ? 'homePageBackgroundMediaId' : 'websiteBackgroundMediaId';
     const fieldToUpdateType = backgroundTarget === 'home' ? 'homePageBackgroundType' : 'websiteBackgroundType';
-    
-    setDocumentNonBlocking(settingsDocRef, { 
+    const fieldToUpdateUrl = backgroundTarget === 'home' ? 'homePageBackgroundUrl' : 'websiteBackgroundUrl';
+
+    setDocumentNonBlocking(settingsDocRef, {
       [fieldToUpdateId]: mediaIdForDb,
       [fieldToUpdateType]: mediaTypeForDb,
+      [fieldToUpdateUrl]: backgroundFile.url,
     }, { merge: true });
 
     toast({

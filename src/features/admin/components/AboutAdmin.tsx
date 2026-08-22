@@ -2,6 +2,7 @@
 'use client';
 
 import { useTranslation } from '@/lib/i18n/useTranslation';
+import PageTextEditor from '@/features/admin/components/PageTextEditor';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import * as z from 'zod';
@@ -138,6 +139,14 @@ export default function AboutAdmin() {
   return (
     <>
       <div className="flex-1 flex flex-col h-full gap-8 min-h-0">
+        <PageTextEditor
+          titleKey="pageContent.aboutTitle"
+          descriptionKey="pageContent.aboutDescription"
+          fields={[
+            { name: 'aboutHeading', labelKey: 'pageContent.aboutHeadingLabel', fallbackKey: 'about.heading' },
+            { name: 'aboutServicesHeading', labelKey: 'pageContent.servicesHeadingLabel', fallbackKey: 'about.whatYouGet' },
+          ]}
+        />
         <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
           <div className="flex flex-col min-h-0">
               <div className="mb-6 flex-shrink-0 flex items-start justify-between">
