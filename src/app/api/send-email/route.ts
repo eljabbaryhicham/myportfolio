@@ -21,8 +21,8 @@ export async function POST(req: NextRequest) {
   }
 
   const resend = new Resend(apiKey);
-  const TO_EMAIL = 'eljabbaryhicham@gmail.com';
-  const FROM_EMAIL = 'onboarding@resend.dev'; // Resend requires this for free tier
+  const TO_EMAIL = 'contact@mellivision.com';
+  const FROM_EMAIL = 'contact@mellivision.com'; // Verified domain in Resend
 
   let body;
   try {
