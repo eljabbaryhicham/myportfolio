@@ -70,7 +70,7 @@ const ProjectDetailsContent = memo(function ProjectDetailsContent({
 
   const components = useMemo(() => ({
     video: (props: any) => {
-      const { src, poster, children, ...rest } = props;
+      const { src, poster, children, width, ...rest } = props;
       // Also accept the <video><source src="..." /></video> form
       let videoSrc: string | undefined = src;
       if (!videoSrc && children) {
@@ -81,11 +81,20 @@ const ProjectDetailsContent = memo(function ProjectDetailsContent({
         if (sourceChild) videoSrc = sourceChild.props.src;
       }
       if (!videoSrc) return <video {...rest}>{children}</video>;
+      // Optional player width via the width attribute: "70", "70%", "320px".
+      // Bare numbers are treated as percentages. Defaults to full width.
+      let frameWidth = '100%';
+      const w = typeof width === 'string' ? width.trim() : '';
+      if (/^\d+(\.\d+)?$/.test(w)) frameWidth = `${w}%`;
+      else if (/^\d+(\.\d+)?(px|%)$/.test(w)) frameWidth = w;
       return (
         // [&>*]:absolute/inset-0 pins the player root (Plyr or Clappr) inside
         // the 16:9 frame — `.details-video-frame` (globals.css) forces every
         // nested layer (Clappr/Plyr wrappers included) to fill the box.
-        <div className="details-video-frame relative my-4 w-full aspect-video overflow-hidden rounded-md bg-black [&>*]:absolute [&>*]:inset-0">
+        <div
+          className="details-video-frame relative my-4 mx-auto aspect-video overflow-hidden rounded-md bg-black [&>*]:absolute [&>*]:inset-0"
+          style={{ width: frameWidth }}
+        >
           <Suspense fallback={<Preloader />}>
             {playerType === 'plyr' ? (
               <MemoizedPlyrPlayer source={videoSrc} poster={poster} autoPlay={false} />
