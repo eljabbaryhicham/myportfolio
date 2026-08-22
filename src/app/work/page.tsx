@@ -18,7 +18,7 @@ import { useCollection, useFirestore, useMemoFirebase, useUser, setDocumentNonBl
 import { collection, doc } from 'firebase/firestore';
 import type { PortfolioItem } from '@/features/portfolio/data/portfolio-data';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faUpDown, faXmark, faExpand, faPalette, faFilm, faArrowLeft, faArrowRight, faPencilAlt, faArrowDown, faSyncAlt } from '@fortawesome/free-solid-svg-icons';
+import { faUpDown, faXmark, faExpand, faPalette, faFilm, faArrowLeft, faArrowRight, faPencilAlt, faArrowDown, faSyncAlt, faCircleExclamation } from '@fortawesome/free-solid-svg-icons';
 import { Separator } from '@/components/ui/separator';
 import Preloader from '@/components/preloader';
 import { useIsExtraWide } from '@/hooks/use-is-extra-wide';
@@ -50,6 +50,11 @@ const LazyContactForm = lazy(() => import('@/features/contact/components/Contact
 // so embedded videos stay siblings.
 const normalizeSelfClosingMedia = (md: string) =>
   md.replace(/<(video|audio)\b([^>]*?)\/>/gi, '<$1$2></$1>');
+
+// Detects embedded media (raw HTML tags or Markdown images) inside project
+// details — used to badge the "Show details" button.
+const DETAILS_MEDIA_RE = /<\s*(video|audio|img|source)\b|!\[[^\]]*\]\([^)]+\)/i;
+const hasDetailsMedia = (details?: string) => !!details && DETAILS_MEDIA_RE.test(details);
 
 // Renders project-details markdown; embedded <video> tags play through the
 // same player chosen for the work page (workPagePlayer setting). Memoized so
@@ -960,13 +965,23 @@ export default function WorkPage() {
                             
                           <div className="p-4 md:p-6 text-center flex flex-wrap justify-center gap-4 flex-shrink-0">
                             {selectedItem.details && (
-                                <Button
-                                  variant="default"
-                                  onClick={() => setDetailsModalOpen(true)}
-                                >
-                                  <FontAwesomeIcon icon={faUpDown} className="mr-2" />
-                                  {t('work.details.showDetails')}
-                                </Button>
+                                <div className="relative">
+                                  <Button
+                                    variant="default"
+                                    onClick={() => setDetailsModalOpen(true)}
+                                  >
+                                    <FontAwesomeIcon icon={faUpDown} className="mr-2" />
+                                    {t('work.details.showDetails')}
+                                  </Button>
+                                  {hasDetailsMedia(selectedItem.details) && (
+                                    <span
+                                      className="absolute -top-1.5 -right-1.5 flex items-center justify-center h-5 w-5 rounded-full bg-primary text-primary-foreground shadow-md"
+                                      title={t('work.details.mediaBadge')}
+                                    >
+                                      <FontAwesomeIcon icon={faCircleExclamation} className="h-3 w-3" />
+                                    </span>
+                                  )}
+                                </div>
                             )}
                             <Button
                               variant="secondary"
