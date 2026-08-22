@@ -773,30 +773,30 @@ export default function MediaAdmin(props: MediaAdminProps) {
 
           {/* Upload strip — also available while picking media from a form */}
           <div className="px-4 pt-3">
-            <div className="flex gap-2">
+            <div className="flex flex-col sm:flex-row gap-2">
               <div
                 {...getRootProps()}
                 className={cn(
-                  'flex-1 border border-dashed rounded-md px-3 py-2 flex items-center justify-center gap-2 cursor-pointer transition-colors text-muted-foreground',
+                  'flex-1 border border-dashed rounded-md px-3 py-2 flex items-center justify-center gap-2 cursor-pointer transition-colors text-muted-foreground min-w-0',
                   isDragActive && canUpload ? 'border-primary bg-primary/10' : 'border-border hover:border-primary/50',
                   (!canUpload || isUploading) && 'opacity-50 cursor-not-allowed'
                 )}
               >
                 <input {...getInputProps()} disabled={!canUpload || isUploading} />
-                <FontAwesomeIcon icon={faCloudUploadAlt} className="h-4 w-4" />
-                <span className="text-xs md:text-sm truncate">
+                <FontAwesomeIcon icon={faCloudUploadAlt} className="h-4 w-4 shrink-0" />
+                <span className="text-xs md:text-sm truncate text-center">
                   {isUploading ? t('mediaAdmin.uploading') : !canUpload ? t('mediaAdmin.noPermission') : t('mediaAdmin.dragAndDrop')}
                 </span>
               </div>
-              <Button onClick={() => setIsAddFromUrlOpen(true)} variant="outline" size="sm" disabled={!canUpload || isUploading}>
+              <Button onClick={() => setIsAddFromUrlOpen(true)} variant="outline" size="sm" disabled={!canUpload || isUploading} className="w-full sm:w-auto justify-center shrink-0">
                 <FontAwesomeIcon icon={faLink} className="mr-2" />
                 {t('mediaAdmin.addFromUrl')}
               </Button>
             </div>
             {isUploading && (
-              <div className="mt-2 flex items-center gap-2">
+              <div className="mt-2 flex items-center gap-2 min-w-0">
                 <Progress value={uploadProgress} className="flex-1" />
-                <span className="text-xs text-muted-foreground whitespace-nowrap">
+                <span className="text-xs text-muted-foreground truncate max-w-[45%]">
                   {t('mediaAdmin.uploadProgress').replace('{name}', uploadingFileName).replace('{progress}', String(Math.round(uploadProgress)))}
                 </span>
               </div>

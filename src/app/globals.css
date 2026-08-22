@@ -296,3 +296,12 @@ tr.drag-over-bottom {
   height: 100% !important;
   display: block;
 }
+/* Mobile/iOS: browsers can fall back to the media's intrinsic size despite
+   percentage widths — anchor the media to its wrapper so it can never
+   spill outside the 16:9 frame. */
+.details-video-frame video,
+.details-video-frame iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
