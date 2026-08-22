@@ -38,7 +38,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useTranslation } from '@/lib/i18n/useTranslation';
-import { DEFAULT_EMAIL_TEMPLATE_HTML } from '@/lib/default-email-template';
+import { DEFAULT_EMAIL_TEMPLATE_HTML, DEFAULT_AUTOREPLY_TEMPLATE_HTML } from '@/lib/default-email-template';
 import MediaAdmin from './MediaAdmin';
 import { faImages, faEye, faRotateLeft } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -86,6 +86,7 @@ interface HomePageSettings {
     menubarLogoSize?: number;
     menubarLogoUrl?: string;
     emailTemplateHtml?: string;
+    autoReplyTemplateHtml?: string;
 }
 
 const settingsSchema = z.object({
@@ -114,6 +115,7 @@ const settingsSchema = z.object({
   menubarLogoSize: z.number().min(24).max(80).optional(),
   menubarLogoUrl: z.string().optional(),
   emailTemplateHtml: z.string().optional(),
+  autoReplyTemplateHtml: z.string().optional(),
 });
 
 type SettingsFormValues = z.infer<typeof settingsSchema>;
@@ -154,6 +156,7 @@ export default function HomeAdmin() {
   const [libraryTab, setLibraryTab] = useState<'images' | 'videos' | 'files'>('images');
   const [libraryCollection, setLibraryCollection] = useState<'primary' | 'extented'>('primary');
   const [isEmailPreviewOpen, setIsEmailPreviewOpen] = useState(false);
+  const [emailPreviewField, setEmailPreviewField] = useState<'emailTemplateHtml' | 'autoReplyTemplateHtml'>('emailTemplateHtml');
 
   const videoItems = portfolioItems?.filter(item => item.type === 'video') || [];
   const imageAssets = mediaAssets?.filter(asset => asset.resource_type === 'image') || [];
@@ -186,6 +189,7 @@ export default function HomeAdmin() {
       menubarLogoSize: 48,
       menubarLogoUrl: '',
       emailTemplateHtml: '',
+      autoReplyTemplateHtml: '',
     },
   });
 
@@ -220,6 +224,7 @@ export default function HomeAdmin() {
         menubarLogoSize: homeSettings.menubarLogoSize || 48,
         menubarLogoUrl: homeSettings.menubarLogoUrl || '',
         emailTemplateHtml: homeSettings.emailTemplateHtml || '',
+        autoReplyTemplateHtml: homeSettings.autoReplyTemplateHtml || '',
       });
     }
   }, [homeSettings, form]);
@@ -894,10 +899,43 @@ export default function HomeAdmin() {
                                         )}
                                     />
                                     <div className="flex gap-2">
-                                        <Button type="button" variant="outline" size="sm" onClick={() => setIsEmailPreviewOpen(true)}>
+                                        <Button type="button" variant="outline" size="sm" onClick={() => { setEmailPreviewField('emailTemplateHtml'); setIsEmailPreviewOpen(true); }}>
                                             <FontAwesomeIcon icon={faEye} className="mr-2" />{t('homeAdmin.emailTemplate.preview')}
                                         </Button>
                                         <Button type="button" variant="outline" size="sm" onClick={() => setValue('emailTemplateHtml', DEFAULT_EMAIL_TEMPLATE_HTML)}>
+                                            <FontAwesomeIcon icon={faRotateLeft} className="mr-2" />{t('homeAdmin.emailTemplate.resetDefault')}
+                                        </Button>
+                                    </div>
+                                </div>
+
+                                {/* Customer Auto-Reply Template */}
+                                <div className="space-y-4 p-4 rounded-lg border glass-effect">
+                                    <h3 className="font-headline text-lg">{t('homeAdmin.autoReplyTemplate.heading')}</h3>
+                                    <FormField
+                                        control={control}
+                                        name="autoReplyTemplateHtml"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>{t('homeAdmin.autoReplyTemplate.label')}</FormLabel>
+                                                <FormDescription>{t('homeAdmin.autoReplyTemplate.description')}</FormDescription>
+                                                <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                                                    {['{{name}}', '{{email}}', '{{message}}'].map(ph => (
+                                                        <code key={ph} className="px-2 py-0.5 rounded bg-muted font-mono">{ph}</code>
+                                                    ))}
+                                                    <span>{t('homeAdmin.emailTemplate.placeholdersHint')}</span>
+                                                </div>
+                                                <FormControl>
+                                                    <Textarea rows={12} className="font-mono text-xs" {...field} />
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                    <div className="flex gap-2">
+                                        <Button type="button" variant="outline" size="sm" onClick={() => { setEmailPreviewField('autoReplyTemplateHtml'); setIsEmailPreviewOpen(true); }}>
+                                            <FontAwesomeIcon icon={faEye} className="mr-2" />{t('homeAdmin.emailTemplate.preview')}
+                                        </Button>
+                                        <Button type="button" variant="outline" size="sm" onClick={() => setValue('autoReplyTemplateHtml', DEFAULT_AUTOREPLY_TEMPLATE_HTML)}>
                                             <FontAwesomeIcon icon={faRotateLeft} className="mr-2" />{t('homeAdmin.emailTemplate.resetDefault')}
                                         </Button>
                                     </div>
@@ -939,7 +977,7 @@ export default function HomeAdmin() {
                 <iframe
                     title="email-template-preview"
                     className="w-full h-[60vh] rounded-md border bg-white"
-                    srcDoc={renderEmailPreview(form.getValues('emailTemplateHtml'))}
+                    srcDoc={renderEmailPreview(form.getValues(emailPreviewField))}
                 />
             </DialogContent>
         </Dialog>

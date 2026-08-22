@@ -2,9 +2,8 @@
 import { type NextRequest, NextResponse } from 'next/server';
 import { Resend } from 'resend';
 import { z } from 'zod';
-import { getFirestore as getAdminFirestore } from 'firebase-admin/firestore';
-import { initializeServerApp } from '@/firebase/server-init';
-import { DEFAULT_EMAIL_TEMPLATE_HTML } from '@/lib/default-email-template';
+import { firebaseConfig } from '@/firebase/config';
+import { DEFAULT_EMAIL_TEMPLATE_HTML, DEFAULT_AUTOREPLY_TEMPLATE_HTML } from '@/lib/default-email-template';
 
 const formSchema = z.object({
   name: z.string(),
@@ -21,16 +20,21 @@ function escapeHtml(str: string): string {
     .replace(/'/g, '&#39;');
 }
 
-async function loadEmailTemplate(): Promise<string> {
+async function loadEmailTemplate(fieldName: 'emailTemplateHtml' | 'autoReplyTemplateHtml'): Promise<string> {
+  const fallback = fieldName === 'autoReplyTemplateHtml' ? DEFAULT_AUTOREPLY_TEMPLATE_HTML : DEFAULT_EMAIL_TEMPLATE_HTML;
   try {
-    const serverApp = await initializeServerApp();
-    const db = getAdminFirestore(serverApp);
-    const snap = await db.collection('homepage').doc('settings').get();
-    const tpl = snap.data()?.emailTemplateHtml;
-    return typeof tpl === 'string' && tpl.trim() ? tpl : DEFAULT_EMAIL_TEMPLATE_HTML;
+    // Read via Firestore REST API — homepage/settings is publicly readable
+    // (the client site loads it anonymously), so no Admin SDK credentials are
+    // needed here (docs/service-account.json is not available in deployments).
+    const url = `https://firestore.googleapis.com/v1/projects/${firebaseConfig.projectId}/databases/(default)/documents/homepage/settings`;
+    const res = await fetch(url, { cache: 'no-store' });
+    if (!res.ok) throw new Error(`Firestore REST request failed: ${res.status}`);
+    const fields = (await res.json()).fields || {};
+    const tpl = fields[fieldName]?.stringValue;
+    return typeof tpl === 'string' && tpl.trim() ? tpl : fallback;
   } catch (e) {
-    console.error('Failed to load email template from settings, using default.', e);
-    return DEFAULT_EMAIL_TEMPLATE_HTML;
+    console.error(`Failed to load ${fieldName} from settings, using default.`, e);
+    return fallback;
   }
 }
 
@@ -66,7 +70,7 @@ export async function POST(req: NextRequest) {
 
   try {
     // Admin-customizable template (Admin → Home → Contact Email Template).
-    const template = await loadEmailTemplate();
+    const template = await loadEmailTemplate('emailTemplateHtml');
     const html = template
       .replace(/\{\{name\}\}/g, escapeHtml(name))
       .replace(/\{\{email\}\}/g, escapeHtml(email))
@@ -84,7 +88,26 @@ export async function POST(req: NextRequest) {
       console.error('Error sending email from Resend:', error);
       return NextResponse.json({ success: false, message: `Failed to send email: ${error.message}` }, { status: 500 });
     }
-    
+
+    // Auto-reply to the visitor — failure here must not fail the submission.
+    try {
+      const autoReplyTemplate = await loadEmailTemplate('autoReplyTemplateHtml');
+      const autoReplyHtml = autoReplyTemplate
+        .replace(/\{\{name\}\}/g, escapeHtml(name))
+        .replace(/\{\{email\}\}/g, escapeHtml(email))
+        .replace(/\{\{message\}\}/g, escapeHtml(message));
+
+      await resend.emails.send({
+        from: `MelliVision <${FROM_EMAIL}>`,
+        to: email,
+        reply_to: TO_EMAIL,
+        subject: 'We have received your message',
+        html: autoReplyHtml,
+      });
+    } catch (autoReplyError) {
+      console.error('Failed to send auto-reply:', autoReplyError);
+    }
+
     return NextResponse.json({ success: true, message: 'Message Sent Successfully!' });
 
   } catch (e: any) {
