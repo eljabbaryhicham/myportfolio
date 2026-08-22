@@ -87,6 +87,8 @@ interface HomePageSettings {
     menubarLogoUrl?: string;
     emailTemplateHtml?: string;
     autoReplyTemplateHtml?: string;
+    isArrowAnimationEnabled?: boolean;
+    arrowLottieUrl?: string;
 }
 
 const settingsSchema = z.object({
@@ -116,6 +118,8 @@ const settingsSchema = z.object({
   menubarLogoUrl: z.string().optional(),
   emailTemplateHtml: z.string().optional(),
   autoReplyTemplateHtml: z.string().optional(),
+  isArrowAnimationEnabled: z.boolean().optional(),
+  arrowLottieUrl: z.string().optional(),
 });
 
 type SettingsFormValues = z.infer<typeof settingsSchema>;
@@ -152,7 +156,7 @@ export default function HomeAdmin() {
   const { data: mediaAssets, isLoading: isLoadingMedia } = useCollection<MediaAsset>(mediaCollection);
 
   const [isLibraryOpen, setIsLibraryOpen] = useState(false);
-  const [libraryField, setLibraryField] = useState<'homePageLogoUrl' | 'menubarLogoUrl' | 'heroVideoUrl' | 'preloaderUrl' | 'cursorLottieUrl' | 'tickLottieUrl' | null>(null);
+  const [libraryField, setLibraryField] = useState<'homePageLogoUrl' | 'menubarLogoUrl' | 'heroVideoUrl' | 'preloaderUrl' | 'cursorLottieUrl' | 'tickLottieUrl' | 'arrowLottieUrl' | null>(null);
   const [libraryTab, setLibraryTab] = useState<'images' | 'videos' | 'files'>('images');
   const [libraryCollection, setLibraryCollection] = useState<'primary' | 'extented'>('primary');
   const [isEmailPreviewOpen, setIsEmailPreviewOpen] = useState(false);
@@ -190,6 +194,8 @@ export default function HomeAdmin() {
       menubarLogoUrl: '',
       emailTemplateHtml: '',
       autoReplyTemplateHtml: '',
+      isArrowAnimationEnabled: true,
+      arrowLottieUrl: '',
     },
   });
 
@@ -225,6 +231,8 @@ export default function HomeAdmin() {
         menubarLogoUrl: homeSettings.menubarLogoUrl || '',
         emailTemplateHtml: homeSettings.emailTemplateHtml || '',
         autoReplyTemplateHtml: homeSettings.autoReplyTemplateHtml || '',
+        isArrowAnimationEnabled: homeSettings.isArrowAnimationEnabled ?? true,
+        arrowLottieUrl: homeSettings.arrowLottieUrl || '',
       });
     }
   }, [homeSettings, form]);
@@ -866,6 +874,45 @@ export default function HomeAdmin() {
                                                             <Input placeholder="Leave empty for default hover animation" {...field} className="flex-1" />
                                                         </FormControl>
                                                         <Button type="button" variant="outline" size="icon" onClick={() => { setLibraryField('tickLottieUrl'); setLibraryTab('files'); setIsLibraryOpen(true); }}>
+                                                            <FontAwesomeIcon icon={faImages} />
+                                                        </Button>
+                                                    </div>
+                                                    <FormMessage />
+                                                </FormItem>
+                                        )}
+                                    />
+
+                                    <Separator />
+
+                                    <FormField
+                                        control={control}
+                                        name="isArrowAnimationEnabled"
+                                        render={({ field }) => (
+                                            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
+                                                <div className="space-y-0.5">
+                                                    <FormLabel>{t('homeAdmin.arrowAnimation')}</FormLabel>
+                                                    <FormDescription>{t('homeAdmin.arrowAnimationDescription')}</FormDescription>
+                                                </div>
+                                                <FormControl>
+                                                    <Switch checked={field.value} onCheckedChange={field.onChange} />
+                                                </FormControl>
+                                            </FormItem>
+                                        )}
+                                    />
+                                    <FormField
+                                        control={control}
+                                        name="arrowLottieUrl"
+                                        render={({ field }) => (
+                                                <FormItem>
+                                                    <FormLabel>{t('homeAdmin.arrowLottieUrl')}</FormLabel>
+                                                    <FormDescription>
+                                                        {t('homeAdmin.arrowLottieUrlDescription')}
+                                                    </FormDescription>
+                                                    <div className="flex items-center gap-2">
+                                                        <FormControl>
+                                                            <Input placeholder={t('homeAdmin.arrowLottieUrlPlaceholder')} {...field} className="flex-1" />
+                                                        </FormControl>
+                                                        <Button type="button" variant="outline" size="icon" onClick={() => { setLibraryField('arrowLottieUrl'); setLibraryTab('files'); setIsLibraryOpen(true); }}>
                                                             <FontAwesomeIcon icon={faImages} />
                                                         </Button>
                                                     </div>
