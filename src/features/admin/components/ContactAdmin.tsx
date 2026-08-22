@@ -191,12 +191,6 @@ export default function ContactAdmin() {
   return (
     <>
     <div className="flex-1 flex flex-col h-full">
-      <div className="mb-6">
-          <h2 className="text-xl font-headline">{t('contactAdmin.title')}</h2>
-          <p className="text-muted-foreground">
-              {t('contactAdmin.description')}
-          </p>
-      </div>
       <PageTextEditor
         titleKey="pageContent.contactTitle"
         descriptionKey="pageContent.contactDescription"
@@ -205,6 +199,12 @@ export default function ContactAdmin() {
           { name: 'contactSendButtonLabel', labelKey: 'pageContent.sendButtonLabel', fallbackKey: 'contactForm.submit.send' },
         ]}
       />
+      <div className="mb-6 mt-8">
+          <h2 className="text-xl font-headline">{t('contactAdmin.title')}</h2>
+          <p className="text-muted-foreground">
+              {t('contactAdmin.description')}
+          </p>
+      </div>
       <div className="flex-1 border rounded-lg overflow-hidden glass-effect">
           <ScrollArea className="h-full">
               <div className="p-6">
