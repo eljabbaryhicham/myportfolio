@@ -290,3 +290,9 @@ tr.drag-over-bottom {
 .details-video-frame video {
   object-fit: contain;
 }
+/* Plyr routes YouTube/Vimeo through an <iframe> instead of <video>. */
+.details-video-frame iframe {
+  width: 100% !important;
+  height: 100% !important;
+  display: block;
+}
