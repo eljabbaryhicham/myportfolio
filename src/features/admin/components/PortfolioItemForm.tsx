@@ -53,6 +53,7 @@ const formSchema = z.object({
   thumbnailUrl: z.string().url({ message: 'Please enter a valid URL for the grid thumbnail.' }),
   thumbnailVttUrl: z.string().url({ message: 'Please enter a valid VTT URL.' }).optional().or(z.literal('')),
   sourceUrl: z.string().url({ message: 'Please enter a valid URL for the main media.' }).optional().or(z.literal('')),
+  previewUrl: z.string().url({ message: 'Please enter a valid URL for the hover preview media.' }).optional().or(z.literal('')),
   details: z.string().optional(),
   thumbnailHint: z.string().optional(),
   featured: z.boolean().optional(),
@@ -137,6 +138,7 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onCho
             thumbnailHint: item.thumbnailHint || '',
             details: item.details || '',
             sourceUrl: item.sourceUrl || '',
+            previewUrl: item.previewUrl || '',
             thumbnailVttUrl: item.thumbnailVttUrl || '',
             order: item.order ?? 0,
             isVisible: item.isVisible ?? true,
@@ -148,6 +150,7 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onCho
             thumbnailUrl: '',
             thumbnailVttUrl: '',
             sourceUrl: '',
+            previewUrl: '',
             thumbnailHint: '',
             featured: false,
             details: '',
@@ -186,6 +189,12 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onCho
               return;
             }
             form.setValue('thumbnailUrl', url, { shouldValidate: true });
+        });
+    };
+
+    const handleChoosePreview = () => {
+        onChooseFromLibrary((url) => {
+            form.setValue('previewUrl', url, { shouldValidate: true });
         });
     };
 
@@ -402,11 +411,31 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onCho
                                     <span className="ml-2 hidden sm:inline">{t('portfolioForm.library')}</span>
                                   </Button>
                                 </div>
-                                <FormDescription>{t('portfolioForm.sourceMediaDescription')}</FormDescription>
-                                <FormMessage />
-                              </FormItem>
-                          )}
-                          />
+                                 <FormDescription>{t('portfolioForm.sourceMediaDescription')}</FormDescription>
+                                 <FormMessage />
+                               </FormItem>
+                           )}
+                           />
+                           <FormField
+                           control={form.control}
+                           name="previewUrl"
+                           render={({ field }) => (
+                               <FormItem>
+                                 <FormLabel>{t('portfolioForm.previewMediaUrl')}</FormLabel>
+                                 <div className="flex items-center gap-2">
+                                   <FormControl>
+                                       <Input placeholder={t('portfolioForm.previewMediaUrlPlaceholder')} {...field} />
+                                   </FormControl>
+                                    <Button type="button" variant="outline" size="sm" onClick={handleChoosePreview}>
+                                     <FontAwesomeIcon icon={faImages} />
+                                     <span className="ml-2 hidden sm:inline">{t('portfolioForm.library')}</span>
+                                   </Button>
+                                 </div>
+                                 <FormDescription>{t('portfolioForm.previewMediaDescription')}</FormDescription>
+                                 <FormMessage />
+                               </FormItem>
+                           )}
+                           />
                            <FormField
                             control={form.control}
                             name="order"

@@ -174,6 +174,10 @@ Firebase Firestore ← useDoc/useCollection hooks → React components
 | 2026-08-22 | FEATURE: project details popup now renders Markdown + raw HTML media (`react-markdown` + `remark-gfm` + `rehype-raw`, sanitized via `rehype-sanitize` schema extended for `<video>/<audio>/<source>`); responsive media CSS in globals.css; legacy single-newline text preserved via `breaks: true`. Installed `react-markdown` + `remark-gfm` | ✅ |
 | 2026-08-22 | FEATURE: `<video>` embeds inside project details play through the work page's chosen player (`workPagePlayer`: Plyr incl. YouTube/Vimeo URLs, or Clappr) via memoized `ProjectDetailsContent` renderer; autoplay off, sized 16:9 | ✅ |
 | 2026-08-22 | FIX: multiple videos in project details — self-closing `<video ... />` parsed as one unclosed tag nesting all following videos inside the first (only 1 player shown); preprocessor rewrites to explicit `<video></video>` pairs + `<source>` child support | ✅ |
+| 2026-08-22 | FEATURE: work page cards preview media on hover — videos play a muted looping native `<video>` over the thumbnail, images crossfade to the full source; skipped on touch devices and HLS sources; unmounts on leave to free decoders | ✅ |
+| 2026-08-22 | FEATURE: admin media library copy button is now a delivery-format menu (EN/FR) — stored URL / original (transforms stripped) / auto-optimized; images: WebP·AVIF·JPG·PNG; videos: MP4·WebM·HLS (rebuilds the `sp_auto` `.m3u8` derivative URL from any stored variant) via Cloudinary transforms | ✅ |
+| 2026-08-22 | FIX: format-menu links always delivered mp4 — variants now built from a stripped base (no chained stored transforms) with a single explicit `f_<fmt>,q_auto,fl_attachment` transform + synced extension, forcing download of the exact requested format | ✅ |
+| 2026-08-22 | FEATURE: project form — optional "Hover Preview Media URL" (`previewUrl`) with media-library picker + EN/FR labels; work page card hover previews use it and fall back to the main `sourceUrl` when empty (also unblocks HLS-only projects by allowing an mp4 preview) | ✅ |
 
 ## [ORPHANS & PENDING]
 

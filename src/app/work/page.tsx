@@ -251,6 +251,25 @@ MemoizedPortfolioMedia.displayName = 'MemoizedPortfolioMedia';
 const PortfolioGridItem = ({ item, onClick, onEditClick, isAdmin, isSuperAdmin, onSwitchPlayer }: { item: PortfolioItem, onClick: () => void, onEditClick: () => void, isAdmin: boolean, isSuperAdmin: boolean, onSwitchPlayer: () => void }) => {
   const { t } = useTranslation();
   const [isLoaded, setIsLoaded] = useState(false);
+  // Hover preview (desktop only): mount a muted looping <video> / full image
+  // over the thumbnail while hovered; unmounting on leave frees the decoder.
+  const [isHovering, setIsHovering] = useState(false);
+
+  // Dedicated hover-preview media if provided, else the main media URL.
+  // Lets admins give HLS-only projects a lightweight mp4/webm preview.
+  const previewSource = item.previewUrl || item.sourceUrl;
+
+  const canHover = () =>
+    typeof window !== 'undefined' && !window.matchMedia('(hover: none)').matches;
+
+  const handleMouseEnter = () => { if (canHover()) setIsHovering(true); };
+  const handleMouseLeave = () => { setIsHovering(false); };
+
+  // Native <video> preview only for progressively-streamable sources —
+  // HLS (.m3u8) needs hls.js outside Safari, so keep the thumbnail there.
+  const showVideoPreview =
+    isHovering && item.type === 'video' &&
+    !!previewSource && !previewSource.includes('.m3u8');
 
   const handleEditClick = (e: React.MouseEvent) => {
     e.stopPropagation(); // Prevent the main onClick from firing
@@ -270,6 +289,8 @@ const PortfolioGridItem = ({ item, onClick, onEditClick, isAdmin, isSuperAdmin, 
           'bg-black/20'
         )}
         onClick={onClick}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
       >
         {!isLoaded && (
           <div className="absolute inset-0 flex items-center justify-center">
@@ -288,6 +309,27 @@ const PortfolioGridItem = ({ item, onClick, onEditClick, isAdmin, isSuperAdmin, 
           sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
           onLoad={() => setIsLoaded(true)}
         />
+        {showVideoPreview && (
+          <video
+            src={previewSource}
+            poster={item.thumbnailUrl}
+            className="absolute inset-0 w-full h-full object-cover animate-in fade-in duration-500"
+            autoPlay
+            loop
+            muted
+            playsInline
+            preload="metadata"
+          />
+        )}
+        {isHovering && item.type === 'image' && previewSource && previewSource !== item.thumbnailUrl && (
+          <MemoizedImage
+            src={previewSource}
+            alt={item.title}
+            fill
+            className="object-cover animate-in fade-in duration-500"
+            sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
+          />
+        )}
         <div className={cn(
           "absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-2 md:p-4",
           !isLoaded && "opacity-100 bg-none" // Show overlay content while loading

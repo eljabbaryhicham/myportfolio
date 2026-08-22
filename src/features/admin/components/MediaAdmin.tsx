@@ -19,6 +19,7 @@ import { useCollection, useFirestore, useMemoFirebase, addDocumentNonBlocking, d
 import { collection, doc, query, orderBy, DocumentReference, where, getDocs, writeBatch } from 'firebase/firestore';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Separator } from '@/components/ui/separator';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import AddFromUrlDialog from './AddFromUrlDialog';
 import type { AppUser } from '@/firebase/auth/use-user';
 import CdnClapprPlayer from '@/components/CdnClapprPlayer';
@@ -40,6 +41,33 @@ interface MediaAsset {
     videoFormat?: 'mp4' | 'm3u8' | 'webm';
     title?: string;
 }
+
+// --- Cloudinary delivery-format helpers (for "copy URL as...") ---
+const CLOUDINARY_UPLOAD_RE = /\/(image|video|raw)\/upload\//;
+
+const withTransform = (url: string, transform: string): string =>
+  url.replace(CLOUDINARY_UPLOAD_RE, (m) => `${m}${transform}/`);
+
+// Remove any transformation chain between /upload/ and the version segment.
+const stripTransforms = (url: string): string =>
+  url.replace(/^(.*?\/upload\/)(?:[^/]+)?(\/v\d+\/)/, '$1$2');
+
+// Request a specific delivery format. Built from a CLEAN base (stored
+// transforms like f_webm,q_auto must be stripped first, otherwise they chain
+// with ours and the last format directive wins). fl_attachment forces the
+// browser to download the exact derived bytes instead of streaming the
+// default derivative. Video/image containers get their extension synced too.
+const formatVariant = (url: string, fmt: 'mp4' | 'webm' | 'webp' | 'avif' | 'jpg' | 'png'): string => {
+  const out = withTransform(stripTransforms(url), `f_${fmt},q_auto,fl_attachment`);
+  return out.replace(/\.(m3u8|webm|mp4|mov|jpeg|jpg|png|gif|webp|avif)$/i, `.${fmt}`);
+};
+
+// Rebuild the HLS manifest URL the upload flow generates for every video
+// (streaming profile derivative): /video/upload/sp_auto/v<ver>/<id>.m3u8
+const hlsVariant = (url: string): string => {
+  const stripped = stripTransforms(url).replace(/\.[a-z0-9]+$/i, '.m3u8');
+  return withTransform(stripped, 'sp_auto');
+};
 
 const MediaFileCard = ({
   file,
@@ -151,9 +179,54 @@ const MediaFileCard = ({
                     <FontAwesomeIcon icon={faStar} />
                   </Button>
                 )}
-                <Button size="icon" variant="secondary" onClick={() => onCopy(file.url)} title={t('mediaAdmin.copyUrl')} className="h-8 w-8 md:h-10 md:w-10 glass-effect">
-                  <FontAwesomeIcon icon={faCopy} />
-                </Button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button size="icon" variant="secondary" title={t('mediaAdmin.copyUrl')} className="h-8 w-8 md:h-10 md:w-10 glass-effect">
+                      <FontAwesomeIcon icon={faCopy} />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent onClick={(e) => e.stopPropagation()}>
+                    <DropdownMenuLabel>{t('mediaAdmin.copyFormat')}</DropdownMenuLabel>
+                    <DropdownMenuItem onClick={() => onCopy(file.url)}>
+                      {t('mediaAdmin.copy.default')}
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => onCopy(stripTransforms(file.url))}>
+                      {t('mediaAdmin.copy.original')}
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => onCopy(withTransform(file.url, 'f_auto,q_auto'))}>
+                      {t('mediaAdmin.copy.auto')}
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    {file.resource_type === 'video' ? (
+                      <>
+                        <DropdownMenuItem onClick={() => onCopy(formatVariant(file.url, 'mp4'))}>
+                          {t('mediaAdmin.copy.mp4')}
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => onCopy(formatVariant(file.url, 'webm'))}>
+                          {t('mediaAdmin.copy.webm')}
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => onCopy(hlsVariant(file.url))}>
+                          {t('mediaAdmin.copy.hls')}
+                        </DropdownMenuItem>
+                      </>
+                    ) : file.resource_type === 'image' ? (
+                      <>
+                        <DropdownMenuItem onClick={() => onCopy(formatVariant(file.url, 'webp'))}>
+                          WebP
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => onCopy(formatVariant(file.url, 'avif'))}>
+                          AVIF
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => onCopy(formatVariant(file.url, 'jpg'))}>
+                          JPG
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => onCopy(formatVariant(file.url, 'png'))}>
+                          PNG
+                        </DropdownMenuItem>
+                      </>
+                    ) : null}
+                  </DropdownMenuContent>
+                </DropdownMenu>
                 {canDelete && (
                   <AlertDialog>
                     <AlertDialogTrigger asChild>

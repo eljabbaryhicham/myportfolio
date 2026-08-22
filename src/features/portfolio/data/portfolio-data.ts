@@ -8,6 +8,7 @@ export interface PortfolioItem {
   thumbnailVttUrl?: string; // For video preview thumbnails
   thumbnailHint?: string;
   sourceUrl?: string; // For images or single-source videos
+  previewUrl?: string; // Optional media for card hover previews (falls back to sourceUrl)
   details?: string;
   order?: number;
   isVisible?: boolean;
