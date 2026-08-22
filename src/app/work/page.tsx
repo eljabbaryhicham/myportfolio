@@ -82,7 +82,10 @@ const ProjectDetailsContent = memo(function ProjectDetailsContent({
       }
       if (!videoSrc) return <video {...rest}>{children}</video>;
       return (
-        <div className="relative aspect-video w-full my-4 overflow-hidden rounded-md bg-black">
+        // [&>*]:absolute/inset-0 pins the player root (Plyr or Clappr) inside
+        // the 16:9 frame — their internal w/h chains otherwise misresolve in
+        // the markdown container and the video spills out of the frame.
+        <div className="relative my-4 w-full aspect-video overflow-hidden rounded-md bg-black [&>*]:absolute [&>*]:inset-0">
           <Suspense fallback={<Preloader />}>
             {playerType === 'plyr' ? (
               <MemoizedPlyrPlayer source={videoSrc} poster={poster} autoPlay={false} />

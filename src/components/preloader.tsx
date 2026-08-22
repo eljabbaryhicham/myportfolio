@@ -19,7 +19,7 @@ const CACHE_TTL = 30000;
 const DefaultLottie = ({ url, size }: { url?: string; size?: number }) => {
   const [lottieData, setLottieData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const pct = size || 25;
+  const pct = size || 15;
 
   useEffect(() => {
     if (!url) {
@@ -54,7 +54,7 @@ const DefaultLottie = ({ url, size }: { url?: string; size?: number }) => {
 };
 
 const GifLoader = ({ url, size }: { url: string; size?: number }) => {
-  const pct = size || 25;
+  const pct = size || 15;
   return (
     <div className="flex items-center justify-center w-full h-full">
       {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -64,7 +64,7 @@ const GifLoader = ({ url, size }: { url: string; size?: number }) => {
 };
 
 const WebmLoader = ({ url, size }: { url: string; size?: number }) => {
-  const pct = size || 25;
+  const pct = size || 15;
   return (
     <div className="flex items-center justify-center w-full h-full">
       <video
@@ -109,7 +109,7 @@ const Preloader = ({ settings }: { settings?: PreloaderSettings }) => {
 
   const type = active?.preloaderType || 'default';
   const url = active?.preloaderUrl || '';
-  const size = active?.preloaderSize || 25;
+  const size = active?.preloaderSize || 15;
 
   if (type === 'gif' && url) return <GifLoader url={url} size={size} />;
   if (type === 'webm' && url) return <WebmLoader url={url} size={size} />;

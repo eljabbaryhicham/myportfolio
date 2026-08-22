@@ -179,6 +179,11 @@ Firebase Firestore ← useDoc/useCollection hooks → React components
 | 2026-08-22 | FIX: format-menu links always delivered mp4 — variants now built from a stripped base (no chained stored transforms) with a single explicit `f_<fmt>,q_auto,fl_attachment` transform + synced extension, forcing download of the exact requested format | ✅ |
 | 2026-08-22 | FEATURE: project form — optional "Hover Preview Media URL" (`previewUrl`) with media-library picker + EN/FR labels; work page card hover previews use it and fall back to the main `sourceUrl` when empty (also unblocks HLS-only projects by allowing an mp4 preview) | ✅ |
 | 2026-08-22 | FEATURE: "Show Project Details" button gets a small `circle-exclamation` badge (top-right, yellow, EN/FR tooltip) only when details contain media (`<video>/<audio>/<img>` tags or Markdown images); hidden for text-only details | ✅ |
+| 2026-08-22 | TWEAK: default preloader size fallback 25 → 15 (all loader variants + admin form default/reset); Firestore `preloaderSize` still overrides when set | ✅ |
+| 2026-08-22 | FIX: details-embedded videos overflowed their player frame — player root pinned with `[&>*]:absolute [&>*]:inset-0` inside the 16:9 box so Plyr/Clappr internals resolve against a sized, positioned parent | ✅ |
+| 2026-08-22 | FEATURE: media library search-by-name input (filters filename/title across image/video/file tabs, EN/FR); About section heading "What You'll Get?" → "What We Provide" (FR: "Ce que nous offrons") | ✅ |
+| 2026-08-22 | FIX: About heading keeps the question mark — "What We Provide?" | ✅ |
+| 2026-08-22 | FEATURE: upload strip inside the media-picker dialog (drag & drop / click + "Add from URL", progress bar); video-format & library-choice dialogs now shared by both library modes so uploads work while picking media for a form | ✅ |
 
 ## [ORPHANS & PENDING]
 

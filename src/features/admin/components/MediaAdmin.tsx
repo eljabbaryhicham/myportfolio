@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/hooks/use-toast';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Input } from '@/components/ui/input';
 import Image from 'next/image';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCloudUploadAlt, faCopy, faTrash, faFilm, faFileImage, faImages, faXmark, faPlus, faEye, faFolderOpen, faLink, faUniversity, faStar, faPhotoFilm, faFileLines } from '@fortawesome/free-solid-svg-icons';
@@ -335,13 +336,20 @@ export default function MediaAdmin(props: MediaAdminProps) {
   const mediaCollectionRef = useMemoFirebase(() => firestore ? query(collection(firestore, 'media'), orderBy('created_at', 'desc')) : null, [firestore]);
   const { data: mediaAssets, isLoading: isLoadingMedia } = useCollection<MediaAsset>(mediaCollectionRef);
 
+  const [searchQuery, setSearchQuery] = useState('');
+
   const { imageAssets, videoAssets, otherAssets } = useMemo(() => {
     const images: MediaAsset[] = [];
     const videos: MediaAsset[] = [];
     const others: MediaAsset[] = [];
+    const q = searchQuery.trim().toLowerCase();
     mediaAssets?.forEach(asset => {
         const libraryMatch = asset.libraryId === activeLibrary || (activeLibrary === 'primary' && !asset.libraryId);
-        if (libraryMatch) {
+        const matchesSearch =
+          !q ||
+          asset.filename?.toLowerCase().includes(q) ||
+          asset.title?.toLowerCase().includes(q);
+        if (libraryMatch && matchesSearch) {
             if (asset.resource_type === 'image') {
                 images.push(asset);
             } else if (asset.resource_type === 'video') {
@@ -352,7 +360,7 @@ export default function MediaAdmin(props: MediaAdminProps) {
         }
     });
     return { imageAssets: images, videoAssets: videos, otherAssets: others };
-  }, [mediaAssets, activeLibrary]);
+  }, [mediaAssets, activeLibrary, searchQuery]);
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     if (!canUpload) {
@@ -707,7 +715,7 @@ export default function MediaAdmin(props: MediaAdminProps) {
             </TabsList>
         </Tabs>
       <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'images' | 'videos' | 'files')} className="flex-1 flex flex-col min-h-0">
-          <div className='px-4 pt-4'>
+          <div className='px-4 pt-4 flex items-center gap-2 flex-wrap'>
             <TabsList>
                 <TabsTrigger value="images" className="py-2 px-4 text-base glass-effect data-[state=active]:bg-destructive">
                     <FontAwesomeIcon icon={faFileImage} className="mr-2" />
@@ -722,6 +730,44 @@ export default function MediaAdmin(props: MediaAdminProps) {
                     {t('mediaAdmin.tab.files')}
                 </TabsTrigger>
             </TabsList>
+            <Input
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder={t('mediaAdmin.searchPlaceholder')}
+              className="max-w-[220px] md:max-w-xs ml-auto glass-effect"
+            />
+          </div>
+
+          {/* Upload strip — also available while picking media from a form */}
+          <div className="px-4 pt-3">
+            <div className="flex gap-2">
+              <div
+                {...getRootProps()}
+                className={cn(
+                  'flex-1 border border-dashed rounded-md px-3 py-2 flex items-center justify-center gap-2 cursor-pointer transition-colors text-muted-foreground',
+                  isDragActive && canUpload ? 'border-primary bg-primary/10' : 'border-border hover:border-primary/50',
+                  (!canUpload || isUploading) && 'opacity-50 cursor-not-allowed'
+                )}
+              >
+                <input {...getInputProps()} disabled={!canUpload || isUploading} />
+                <FontAwesomeIcon icon={faCloudUploadAlt} className="h-4 w-4" />
+                <span className="text-xs md:text-sm truncate">
+                  {isUploading ? t('mediaAdmin.uploading') : !canUpload ? t('mediaAdmin.noPermission') : t('mediaAdmin.dragAndDrop')}
+                </span>
+              </div>
+              <Button onClick={() => setIsAddFromUrlOpen(true)} variant="outline" size="sm" disabled={!canUpload || isUploading}>
+                <FontAwesomeIcon icon={faLink} className="mr-2" />
+                {t('mediaAdmin.addFromUrl')}
+              </Button>
+            </div>
+            {isUploading && (
+              <div className="mt-2 flex items-center gap-2">
+                <Progress value={uploadProgress} className="flex-1" />
+                <span className="text-xs text-muted-foreground whitespace-nowrap">
+                  {t('mediaAdmin.uploadProgress').replace('{name}', uploadingFileName).replace('{progress}', String(Math.round(uploadProgress)))}
+                </span>
+              </div>
+            )}
           </div>
           
           <ScrollArea className="flex-1">
@@ -803,6 +849,54 @@ export default function MediaAdmin(props: MediaAdminProps) {
     </Dialog>
   );
 
+  // Video-format + library-choice steps — needed by BOTH the full-page
+  // library and the compact picker dialog (upload strip lives in both).
+  const uploadFlowDialogs = (
+    <>
+      <Dialog open={isChoosingVideoFormat} onOpenChange={setIsChoosingVideoFormat}>
+        <DialogContent className="w-[80vw]">
+            <DialogHeader>
+                <DialogTitle>{t('mediaAdmin.chooseVideoFormat')}</DialogTitle>
+                <DialogDescription>{t('mediaAdmin.chooseVideoFormatDescription')}</DialogDescription>
+            </DialogHeader>
+            <RadioGroup defaultValue="mp4" onValueChange={(value: 'mp4' | 'm3u8' | 'webm') => setUploadVideoFormat(value)}>
+                <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="mp4" id="r1" />
+                    <Label htmlFor="r1">{t('mediaAdmin.mp4')}</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="m3u8" id="r2" />
+                    <Label htmlFor="r2">{t('mediaAdmin.m3u8')}</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="webm" id="r3" />
+                    <Label htmlFor="r3">{t('mediaAdmin.webm')}</Label>
+                </div>
+            </RadioGroup>
+            <DialogFooter>
+                <Button variant="outline" onClick={() => setIsChoosingVideoFormat(false)}>{t('mediaAdmin.cancel')}</Button>
+                <Button onClick={() => { setIsChoosingVideoFormat(false); setIsChoosingLibrary(true); }}>{t('mediaAdmin.next')}</Button>
+            </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      <Dialog open={isChoosingLibrary} onOpenChange={setIsChoosingLibrary}>
+        <DialogContent className="w-[80vw]">
+            <DialogHeader>
+                <DialogTitle>{t('mediaAdmin.chooseLibrary')}</DialogTitle>
+                <DialogDescription>{t('mediaAdmin.chooseLibraryDescription')}</DialogDescription>
+            </DialogHeader>
+            <div className="flex justify-center gap-4 py-4">
+                <Button onClick={() => handleLibraryChoiceAndUpload('primary')} size="lg" className="w-48"><FontAwesomeIcon icon={faUniversity} className="mr-2"/> {t('mediaAdmin.libraryPrimary')}</Button>
+                <Button onClick={() => handleLibraryChoiceAndUpload('extented')} size="lg" className="w-48"><FontAwesomeIcon icon={faUniversity} className="mr-2"/> {t('mediaAdmin.libraryExtented')}</Button>
+            </div>
+             <DialogFooter>
+                <Button variant="outline" onClick={() => setIsChoosingLibrary(false)}>{t('mediaAdmin.cancel')}</Button>
+            </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
+  );
+
   if (props.isDialog) {
       return (
         <>
@@ -818,6 +912,7 @@ export default function MediaAdmin(props: MediaAdminProps) {
             onUploadComplete={handleUrlUploadComplete}
           />
           {setBackgroundDialog}
+          {uploadFlowDialogs}
           <AlertDialog open={isBulkDeleteOpen} onOpenChange={setIsBulkDeleteOpen}>
             <AlertDialogContent className="w-[80vw]">
               <AlertDialogHeader>
@@ -896,47 +991,7 @@ export default function MediaAdmin(props: MediaAdminProps) {
         onOpenChange={setIsAddFromUrlOpen}
         onUploadComplete={handleUrlUploadComplete}
       />
-      <Dialog open={isChoosingVideoFormat} onOpenChange={setIsChoosingVideoFormat}>
-        <DialogContent className="w-[80vw]">
-            <DialogHeader>
-                <DialogTitle>{t('mediaAdmin.chooseVideoFormat')}</DialogTitle>
-                <DialogDescription>{t('mediaAdmin.chooseVideoFormatDescription')}</DialogDescription>
-            </DialogHeader>
-            <RadioGroup defaultValue="mp4" onValueChange={(value: 'mp4' | 'm3u8' | 'webm') => setUploadVideoFormat(value)}>
-                <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="mp4" id="r1" />
-                    <Label htmlFor="r1">{t('mediaAdmin.mp4')}</Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="m3u8" id="r2" />
-                    <Label htmlFor="r2">{t('mediaAdmin.m3u8')}</Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="webm" id="r3" />
-                    <Label htmlFor="r3">{t('mediaAdmin.webm')}</Label>
-                </div>
-            </RadioGroup>
-            <DialogFooter>
-                <Button variant="outline" onClick={() => setIsChoosingVideoFormat(false)}>{t('mediaAdmin.cancel')}</Button>
-                <Button onClick={() => { setIsChoosingVideoFormat(false); setIsChoosingLibrary(true); }}>{t('mediaAdmin.next')}</Button>
-            </DialogFooter>
-        </DialogContent>
-      </Dialog>
-      <Dialog open={isChoosingLibrary} onOpenChange={setIsChoosingLibrary}>
-        <DialogContent className="w-[80vw]">
-            <DialogHeader>
-                <DialogTitle>{t('mediaAdmin.chooseLibrary')}</DialogTitle>
-                <DialogDescription>{t('mediaAdmin.chooseLibraryDescription')}</DialogDescription>
-            </DialogHeader>
-            <div className="flex justify-center gap-4 py-4">
-                <Button onClick={() => handleLibraryChoiceAndUpload('primary')} size="lg" className="w-48"><FontAwesomeIcon icon={faUniversity} className="mr-2"/> {t('mediaAdmin.libraryPrimary')}</Button>
-                <Button onClick={() => handleLibraryChoiceAndUpload('extented')} size="lg" className="w-48"><FontAwesomeIcon icon={faUniversity} className="mr-2"/> {t('mediaAdmin.libraryExtented')}</Button>
-            </div>
-             <DialogFooter>
-                <Button variant="outline" onClick={() => setIsChoosingLibrary(false)}>{t('mediaAdmin.cancel')}</Button>
-            </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      {uploadFlowDialogs}
       <BulkActionBar
         selectedCount={selectedIds.size}
         onClearSelection={() => setSelectedIds(new Set())}
