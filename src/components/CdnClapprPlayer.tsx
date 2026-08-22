@@ -42,6 +42,9 @@ const loadScript = (src: string, id: string): Promise<void> => {
 export default function CdnClapprPlayer({ source, poster, autoPlay = true, watermark }: CdnClapprPlayerProps) {
   const playerContainerRef = useRef<HTMLDivElement>(null);
   const playerRef = useRef<any>(null);
+  // Stable id — regenerating it on every render can desync Clappr's
+  // `parentId` lookup while scripts are still loading.
+  const [containerId] = useState(() => `cdn-clappr-player-${Math.random().toString(36).substring(7)}`);
   
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
@@ -185,10 +188,10 @@ export default function CdnClapprPlayer({ source, poster, autoPlay = true, water
             <Preloader />
         </div>
       )}
-      <div 
-        id={`cdn-clappr-player-${Math.random().toString(36).substring(7)}`}
-        ref={playerContainerRef} 
-        className={cn("w-full h-full transition-opacity duration-300", isLoading ? 'opacity-0' : 'opacity-100')} 
+      <div
+        id={containerId}
+        ref={playerContainerRef}
+        className={cn("w-full h-full transition-opacity duration-300", isLoading ? 'opacity-0' : 'opacity-100')}
       />
     </div>
   );

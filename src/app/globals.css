@@ -267,3 +267,26 @@ tr.drag-over-bottom {
   height: auto;
   border-radius: 0.5rem;
 }
+
+/* 16:9 frame for videos embedded in project details. Clappr/Plyr inject
+   their own wrappers with inline pixel/% sizes computed at init time — if the
+   frame was hidden/animating then, those sizes are wrong and the video spills
+   out. Force every nested layer to fill the frame instead of trusting them. */
+.details-video-frame > * {
+  position: absolute;
+  inset: 0;
+}
+.details-video-frame .player-wrapper,
+.details-video-frame [class*="player-wrapper"],
+.details-video-frame [data-container],
+.details-video-frame [data-core],
+.details-video-frame [data-playback],
+.details-video-frame video,
+.details-video-frame .plyr,
+.details-video-frame .plyr__video-wrapper {
+  width: 100% !important;
+  height: 100% !important;
+}
+.details-video-frame video {
+  object-fit: contain;
+}
