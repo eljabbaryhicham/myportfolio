@@ -31,6 +31,10 @@ import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import type { AppUser } from '@/firebase/auth/use-user';
 import CdnClapprPlayer from '@/components/CdnClapprPlayer';
 import { useTranslation } from '@/lib/i18n/useTranslation';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import rehypeRaw from 'rehype-raw';
+import rehypeSanitize, { defaultSchema } from 'rehype-sanitize';
 
 const MemoizedImage = memo(Image);
 // Lazy: keeps hls.js + plyr CSS out of the /work route chunk until a video
@@ -38,6 +42,59 @@ const MemoizedImage = memo(Image);
 const MemoizedPlyrPlayer = memo(lazy(() => import('@/components/PlyrPlayer')));
 const MemoizedCdnClapprPlayer = memo(CdnClapprPlayer);
 const LazyContactForm = lazy(() => import('@/features/contact/components/ContactForm'));
+
+// Renders project-details markdown; embedded <video> tags play through the
+// same player chosen for the work page (workPagePlayer setting). Memoized so
+// dialog mouse-move re-renders never reset playback.
+const ProjectDetailsContent = memo(function ProjectDetailsContent({
+  details,
+  playerType,
+}: {
+  details: string;
+  playerType?: 'plyr' | 'clappr';
+}) {
+  const components = useMemo(() => ({
+    video: (props: any) => {
+      const { src, poster } = props;
+      if (!src) return <video {...props} />;
+      return (
+        <div className="relative aspect-video w-full my-4 overflow-hidden rounded-md bg-black">
+          <Suspense fallback={<Preloader />}>
+            {playerType === 'plyr' ? (
+              <MemoizedPlyrPlayer source={src} poster={poster} autoPlay={false} />
+            ) : (
+              <CdnClapprPlayer source={src} poster={poster} autoPlay={false} />
+            )}
+          </Suspense>
+        </div>
+      );
+    },
+  }), [playerType]);
+
+  return (
+    <ReactMarkdown
+      remarkPlugins={[[remarkGfm, { breaks: true }]]}
+      rehypePlugins={[rehypeRaw, [rehypeSanitize, detailsSanitizeSchema]]}
+      components={components}
+    >
+      {details}
+    </ReactMarkdown>
+  );
+});
+
+// GitHub-style sanitize schema doesn't know media tags — extend it so admins
+// can embed <video>/<audio>/<source> in project details. Raw HTML passes
+// through rehype-raw first, then gets sanitized with this schema.
+const detailsSanitizeSchema = {
+  ...defaultSchema,
+  tagNames: [...(defaultSchema.tagNames || []), 'video', 'audio', 'source'],
+  attributes: {
+    ...defaultSchema.attributes,
+    video: [...(defaultSchema.attributes?.video || []), 'src', 'controls', 'autoplay', 'loop', 'muted', 'playsinline', 'poster', 'preload', 'width', 'height'],
+    audio: ['src', 'controls', 'loop', 'muted', 'preload'],
+    source: ['src', 'type'],
+  },
+};
 
 
 const MemoizedPortfolioMedia = memo(({
@@ -888,8 +945,8 @@ export default function WorkPage() {
                     <DialogTitle className="font-headline">{t('work.details.title').replace('{title}', selectedItem.title)}</DialogTitle>
                 </DialogHeader>
                 <ScrollArea className="flex-1">
-                    <div className="prose dark:prose-invert max-w-none space-y-4 text-sm text-foreground/80 whitespace-pre-wrap p-4 md:p-6">
-                        {selectedItem.details || ''}
+                    <div className="project-details prose dark:prose-invert max-w-none space-y-4 text-sm text-foreground/80 p-4 md:p-6">
+                        <ProjectDetailsContent details={selectedItem.details || ''} playerType={workPagePlayer} />
                     </div>
                 </ScrollArea>
                  <DialogClose className={cn(

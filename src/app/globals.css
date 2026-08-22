@@ -256,3 +256,16 @@ tr.drag-over-bottom {
 .hide-cursor-homepage *::after {
   cursor: none !important;
 }
+
+/* Embedded media inside project details (Markdown + raw HTML) */
+.project-details video,
+.project-details img,
+.project-details audio {
+  max-width: 100%;
+  height: auto;
+  border-radius: 0.5rem;
+}
+.project-details video {
+  width: 100%;
+  background: black;
+}

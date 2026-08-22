@@ -171,6 +171,8 @@ Firebase Firestore ← useDoc/useCollection hooks → React components
 | 2026-08-22 | REFACTOR: contact page adopts the About page loading pattern exactly — plain `useDoc`, full-area `min-h-[50vh]` preloader until Firestore answers, then cards + socials animate in; removed `useCachedDoc` smart-hydration (hook deleted) | ✅ |
 | 2026-08-22 | FEATURE: admin Home panel — new "Menubar Logo URL" field on `homepage/settings` (`menubarLogoUrl`), with media-library picker + EN/FR labels; navbar prefers it and falls back to homepage logo → contact logo → localStorage cache | ✅ |
 | 2026-08-22 | FIX: mobile background video disappearing — `useDoc` no longer treats cache-only empty snapshots (mobile suspend/resume) as deletions, matching the `useCollection` guard; video layer promoted with `translateZ(0)` + `preload=auto` against iOS compositing drops | ✅ |
+| 2026-08-22 | FEATURE: project details popup now renders Markdown + raw HTML media (`react-markdown` + `remark-gfm` + `rehype-raw`, sanitized via `rehype-sanitize` schema extended for `<video>/<audio>/<source>`); responsive media CSS in globals.css; legacy single-newline text preserved via `breaks: true`. Installed `react-markdown` + `remark-gfm` | ✅ |
+| 2026-08-22 | FEATURE: `<video>` embeds inside project details play through the work page's chosen player (`workPagePlayer`: Plyr incl. YouTube/Vimeo URLs, or Clappr) via memoized `ProjectDetailsContent` renderer; autoplay off, sized 16:9 | ✅ |
 
 ## [ORPHANS & PENDING]
 
