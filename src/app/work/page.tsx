@@ -901,7 +901,10 @@ export default function WorkPage() {
                           </DialogDescription>
                         </div>
                       
-                        <div className="mt-4 flex justify-between px-8 md:px-0 md:block">
+                        <div
+                            className="mt-4 flex justify-between px-8 md:px-0 md:block"
+                            onPointerDownCapture={(e) => e.stopPropagation()}
+                        >
                           <Button
                               variant="outline"
                               size="icon"

@@ -163,7 +163,7 @@ function CursorArrow({ targetRef, cursorLottieUrl, tickLottieUrl }: { targetRef:
 
 const contentVariants = {
   hidden: {},
-  visible: { transition: { staggerChildren: 0.15, delayChildren: 0.5 } },
+  visible: { transition: { staggerChildren: 0.15, delayChildren: 0.15 } },
 };
 
 const itemVariants = {
