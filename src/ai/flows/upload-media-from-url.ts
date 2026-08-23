@@ -97,20 +97,13 @@ const uploadMediaFromUrlFlow = ai.defineFlow(
           finalUrl = `https://res.cloudinary.com/${cloudName}/video/upload/sp_auto/v${uploadResult.version}/${uploadResult.public_id}.m3u8`;
           console.log(`Generated adaptive streaming (HLS) URL: ${finalUrl}`);
       } else if (uploadResult.resource_type === 'video' && videoFormat === 'webm') {
-          finalUrl = cloudinary.url(uploadResult.public_id, {
-              format: 'webm',
-              quality: 'auto',
-              secure: true,
-              resource_type: 'video',
-          });
+          // Keep the original extension — Cloudinary video delivery URLs require one.
+          finalUrl = finalUrl.replace('/upload/', '/upload/f_webm,q_auto/');
           console.log(`Generated WebM URL: ${finalUrl}`);
       } else if (uploadResult.resource_type === 'image' || uploadResult.resource_type === 'video') {
-          finalUrl = cloudinary.url(uploadResult.public_id, {
-              fetch_format: 'auto',
-              quality: 'auto',
-              secure: true,
-              resource_type: uploadResult.resource_type,
-          });
+          // Same transformation style as direct uploads: preserves the file extension
+          // so the delivered asset keeps a playable format (.mp4/.jpg/...).
+          finalUrl = finalUrl.replace('/upload/', '/upload/f_auto,q_auto/');
           console.log(`Generated optimized ${uploadResult.resource_type} URL: ${finalUrl}`);
       }
 
