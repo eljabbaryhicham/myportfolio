@@ -26,7 +26,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { PortfolioItemFormSheet } from '@/features/admin/components/PortfolioItemForm';
 import MediaAdmin from '@/features/admin/components/MediaAdmin';
 import { useToast } from '@/hooks/use-toast';
-import { motion, AnimatePresence, PanInfo } from 'framer-motion';
+import { motion, AnimatePresence, PanInfo, useDragControls } from 'framer-motion';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import type { AppUser } from '@/firebase/auth/use-user';
 import CdnClapprPlayer from '@/components/CdnClapprPlayer';
@@ -458,21 +458,10 @@ export default function WorkPage() {
   const [dialogActiveTab, setDialogActiveTab] = useState<'images' | 'videos' | 'files'>('images');
   const [dialogActiveLibrary, setDialogActiveLibrary] = useState<'primary' | 'extented'>('primary');
   const [direction, setDirection] = useState<'next' | 'prev' | null>(null);
-  const navButtonsRef = useRef<HTMLDivElement>(null);
-
-  // Native capture-phase guard: framer-motion registers its swipe-drag pointer
-  // listeners natively on the dialog wrapper, and by the time a React handler
-  // runs, the event has already reached it (React delegates at the root). On
-  // touch devices any tap jitter then starts a drag and the buttons' clicks
-  // are silently swallowed. Stopping the NATIVE event here, before it reaches
-  // the wrapper, keeps the buttons tappable while swipes work everywhere else.
-  useEffect(() => {
-    const el = navButtonsRef.current;
-    if (!el) return;
-    const blockPointerDown = (e: PointerEvent) => e.stopPropagation();
-    el.addEventListener('pointerdown', blockPointerDown, { capture: true });
-    return () => el.removeEventListener('pointerdown', blockPointerDown, { capture: true });
-  });
+  // Swipe-to-navigate is started MANUALLY from designated areas only
+  // (title/description + media content). This keeps the prev/next buttons
+  // outside the drag gesture entirely, so taps can never be hijacked.
+  const dragControls = useDragControls();
   const [filter, setFilter] = useState<'all' | 'image' | 'video'>('all');
 
   const [isDetailsModalOpen, setDetailsModalOpen] = useState(false);
@@ -889,6 +878,8 @@ export default function WorkPage() {
             <motion.div
                 onDragEnd={handleDragEnd}
                 drag={isMobile ? "x" : false}
+                dragListener={false}
+                dragControls={dragControls}
                 dragConstraints={{ left: 0, right: 0 }}
                 dragElastic={0.2}
                 className="flex-1 flex flex-col min-h-0 h-full w-full"
@@ -907,7 +898,7 @@ export default function WorkPage() {
                   >
                     <div className="flex flex-col flex-1 min-h-0 h-full">
                       <DialogHeader className="p-4 md:p-6 flex-shrink-0 relative">
-                        <div className="text-center">
+                        <div className="text-center" onPointerDown={(e) => { if (isMobile) dragControls.start(e); }}>
                           <DialogTitle className="text-base md:text-2xl font-headline">
                             {selectedItem.title}
                           </DialogTitle>
@@ -916,7 +907,7 @@ export default function WorkPage() {
                           </DialogDescription>
                         </div>
                       
-                        <div ref={navButtonsRef} className="mt-4 flex justify-between px-8 md:px-0 md:block">
+                        <div className="mt-4 flex justify-between px-8 md:px-0 md:block">
                           <Button
                               variant="outline"
                               size="icon"
@@ -943,7 +934,7 @@ export default function WorkPage() {
                       <Separator className="bg-white/10 my-0" />
                       
                       <ScrollArea className="flex-1 min-h-0">
-                        <div className="relative flex flex-col justify-center h-full">
+                        <div className="relative flex flex-col justify-center h-full" onPointerDown={(e) => { if (isMobile) dragControls.start(e); }}>
                           <div className="w-full">
                             {isClient && (
                               <Suspense fallback={null}>
