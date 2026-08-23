@@ -85,7 +85,7 @@ const PlyrPlayer = forwardRef(({ source, poster, autoPlay = true, thumbnailVttUr
                 };
                 const rvfc = (video as any).requestVideoFrameCallback;
                 if (rvfc) {
-                    rvfc.call(video, () => done());
+                    rvfc.call(video, () => requestAnimationFrame(() => done()));
                 } else {
                     ['playing', 'loadeddata'].forEach((evt) =>
                         video.addEventListener(evt, done, { once: true })
@@ -273,7 +273,7 @@ const PlyrPlayer = forwardRef(({ source, poster, autoPlay = true, thumbnailVttUr
               <Preloader />
           </div>
       )}
-      <div ref={containerRef} className={cn("relative w-full h-full transition-opacity duration-300", isLoading ? 'opacity-0' : 'opacity-100')}>
+      <div ref={containerRef} className={cn("relative w-full h-full", isLoading ? 'opacity-0' : 'opacity-100')}>
          {/* Plyr will be injected here */}
       </div>
     </div>

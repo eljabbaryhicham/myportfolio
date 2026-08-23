@@ -152,8 +152,9 @@ export default function CdnClapprPlayer({ source, poster, autoPlay = true, water
           if (!video) return false;
           const rvfc = (video as any).requestVideoFrameCallback;
           if (rvfc) {
-            // Fires exactly when a decoded frame reaches the compositor.
-            rvfc.call(video, () => done());
+            // Fires when a decoded frame reaches the compositor; wait one
+            // more frame so the picture is on screen when the spinner drops.
+            rvfc.call(video, () => requestAnimationFrame(() => done()));
           } else {
             video.addEventListener('playing', done, { once: true });
             // Grace period after data is playable — covers paint delay.
@@ -235,7 +236,7 @@ export default function CdnClapprPlayer({ source, poster, autoPlay = true, water
       <div
         id={containerId}
         ref={playerContainerRef}
-        className={cn("w-full h-full transition-opacity duration-300", isLoading ? 'opacity-0' : 'opacity-100')}
+        className={cn("w-full h-full", isLoading ? 'opacity-0' : 'opacity-100')}
       />
     </div>
   );
