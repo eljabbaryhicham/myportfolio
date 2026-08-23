@@ -195,11 +195,8 @@ const MediaFileCard = ({
                   </DropdownMenuTrigger>
                   <DropdownMenuContent onClick={(e) => e.stopPropagation()}>
                     <DropdownMenuLabel>{t('mediaAdmin.copyFormat')}</DropdownMenuLabel>
-                    <DropdownMenuItem onClick={() => onCopy(file.url)}>
-                      {t('mediaAdmin.copy.default')}
-                    </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => onCopy(stripTransforms(file.url))}>
-                      {t('mediaAdmin.copy.original')}
+                      {t('mediaAdmin.copy.default')}
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => onCopy(withTransform(file.url, 'f_auto,q_auto'))}>
                       {t('mediaAdmin.copy.auto')}
@@ -937,7 +934,7 @@ export default function MediaAdmin(props: MediaAdminProps) {
             </DialogHeader>
             {formatChoiceAsset && (
                 <div className="grid grid-cols-2 gap-2 py-2">
-                    <Button variant="outline" onClick={() => handleConfirmFormatPick(formatChoiceAsset.url)}>{t('mediaAdmin.copy.default')}</Button>
+                    <Button variant="outline" onClick={() => handleConfirmFormatPick(stripTransforms(formatChoiceAsset.url))}>{t('mediaAdmin.copy.default')}</Button>
                     {formatChoiceAsset.resource_type === 'video' && (
                         <>
                             <Button variant="outline" onClick={() => handleConfirmFormatPick(formatVariant(formatChoiceAsset.url, 'mp4'))}>{t('mediaAdmin.copy.mp4')}</Button>
