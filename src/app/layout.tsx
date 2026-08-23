@@ -5,6 +5,7 @@ import './globals.css';
 import { cn } from '@/lib/utils';
 import dynamic from 'next/dynamic';
 import React from 'react';
+import { Analytics } from '@vercel/analytics/next';
 
 if (typeof globalThis.localStorage === 'object' && typeof globalThis.localStorage.getItem !== 'function') {
   const storage: Record<string, string> = {};
@@ -44,6 +45,7 @@ export default function RootLayout({
         <AppShell>
           {children}
         </AppShell>
+        <Analytics />
       </body>
     </html>
   );
