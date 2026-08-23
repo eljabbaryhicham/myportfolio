@@ -154,53 +154,38 @@ const MemoizedPortfolioMedia = memo(({
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (item.type !== 'video') {
+    // Videos: the player components render their own frame-accurate
+    // preloader. Clearing the dialog overlay immediately avoids TWO
+    // stacked loaders spinning at once.
+    if (item.type === 'video') {
       onMediaLoaded();
       return;
     }
 
-    const container = containerRef.current;
-    if (!container) { onMediaLoaded(); return; }
+    // Images: keep the preloader until the bitmap is actually loaded and
+    // painted — not just mounted.
+    const root = containerRef.current;
+    const img = root?.querySelector('img');
+    let safety: ReturnType<typeof setTimeout> | null = null;
 
-    let disposed = false;
-
-    const onReady = () => { if (!disposed) onMediaLoaded(); };
-
-    const findMedia = () => {
-      const v = container.querySelector('video');
-      if (v) return { tag: 'video' as const, el: v };
-      const f = container.querySelector('iframe');
-      if (f) return { tag: 'iframe' as const, el: f };
-      return null;
+    const finish = () => {
+      if (safety) clearTimeout(safety);
+      onMediaLoaded();
     };
 
-    const attach = (m: NonNullable<ReturnType<typeof findMedia>>) => {
-      if (m.tag === 'video') {
-        const v = m.el as HTMLVideoElement;
-        if (v.readyState >= 2) { onReady(); return; }
-        v.addEventListener('canplay', onReady, { once: true });
-        return () => v.removeEventListener('canplay', onReady);
-      } else {
-        m.el.addEventListener('load', onReady, { once: true });
-        return () => m.el.removeEventListener('load', onReady);
+    if (img) {
+      if (img.complete && img.naturalWidth > 0) {
+        finish();
+        return;
       }
-    };
-
-    const existing = findMedia();
-    if (existing) {
-      const cleanup = attach(existing);
-      return () => { disposed = true; cleanup?.(); };
+      const done = () => requestAnimationFrame(finish);
+      img.addEventListener('load', done, { once: true });
+      img.addEventListener('error', done, { once: true }); // never hang on broken src
     }
-
-    const observer = new MutationObserver(() => {
-      const m = findMedia();
-      if (m) { observer.disconnect(); attach(m); }
-    });
-    observer.observe(container, { childList: true, subtree: true });
-
-    return () => { disposed = true; observer.disconnect(); };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [item.id, item.type, item.sourceUrl, onMediaLoaded]);
+    // Absolute fallback so the popup can't stay covered forever.
+    safety = setTimeout(finish, 8000);
+    return () => { if (safety) clearTimeout(safety); };
+  }, [item.id, item.type, item.sourceUrl, item.thumbnailUrl, onMediaLoaded]);
 
   if (item.type === 'video') {
     const isVimeo = item.sourceUrl?.includes('vimeo.com');
@@ -242,7 +227,7 @@ const MemoizedPortfolioMedia = memo(({
   }
   
   return (
-      <div className="relative aspect-video bg-black flex justify-center items-center group w-full">
+      <div ref={containerRef} className="relative aspect-video bg-black flex justify-center items-center group w-full">
         <MemoizedImage
           src={item.sourceUrl || item.thumbnailUrl}
           alt={item.title}
