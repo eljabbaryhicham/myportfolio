@@ -185,6 +185,19 @@ const MemoizedPortfolioMedia = memo(({
     const isVimeo = item.sourceUrl?.includes('vimeo.com');
     const isYoutube = item.sourceUrl?.includes('youtube.com') || item.sourceUrl?.includes('youtu.be');
 
+    // Poster delivered WITH the video: Cloudinary auto-generates <id>.jpg next
+    // to every video derivative, so derive it from the source instead of using
+    // the card thumbnail. Embeds (YouTube/Vimeo) keep their own poster logic.
+    let videoPoster: string | undefined;
+    if (isVimeo || isYoutube) {
+      videoPoster = item.useVideoFrameAsPoster ? undefined : item.thumbnailUrl;
+    } else {
+      const derived = item.sourceUrl
+        ? item.sourceUrl.replace(/\.(mp4|webm|mov|m3u8)(\?.*)?$/i, '.jpg$2')
+        : '';
+      videoPoster = derived || item.thumbnailUrl;
+    }
+
     return (
       <div ref={containerRef} className="relative aspect-video bg-black flex items-center justify-center w-full overflow-hidden">
         {item.sourceUrl && (
@@ -193,7 +206,7 @@ const MemoizedPortfolioMedia = memo(({
                 ref={plyrRef}
                 key={item.id}
                 source={item.sourceUrl}
-                poster={item.useVideoFrameAsPoster ? undefined : item.thumbnailUrl}
+                poster={videoPoster}
                 autoPlay={autoPlay}
                 thumbnailVttUrl={item.thumbnailVttUrl}
             />
@@ -202,7 +215,7 @@ const MemoizedPortfolioMedia = memo(({
                   ref={plyrRef}
                   key={item.id}
                   source={item.sourceUrl} 
-                  poster={item.useVideoFrameAsPoster ? undefined : item.thumbnailUrl}
+                  poster={videoPoster}
                   autoPlay={autoPlay}
                   thumbnailVttUrl={item.thumbnailVttUrl}
               />
@@ -210,7 +223,7 @@ const MemoizedPortfolioMedia = memo(({
               <MemoizedCdnClapprPlayer
                   key={item.id}
                   source={item.sourceUrl} 
-                  poster={item.useVideoFrameAsPoster ? undefined : item.thumbnailUrl}
+                  poster={videoPoster}
                   watermark={watermark}
                   autoPlay={autoPlay}
               />
@@ -221,7 +234,7 @@ const MemoizedPortfolioMedia = memo(({
   }
   
   return (
-      <div ref={containerRef} className="relative aspect-video bg-black flex justify-center items-center group w-full">
+      <div ref={containerRef} className="relative aspect-video bg-black flex justify-center items-center group/media w-full">
         {isImageLoading && (
           <div className="absolute inset-0 z-20 flex items-center justify-center">
             <Preloader />
@@ -236,7 +249,7 @@ const MemoizedPortfolioMedia = memo(({
         <Button
             variant="ghost"
             size="icon"
-            className="absolute inset-0 m-auto z-10 h-12 w-12 md:h-16 md:w-16 text-white bg-black/50 opacity-70 md:opacity-0 md:group-hover:opacity-100 transition-opacity"
+            className="absolute inset-0 m-auto z-10 h-12 w-12 md:h-16 md:w-16 text-white bg-black/50 opacity-70 md:opacity-0 md:group-hover/media:opacity-100 transition-opacity"
             onClick={() => onFullscreenClick(item.sourceUrl || item.thumbnailUrl)}
           >
             <FontAwesomeIcon icon={faExpand} className="h-6 w-6 md:h-8 md:w-8" />
