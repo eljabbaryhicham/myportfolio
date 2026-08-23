@@ -27,7 +27,7 @@ import { PortfolioItemFormSheet } from '@/features/admin/components/PortfolioIte
 import MediaAdmin from '@/features/admin/components/MediaAdmin';
 import { useToast } from '@/hooks/use-toast';
 import { motion, AnimatePresence, PanInfo, useDragControls } from 'framer-motion';
-import { useSearchParams, useRouter, usePathname } from 'next/navigation';
+import { useSearchParams, usePathname } from 'next/navigation';
 import type { AppUser } from '@/firebase/auth/use-user';
 import CdnClapprPlayer from '@/components/CdnClapprPlayer';
 import { useTranslation } from '@/lib/i18n/useTranslation';
@@ -398,7 +398,6 @@ export default function WorkPage() {
   // profile doc, so don't wait for useUser()'s extra profile read.
   const { isUserLoading: isAuthSettling } = useFirebase();
   const { toast } = useToast();
-  const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const { t } = useTranslation();
@@ -537,16 +536,16 @@ export default function WorkPage() {
     setVisibleItemsCount(prev => (prev || 0) + itemsPerLoad);
   };
 
-  // Effect to set selected item based on URL
+  // Effect to set selected item based on URL (deep links + back/forward).
+  // Skips when the selection already matches — otherwise every prev/next
+  // click re-fired handleItemClick after the URL landed, wiping `direction`
+  // mid-transition and leaving AnimatePresence an empty shell on slow devices.
   useEffect(() => {
-    if (selectedSlug && portfolioItems) {
-      const item = portfolioItems.find(p => slugify(p.title) === selectedSlug);
-      if (item) {
-        handleItemClick(item);
-      } else {
-        setSelectedItem(null);
-      }
-    } else {
+    if (!selectedSlug || !portfolioItems) return;
+    const item = portfolioItems.find(p => slugify(p.title) === selectedSlug);
+    if (item && item.id !== selectedItem?.id) {
+      handleItemClick(item);
+    } else if (!item) {
       setSelectedItem(null);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -559,8 +558,12 @@ export default function WorkPage() {
     } else {
       params.delete('id');
     }
-    router.push(`${pathname}?${params.toString()}`, { scroll: false });
-  }, [router, pathname, searchParams]);
+    // Shallow URL update: keep the project link shareable WITHOUT triggering
+    // an App Router navigation — router.push caused a full route transition
+    // per click that blanked the details dialog on slow/mobile connections.
+    const url = `${pathname}?${params.toString()}`;
+    window.history.replaceState(window.history.state, '', url);
+  }, [pathname, searchParams]);
 
   const handleItemClick = useCallback((item: PortfolioItem) => {
     setDirection(null);
