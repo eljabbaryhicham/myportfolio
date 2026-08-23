@@ -75,17 +75,26 @@ const PlyrPlayer = forwardRef(({ source, poster, autoPlay = true, thumbnailVttUr
                 if (poster) {
                     video.setAttribute('poster', poster);
                 }
-                // Hide the preloader only when the video actually has picture
-                // data — Plyr's 'ready' can fire before any frame renders.
-                const settleSpinner = () => {
-                    if (isMounted) setIsLoading(false);
+                // Hide the preloader only when a video frame is actually
+                // PRESENTED on screen — data events fire before paint.
+                let settled = false;
+                const done = () => {
+                    if (settled || !isMounted) return;
+                    settled = true;
+                    setIsLoading(false);
                 };
-                if (video.readyState >= 2) settleSpinner();
-                ['loadeddata', 'canplay', 'playing'].forEach((evt) =>
-                    video.addEventListener(evt, settleSpinner, { once: true })
-                );
+                const rvfc = (video as any).requestVideoFrameCallback;
+                if (rvfc) {
+                    rvfc.call(video, () => done());
+                } else {
+                    ['playing', 'loadeddata'].forEach((evt) =>
+                        video.addEventListener(evt, done, { once: true })
+                    );
+                }
+                video.addEventListener('canplay', () => setTimeout(done, 300), { once: true });
+                const safety = setTimeout(done, 10000);
                 video.addEventListener('loadstart', () => {
-                  if (isMounted && video.readyState < 2) setIsLoading(true);
+                  if (isMounted && !settled) setIsLoading(true);
                 });
                 element = video;
             }

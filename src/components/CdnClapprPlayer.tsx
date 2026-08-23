@@ -48,6 +48,7 @@ export default function CdnClapprPlayer({ source, poster, autoPlay = true, water
   
   const [isLoading, setIsLoading] = useState(true);
   const spinnerPollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const spinnerSafetyRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const { toast } = useToast();
   const isMobile = useIsMobile();
 
@@ -132,21 +133,34 @@ export default function CdnClapprPlayer({ source, poster, autoPlay = true, water
         
         playerRef.current = newPlayer;
 
-        // Hide the preloader only when the video element actually has picture
-        // data — Clappr's onReady fires before any frame is rendered, and
-        // onPlay may lag behind the visible frame, so neither is reliable.
+        // Hide the preloader only when a video frame is actually PRESENTED on
+        // screen. Data events (loadeddata/canplay) fire before the frame is
+        // painted, which left a black gap between spinner and picture.
         const settleSpinner = () => {
           if (spinnerPollRef.current) { clearInterval(spinnerPollRef.current); spinnerPollRef.current = null; }
+          if (spinnerSafetyRef.current) { clearTimeout(spinnerSafetyRef.current); spinnerSafetyRef.current = null; }
           if (isMounted) setIsLoading(false);
+        };
+        let settled = false;
+        const done = () => {
+          if (settled || !isMounted) return;
+          settled = true;
+          settleSpinner();
         };
         const wireVideoElement = (): boolean => {
           const video = container.querySelector('video');
           if (!video) return false;
-          if (video.readyState >= 2) { settleSpinner(); return true; }
-          const done = () => settleSpinner();
-          video.addEventListener('loadeddata', done, { once: true });
-          video.addEventListener('canplay', done, { once: true });
-          video.addEventListener('playing', done, { once: true });
+          const rvfc = (video as any).requestVideoFrameCallback;
+          if (rvfc) {
+            // Fires exactly when a decoded frame reaches the compositor.
+            rvfc.call(video, () => done());
+          } else {
+            video.addEventListener('playing', done, { once: true });
+            // Grace period after data is playable — covers paint delay.
+            video.addEventListener('loadeddata', () => setTimeout(done, 300), { once: true });
+          }
+          // Absolute safety: never keep the spinner up forever.
+          spinnerSafetyRef.current = setTimeout(done, 10000);
           return true;
         };
         if (!wireVideoElement() && isMounted) {
@@ -180,6 +194,10 @@ export default function CdnClapprPlayer({ source, poster, autoPlay = true, water
       if (spinnerPollRef.current) {
         clearInterval(spinnerPollRef.current);
         spinnerPollRef.current = null;
+      }
+      if (spinnerSafetyRef.current) {
+        clearTimeout(spinnerSafetyRef.current);
+        spinnerSafetyRef.current = null;
       }
       const player = playerRef.current;
       if (player) {
