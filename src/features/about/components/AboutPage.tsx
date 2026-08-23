@@ -145,7 +145,7 @@ export default function AboutPage() {
       <div ref={scrollRef} className="flex-1 min-h-0 overflow-y-auto">
         <div className="p-[clamp(1rem,3vh,2rem)] md:p-[clamp(1.5rem,4vh,2rem)] flex items-center justify-center min-h-full">
           <div className="container mx-auto px-0 text-center">
-            {isLoading ? (
+            {isLoadingContent ? (
               <div className="flex justify-center items-center h-full min-h-[50vh]">
                 <Preloader />
               </div>
@@ -212,6 +212,11 @@ export default function AboutPage() {
                     </div>
                   </motion.div>
 
+                {isLoadingClients ? (
+                  <motion.div variants={itemVariants} className="flex justify-center items-center min-h-[20vh]">
+                    <Preloader />
+                  </motion.div>
+                ) : (
                 <motion.div variants={itemVariants}>
                   <div className="text-center mb-[clamp(1.5rem,4vh,2rem)]">
                     <h2 className="text-2xl font-headline tracking-tight">{t('about.ourClients')}</h2>
@@ -240,6 +245,7 @@ export default function AboutPage() {
                     </p>
                   </div>
                 </motion.div>
+                )}
 
                 <motion.div variants={itemVariants} className="sm:hidden flex flex-col sm:flex-row gap-4 justify-center w-full">
                     <Button asChild>

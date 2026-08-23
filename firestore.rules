@@ -40,6 +40,18 @@ service cloud.firestore {
       allow write: if isSignedIn() && !isSuperAdmin();
     }
 
+    // About page content: Publicly readable, writable by admins.
+    match /about/{docId} {
+      allow get, list: if true;
+      allow write: if isSignedIn() && !isSuperAdmin();
+    }
+
+    // Clients: Publicly readable (About page logo carousel), writable by admins.
+    match /clients/{clientId} {
+      allow get, list: if true;
+      allow write: if isSignedIn() && !isSuperAdmin();
+    }
+
     // Media: Readable by admins, with specific create/delete permissions.
     match /media/{mediaId} {
       // Allow list/get for non-superadmins if they are authenticated.
