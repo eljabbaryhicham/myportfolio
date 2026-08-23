@@ -139,6 +139,7 @@ Firebase Firestore ← useDoc/useCollection hooks → React components
 
 | Date | Change | Status |
 |------|--------|--------|
+| 2026-08-23 | FIX: About "Explore Our Works" now renders in the site theme color. Root cause: the button used `variant="success"` (green), then default (`bg-primary`) which fell back to a GRAY `:root --primary` (0 0% 50%) because no saved `themeColor` was applied. Defaulted `:root`/`.dark --primary` to the MelliVision red (352 76% 48% ≈ #d81e38); `DynamicThemeStyles` still overrides per saved `themeColor` | ✅ |
 | 2026-08-23 | FIX: About "Explore Our Works" button now uses the site theme color (primary) instead of the green `success` variant — both desktop and mobile CTA blocks | ✅ |
 | 2026-08-23 | FIX: Work-page image fullscreen icon was triggered by hovering ANYWHERE in the details dialog (DialogContent itself had a bare `group` class, and Tailwind groups are global). Scoped the media box to a named `group/media` so the icon only appears on hover over the image | ✅ |
 | 2026-08-23 | FIX: Work-page video players (Plyr + Clappr, direct uploads) now use the thumbnail Cloudinary auto-delivers WITH the video (`<id>.jpg` derived from the source URL) instead of the card thumbnail; YouTube/Vimeo embeds keep their own poster logic | ✅ |
