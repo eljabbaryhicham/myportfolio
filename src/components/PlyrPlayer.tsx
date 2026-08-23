@@ -69,18 +69,25 @@ const PlyrPlayer = forwardRef(({ source, poster, autoPlay = true, thumbnailVttUr
                 element.dataset.plyrProvider = isYoutube ? 'youtube' : 'vimeo';
                 element.dataset.plyrEmbedId = source;
             } else {
-                element = document.createElement('video');
-                element.setAttribute('playsinline', '');
-                element.setAttribute('controls', '');
+                const video = document.createElement('video');
+                video.setAttribute('playsinline', '');
+                video.setAttribute('controls', '');
                 if (poster) {
-                    element.setAttribute('poster', poster);
+                    video.setAttribute('poster', poster);
                 }
-                element.addEventListener('loadstart', () => {
-                  if (isMounted) setIsLoading(true);
+                // Hide the preloader only when the video actually has picture
+                // data — Plyr's 'ready' can fire before any frame renders.
+                const settleSpinner = () => {
+                    if (isMounted) setIsLoading(false);
+                };
+                if (video.readyState >= 2) settleSpinner();
+                ['loadeddata', 'canplay', 'playing'].forEach((evt) =>
+                    video.addEventListener(evt, settleSpinner, { once: true })
+                );
+                video.addEventListener('loadstart', () => {
+                  if (isMounted && video.readyState < 2) setIsLoading(true);
                 });
-                element.addEventListener('canplay', () => {
-                  if (isMounted) setIsLoading(false);
-                });
+                element = video;
             }
 
             container.appendChild(element);
@@ -89,7 +96,9 @@ const PlyrPlayer = forwardRef(({ source, poster, autoPlay = true, thumbnailVttUr
 
             const onPlayerReady = () => {
                 playerReadyRef.current = true;
-                if (isMounted) setIsLoading(false);
+                // For YouTube/Vimeo embeds there is no <video> element to
+                // observe, so Plyr's ready is the best available signal.
+                if ((isYoutube || isVimeo) && isMounted) setIsLoading(false);
             };
             const onPlayerError = () => {
                 if (isMounted) setIsLoading(false);

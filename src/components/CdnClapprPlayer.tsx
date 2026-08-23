@@ -47,6 +47,7 @@ export default function CdnClapprPlayer({ source, poster, autoPlay = true, water
   const [containerId] = useState(() => `cdn-clappr-player-${Math.random().toString(36).substring(7)}`);
   
   const [isLoading, setIsLoading] = useState(true);
+  const spinnerPollRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const { toast } = useToast();
   const isMobile = useIsMobile();
 
@@ -120,12 +121,6 @@ export default function CdnClapprPlayer({ source, poster, autoPlay = true, water
                 rates: [0.5, 1.0, 1.5, 2.0]
             },
             events: {
-              onReady: () => {
-                if (isMounted) setIsLoading(false)
-              },
-              onPlay: () => {
-                if (isMounted) setIsLoading(false)
-              },
               onError: (e: any) => {
                 if (isMounted) {
                   setIsLoading(false);
@@ -136,6 +131,33 @@ export default function CdnClapprPlayer({ source, poster, autoPlay = true, water
         });
         
         playerRef.current = newPlayer;
+
+        // Hide the preloader only when the video element actually has picture
+        // data — Clappr's onReady fires before any frame is rendered, and
+        // onPlay may lag behind the visible frame, so neither is reliable.
+        const settleSpinner = () => {
+          if (spinnerPollRef.current) { clearInterval(spinnerPollRef.current); spinnerPollRef.current = null; }
+          if (isMounted) setIsLoading(false);
+        };
+        const wireVideoElement = (): boolean => {
+          const video = container.querySelector('video');
+          if (!video) return false;
+          if (video.readyState >= 2) { settleSpinner(); return true; }
+          const done = () => settleSpinner();
+          video.addEventListener('loadeddata', done, { once: true });
+          video.addEventListener('canplay', done, { once: true });
+          video.addEventListener('playing', done, { once: true });
+          return true;
+        };
+        if (!wireVideoElement() && isMounted) {
+          // Clappr injects the <video> tag asynchronously — poll briefly.
+          spinnerPollRef.current = setInterval(() => {
+            if (wireVideoElement() || !isMounted) {
+              if (spinnerPollRef.current) clearInterval(spinnerPollRef.current);
+              spinnerPollRef.current = null;
+            }
+          }, 200);
+        }
 
       } catch (error: any) {
         console.error(error);
@@ -155,6 +177,10 @@ export default function CdnClapprPlayer({ source, poster, autoPlay = true, water
 
     return () => {
       isMounted = false;
+      if (spinnerPollRef.current) {
+        clearInterval(spinnerPollRef.current);
+        spinnerPollRef.current = null;
+      }
       const player = playerRef.current;
       if (player) {
         try {
