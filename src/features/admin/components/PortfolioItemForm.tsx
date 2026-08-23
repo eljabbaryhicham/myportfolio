@@ -332,6 +332,7 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onCho
                                   </Button>
                                 </div>
                                 {useVideoFrame && field.value && (
+                                    // eslint-disable-next-line @next/next/no-img-element -- Cloudinary video-frame preview with dynamic dimensions
                                     <img src={field.value} alt="Video frame thumbnail" className="mt-2 h-20 rounded-md object-cover" />
                                 )}
                                 <FormDescription>{useVideoFrame ? t('portfolioForm.useVideoFrameAsPosterDescription') : t('portfolioForm.thumbnailDescription')}</FormDescription>

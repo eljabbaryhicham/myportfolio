@@ -35,6 +35,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeRaw from 'rehype-raw';
 import rehypeSanitize, { defaultSchema } from 'rehype-sanitize';
+import type { HomePageSettings } from '@/lib/types';
 
 const MemoizedImage = memo(Image);
 // Lazy: keeps hls.js + plyr CSS out of the /work route chunk until a video
@@ -387,13 +388,6 @@ const PortfolioGridItem = ({ item, onClick, onEditClick, isAdmin, isSuperAdmin, 
     </div>
   );
 };
-
-interface HomePageSettings {
-    workPagePlayer?: 'plyr' | 'clappr';
-    homePageLogoUrl?: string;
-    workHeading?: string;
-    workSubtitle?: string;
-}
 
 const slugify = (text: string) => text.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, '');
 

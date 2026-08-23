@@ -1,6 +1,6 @@
-# PROJECT_MAP — Liquid Folio
+# PROJECT_MAP — MelliVision
 
-> Last updated: 2026-08-21
+> Last updated: 2026-08-23
 
 ---
 
@@ -139,7 +139,8 @@ Firebase Firestore ← useDoc/useCollection hooks → React components
 
 | Date | Change | Status |
 |------|--------|--------|
-| 2026-05-14 | M1.1: Moved FirebaseClientProvider out of `<head>` into `<body>` | ✅ |
+| 2026-08-23 | MAINTENANCE: ESLint warnings 7 → 0 (`t` added to hook deps in HomeAdmin/ContactAdmin/MediaAdmin; justified inline disables for 3 admin-supplied `<img>` GIF/thumbnail previews); dead i18n keys removed (`pageContent.*Description`, `defaultHint`, `servicesHeadingLabel`); shared `debounce` util in `src/lib/utils.ts` (HomeAdmin + PageTextEditor deduped) and shared `HomePageSettings` type in `src/lib/types.ts` (work page + site-background deduped); `npm audit fix` non-breaking: 92 → 58 vulns (criticals eliminated). firebase-admin + server-init.ts KEPT intentionally per user decision | ✅ |
+| 2026-08-23 | SEC: `npm audit fix` pulled next@16.3.2 (within ^16.2.6 range) — includes the August security release; full production build verified on it | ✅ || 2026-05-14 | M1.1: Moved FirebaseClientProvider out of `<head>` into `<body>` | ✅ |
 | 2026-05-14 | M1.2: Removed dead `@apply border-border` override in globals.css | ✅ |
 | 2026-05-14 | M1.3: Fixed Logo component to apply `className` prop | ✅ |
 | 2026-05-14 | M1.4: Extracted `DEFAULT_LOGO_URL` constant, replaced 5+ hardcoded references | ✅ |
@@ -212,7 +213,13 @@ Firebase Firestore ← useDoc/useCollection hooks → React components
 
 ## [ORPHANS & PENDING]
 
-### Known Pre-existing (Low Priority)
+### Intentionally Kept / Pending
+| # | Item | File | Notes |
+|---|------|------|-------|
+| K1 | `firebase-admin` dependency + Admin SDK init util kept with zero importers | `src/firebase/server-init.ts` | Reserved for future privileged ops (verifyIdToken, rule-bypassing writes); init order: env var → docs/service-account.json → ADC |
+| P7 | Remaining 58 audit findings are dev-chain moderates + sharp/libvips inherited advisories (Next optional dep) | lockfile | No breaking fix available without --force; revisit with future major bumps |
+| P8 | Media entries created via "Add from URL" before 2026-08-23 have dead Cloudinary URLs (no file extension) | Firestore `media` collection | Manual one-time cleanup: delete affected entries and re-add |
+
 | # | Issue | File | Notes |
 |---|-------|------|-------|
 | P1 | `suppressHydrationWarning` on `<html>` / `<body>` | `layout.tsx:175,185` | Standard Next.js pattern for dynamic apps; harmless |

@@ -116,6 +116,7 @@ export function ScrollIndicator({ scrollRef }: ScrollIndicatorProps) {
         >
           <div className="w-16 h-16">
             {customGif ? (
+              // eslint-disable-next-line @next/next/no-img-element -- admin-supplied arbitrary-host GIF; next/image would require per-domain config
               <img src={customGif} alt="" className="w-full h-full object-contain" />
             ) : (
               <Lottie animationData={customAnim || animationData} loop={true} />

@@ -381,7 +381,7 @@ export default function MediaAdmin(props: MediaAdminProps) {
         setUploadVideoFormat('mp4'); // Default for non-videos
         setIsChoosingLibrary(true);
     }
-  }, [canUpload, toast]);
+  }, [canUpload, toast, t]);
   
   const handleLibraryChoiceAndUpload = useCallback(async (libraryId: 'primary' | 'extented') => {
     setIsChoosingLibrary(false);
@@ -494,7 +494,7 @@ export default function MediaAdmin(props: MediaAdminProps) {
     setUploadProgress(0);
     setFilesToUpload([]);
 
-  }, [filesToUpload, toast, firestore, props, uploadVideoFormat]);
+  }, [filesToUpload, toast, firestore, props, uploadVideoFormat, t]);
 
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({

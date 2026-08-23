@@ -13,6 +13,7 @@ import { Input } from '@/components/ui/input';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel } from '@/components/ui/form';
 import { useDoc, useFirestore, useMemoFirebase, setDocumentNonBlocking } from '@/firebase';
 import { useTranslation } from '@/lib/i18n/useTranslation';
+import { debounce } from '@/lib/utils';
 
 interface PageTextField {
   /** Field name stored on homepage/settings */
@@ -28,16 +29,6 @@ interface PageTextEditorProps {
 
 const textSchema = z.record(z.string(), z.string().optional());
 type TextFormValues = z.infer<typeof textSchema>;
-
-function debounce<T extends (...args: any[]) => void>(fn: T, delay: number): T & { cancel: () => void } {
-  let timer: ReturnType<typeof setTimeout>;
-  const debounced = (...args: any[]) => {
-    clearTimeout(timer);
-    timer = setTimeout(() => fn(...args), delay);
-  };
-  debounced.cancel = () => clearTimeout(timer);
-  return debounced as T & { cancel: () => void };
-}
 
 /**
  * Small admin card that edits a set of text overrides on homepage/settings.

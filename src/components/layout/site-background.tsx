@@ -7,21 +7,7 @@ import type { PortfolioItem } from '@/features/portfolio/data/portfolio-data';
 import { usePathname } from 'next/navigation';
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
-
-interface HomePageSettings {
-    homePageBackgroundType?: 'video' | 'image';
-    homePageBackgroundMediaId?: string;
-    homePageBackgroundUrl?: string;
-    websiteBackgroundType?: 'video' | 'image';
-    websiteBackgroundMediaId?: string;
-    websiteBackgroundUrl?: string;
-    isHomePageVideoEnabled?: boolean;
-    isWebsiteVideoEnabled?: boolean;
-    themeColor?: string;
-    menubarLogoUrl?: string;
-    homePageLogoUrl?: string;
-    faviconUrl?: string;
-}
+import type { HomePageSettings } from '@/lib/types';
 
 interface MediaAsset {
     url: string;

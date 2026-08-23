@@ -152,6 +152,7 @@ function CursorArrow({ targetRef, cursorLottieUrl, tickLottieUrl }: { targetRef:
       style={{ left: -100, top: -100, opacity: 0 }}
     >
       {useGif ? (
+        // eslint-disable-next-line @next/next/no-img-element -- admin-supplied arbitrary-host GIF; next/image would require per-domain config
         <img key={showTick ? 'tick-gif' : 'cursor-gif'} src={useGif} alt="" className="w-full h-full object-contain" />
       ) : (
         <Lottie key={showTick ? 'tick' : 'arrow'} animationData={useLottie} loop={!showTick} />

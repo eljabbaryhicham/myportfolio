@@ -42,16 +42,7 @@ import { DEFAULT_EMAIL_TEMPLATE_HTML, DEFAULT_AUTOREPLY_TEMPLATE_HTML } from '@/
 import MediaAdmin from './MediaAdmin';
 import { faImages, faEye, faRotateLeft } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-
-function debounce<T extends (...args: any[]) => void>(fn: T, delay: number): T & { cancel: () => void } {
-  let timer: ReturnType<typeof setTimeout>;
-  const debounced = (...args: any[]) => {
-    clearTimeout(timer);
-    timer = setTimeout(() => fn(...args), delay);
-  };
-  debounced.cancel = () => clearTimeout(timer);
-  return debounced as T & { cancel: () => void };
-}
+import { debounce } from '@/lib/utils';
 
 function renderEmailPreview(template?: string): string {
   return (template?.trim() ? template : DEFAULT_EMAIL_TEMPLATE_HTML)
@@ -299,7 +290,7 @@ export default function HomeAdmin() {
         subscription.unsubscribe();
         debouncedSave.cancel();
     };
-  }, [watch, settingsDocRef, canEditHome, toast, isMounted]);
+  }, [watch, settingsDocRef, canEditHome, toast, isMounted, t]);
 
   const isLoading = isLoadingSettings || isLoadingProjects || isLoadingMedia;
 

@@ -178,7 +178,7 @@ export default function ContactAdmin() {
       subscription.unsubscribe();
       clearTimeout(timer);
     };
-  }, [watch, contactDocRef, canEditContact, toast, isMounted]);
+  }, [watch, contactDocRef, canEditContact, toast, isMounted, t]);
 
   if (isLoading) {
     return (
