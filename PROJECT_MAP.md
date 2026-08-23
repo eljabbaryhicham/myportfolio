@@ -139,6 +139,7 @@ Firebase Firestore ← useDoc/useCollection hooks → React components
 
 | Date | Change | Status |
 |------|--------|--------|
+| 2026-08-23 | FIX: About page stuck on preloader "sometimes" — `useCollection` early-returned on cache-only EMPTY snapshots and waited indefinitely for the server confirmation; when the listener stalled (flaky network/frozen tab) `isLoading` never cleared. Now a 3s grace timer resolves as empty if no server snapshot arrives (a later real snapshot still replaces it). Benefits every collection consumer (work filters, media, clients) | ✅ |
 | 2026-08-23 | FIX (CRITICAL): Home-tab autosave dead on deploy (no save, no toast) — root cause: `useTranslation` returned a NEW `t` every render; the Aug-23 lint fix added `t` to autosave-effect deps, so every keystroke re-render tore down the effect and `debouncedSave.cancel()` killed the pending 500ms write before it fired. `t` is now memoized per language (useCallback) — stable identity makes all `t` deps valid (HomeAdmin/ContactAdmin/MediaAdmin autosaves + callbacks cured at the source) | ✅ |
 | 2026-08-23 | CHANGE: "Default (stored URL)" now copies/inserts the ORIGINAL asset URL with all stored transformations stripped (`stripTransforms`) — redundant "Original" menu item removed; picker format-dialog Stored option matches. NOTE: uploads still bake `f_auto,q_auto` into stored Firestore URLs; the strip happens at copy/pick time | ✅ |
 | 2026-08-23 | FEATURE: media picker format choice — selecting an image/video from the library in selection mode now opens a "Choose Delivery Format" dialog (images: Stored/WebP/AVIF/JPG/PNG; videos: Stored/MP4/WebM/HLS; raw files insert directly) reusing the copy-menu `formatVariant`/`hlsVariant` transforms; works for every consumer of the picker (Home fields, project form, contact logo). Cancel/ESC aborts without selecting (EN/FR) | ✅ |
@@ -222,6 +223,7 @@ Firebase Firestore ← useDoc/useCollection hooks → React components
 | K1 | `firebase-admin` dependency + Admin SDK init util kept with zero importers | `src/firebase/server-init.ts` | Reserved for future privileged ops (verifyIdToken, rule-bypassing writes); init order: env var → docs/service-account.json → ADC |
 | P7 | Remaining 58 audit findings are dev-chain moderates + sharp/libvips inherited advisories (Next optional dep) | lockfile | No breaking fix available without --force; revisit with future major bumps |
 | P8 | Media entries created via "Add from URL" before 2026-08-23 have dead Cloudinary URLs (no file extension) | Firestore `media` collection | Manual one-time cleanup: delete affected entries and re-add |
+| P9 | `clients` query uses server `orderBy('order')` — docs missing the field are silently EXCLUDED (same trap removed from projects on Aug-21) | `AboutPage.tsx:90` | Ensure every client doc has `order`, or mirror the projects fix |
 
 | # | Issue | File | Notes |
 |---|-------|------|-------|

@@ -74,6 +74,12 @@ export function useCollection<T = any>(
     setIsLoading(true);
     setError(null);
 
+    // Safety net: if a cache-only EMPTY snapshot arrived and the server never
+    // confirms (stalled network, frozen tab, dead socket), resolve as empty
+    // after a grace period instead of spinning forever. A real server
+    // snapshot arriving later still replaces this via onSnapshot.
+    let emptyCacheFallback: ReturnType<typeof setTimeout> | undefined;
+
     // Directly use memoizedTargetRefOrQuery as it's assumed to be the final query
     const unsubscribe = onSnapshot(
       memoizedTargetRefOrQuery,
@@ -86,7 +92,18 @@ export function useCollection<T = any>(
         // has responded — otherwise callers may flash their "empty" state
         // mid-load. Wait for the confirmed server result instead.
         if (results.length === 0 && snapshot.metadata.fromCache) {
+          if (emptyCacheFallback === undefined) {
+            emptyCacheFallback = setTimeout(() => {
+              setData([]);
+              setError(null);
+              setIsLoading(false);
+            }, 3000);
+          }
           return;
+        }
+        if (emptyCacheFallback !== undefined) {
+          clearTimeout(emptyCacheFallback);
+          emptyCacheFallback = undefined;
         }
         setData(results);
         setError(null);
@@ -118,7 +135,10 @@ export function useCollection<T = any>(
       }
     );
 
-    return () => unsubscribe();
+    return () => {
+      unsubscribe();
+      if (emptyCacheFallback !== undefined) clearTimeout(emptyCacheFallback);
+    };
   }, [memoizedTargetRefOrQuery]); // Re-run if the target query/reference changes.
   
   return { data, isLoading, error };
