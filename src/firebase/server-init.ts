@@ -7,10 +7,14 @@ import * as path from 'path';
 
 /**
  * Initializes the Firebase Admin SDK for server-side operations if not already initialized.
- * It is idempotent and will only initialize the app once.
+ * Idempotent — initializes at most once per process.
  *
- * This function now reads credentials directly from a service account JSON file
- * located at `docs/service-account.json`. This file must be created manually for local development.
+ * Credential resolution order:
+ *  1. `FIREBASE_SERVICE_ACCOUNT_KEY` env var containing the full service-account JSON.
+ *     (newlines in the private_key may be stored escaped as \\n and are unescaped here)
+ *  2. A service-account file at `docs/service-account.json` (local development convenience).
+ *  3. Application Default Credentials — available automatically on Google Cloud runtimes
+ *     such as Firebase App Hosting / Cloud Run.
  *
  * @returns {Promise<admin.app.App>} A promise that resolves to the initialized Firebase Admin App instance.
  */
@@ -20,40 +24,52 @@ export async function initializeServerApp(): Promise<admin.app.App> {
     return admin.app();
   }
 
-  // Construct the absolute path to the service account file.
+  // 1. Inline JSON from an environment variable.
+  const envKey = process.env.FIREBASE_SERVICE_ACCOUNT_KEY;
+  if (envKey && envKey.trim()) {
+    try {
+      const serviceAccount = JSON.parse(envKey);
+      if (serviceAccount.private_key) {
+        serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, '\n');
+      }
+      const app = admin.initializeApp({
+        credential: admin.credential.cert(serviceAccount),
+      });
+      console.log('Firebase Admin SDK initialized from FIREBASE_SERVICE_ACCOUNT_KEY env var.');
+      return app;
+    } catch (error) {
+      console.error('Failed to parse FIREBASE_SERVICE_ACCOUNT_KEY env var.', error);
+      throw new Error('FIREBASE_SERVICE_ACCOUNT_KEY is set but not valid JSON. Please fix the environment variable.');
+    }
+  }
+
+  // 2. Local service-account file (optional, for local development).
   const serviceAccountPath = path.resolve(process.cwd(), 'docs', 'service-account.json');
-  
   try {
-    // Read the file contents.
     const serviceAccountString = await fs.readFile(serviceAccountPath, 'utf-8');
-    
-    // Check if the file is empty or still contains the placeholder key.
-    if (!serviceAccountString || serviceAccountString.includes('PASTE_YOUR_PRIVATE_KEY_HERE')) {
-        throw new Error('The service account file at "docs/service-account.json" is a placeholder or empty. Please see the instructions in README.md to add your Firebase service account key.');
+    if (serviceAccountString && !serviceAccountString.includes('PASTE_YOUR_PRIVATE_KEY_HERE')) {
+      const serviceAccount = JSON.parse(serviceAccountString);
+      const app = admin.initializeApp({
+        credential: admin.credential.cert(serviceAccount),
+      });
+      console.log('Firebase Admin SDK initialized successfully from service account file.');
+      return app;
     }
-
-    const serviceAccount = JSON.parse(serviceAccountString);
-
-    const app = admin.initializeApp({
-      credential: admin.credential.cert(serviceAccount),
-    });
-
-    console.log("Firebase Admin SDK initialized successfully from service account file.");
-    return app;
-
   } catch (error: any) {
-    // If the file doesn't exist (code 'ENOENT'), provide a helpful message.
-    if (error.code === 'ENOENT') {
-        console.error('Firebase Admin initialization failed: The file "docs/service-account.json" was not found.');
-        throw new Error('The "docs/service-account.json" file is missing. Please create this file and add your Firebase service account credentials to it for server-side functionality. See README.md for more details.');
+    if (error.code !== 'ENOENT') {
+      console.error('Failed to read/parse "docs/service-account.json". Falling back to Application Default Credentials.', error);
     }
-    
-    console.error("Failed to initialize Firebase Admin SDK.", error);
-    // Provide a more specific error if parsing fails.
-    if (error instanceof SyntaxError) {
-        throw new Error('Failed to parse "docs/service-account.json". Please ensure it contains valid JSON.');
-    }
-    // Re-throw other errors
-    throw error;
+  }
+
+  // 3. Application Default Credentials (Firebase App Hosting, Cloud Run, etc.).
+  try {
+    const app = admin.initializeApp();
+    console.log('Firebase Admin SDK initialized with Application Default Credentials.');
+    return app;
+  } catch (error) {
+    console.error('Firebase Admin initialization failed.', error);
+    throw new Error(
+      'Could not initialize the Firebase Admin SDK. Provide FIREBASE_SERVICE_ACCOUNT_KEY, add "docs/service-account.json" (local dev), or run on a Google Cloud environment with Application Default Credentials.'
+    );
   }
 }
