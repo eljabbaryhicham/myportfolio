@@ -12,6 +12,8 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { uploadMediaFromUrl } from '@/ai/flows/upload-media-from-url';
+import { useFirestore, addDocumentNonBlocking } from '@/firebase';
+import { collection, DocumentReference } from 'firebase/firestore';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSpinner, faXmark } from '@fortawesome/free-solid-svg-icons';
 import { cn } from '@/lib/utils';
@@ -37,6 +39,7 @@ interface AddFromUrlDialogProps {
 export default function AddFromUrlDialog({ isOpen, onOpenChange, onUploadComplete }: AddFromUrlDialogProps) {
   const { t } = useTranslation();
   const { toast } = useToast();
+  const firestore = useFirestore();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [progress, setProgress] = useState(0);
   const [isVideoUrl, setIsVideoUrl] = useState(false);
@@ -94,18 +97,8 @@ export default function AddFromUrlDialog({ isOpen, onOpenChange, onUploadComplet
     setIsSubmitting(true);
     try {
       const result = await uploadMediaFromUrl(values);
-      if (result.success && result.mediaId && result.resource_type !== 'raw') {
-        setProgress(100);
-        toast({
-          title: t('addFromUrl.toast.success.title'),
-          description: result.message,
-        });
-        onUploadComplete(result.mediaId, result.resource_type || 'image', values.libraryId);
-        setTimeout(() => {
-          onOpenChange(false);
-          setIsSubmitting(false);
-        }, 500); // Wait for progress bar to show 100%
-      } else if (result.resource_type === 'raw') {
+      if (result.success && result.media && firestore) {
+        if (result.media.resource_type === 'raw') {
           toast({
             variant: 'destructive',
             title: t('addFromUrl.toast.unsupported.title'),
@@ -113,6 +106,28 @@ export default function AddFromUrlDialog({ isOpen, onOpenChange, onUploadComplet
             duration: 8000,
           });
           setIsSubmitting(false);
+          return;
+        }
+        setProgress(100);
+        const docRef = await addDocumentNonBlocking(collection(firestore, 'media'), { ...result.media }) as DocumentReference | undefined;
+        if (docRef) {
+          toast({
+            title: t('addFromUrl.toast.success.title'),
+            description: result.message,
+          });
+          onUploadComplete(docRef.id, result.media.resource_type as 'image' | 'video', values.libraryId);
+        } else {
+          toast({
+            variant: 'destructive',
+            title: t('addFromUrl.toast.failed.title'),
+            description: 'Could not save the media to the library.',
+            duration: 8000,
+          });
+        }
+        setTimeout(() => {
+          onOpenChange(false);
+          setIsSubmitting(false);
+        }, 500); // Wait for progress bar to show 100%
       } else {
         toast({
           variant: 'destructive',
