@@ -146,7 +146,7 @@ export default function AboutPage() {
         <div className="p-[clamp(1rem,3vh,2rem)] md:p-[clamp(1.5rem,4vh,2rem)] flex items-center justify-center min-h-full">
           <div className="container mx-auto px-0 text-center">
             {isLoadingContent ? (
-              <div className="flex justify-center items-center h-full min-h-[50vh]">
+              <div className="flex justify-center items-center h-[50vh]">
                 <Preloader />
               </div>
             ) : (

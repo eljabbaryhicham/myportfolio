@@ -111,7 +111,7 @@ export default function ContactPage() {
             <div className="container mx-auto px-0">
             {/* Same loading pattern as the About page */}
             {isLoading ? (
-              <div className="flex justify-center items-center h-full min-h-[50vh]">
+              <div className="flex justify-center items-center h-[50vh]">
                 <Preloader />
               </div>
             ) : (
