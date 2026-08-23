@@ -458,6 +458,21 @@ export default function WorkPage() {
   const [dialogActiveTab, setDialogActiveTab] = useState<'images' | 'videos' | 'files'>('images');
   const [dialogActiveLibrary, setDialogActiveLibrary] = useState<'primary' | 'extented'>('primary');
   const [direction, setDirection] = useState<'next' | 'prev' | null>(null);
+  const navButtonsRef = useRef<HTMLDivElement>(null);
+
+  // Native capture-phase guard: framer-motion registers its swipe-drag pointer
+  // listeners natively on the dialog wrapper, and by the time a React handler
+  // runs, the event has already reached it (React delegates at the root). On
+  // touch devices any tap jitter then starts a drag and the buttons' clicks
+  // are silently swallowed. Stopping the NATIVE event here, before it reaches
+  // the wrapper, keeps the buttons tappable while swipes work everywhere else.
+  useEffect(() => {
+    const el = navButtonsRef.current;
+    if (!el) return;
+    const blockPointerDown = (e: PointerEvent) => e.stopPropagation();
+    el.addEventListener('pointerdown', blockPointerDown, { capture: true });
+    return () => el.removeEventListener('pointerdown', blockPointerDown, { capture: true });
+  });
   const [filter, setFilter] = useState<'all' | 'image' | 'video'>('all');
 
   const [isDetailsModalOpen, setDetailsModalOpen] = useState(false);
@@ -901,10 +916,7 @@ export default function WorkPage() {
                           </DialogDescription>
                         </div>
                       
-                        <div
-                            className="mt-4 flex justify-between px-8 md:px-0 md:block"
-                            onPointerDownCapture={(e) => e.stopPropagation()}
-                        >
+                        <div ref={navButtonsRef} className="mt-4 flex justify-between px-8 md:px-0 md:block">
                           <Button
                               variant="outline"
                               size="icon"

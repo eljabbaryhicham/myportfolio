@@ -139,6 +139,7 @@ Firebase Firestore ← useDoc/useCollection hooks → React components
 
 | Date | Change | Status |
 |------|--------|--------|
+| 2026-08-23 | FIX v2 (mobile): prev/next STILL swallowed taps after v1 — React synthetic stopPropagation cannot beat framer-motion: FM registers drag pointer listeners NATIVELY on the wrapper and React delegates at the root, so by handler time the event had already reached it. Replaced with a native capture-phase pointerdown blocker on the buttons row (useEffect + addEventListener), stopping the event before the wrapper ever sees it. Swipes elsewhere unchanged | ✅ |
 | 2026-08-23 | FIX: homepage content appeared ~1s after the hero video — reveal choreography had hardcoded `delayChildren: 0.5` on top of the 0.35s preloader crossfade; delay cut to 0.15s so items cascade right as the overlay clears | ✅ |
 | 2026-08-23 | FIX (mobile): project-details prev/next buttons swallowed taps — the swipe-drag `motion.div` wrapper captured touch pointers, so taps with ≥3px jitter started a drag and the click never fired (desktop unaffected, drag disabled there). Buttons container now stops pointer-down capture; swipes elsewhere still navigate | ✅ |
 | 2026-08-23 | FIX: About/Contact preloaders rendered bigger than Work — Preloader sizes as % of its container; their spinner boxes stretched with `min-h-full` toward full viewport height on tall screens, inflating the 15% Lottie. Both boxes now fixed at `h-[50vh]`, matching the work grid loader exactly (admin `preloaderSize` still scales all of them equally) | ✅ |
