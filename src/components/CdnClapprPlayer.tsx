@@ -219,7 +219,9 @@ export default function CdnClapprPlayer({ source, poster, autoPlay = true, water
     const player = playerRef.current;
     if (player && player.core) { // Ensure player core is available
       if (autoPlay) {
-        player.play();
+        try {
+          player.play();
+        } catch (e) { /* ignore — user can start playback manually */ }
       } else {
         player.pause();
       }

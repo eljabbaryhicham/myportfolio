@@ -227,9 +227,10 @@ const PlyrPlayer = forwardRef(({ source, poster, autoPlay = true, thumbnailVttUr
             if (isMounted && autoPlay && !player.playing) {
                 try {
                     const playPromise = player.play();
-                    if (playPromise !== undefined) {
-                        playPromise.catch((e: any) => {
-                            // Autoplay was prevented. This is a common browser policy.
+                    if (playPromise !== undefined && typeof playPromise.catch === 'function') {
+                        playPromise.catch(() => {
+                            // Autoplay was prevented by browser policy — the
+                            // user can start playback manually.
                             if (isMounted) setIsLoading(false);
                         });
                     }
