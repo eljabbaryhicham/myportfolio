@@ -225,18 +225,31 @@ const PlyrPlayer = forwardRef(({ source, poster, autoPlay = true, thumbnailVttUr
     if (player) {
         const handleReady = () => {
             if (isMounted && autoPlay && !player.playing) {
-                try {
-                    const playPromise = player.play();
-                    if (playPromise !== undefined && typeof playPromise.catch === 'function') {
-                        playPromise.catch(() => {
-                            // Autoplay was prevented by browser policy — the
-                            // user can start playback manually.
-                            if (isMounted) setIsLoading(false);
-                        });
+                // Autoplay can transiently fail (browser policy timing).
+                // Retry a few times — still unmuted.
+                let attempts = 0;
+                const tryPlay = () => {
+                    attempts++;
+                    try {
+                        const playPromise = player.play();
+                        if (playPromise !== undefined && typeof playPromise.catch === 'function') {
+                            playPromise.catch(() => {
+                                if (attempts < 4) {
+                                    setTimeout(tryPlay, 600);
+                                } else if (isMounted) {
+                                    setIsLoading(false);
+                                }
+                            });
+                        }
+                    } catch (e) {
+                        if (attempts < 4) {
+                            setTimeout(tryPlay, 600);
+                        } else if (isMounted) {
+                            setIsLoading(false);
+                        }
                     }
-                } catch(e) {
-                     if (isMounted) setIsLoading(false);
-                }
+                };
+                tryPlay();
             } else if (!autoPlay && player.playing) {
                  try {
                    player.pause();

@@ -219,9 +219,22 @@ export default function CdnClapprPlayer({ source, poster, autoPlay = true, water
     const player = playerRef.current;
     if (player && player.core) { // Ensure player core is available
       if (autoPlay) {
-        try {
-          player.play();
-        } catch (e) { /* ignore — user can start playback manually */ }
+        // Autoplay can transiently fail (browser policy timing, player not
+        // fully attached yet). Retry a few times — still unmuted.
+        let attempts = 0;
+        try { player.play(); } catch (e) { /* ignore */ }
+        const retryId = setInterval(() => {
+          attempts++;
+          try {
+            if (player.isPlaying()) {
+              clearInterval(retryId);
+              return;
+            }
+            player.play();
+          } catch (e) { /* ignore */ }
+          if (attempts >= 4) clearInterval(retryId);
+        }, 600);
+        return () => clearInterval(retryId);
       } else {
         player.pause();
       }
