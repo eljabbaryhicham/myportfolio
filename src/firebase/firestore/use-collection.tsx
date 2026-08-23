@@ -74,36 +74,17 @@ export function useCollection<T = any>(
     setIsLoading(true);
     setError(null);
 
-    // Safety net: if a cache-only EMPTY snapshot arrived and the server never
-    // confirms (stalled network, frozen tab, dead socket), resolve as empty
-    // after a grace period instead of spinning forever. A real server
-    // snapshot arriving later still replaces this via onSnapshot.
-    let emptyCacheFallback: ReturnType<typeof setTimeout> | undefined;
-
-    // Directly use memoizedTargetRefOrQuery as it's assumed to be the final query
+    // Apply EVERY snapshot, including cache-only ones, so cached results
+    // (even empty) paint instantly. The live onSnapshot listener corrects
+    // any stale cache as soon as the server responds. Pages needing extra
+    // protection against empty-state flicker implement their own guards
+    // (e.g. work page requires a confirmed-empty to persist 2s).
     const unsubscribe = onSnapshot(
       memoizedTargetRefOrQuery,
       (snapshot: QuerySnapshot<DocumentData>) => {
         const results: ResultItemType[] = [];
         for (const doc of snapshot.docs) {
           results.push({ ...(doc.data() as T), id: doc.id });
-        }
-        // Ignore empty snapshots served from local cache before the server
-        // has responded — otherwise callers may flash their "empty" state
-        // mid-load. Wait for the confirmed server result instead.
-        if (results.length === 0 && snapshot.metadata.fromCache) {
-          if (emptyCacheFallback === undefined) {
-            emptyCacheFallback = setTimeout(() => {
-              setData([]);
-              setError(null);
-              setIsLoading(false);
-            }, 3000);
-          }
-          return;
-        }
-        if (emptyCacheFallback !== undefined) {
-          clearTimeout(emptyCacheFallback);
-          emptyCacheFallback = undefined;
         }
         setData(results);
         setError(null);
@@ -135,10 +116,7 @@ export function useCollection<T = any>(
       }
     );
 
-    return () => {
-      unsubscribe();
-      if (emptyCacheFallback !== undefined) clearTimeout(emptyCacheFallback);
-    };
+    return () => unsubscribe();
   }, [memoizedTargetRefOrQuery]); // Re-run if the target query/reference changes.
   
   return { data, isLoading, error };
