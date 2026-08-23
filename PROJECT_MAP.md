@@ -139,6 +139,7 @@ Firebase Firestore ← useDoc/useCollection hooks → React components
 
 | Date | Change | Status |
 |------|--------|--------|
+| 2026-08-23 | FEATURE: media picker format choice — selecting an image/video from the library in selection mode now opens a "Choose Delivery Format" dialog (images: Stored/WebP/AVIF/JPG/PNG; videos: Stored/MP4/WebM/HLS; raw files insert directly) reusing the copy-menu `formatVariant`/`hlsVariant` transforms; works for every consumer of the picker (Home fields, project form, contact logo). Cancel/ESC aborts without selecting (EN/FR) | ✅ |
 | 2026-08-23 | MAINTENANCE: ESLint warnings 7 → 0 (`t` added to hook deps in HomeAdmin/ContactAdmin/MediaAdmin; justified inline disables for 3 admin-supplied `<img>` GIF/thumbnail previews); dead i18n keys removed (`pageContent.*Description`, `defaultHint`, `servicesHeadingLabel`); shared `debounce` util in `src/lib/utils.ts` (HomeAdmin + PageTextEditor deduped) and shared `HomePageSettings` type in `src/lib/types.ts` (work page + site-background deduped); `npm audit fix` non-breaking: 92 → 58 vulns (criticals eliminated). firebase-admin + server-init.ts KEPT intentionally per user decision | ✅ |
 | 2026-08-23 | SEC: `npm audit fix` pulled next@16.3.2 (within ^16.2.6 range) — includes the August security release; full production build verified on it | ✅ || 2026-05-14 | M1.1: Moved FirebaseClientProvider out of `<head>` into `<body>` | ✅ |
 | 2026-05-14 | M1.2: Removed dead `@apply border-border` override in globals.css | ✅ |

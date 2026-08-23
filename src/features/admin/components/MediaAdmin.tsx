@@ -87,6 +87,7 @@ const MediaFileCard = ({
   isSelected,
   onToggleSelect,
   showCheckbox,
+  onRequestFormatSelect,
 }: {
   file: MediaAsset;
   onDelete: (publicId: string, id: string, resourceType: string, libraryId: 'primary' | 'extented') => void;
@@ -103,6 +104,7 @@ const MediaFileCard = ({
   isSelected?: boolean;
   onToggleSelect?: (id: string) => void;
   showCheckbox?: boolean;
+  onRequestFormatSelect?: (file: MediaAsset) => void;
 }) => {
   const { t } = useTranslation();
   
@@ -111,7 +113,11 @@ const MediaFileCard = ({
   };
 
   const handleSelect = () => {
-    onMediaSelect(file.url, file.resource_type, file.filename);
+    if (onRequestFormatSelect && file.resource_type !== 'raw') {
+      onRequestFormatSelect(file);
+    } else {
+      onMediaSelect(file.url, file.resource_type, file.filename);
+    }
   };
 
   const fileName = file.filename || file.public_id.split('/').pop() || 'Untitled';
@@ -307,6 +313,7 @@ export default function MediaAdmin(props: MediaAdminProps) {
   const [previewFile, setPreviewFile] = useState<MediaAsset | null>(null);
   const [isAddFromUrlOpen, setIsAddFromUrlOpen] = useState(false);
   const [isChoosingLibrary, setIsChoosingLibrary] = useState(false);
+  const [formatChoiceAsset, setFormatChoiceAsset] = useState<MediaAsset | null>(null);
   const [isChoosingVideoFormat, setIsChoosingVideoFormat] = useState(false);
   const [filesToUpload, setFilesToUpload] = useState<File[]>([]);
   const [uploadVideoFormat, setUploadVideoFormat] = useState<'mp4' | 'm3u8' | 'webm'>('mp4');
@@ -547,6 +554,13 @@ export default function MediaAdmin(props: MediaAdminProps) {
     toast({ title: t('mediaAdmin.toast.copied.title'), description: t('mediaAdmin.toast.copied.description')});
   }
 
+  const handleConfirmFormatPick = (url: string) => {
+    if (!formatChoiceAsset) return;
+    const { resource_type, filename } = formatChoiceAsset;
+    handleMediaSelect(url, resource_type, filename);
+    setFormatChoiceAsset(null);
+  };
+
   const handleMediaSelect = (url: string, type: 'image' | 'video' | 'raw', filename: string) => {
     if(props.isDialog) {
         props.onMediaSelect(url, type, filename);
@@ -696,6 +710,7 @@ export default function MediaAdmin(props: MediaAdminProps) {
                   onSetBackground={handleOpenSetBackgroundDialog}
                   isNewlyUploaded={file.id === newlyUploadedId}
                   onMediaSelect={handleMediaSelect}
+                  onRequestFormatSelect={(f) => setFormatChoiceAsset(f)}
                   isSelectionMode={!!(props.isDialog && props.isSelectionMode)}
                   canDelete={canDelete}
                   canEditContact={canEditContact}
@@ -911,6 +926,37 @@ export default function MediaAdmin(props: MediaAdminProps) {
             <DialogFooter>
                 <Button variant="outline" onClick={() => setIsChoosingVideoFormat(false)}>{t('mediaAdmin.cancel')}</Button>
                 <Button onClick={() => { setIsChoosingVideoFormat(false); setIsChoosingLibrary(true); }}>{t('mediaAdmin.next')}</Button>
+            </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      <Dialog open={!!formatChoiceAsset} onOpenChange={(open) => { if (!open) setFormatChoiceAsset(null); }}>
+        <DialogContent className="w-[80vw] max-w-md">
+            <DialogHeader>
+                <DialogTitle>{t('mediaAdmin.pickFormat.title')}</DialogTitle>
+                <DialogDescription className="truncate">{formatChoiceAsset?.filename}</DialogDescription>
+            </DialogHeader>
+            {formatChoiceAsset && (
+                <div className="grid grid-cols-2 gap-2 py-2">
+                    <Button variant="outline" onClick={() => handleConfirmFormatPick(formatChoiceAsset.url)}>{t('mediaAdmin.copy.default')}</Button>
+                    {formatChoiceAsset.resource_type === 'video' && (
+                        <>
+                            <Button variant="outline" onClick={() => handleConfirmFormatPick(formatVariant(formatChoiceAsset.url, 'mp4'))}>{t('mediaAdmin.copy.mp4')}</Button>
+                            <Button variant="outline" onClick={() => handleConfirmFormatPick(formatVariant(formatChoiceAsset.url, 'webm'))}>{t('mediaAdmin.copy.webm')}</Button>
+                            <Button variant="outline" onClick={() => handleConfirmFormatPick(hlsVariant(formatChoiceAsset.url))}>{t('mediaAdmin.copy.hls')}</Button>
+                        </>
+                    )}
+                    {formatChoiceAsset.resource_type === 'image' && (
+                        <>
+                            <Button variant="outline" onClick={() => handleConfirmFormatPick(formatVariant(formatChoiceAsset.url, 'webp'))}>WebP</Button>
+                            <Button variant="outline" onClick={() => handleConfirmFormatPick(formatVariant(formatChoiceAsset.url, 'avif'))}>AVIF</Button>
+                            <Button variant="outline" onClick={() => handleConfirmFormatPick(formatVariant(formatChoiceAsset.url, 'jpg'))}>JPG</Button>
+                            <Button variant="outline" onClick={() => handleConfirmFormatPick(formatVariant(formatChoiceAsset.url, 'png'))}>PNG</Button>
+                        </>
+                    )}
+                </div>
+            )}
+             <DialogFooter>
+                <Button variant="ghost" onClick={() => setFormatChoiceAsset(null)}>{t('mediaAdmin.cancel')}</Button>
             </DialogFooter>
         </DialogContent>
       </Dialog>
