@@ -175,7 +175,7 @@ export default function AboutPage() {
                                     {t('about.cta.contact')}
                                 </Link>
                             </Button>
-                            <Button asChild>
+                            <Button asChild className="bg-[#d81e38] hover:bg-[#b91c32] text-white border-transparent">
                                  <Link href="/work">
                                     {t('about.cta.explore')}
                                     <FontAwesomeIcon icon={faArrowRight} className="ml-2" />
@@ -254,7 +254,7 @@ export default function AboutPage() {
                             {t('about.cta.contact')}
                         </Link>
                     </Button>
-                    <Button asChild>
+                    <Button asChild className="bg-[#d81e38] hover:bg-[#b91c32] text-white border-transparent">
                             <Link href="/work">
                             {t('about.cta.explore')}
                             <FontAwesomeIcon icon={faArrowRight} className="ml-2" />

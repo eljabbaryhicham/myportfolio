@@ -139,6 +139,7 @@ Firebase Firestore ← useDoc/useCollection hooks → React components
 
 | Date | Change | Status |
 |------|--------|--------|
+| 2026-08-23 | FIX: About "Explore Our Works" hard-forced to MelliVision red (`bg-[#d81e38]`) — previous default→`bg-primary` still rendered grey because the live site had not yet picked up the `:root --primary` change; explicit class makes it red irrespective of theme-variable/cache timing | ✅ |
 | 2026-08-23 | FIX: About "Explore Our Works" now renders in the site theme color. Root cause: the button used `variant="success"` (green), then default (`bg-primary`) which fell back to a GRAY `:root --primary` (0 0% 50%) because no saved `themeColor` was applied. Defaulted `:root`/`.dark --primary` to the MelliVision red (352 76% 48% ≈ #d81e38); `DynamicThemeStyles` still overrides per saved `themeColor` | ✅ |
 | 2026-08-23 | FIX: About "Explore Our Works" button now uses the site theme color (primary) instead of the green `success` variant — both desktop and mobile CTA blocks | ✅ |
 | 2026-08-23 | FIX: Work-page image fullscreen icon was triggered by hovering ANYWHERE in the details dialog (DialogContent itself had a bare `group` class, and Tailwind groups are global). Scoped the media box to a named `group/media` so the icon only appears on hover over the image | ✅ |
