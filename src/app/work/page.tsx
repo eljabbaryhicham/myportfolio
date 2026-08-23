@@ -136,7 +136,6 @@ const detailsSanitizeSchema = {
 const MemoizedPortfolioMedia = memo(({
   item,
   onFullscreenClick,
-  onMediaLoaded,
   watermark,
   playerType,
   autoPlay,
@@ -144,7 +143,6 @@ const MemoizedPortfolioMedia = memo(({
 }: {
   item: PortfolioItem;
   onFullscreenClick: (url: string) => void;
-  onMediaLoaded: () => void;
   watermark?: string;
   playerType?: 'plyr' | 'clappr';
   autoPlay: boolean;
@@ -152,25 +150,20 @@ const MemoizedPortfolioMedia = memo(({
 }) => {
   const { t } = useTranslation();
   const containerRef = useRef<HTMLDivElement>(null);
+  // Images own their preloader here — same principle as the video players:
+  // hide it only when the bitmap is actually loaded and painted.
+  const [isImageLoading, setIsImageLoading] = useState(true);
 
   useEffect(() => {
-    // Videos: the player components render their own frame-accurate
-    // preloader. Clearing the dialog overlay immediately avoids TWO
-    // stacked loaders spinning at once.
-    if (item.type === 'video') {
-      onMediaLoaded();
-      return;
-    }
+    if (item.type === 'video') return;
 
-    // Images: keep the preloader until the bitmap is actually loaded and
-    // painted — not just mounted.
     const root = containerRef.current;
     const img = root?.querySelector('img');
     let safety: ReturnType<typeof setTimeout> | null = null;
 
     const finish = () => {
       if (safety) clearTimeout(safety);
-      onMediaLoaded();
+      setIsImageLoading(false);
     };
 
     if (img) {
@@ -185,7 +178,7 @@ const MemoizedPortfolioMedia = memo(({
     // Absolute fallback so the popup can't stay covered forever.
     safety = setTimeout(finish, 8000);
     return () => { if (safety) clearTimeout(safety); };
-  }, [item.id, item.type, item.sourceUrl, item.thumbnailUrl, onMediaLoaded]);
+  }, [item.id, item.type, item.sourceUrl, item.thumbnailUrl]);
 
   if (item.type === 'video') {
     const isVimeo = item.sourceUrl?.includes('vimeo.com');
@@ -228,12 +221,16 @@ const MemoizedPortfolioMedia = memo(({
   
   return (
       <div ref={containerRef} className="relative aspect-video bg-black flex justify-center items-center group w-full">
+        {isImageLoading && (
+          <div className="absolute inset-0 z-20 flex items-center justify-center">
+            <Preloader />
+          </div>
+        )}
         <MemoizedImage
           src={item.sourceUrl || item.thumbnailUrl}
           alt={item.title}
           fill
-          className="object-contain"
-          onLoad={onMediaLoaded}
+          className={cn("object-contain", isImageLoading ? 'opacity-0' : 'opacity-100')}
         />
         <Button
             variant="ghost"
@@ -467,7 +464,6 @@ export default function WorkPage() {
   const [dialogActiveTab, setDialogActiveTab] = useState<'images' | 'videos' | 'files'>('images');
   const [dialogActiveLibrary, setDialogActiveLibrary] = useState<'primary' | 'extented'>('primary');
   const [direction, setDirection] = useState<'next' | 'prev' | null>(null);
-  const [isDialogMediaLoading, setIsDialogMediaLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | 'image' | 'video'>('all');
 
   const [isDetailsModalOpen, setDetailsModalOpen] = useState(false);
@@ -569,8 +565,7 @@ export default function WorkPage() {
   }, [router, pathname, searchParams]);
 
   const handleItemClick = useCallback((item: PortfolioItem) => {
-    setIsDialogMediaLoading(true);
-    setDirection(null); 
+    setDirection(null);
     setSelectedItem(item);
     updateUrl(slugify(item.title));
   }, [updateUrl]);
@@ -589,7 +584,6 @@ export default function WorkPage() {
 
   useEffect(() => {
     if (selectedItem) {
-      setIsDialogMediaLoading(true);
       const LONG_DESCRIPTION_THRESHOLD = 150;
       setIsDescriptionLong(
         (selectedItem.description?.length || 0) > LONG_DESCRIPTION_THRESHOLD
@@ -883,11 +877,6 @@ export default function WorkPage() {
             onMouseEnter={handleDialogMouseEnter}
             onMouseLeave={handleDialogMouseLeave}
           >
-            {isDialogMediaLoading && (
-              <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/50">
-                <Preloader />
-              </div>
-            )}
             <motion.div
                 onDragEnd={handleDragEnd}
                 drag={isMobile ? "x" : false}
@@ -946,13 +935,12 @@ export default function WorkPage() {
                       
                       <ScrollArea className="flex-1 min-h-0">
                         <div className="relative flex flex-col justify-center h-full">
-                          <div className={cn("w-full transition-opacity duration-300", isDialogMediaLoading && "opacity-0")}>
+                          <div className="w-full">
                             {isClient && (
                               <Suspense fallback={null}>
                                 <MemoizedPortfolioMedia
                                   item={selectedItem}
                                   onFullscreenClick={setFullscreenImageUrl}
-                                  onMediaLoaded={() => setIsDialogMediaLoading(false)}
                                   watermark={logoUrl}
                                   playerType={workPagePlayer}
                                   autoPlay={!isDialogOpen}
