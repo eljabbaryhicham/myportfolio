@@ -246,8 +246,8 @@ function AdminPage() {
               <TabsContent value="media" className="flex-1 overflow-auto mt-4">
                   <Tabs defaultValue="cloudinary" className="w-full">
                     <TabsList className="mb-4">
-                      <TabsTrigger value="cloudinary">Cloudinary</TabsTrigger>
-                      <TabsTrigger value="vercel">Vercel Blob</TabsTrigger>
+                      <TabsTrigger value="cloudinary" className="glass-effect data-[state=active]:bg-destructive">Cloudinary</TabsTrigger>
+                      <TabsTrigger value="vercel" className="glass-effect data-[state=active]:bg-destructive">Vercel Blob</TabsTrigger>
                     </TabsList>
                     <TabsContent value="cloudinary">
                       <MediaAdmin onUploadComplete={handleUploadComplete} onLibraryOpenRequest={() => setIsLibraryOpen(true)} onMediaSelect={handleOpenPortfolioFormWithMedia} />

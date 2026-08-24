@@ -88,13 +88,14 @@ export default function VercelBlobAdmin() {
         continue;
       }
       setIsUploading(true);
-      setUploadProgress(0);
+      setUploadProgress(5);
       setUploadingFileName(file.name);
-      let prog = 0;
+      let prog = 5;
       const interval = setInterval(() => {
-        prog = Math.min(90, prog + Math.random() * 8 + 3);
+        // Slow, realistic simulation to 95% — avoids long stall at 90%
+        prog = Math.min(95, prog + Math.random() * 2 + 0.5);
         setUploadProgress(prog);
-      }, 250);
+      }, 400);
       try {
         const blob: any = await upload(file.name, file, {
           access: 'public',
@@ -143,7 +144,8 @@ export default function VercelBlobAdmin() {
   }, [getToken, toast, firestore, auth]);
 
   const onDrop = useCallback((accepted: File[]) => handleUpload(accepted), [handleUpload]);
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop, multiple: true });
+  const { getRootProps: getRootPropsMain, getInputProps: getInputPropsMain, isDragActive: isDragActiveMain } = useDropzone({ onDrop, multiple: true });
+  const { getRootProps: getRootPropsDialog, getInputProps: getInputPropsDialog, isDragActive: isDragActiveDialog } = useDropzone({ onDrop, multiple: true });
 
   const handleCopy = (url: string) => {
     navigator.clipboard.writeText(url);
@@ -294,20 +296,20 @@ export default function VercelBlobAdmin() {
   const uploadStrip = (
     <div className="flex flex-col gap-4">
       <div
-        {...getRootProps()}
+        {...getRootPropsMain()}
         className={cn(
           'flex-1 border-2 border-dashed rounded-lg p-6 text-center transition-colors relative cursor-pointer',
-          isDragActive ? 'border-primary bg-primary/10' : 'border-border hover:border-primary/50',
+          isDragActiveMain ? 'border-primary bg-primary/10' : 'border-border hover:border-primary/50',
           isUploading && 'opacity-50 cursor-not-allowed'
         )}
       >
-        <input {...getInputProps()} disabled={isUploading} />
-        <div className="flex flex-col items-center justify-center gap-2 text-muted-foreground">
+        <input {...getInputPropsMain()} disabled={isUploading} />
+        <div className="flex flex-col items-center justify-center gap-2 text-muted-foreground pointer-events-none">
           <FontAwesomeIcon icon={faCloudUploadAlt} className="h-8 w-8" />
           {isUploading ? (
             <p className="text-sm">{t('mediaAdmin.uploading')}</p>
           ) : (
-            <p className="text-sm">{t('mediaAdmin.dragAndDrop')}</p>
+            <p className="text-sm">Drag & drop files, or click to browse</p>
           )}
         </div>
       </div>
@@ -319,7 +321,7 @@ export default function VercelBlobAdmin() {
         <div>
           <Progress value={uploadProgress} className="w-full" />
           <p className="text-sm text-center mt-2 text-muted-foreground">
-            {t('mediaAdmin.uploadProgress').replace('{name}', uploadingFileName).replace('{progress}', String(Math.round(uploadProgress)))}
+            Uploading {uploadingFileName}… {Math.round(uploadProgress)}%
           </p>
         </div>
       )}
@@ -354,17 +356,17 @@ export default function VercelBlobAdmin() {
           <div className="px-4 pt-3">
             <div className="flex flex-col sm:flex-row gap-2">
               <div
-                {...getRootProps()}
+                {...getRootPropsDialog()}
                 className={cn(
                   'flex-1 border border-dashed rounded-md px-3 py-2 flex items-center justify-center gap-2 cursor-pointer transition-colors text-muted-foreground min-w-0',
-                  isDragActive ? 'border-primary bg-primary/10' : 'border-border hover:border-primary/50',
+                  isDragActiveDialog ? 'border-primary bg-primary/10' : 'border-border hover:border-primary/50',
                   isUploading && 'opacity-50 cursor-not-allowed'
                 )}
               >
-                <input {...getInputProps()} disabled={isUploading} />
+                <input {...getInputPropsDialog()} disabled={isUploading} />
                 <FontAwesomeIcon icon={faCloudUploadAlt} className="h-4 w-4 shrink-0" />
-                <span className="text-xs md:text-sm truncate text-center">
-                  {isUploading ? t('mediaAdmin.uploading') : t('mediaAdmin.dragAndDrop')}
+                <span className="text-xs md:text-sm truncate text-center pointer-events-none">
+                  {isUploading ? t('mediaAdmin.uploading') : 'Drag & drop files, or click to browse'}
                 </span>
               </div>
               <Button onClick={() => setIsAddFromUrlOpen(true)} variant="outline" size="sm" disabled={isUploading} className="w-full sm:w-auto justify-center shrink-0">
@@ -376,7 +378,7 @@ export default function VercelBlobAdmin() {
               <div className="mt-2 flex items-center gap-2 min-w-0">
                 <Progress value={uploadProgress} className="flex-1" />
                 <span className="text-xs text-muted-foreground truncate max-w-[45%]">
-                  {t('mediaAdmin.uploadProgress').replace('{name}', uploadingFileName).replace('{progress}', String(Math.round(uploadProgress)))}
+                  Uploading {uploadingFileName}… {Math.round(uploadProgress)}%
                 </span>
               </div>
             )}
