@@ -49,7 +49,7 @@ export default function VercelBlobAdmin() {
   const { toast } = useToast();
   const firestore = useFirestore();
   const auth = useAuth();
-  const { startUpload, updateProgress: updateGlobalProgress, finishUpload } = useUploadProgress();
+  const { isUploading: globalIsUploading, progress: globalProgress, fileName: globalFileName, startUpload, updateProgress: updateGlobalProgress, finishUpload } = useUploadProgress();
 
   const [activeTab, setActiveTab] = useState<'images' | 'videos' | 'files'>('images');
   const [searchQuery, setSearchQuery] = useState('');
@@ -62,6 +62,11 @@ export default function VercelBlobAdmin() {
   const [isAddFromUrlOpen, setIsAddFromUrlOpen] = useState(false);
   const [addUrl, setAddUrl] = useState('');
   const [isAddingFromUrl, setIsAddingFromUrl] = useState(false);
+
+  // Sync global upload state to local for inline progress when remounting (e.g., navigating back to Vercel tab)
+  const effectiveIsUploading = isUploading || globalIsUploading;
+  const effectiveProgress = isUploading ? uploadProgress : globalProgress;
+  const effectiveFileName = isUploading ? uploadingFileName : globalFileName;
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [isBulkDeleteOpen, setIsBulkDeleteOpen] = useState(false);
 
@@ -145,13 +150,13 @@ export default function VercelBlobAdmin() {
       } finally {
         clearInterval(interval);
         setIsUploading(false);
-        setUploadProgress(0);
-        setUploadingFileName('');
+      setUploadProgress(0);
+      setUploadingFileName('');
         // Keep global notification for a moment after local finishes, then clear
         setTimeout(() => finishUpload(), 1000);
       }
     }
-  }, [getToken, toast, firestore, auth]);
+  }, [getToken, toast, firestore, auth, finishUpload, startUpload, updateGlobalProgress]);
 
   const onDrop = useCallback((accepted: File[]) => handleUpload(accepted), [handleUpload]);
   const { getRootProps: getRootPropsMain, getInputProps: getInputPropsMain, isDragActive: isDragActiveMain } = useDropzone({ onDrop, multiple: true });
@@ -381,28 +386,28 @@ export default function VercelBlobAdmin() {
         className={cn(
           'flex-1 border-2 border-dashed rounded-lg p-6 text-center transition-colors relative cursor-pointer',
           isDragActiveMain ? 'border-primary bg-primary/10' : 'border-border hover:border-primary/50',
-          isUploading && 'opacity-50 cursor-not-allowed'
+          effectiveIsUploading && 'opacity-50 cursor-not-allowed'
         )}
       >
-        <input {...getInputPropsMain()} disabled={isUploading} />
+        <input {...getInputPropsMain()} disabled={effectiveIsUploading} />
         <div className="flex flex-col items-center justify-center gap-2 text-muted-foreground pointer-events-none">
           <FontAwesomeIcon icon={faCloudUploadAlt} className="h-8 w-8" />
-          {isUploading ? (
+          {effectiveIsUploading ? (
             <p className="text-sm">{t('mediaAdmin.uploading')}</p>
           ) : (
             <p className="text-sm">Drag & drop files, or click to browse</p>
           )}
         </div>
       </div>
-      <Button onClick={() => setIsAddFromUrlOpen(true)} variant="outline" size="sm" className="w-full" disabled={isUploading}>
+      <Button onClick={() => setIsAddFromUrlOpen(true)} variant="outline" size="sm" className="w-full" disabled={effectiveIsUploading}>
         <FontAwesomeIcon icon={faLink} className="mr-2" />
         {t('mediaAdmin.addFromUrl')}
       </Button>
-      {isUploading && (
+      {effectiveIsUploading && (
         <div className="space-y-2">
-          <Progress value={uploadProgress} className="w-full" />
+          <Progress value={effectiveProgress} className="w-full" />
           <p className="text-sm text-center text-muted-foreground">
-            Uploading {uploadingFileName}… {Math.round(uploadProgress)}%
+            Uploading {effectiveFileName}… {Math.round(uploadProgress)}%
           </p>
         </div>
       )}
@@ -441,25 +446,25 @@ export default function VercelBlobAdmin() {
                 className={cn(
                   'flex-1 border border-dashed rounded-md px-3 py-2 flex items-center justify-center gap-2 cursor-pointer transition-colors text-muted-foreground min-w-0',
                   isDragActiveDialog ? 'border-primary bg-primary/10' : 'border-border hover:border-primary/50',
-                  isUploading && 'opacity-50 cursor-not-allowed'
+                  effectiveIsUploading && 'opacity-50 cursor-not-allowed'
                 )}
               >
-                <input {...getInputPropsDialog()} disabled={isUploading} />
+                <input {...getInputPropsDialog()} disabled={effectiveIsUploading} />
                 <FontAwesomeIcon icon={faCloudUploadAlt} className="h-4 w-4 shrink-0 pointer-events-none" />
                 <span className="text-xs md:text-sm truncate text-center pointer-events-none">
                   {isUploading ? t('mediaAdmin.uploading') : 'Drag & drop files, or click to browse'}
                 </span>
               </div>
-              <Button onClick={() => setIsAddFromUrlOpen(true)} variant="outline" size="sm" disabled={isUploading} className="w-full sm:w-auto justify-center shrink-0">
+              <Button onClick={() => setIsAddFromUrlOpen(true)} variant="outline" size="sm" disabled={effectiveIsUploading} className="w-full sm:w-auto justify-center shrink-0">
                 <FontAwesomeIcon icon={faLink} className="mr-2" />
                 {t('mediaAdmin.addFromUrl')}
               </Button>
             </div>
-            {isUploading && (
+            {effectiveIsUploading && (
               <div className="mt-2 flex items-center gap-2 min-w-0">
-                <Progress value={uploadProgress} className="flex-1" />
+                <Progress value={effectiveProgress} className="flex-1" />
                 <span className="text-xs text-muted-foreground truncate max-w-[45%]">
-                  Uploading {uploadingFileName}… {Math.round(uploadProgress)}%
+                  Uploading {effectiveFileName}… {Math.round(uploadProgress)}%
                 </span>
               </div>
             )}
