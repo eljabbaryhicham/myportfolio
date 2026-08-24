@@ -52,6 +52,13 @@ service cloud.firestore {
       allow write: if isSignedIn() && !isSuperAdmin();
     }
 
+    // Vercel Blob: Isolated storage (separate from Cloudinary), admin-only
+    match /vercel_blobs/{docId} {
+      allow get, list: if isSignedIn() && !isSuperAdmin();
+      allow create, delete: if isSignedIn() && !isSuperAdmin();
+      allow update: if false;
+    }
+
     // Media: Readable by admins, with specific create/delete permissions.
     match /media/{mediaId} {
       // Allow list/get for non-superadmins if they are authenticated.

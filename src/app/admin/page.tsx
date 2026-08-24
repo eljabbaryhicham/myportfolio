@@ -12,6 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import ProjectAdmin from '@/features/admin/components/ProjectAdmin';
 import ContactAdmin from '@/features/admin/components/ContactAdmin';
 import MediaAdmin from '@/features/admin/components/MediaAdmin';
+import VercelBlobAdmin from '@/features/admin/components/VercelBlobAdmin';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faRightFromBracket } from '@fortawesome/free-solid-svg-icons';
 import { Separator } from '@/components/ui/separator';
@@ -243,7 +244,18 @@ function AdminPage() {
                   <ContactAdmin />
               </TabsContent>
               <TabsContent value="media" className="flex-1 overflow-auto mt-4">
-                  <MediaAdmin onUploadComplete={handleUploadComplete} onLibraryOpenRequest={() => setIsLibraryOpen(true)} onMediaSelect={handleOpenPortfolioFormWithMedia} />
+                  <Tabs defaultValue="cloudinary" className="w-full">
+                    <TabsList className="mb-4">
+                      <TabsTrigger value="cloudinary">Cloudinary</TabsTrigger>
+                      <TabsTrigger value="vercel">Vercel Blob</TabsTrigger>
+                    </TabsList>
+                    <TabsContent value="cloudinary">
+                      <MediaAdmin onUploadComplete={handleUploadComplete} onLibraryOpenRequest={() => setIsLibraryOpen(true)} onMediaSelect={handleOpenPortfolioFormWithMedia} />
+                    </TabsContent>
+                    <TabsContent value="vercel">
+                      <VercelBlobAdmin />
+                    </TabsContent>
+                  </Tabs>
               </TabsContent>
                {isSuperAdmin && (
                 <TabsContent value="admins" className="flex-1 overflow-auto mt-4">

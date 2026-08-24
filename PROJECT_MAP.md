@@ -139,6 +139,7 @@ Firebase Firestore ← useDoc/useCollection hooks → React components
 
 | Date | Change | Status |
 |------|--------|--------|
+| 2026-08-23 | FEATURE: Vercel Blob isolated storage — new "Vercel Blob" section inside Media tab (separate from Cloudinary). Installs `@vercel/blob`, adds protected API routes `/api/vercel-blob/(upload|list|delete)` (Bearer admin token, `BLOB_READ_WRITE_TOKEN` placeholder returns 503 until you set it, image 50MB limit, other types unlimited), Firestore mirror `vercel_blobs` with `provider:"vercel_blob"` field, UI `VercelBlobAdmin` with drag-drop, search, copy URL, delete, `firestore.rules` for `vercel_blobs` (admin-only). Cloudinary system untouched, no picker mixing | ✅ |
 | 2026-08-23 | FIX: Project main image fullscreen button moved from center to top-right corner (`top-2 right-2`), matching markdown images | ✅ |
 | 2026-08-23 | FEATURE: Markdown images in project details (`![alt](url)`) now centered (flex + block mx-auto + globals fallback) and show a fullscreen button on hover (mobile: always 70% visible, desktop: hover) reusing the existing fullscreen dialog | ✅ |
 | 2026-08-23 | FIX: Favicon showed logo on Home but default icon on other pages — `DynamicFavicon` only patched the first `link[rel~="icon"]` once and never re-ran after client navigation (Next re-injects a fresh default icon per route). Now patches ALL icon links and re-runs on pathname change (plus next-tick) with correct MIME type per extension | ✅ |
