@@ -198,29 +198,32 @@ export default function VercelBlobAdmin() {
       const data = await res.json();
       if (!res.ok || !data.success) throw new Error(data.message || 'Add from URL failed');
       // Fallback: ensure Firestore doc exists (server should have created it, but create client-side if missing)
+      // Use data.contentType/size from server to ensure correct tab placement
       if (firestore) {
         try {
-          // Check if doc already exists by url
-          const q = query(collection(firestore, 'vercel_blobs'));
-          // Optimistically create doc client-side to ensure it appears immediately (server may have already created it, but duplicate is okay - will be deduped by url)
           await addDocumentNonBlocking(collection(firestore, 'vercel_blobs'), {
             provider: 'vercel_blob',
             url: data.url,
             pathname: data.pathname || `vercel-blob/${Date.now()}-${addUrl.split('/').pop() || 'file'}`,
-            size: 0,
+            size: data.size ?? 0,
             contentType: data.contentType || 'application/octet-stream',
-            filename: data.url.split('/').pop() || addUrl.split('/').pop() || 'file',
+            filename: data.filename || data.url.split('/').pop() || addUrl.split('/').pop() || 'file',
             uploadedAt: serverTimestamp(),
             uploadedBy: auth?.currentUser?.uid || null,
             sourceUrl: addUrl.trim(),
           } as any);
         } catch {}
       }
-      // Switch to correct tab and open library
-      const lowerUrl = (data.url || addUrl).toLowerCase();
-      if (/\.(png|jpe?g|gif|webp|avif|svg|bmp)$/.test(lowerUrl)) setActiveTab('images');
-      else if (/\.(mp4|webm|mov|m3u8|avi|mkv)$/.test(lowerUrl)) setActiveTab('videos');
-      else setActiveTab('files');
+      // Switch to correct tab based on contentType (more reliable than URL extension for add-from-url)
+      const ct = (data.contentType || '').toLowerCase();
+      if (ct.startsWith('image/')) setActiveTab('images');
+      else if (ct.startsWith('video/')) setActiveTab('videos');
+      else {
+        const lowerUrl = (data.url || addUrl).toLowerCase();
+        if (/\.(png|jpe?g|gif|webp|avif|svg|bmp|tiff)$/.test(lowerUrl)) setActiveTab('images');
+        else if (/\.(mp4|webm|mov|m3u8|avi|mkv)$/.test(lowerUrl)) setActiveTab('videos');
+        else setActiveTab('files');
+      }
       setIsLibraryOpen(true);
       toast({ title: 'Added from URL', description: data.url });
       setIsAddFromUrlOpen(false);

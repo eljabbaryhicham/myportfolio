@@ -60,7 +60,7 @@ export async function POST(req: NextRequest) {
       console.warn('Firestore mirror failed for add-from-url', e);
     }
 
-    return NextResponse.json({ success: true, url: blob.url, pathname: blob.pathname });
+    return NextResponse.json({ success: true, url: blob.url, pathname: blob.pathname, contentType, size, filename: originalName });
   } catch (e: any) {
     console.error('Vercel Blob add-from-url failed', e);
     return NextResponse.json({ success: false, message: e?.message || 'Failed to fetch URL' }, { status: 500 });

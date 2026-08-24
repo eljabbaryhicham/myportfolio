@@ -139,6 +139,7 @@ Firebase Firestore ← useDoc/useCollection hooks → React components
 
 | Date | Change | Status |
 |------|--------|--------|
+| 2026-08-23 | FIX: Vercel Blob add-from-url now returns contentType/size/filename and client creates Firestore doc with correct type so files appear in the right Images/Videos/Files tab; `vercel-blob/` prefix is intentional (keeps Vercel store organized) but library aggregates all. Tabs use `forceMount` so upload progress persists when switching Cloudinary↔Vercel | ✅ |
 | 2026-08-23 | FIX: Vercel Blob — preview now uses `CdnClapprPlayer` for videos (like Cloudinary), next.config allows `*.vercel-storage.com`, add-from-url ensures Firestore doc appears (client fallback), delete is robust for all types (Vercel `del` + Firestore `where(pathname)` fallback) | ✅ |
 | 2026-08-23 | FIX: Vercel Blob tab styling & UX — inner Cloudinary/Vercel tabs now `glass-effect data-[state=active]:bg-destructive` (website red, like outer Media tabs), upload dropzones split into main/dialog instances so "Drag & drop files, or click to browse" reliably opens picker, progress simulation slowed to 5→95 (`+0.5-2.5` per 400ms) so it no longer stalls at 90% with fake percentage | ✅ |
 | 2026-08-23 | FIX: Vercel Blob preview/upload/delete — added `*.vercel-storage.com` to `next.config` remotePatterns (fixes preview images), made delete robust for all file types (Vercel `del` + Firestore `where(url)` + `where(pathname)` fallback + client `deleteDocumentNonBlocking` by id), and ensured upload progress and popup parity | ✅ |

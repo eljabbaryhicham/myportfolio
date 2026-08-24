@@ -249,10 +249,10 @@ function AdminPage() {
                       <TabsTrigger value="cloudinary" className="glass-effect data-[state=active]:bg-destructive">Cloudinary</TabsTrigger>
                       <TabsTrigger value="vercel" className="glass-effect data-[state=active]:bg-destructive">Vercel Blob</TabsTrigger>
                     </TabsList>
-                    <TabsContent value="cloudinary">
+                    <TabsContent value="cloudinary" forceMount className="data-[state=inactive]:hidden">
                       <MediaAdmin onUploadComplete={handleUploadComplete} onLibraryOpenRequest={() => setIsLibraryOpen(true)} onMediaSelect={handleOpenPortfolioFormWithMedia} />
                     </TabsContent>
-                    <TabsContent value="vercel">
+                    <TabsContent value="vercel" forceMount className="data-[state=inactive]:hidden">
                       <VercelBlobAdmin />
                     </TabsContent>
                   </Tabs>
