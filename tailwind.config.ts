@@ -11,10 +11,10 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        body: ['Quicksand', 'sans-serif'],
-        headline: ['Bungee', 'sans-serif'],
+        body: ['var(--font-quicksand)', 'sans-serif'],
+        headline: ['var(--font-bungee)', 'sans-serif'],
         code: ['monospace'],
-        handwriting: ['Dancing Script', 'cursive'],
+        handwriting: ['var(--font-dancing-script)', 'cursive'],
       },
       colors: {
         background: 'hsl(var(--background))',

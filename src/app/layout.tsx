@@ -7,6 +7,7 @@ import dynamic from 'next/dynamic';
 import React from 'react';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 import { Analytics } from '@vercel/analytics/next';
+import { bungee, quicksand, dancingScript } from './fonts';
 
 if (typeof globalThis.localStorage === 'object' && typeof globalThis.localStorage.getItem !== 'function') {
   const storage: Record<string, string> = {};
@@ -32,7 +33,7 @@ export default function RootLayout({
 }>) {
 
   return (
-    <html lang="en" className="dark h-full" suppressHydrationWarning>
+    <html lang="en" className={cn("dark h-full", bungee.variable, quicksand.variable, dancingScript.variable)} suppressHydrationWarning>
       <head>
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 

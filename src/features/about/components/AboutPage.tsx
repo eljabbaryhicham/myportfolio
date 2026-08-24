@@ -146,8 +146,20 @@ export default function AboutPage() {
         <div className="p-[clamp(1rem,3vh,2rem)] md:p-[clamp(1.5rem,4vh,2rem)] flex items-center justify-center min-h-full">
           <div className="container mx-auto px-0 text-center">
             {isLoadingContent ? (
-              <div className="flex justify-center items-center h-[50vh]">
-                <Preloader />
+              <div className="space-y-[clamp(2rem,6vh,4rem)] animate-pulse">
+                <div className="flex flex-col lg:flex-row gap-[clamp(1.5rem,4vh,3rem)]">
+                  <div className="w-full lg:w-1/2 p-4 sm:p-6 md:p-8 space-y-4">
+                    <div className="w-32 h-12 bg-white/10 rounded mx-auto" />
+                    <div className="h-8 bg-white/10 rounded w-3/4 mx-auto" />
+                    <div className="h-20 bg-white/10 rounded" />
+                  </div>
+                  <div className="w-full lg:w-1/2 grid grid-cols-3 sm:grid-cols-6 gap-[clamp(0.75rem,2vh,1.25rem)]">
+                    {Array.from({ length: 5 }).map((_, i) => (
+                      <div key={i} className="h-24 bg-white/5 rounded-lg" />
+                    ))}
+                  </div>
+                </div>
+                <div className="h-32 bg-white/5 rounded-lg" />
               </div>
             ) : (
               <motion.div 
@@ -213,8 +225,9 @@ export default function AboutPage() {
                   </motion.div>
 
                 {isLoadingClients ? (
-                  <motion.div variants={itemVariants} className="flex justify-center items-center min-h-[20vh]">
-                    <Preloader />
+                  <motion.div variants={itemVariants} className="space-y-4 animate-pulse">
+                    <div className="h-8 bg-white/5 rounded w-48 mx-auto" />
+                    <div className="h-20 bg-white/5 rounded" />
                   </motion.div>
                 ) : (
                 <motion.div variants={itemVariants}>

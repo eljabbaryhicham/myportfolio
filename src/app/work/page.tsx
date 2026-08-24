@@ -848,9 +848,11 @@ export default function WorkPage() {
                     animate="visible"
                   >
                     {isLoading ? (
-                      <div className="col-span-full h-full min-h-[50vh] flex items-center justify-center">
-                        <Preloader />
-                      </div>
+                      <>
+                        {Array.from({ length: 6 }).map((_, i) => (
+                          <motion.div key={`skeleton-${i}`} variants={itemVariants} className="aspect-square rounded-md bg-white/5 animate-pulse" />
+                        ))}
+                      </>
                     ) : filteredItems.length === 0 ? (
                       <div className="col-span-full h-full min-h-[50vh] flex flex-col items-center justify-center text-center gap-4">
                         <div className="text-foreground/40 text-lg">{t('work.empty.title')}</div>
