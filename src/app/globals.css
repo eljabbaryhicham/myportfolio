@@ -256,35 +256,54 @@ tr.drag-over-bottom {
 }
 
 /* Mobile homepage vertical centering — iOS Safari dynamic viewport fix
-   Root cause: fixed inset-0 + min-h-full centers in the layout viewport
-   (100vh, includes hidden address-bar area). Visual viewport is shorter
-   when the bar is visible, so content appears ~50px too high.
-   Fix: on mobile, size the fixed shell and its centering child from the
-   *visible* viewport (dvh → svh fallback) and respect safe-area insets. */
+   Root cause: fixed inset-0 + min-h-full + html/body h-full all resolve
+   from the *layout* viewport (100vh, includes hidden address-bar area).
+   Visual viewport is ~50-90px shorter when the bar is visible, so
+   flex centering appears too high. Fix: on mobile, size every ancestor
+   from the *visible* viewport (dvh → svh fallback) and nudge the centered
+   block slightly lower for optical centering. */
 @media (max-width: 768px) {
-  .homepage-viewport-fix {
-    /* svh = small viewport (bar visible) — safe fallback; dvh overrides where supported */
+  html, body {
     height: 100svh;
     min-height: 100svh;
-    bottom: auto;
+  }
+  .homepage-shell-fix {
+    height: 100svh !important;
+    min-height: 100svh !important;
+  }
+  .homepage-viewport-fix {
+    /* svh = small viewport (bar visible) — safe fallback; dvh overrides where supported */
+    height: 100svh !important;
+    min-height: 100svh !important;
+    bottom: auto !important;
+    top: 0 !important;
   }
   .homepage-viewport-fix-inner {
-    min-height: 100svh;
-    padding-top: env(safe-area-inset-top);
-    padding-bottom: env(safe-area-inset-bottom);
-    /* avoid Parent p-2 + safe-area double-padding on very small screens */
+    min-height: 100svh !important;
+    /* safe-area + small optical nudge so content sits *slightly* below true center */
+    padding-top: calc(env(safe-area-inset-top, 0px) + 12px) !important;
+    padding-bottom: env(safe-area-inset-bottom, 0px) !important;
     box-sizing: border-box;
   }
 }
 @supports (height: 100dvh) {
   @media (max-width: 768px) {
-    .homepage-viewport-fix {
+    html, body {
       height: 100dvh;
       min-height: 100dvh;
-      bottom: auto;
+    }
+    .homepage-shell-fix {
+      height: 100dvh !important;
+      min-height: 100dvh !important;
+    }
+    .homepage-viewport-fix {
+      height: 100dvh !important;
+      min-height: 100dvh !important;
+      bottom: auto !important;
+      top: 0 !important;
     }
     .homepage-viewport-fix-inner {
-      min-height: 100dvh;
+      min-height: 100dvh !important;
     }
   }
 }

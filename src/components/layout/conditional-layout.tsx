@@ -16,14 +16,14 @@ export function ConditionalLayout({ children }: { children: React.ReactNode }) {
     return (
       <AnimatePresence>
         <motion.div
-          className={cn("h-full w-full p-2", "force-gpu")}
+          className={cn("h-full w-full p-2 homepage-shell-fix", "force-gpu")}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.5 }}
         >
-          <main className="h-full w-full glass-effect rounded-lg border border-border/50 overflow-hidden">
-            <div className={cn("h-full w-full overflow-auto")}>
+          <main className="h-full w-full homepage-shell-fix glass-effect rounded-lg border border-border/50 overflow-hidden">
+            <div className={cn("h-full w-full overflow-auto homepage-shell-fix")}>
               {children}
             </div>
           </main>
