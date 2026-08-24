@@ -7,7 +7,6 @@ import { DynamicThemeStyles, SiteBackground, DynamicFavicon } from '@/components
 import { LanguageProvider } from '@/components/layout/language-switcher';
 import { UploadProgressProvider } from '@/components/upload-progress-context';
 import UploadProgressNotification from '@/components/upload-progress-notification';
-import { SpeedInsights } from '@vercel/speed-insights/next';
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
   return (
@@ -21,7 +20,6 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             {children}
           </LayoutProvider>
           <UploadProgressNotification />
-          <SpeedInsights />
         </UploadProgressProvider>
       </LanguageProvider>
       <Toaster />
