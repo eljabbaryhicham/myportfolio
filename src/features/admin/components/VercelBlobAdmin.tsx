@@ -20,6 +20,7 @@ import { useTranslation } from '@/lib/i18n/useTranslation';
 import { cn } from '@/lib/utils';
 import Preloader from '@/components/preloader';
 import Image from 'next/image';
+import CdnClapprPlayer from '@/components/CdnClapprPlayer';
 
 type VercelBlobDoc = {
   id: string;
@@ -196,6 +197,31 @@ export default function VercelBlobAdmin() {
       });
       const data = await res.json();
       if (!res.ok || !data.success) throw new Error(data.message || 'Add from URL failed');
+      // Fallback: ensure Firestore doc exists (server should have created it, but create client-side if missing)
+      if (firestore) {
+        try {
+          // Check if doc already exists by url
+          const q = query(collection(firestore, 'vercel_blobs'));
+          // Optimistically create doc client-side to ensure it appears immediately (server may have already created it, but duplicate is okay - will be deduped by url)
+          await addDocumentNonBlocking(collection(firestore, 'vercel_blobs'), {
+            provider: 'vercel_blob',
+            url: data.url,
+            pathname: data.pathname || `vercel-blob/${Date.now()}-${addUrl.split('/').pop() || 'file'}`,
+            size: 0,
+            contentType: data.contentType || 'application/octet-stream',
+            filename: data.url.split('/').pop() || addUrl.split('/').pop() || 'file',
+            uploadedAt: serverTimestamp(),
+            uploadedBy: auth?.currentUser?.uid || null,
+            sourceUrl: addUrl.trim(),
+          } as any);
+        } catch {}
+      }
+      // Switch to correct tab and open library
+      const lowerUrl = (data.url || addUrl).toLowerCase();
+      if (/\.(png|jpe?g|gif|webp|avif|svg|bmp)$/.test(lowerUrl)) setActiveTab('images');
+      else if (/\.(mp4|webm|mov|m3u8|avi|mkv)$/.test(lowerUrl)) setActiveTab('videos');
+      else setActiveTab('files');
+      setIsLibraryOpen(true);
       toast({ title: 'Added from URL', description: data.url });
       setIsAddFromUrlOpen(false);
       setAddUrl('');
@@ -318,9 +344,9 @@ export default function VercelBlobAdmin() {
         {t('mediaAdmin.addFromUrl')}
       </Button>
       {isUploading && (
-        <div>
+        <div className="space-y-2">
           <Progress value={uploadProgress} className="w-full" />
-          <p className="text-sm text-center mt-2 text-muted-foreground">
+          <p className="text-sm text-center text-muted-foreground">
             Uploading {uploadingFileName}… {Math.round(uploadProgress)}%
           </p>
         </div>
@@ -364,7 +390,7 @@ export default function VercelBlobAdmin() {
                 )}
               >
                 <input {...getInputPropsDialog()} disabled={isUploading} />
-                <FontAwesomeIcon icon={faCloudUploadAlt} className="h-4 w-4 shrink-0" />
+                <FontAwesomeIcon icon={faCloudUploadAlt} className="h-4 w-4 shrink-0 pointer-events-none" />
                 <span className="text-xs md:text-sm truncate text-center pointer-events-none">
                   {isUploading ? t('mediaAdmin.uploading') : 'Drag & drop files, or click to browse'}
                 </span>
@@ -434,7 +460,9 @@ export default function VercelBlobAdmin() {
                 <Image src={previewFile.url} alt={previewFile.filename} fill className="object-contain" />
               </div>
             ) : previewFile?.contentType?.startsWith('video/') ? (
-              <video src={previewFile.url} controls className="max-w-full max-h-full rounded-md" />
+              <div className="w-full h-full flex items-center justify-center bg-black">
+                <CdnClapprPlayer source={previewFile.url} />
+              </div>
             ) : (
               <div className="text-center text-white/70">
                 <FontAwesomeIcon icon={faFileLines} className="h-12 w-12 mb-2" />
