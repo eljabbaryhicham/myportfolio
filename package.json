@@ -2,6 +2,13 @@
   "name": "nextn",
   "version": "0.1.0",
   "private": "true",
+  "browserslist": {
+    "production": [
+      ">0.5%",
+      "not dead",
+      "not op_mini all"
+    ]
+  },
   "scripts": {
     "dev": "NODE_OPTIONS=--no-deprecation next dev --turbopack",
     "build": "SKIP_ENV_VALIDATION=1 NODE_ENV=production next build",
