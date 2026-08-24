@@ -273,10 +273,10 @@ const MemoizedPortfolioMedia = memo(({
         <Button
             variant="ghost"
             size="icon"
-            className="absolute inset-0 m-auto z-10 h-12 w-12 md:h-16 md:w-16 text-white bg-black/50 opacity-70 md:opacity-0 md:group-hover/media:opacity-100 transition-opacity"
+            className="absolute top-2 right-2 z-10 h-9 w-9 md:h-10 md:w-10 text-white bg-black/60 opacity-70 md:opacity-0 md:group-hover/media:opacity-100 transition-opacity hover:bg-black/80"
             onClick={() => onFullscreenClick(item.sourceUrl || item.thumbnailUrl)}
           >
-            <FontAwesomeIcon icon={faExpand} className="h-6 w-6 md:h-8 md:w-8" />
+            <FontAwesomeIcon icon={faExpand} className="h-4 w-4 md:h-5 md:w-5" />
             <span className="sr-only">{t('work.details.fullscreen')}</span>
         </Button>
       </div>
