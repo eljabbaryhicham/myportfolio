@@ -26,6 +26,7 @@ import { useFirestore, useUser } from '@/firebase';
 import AdminManagement from '@/features/admin/components/AdminManagement';
 import AboutAdmin from '@/features/admin/components/AboutAdmin';
 import { useTranslation } from '@/lib/i18n/useTranslation';
+import { useUploadProgress } from '@/components/upload-progress-context';
 
 
 function AdminPage() {
@@ -46,6 +47,8 @@ function AdminPage() {
   const [newlyUploadedId, setNewlyUploadedId] = useState<string | null>(null);
   const [dialogActiveTab, setDialogActiveTab] = useState<'images' | 'videos' | 'files'>('images');
   const [dialogActiveLibrary, setDialogActiveLibrary] = useState<'primary' | 'extented'>('primary');
+  const [innerMediaTab, setInnerMediaTab] = useState('cloudinary');
+  const { setActiveMediaTab } = useUploadProgress();
 
   const typedUser = user as AppUser | null;
   const isSuperAdmin = typedUser?.email === 'eljabbaryhicham@example.com';
@@ -62,6 +65,14 @@ function AdminPage() {
   useEffect(() => {
     localStorage.setItem('adminActiveTab', activeTab);
   }, [activeTab]);
+
+  useEffect(() => {
+    if (activeTab === 'media') {
+      setActiveMediaTab(innerMediaTab);
+    } else {
+      setActiveMediaTab(null);
+    }
+  }, [activeTab, innerMediaTab, setActiveMediaTab]);
   
   useEffect(() => {
     if (isUserLoading) {
@@ -244,7 +255,7 @@ function AdminPage() {
                   <ContactAdmin />
               </TabsContent>
               <TabsContent value="media" className="flex-1 overflow-auto mt-4">
-                  <Tabs defaultValue="cloudinary" className="w-full">
+                  <Tabs value={innerMediaTab} onValueChange={setInnerMediaTab} className="w-full">
                     <TabsList className="mb-4">
                       <TabsTrigger value="cloudinary" className="glass-effect data-[state=active]:bg-destructive">Cloudinary</TabsTrigger>
                       <TabsTrigger value="vercel" className="glass-effect data-[state=active]:bg-destructive">Vercel Blob</TabsTrigger>

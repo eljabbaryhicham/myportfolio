@@ -13,6 +13,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useCollection, useFirestore, useMemoFirebase, useAuth, addDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase';
 import { collection, query, orderBy, serverTimestamp, doc } from 'firebase/firestore';
 import { upload } from '@vercel/blob/client';
+import { useUploadProgress } from '@/components/upload-progress-context';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCloudUploadAlt, faCopy, faTrash, faFileLines, faFilm, faFileImage, faFolderOpen, faEye, faXmark, faLink } from '@fortawesome/free-solid-svg-icons';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
@@ -48,6 +49,7 @@ export default function VercelBlobAdmin() {
   const { toast } = useToast();
   const firestore = useFirestore();
   const auth = useAuth();
+  const { startUpload, updateProgress: updateGlobalProgress, finishUpload } = useUploadProgress();
 
   const [activeTab, setActiveTab] = useState<'images' | 'videos' | 'files'>('images');
   const [searchQuery, setSearchQuery] = useState('');
@@ -95,11 +97,12 @@ export default function VercelBlobAdmin() {
       setIsUploading(true);
       setUploadProgress(5);
       setUploadingFileName(file.name);
+      startUpload(file.name, 'vercel');
       let prog = 5;
       const interval = setInterval(() => {
-        // Very slow simulation to 98% — large videos take long, avoid visible stall at 95%
         prog = Math.min(98, prog + Math.random() * 1 + 0.2);
         setUploadProgress(prog);
+        updateGlobalProgress(prog);
       }, 600);
       try {
         const blob: any = await upload(file.name, file, {
@@ -109,7 +112,7 @@ export default function VercelBlobAdmin() {
         } as any);
         clearInterval(interval);
         setUploadProgress(100);
-        // Fallback Firestore mirror in case server onUploadCompleted failed — ensures popup shows the item
+        updateGlobalProgress(100);
         if (firestore) {
           try {
             const docRef = await addDocumentNonBlocking(collection(firestore, 'vercel_blobs'), {
@@ -122,13 +125,11 @@ export default function VercelBlobAdmin() {
               uploadedAt: serverTimestamp(),
               uploadedBy: auth?.currentUser?.uid || null,
             } as any);
-            // Highlight in popup like Cloudinary
             const newId = (docRef as any)?.id || blob.pathname;
             setNewlyUploadedId(newId);
             setTimeout(() => setNewlyUploadedId(null), 2000);
           } catch {}
         }
-        // Switch to correct tab and open library popup to show the new item (Cloudinary parity)
         const lowerType = file.type.toLowerCase();
         if (lowerType.startsWith('image/')) setActiveTab('images');
         else if (lowerType.startsWith('video/')) setActiveTab('videos');
@@ -136,14 +137,18 @@ export default function VercelBlobAdmin() {
         setIsLibraryOpen(true);
         toast({ title: 'Uploaded to Vercel Blob', description: file.name });
         await new Promise((r) => setTimeout(r, 400));
+        finishUpload();
       } catch (e: any) {
         clearInterval(interval);
+        finishUpload();
         toast({ variant: 'destructive', title: 'Upload failed', description: e?.message || String(e) });
       } finally {
         clearInterval(interval);
         setIsUploading(false);
         setUploadProgress(0);
         setUploadingFileName('');
+        // Keep global notification for a moment after local finishes, then clear
+        setTimeout(() => finishUpload(), 1000);
       }
     }
   }, [getToken, toast, firestore, auth]);
