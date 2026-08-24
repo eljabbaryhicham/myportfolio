@@ -93,10 +93,10 @@ export default function VercelBlobAdmin() {
       setUploadingFileName(file.name);
       let prog = 5;
       const interval = setInterval(() => {
-        // Slow, realistic simulation to 95% — avoids long stall at 90%
-        prog = Math.min(95, prog + Math.random() * 2 + 0.5);
+        // Very slow simulation to 98% — large videos take long, avoid visible stall at 95%
+        prog = Math.min(98, prog + Math.random() * 1 + 0.2);
         setUploadProgress(prog);
-      }, 400);
+      }, 600);
       try {
         const blob: any = await upload(file.name, file, {
           access: 'public',
