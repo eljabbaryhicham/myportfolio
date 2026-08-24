@@ -285,7 +285,7 @@ const MemoizedPortfolioMedia = memo(({
 MemoizedPortfolioMedia.displayName = 'MemoizedPortfolioMedia';
 
 
-const PortfolioGridItem = ({ item, onClick, onEditClick, isAdmin, isSuperAdmin, onSwitchPlayer }: { item: PortfolioItem, onClick: () => void, onEditClick: () => void, isAdmin: boolean, isSuperAdmin: boolean, onSwitchPlayer: () => void }) => {
+const PortfolioGridItem = ({ item, onClick, onEditClick, isAdmin, isSuperAdmin, onSwitchPlayer, isPriority }: { item: PortfolioItem, onClick: () => void, onEditClick: () => void, isAdmin: boolean, isSuperAdmin: boolean, onSwitchPlayer: () => void, isPriority?: boolean }) => {
   const { t } = useTranslation();
   const [isLoaded, setIsLoaded] = useState(false);
   // Hover preview (desktop only): mount a muted looping <video> / full image
@@ -338,6 +338,8 @@ const PortfolioGridItem = ({ item, onClick, onEditClick, isAdmin, isSuperAdmin, 
           src={item.thumbnailUrl}
           alt={item.title}
           fill
+          priority={!!isPriority}
+          fetchPriority={isPriority ? "high" : "auto"}
           className={cn(
             "object-cover transition-opacity duration-500",
             isLoaded ? "opacity-100 md:group-hover:scale-105" : "opacity-0"
@@ -866,7 +868,7 @@ export default function WorkPage() {
                       </div>
                     ) : (
                       <>
-                        {itemsToShow.map(item => (
+                        {itemsToShow.map((item, idx) => (
                           <motion.div key={item.id} variants={itemVariants}>
                             <PortfolioGridItem 
                               item={item}
@@ -875,6 +877,7 @@ export default function WorkPage() {
                               isAdmin={!!user}
                               isSuperAdmin={isSuperAdmin}
                               onSwitchPlayer={handleSwitchPlayer}
+                              isPriority={idx < 3}
                             />
                           </motion.div>
                         ))}

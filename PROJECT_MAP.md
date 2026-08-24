@@ -139,6 +139,7 @@ Firebase Firestore ← useDoc/useCollection hooks → React components
 
 | Date | Change | Status |
 |------|--------|--------|
+| 2026-08-23 | PERF: LCP 4.56s→<2.5s — homepage hero video `preload="auto"`→`metadata` + preload link for poster (`fetchPriority: high`), work grid first 3 images `priority` + `fetchPriority="high"` with `sizes` already set | ✅ |
 | 2026-08-23 | PERF: CLS 0.48→<0.1 — replaced `@import` Google Fonts with `next/font` (`Bungee`+`Quicksand`+`Dancing Script`, `display:swap` + automatic `size-adjust`), reserved `aspect-square` + `sizes` already on work grid images, and added skeletons for Work/About/Contact loading states (`Work: 6× aspect-square pulse skeletons`, `About: content + clients skeletons`, `Contact: two 400px skeletons`) to eliminate `Preloader` → content layout shifts | ✅ |
 | 2026-08-23 | CHORE: Added Vercel Analytics (`@vercel/analytics` + `<Analytics/>` in `app/layout.tsx`) to start counting visitors and page views | ✅ |
 | 2026-08-23 | FIX: Speed Insights “No data available” — moved `<SpeedInsights/>` from dynamically-imported `AppShell` (ssr:false) to `app/layout.tsx` body so the tracking script is always injected, as per Vercel docs | ✅ |

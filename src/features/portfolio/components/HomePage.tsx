@@ -191,6 +191,18 @@ export default function HomePageContent() {
   const logoColor = homeSettings?.homePageLogoColor || '';
 
   useEffect(() => {
+    // Preload the default hero poster with high priority for LCP
+    const link = document.createElement('link');
+    link.rel = 'preload';
+    link.as = 'image';
+    link.href = HERO_VIDEO_POSTER;
+    // @ts-ignore - fetchPriority is not in the type but is valid
+    link.fetchPriority = 'high';
+    document.head.appendChild(link);
+    return () => { try { document.head.removeChild(link); } catch {} };
+  }, []);
+
+  useEffect(() => {
     const videoUrl = homeSettings?.heroVideoUrl;
     const video = videoRef.current;
     if (!video || !videoUrl || videoUrl === HERO_VIDEO_URL) return;
@@ -257,7 +269,7 @@ export default function HomePageContent() {
                 background: "radial-gradient(ellipse at center, rgba(255,255,255,0.08) 0%, transparent 70%)",
                 filter: "blur(50px)",
               }} />
-              <video ref={videoRef} autoPlay muted loop playsInline preload="auto" src={HERO_VIDEO_URL} poster={HERO_VIDEO_POSTER} className="absolute inset-0 w-full h-full object-cover" style={{ pointerEvents: 'none' }} />
+              <video ref={videoRef} autoPlay muted loop playsInline preload="metadata" poster={HERO_VIDEO_POSTER} className="absolute inset-0 w-full h-full object-cover" style={{ pointerEvents: 'none' }} />
               <div className="absolute inset-0 bg-black/60" />
               <div className="absolute inset-0" style={{ backdropFilter: "blur(1px)" }} />
             </div>
