@@ -139,6 +139,7 @@ Firebase Firestore ← useDoc/useCollection hooks → React components
 
 | Date | Change | Status |
 |------|--------|--------|
+| 2026-08-23 | FIX: Vercel Blob add-from-url for `board.jdownloader.org/images/logo.png` was stored as `text/html` (203-byte JS cookie challenge `firstvisit=Max` + reload). Added retry with `Cookie: firstvisit=Max` and browser User-Agent, plus fallback MIME from file extension (e.g., `.png` → `image/png`) so the file is correctly categorized as image | ✅ |
 | 2026-08-23 | FEATURE: Upload progress now minimized to bottom-right notification when navigating away — `UploadProgressProvider` + `UploadProgressNotification` (fixed bottom-right, shows file name + progress). Vercel uploads set global `isUploading`/`progress` via `useUploadProgress`; notification hides when on Media → Vercel tab (inline progress visible there) and shows on other tabs/pages | ✅ |
 | 2026-08-23 | FIX: Vercel Blob bulk actions bar was outside the library popup (fixed viewport). Moved `BulkActionBar` inside the library `DialogContent` with `!relative` styling so it appears inside the popup like Cloudinary | ✅ |
 | 2026-08-23 | FIX: Vercel Blob add-from-url was putting files in `vercel-blob/` subfolder (vs direct uploads at root) so they appeared in a separate folder in Vercel dashboard and were missed in library. Now both use root (`${Date.now()}-${name}`) for consistency; library aggregates all regardless | ✅ |
