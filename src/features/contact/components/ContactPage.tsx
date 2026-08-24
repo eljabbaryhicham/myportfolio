@@ -110,9 +110,8 @@ export default function ContactPage() {
         <div className="p-[clamp(1rem,3vh,2rem)] md:p-[clamp(1.5rem,4vh,2rem)] w-full flex items-center justify-center min-h-full">
             <div className="container mx-auto px-0">
             {isLoading ? (
-              <div className="w-full flex flex-col lg:flex-row gap-[clamp(1rem,3vh,2rem)] animate-pulse">
-                <div className="w-full lg:w-1/2 h-[400px] bg-white/5 rounded-lg" />
-                <div className="w-full lg:w-1/2 h-[400px] bg-white/5 rounded-lg" />
+              <div className="flex justify-center items-center h-[50vh]">
+                <Preloader />
               </div>
             ) : (
             <>
