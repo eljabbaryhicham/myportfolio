@@ -10,8 +10,8 @@ import { Separator } from '@/components/ui/separator';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
-import { useCollection, useFirestore, useMemoFirebase, useAuth } from '@/firebase';
-import { collection, query, orderBy } from 'firebase/firestore';
+import { useCollection, useFirestore, useMemoFirebase, useAuth, addDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase';
+import { collection, query, orderBy, serverTimestamp, doc } from 'firebase/firestore';
 import { upload } from '@vercel/blob/client';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCloudUploadAlt, faCopy, faTrash, faFileLines, faFilm, faFileImage, faFolderOpen, faEye, faXmark, faLink } from '@fortawesome/free-solid-svg-icons';
@@ -53,6 +53,7 @@ export default function VercelBlobAdmin() {
   const [uploadingFileName, setUploadingFileName] = useState('');
   const [previewFile, setPreviewFile] = useState<VercelBlobDoc | null>(null);
   const [isLibraryOpen, setIsLibraryOpen] = useState(false);
+  const [newlyUploadedId, setNewlyUploadedId] = useState<string | null>(null);
   const [isAddFromUrlOpen, setIsAddFromUrlOpen] = useState(false);
   const [addUrl, setAddUrl] = useState('');
   const [isAddingFromUrl, setIsAddingFromUrl] = useState(false);
@@ -89,27 +90,49 @@ export default function VercelBlobAdmin() {
       setIsUploading(true);
       setUploadProgress(0);
       setUploadingFileName(file.name);
-      // Simulate progress 0 -> 90 while uploading (client upload has no onprogress)
       let prog = 0;
       const interval = setInterval(() => {
-        prog = Math.min(90, prog + Math.random() * 10 + 5);
+        prog = Math.min(90, prog + Math.random() * 8 + 3);
         setUploadProgress(prog);
-      }, 300);
+      }, 250);
       try {
-        const blob = await upload(file.name, file, {
+        const blob: any = await upload(file.name, file, {
           access: 'public',
           handleUploadUrl: '/api/vercel-blob/handle-upload',
           headers: { Authorization: `Bearer ${token}` },
         } as any);
         clearInterval(interval);
         setUploadProgress(100);
-        toast({ title: 'Uploaded to Vercel Blob', description: blob.url });
-        // Firestore doc is created server-side in onUploadCompleted
-        await new Promise((r) => setTimeout(r, 500));
+        // Fallback Firestore mirror in case server onUploadCompleted failed — ensures popup shows the item
+        if (firestore) {
+          try {
+            const docRef = await addDocumentNonBlocking(collection(firestore, 'vercel_blobs'), {
+              provider: 'vercel_blob',
+              url: blob.url,
+              pathname: blob.pathname,
+              size: blob.size ?? file.size,
+              contentType: blob.contentType || file.type || 'application/octet-stream',
+              filename: file.name,
+              uploadedAt: serverTimestamp(),
+              uploadedBy: auth?.currentUser?.uid || null,
+            } as any);
+            // Highlight in popup like Cloudinary
+            const newId = (docRef as any)?.id || blob.pathname;
+            setNewlyUploadedId(newId);
+            setTimeout(() => setNewlyUploadedId(null), 2000);
+          } catch {}
+        }
+        // Switch to correct tab and open library popup to show the new item (Cloudinary parity)
+        const lowerType = file.type.toLowerCase();
+        if (lowerType.startsWith('image/')) setActiveTab('images');
+        else if (lowerType.startsWith('video/')) setActiveTab('videos');
+        else setActiveTab('files');
+        setIsLibraryOpen(true);
+        toast({ title: 'Uploaded to Vercel Blob', description: file.name });
+        await new Promise((r) => setTimeout(r, 400));
       } catch (e: any) {
         clearInterval(interval);
-        const msg = e?.message || String(e);
-        toast({ variant: 'destructive', title: 'Upload failed', description: msg });
+        toast({ variant: 'destructive', title: 'Upload failed', description: e?.message || String(e) });
       } finally {
         clearInterval(interval);
         setIsUploading(false);
@@ -117,7 +140,7 @@ export default function VercelBlobAdmin() {
         setUploadingFileName('');
       }
     }
-  }, [getToken, toast]);
+  }, [getToken, toast, firestore, auth]);
 
   const onDrop = useCallback((accepted: File[]) => handleUpload(accepted), [handleUpload]);
   const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop, multiple: true });
@@ -127,7 +150,7 @@ export default function VercelBlobAdmin() {
     toast({ title: t('mediaAdmin.toast.copied.title') || 'Copied', description: url });
   };
 
-  const handleDelete = async (url: string) => {
+  const handleDelete = async (url: string, id?: string) => {
     const token = await getToken();
     if (!token) {
       toast({ variant: 'destructive', title: 'Not authenticated' });
@@ -141,8 +164,16 @@ export default function VercelBlobAdmin() {
       });
       const data = await res.json();
       if (!res.ok || !data.success) throw new Error(data.message || 'Delete failed');
+      // Fallback: also delete Firestore doc client-side if server missed it (ensures library + Vercel stay in sync)
+      if (firestore && id) {
+        try { await deleteDocumentNonBlocking(doc(firestore, 'vercel_blobs', id)); } catch {}
+      }
       toast({ title: 'Deleted' });
     } catch (e: any) {
+      // Try Firestore delete anyway
+      if (firestore && id) {
+        try { await deleteDocumentNonBlocking(doc(firestore, 'vercel_blobs', id)); } catch {}
+      }
       toast({ variant: 'destructive', title: 'Delete failed', description: e?.message });
     }
   };
@@ -205,8 +236,9 @@ export default function VercelBlobAdmin() {
         {assets.map((b) => {
           const isImage = b.contentType?.startsWith('image/');
           const isVideo = b.contentType?.startsWith('video/');
+          const isNew = b.id === newlyUploadedId || b.pathname === newlyUploadedId;
           return (
-            <div key={b.id} className="flex flex-col gap-2">
+            <div key={b.id} className={cn("flex flex-col gap-2", isNew && "ring-2 ring-primary rounded-lg animate-pulse")}>
               <div className="relative group aspect-square border rounded-lg overflow-hidden glass-effect p-1">
                 <div className="relative w-full h-full rounded-md overflow-hidden bg-black/50 flex items-center justify-center">
                   {isImage ? (
@@ -242,7 +274,7 @@ export default function VercelBlobAdmin() {
                       </AlertDialogHeader>
                       <AlertDialogFooter>
                         <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction onClick={() => handleDelete(b.url)}>Delete</AlertDialogAction>
+                        <AlertDialogAction onClick={() => handleDelete(b.url, b.id)}>Delete</AlertDialogAction>
                       </AlertDialogFooter>
                     </AlertDialogContent>
                   </AlertDialog>
