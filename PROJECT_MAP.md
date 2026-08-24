@@ -139,6 +139,7 @@ Firebase Firestore ← useDoc/useCollection hooks → React components
 
 | Date | Change | Status |
 |------|--------|--------|
+| 2026-08-23 | CHORE: Added Vercel Analytics (`@vercel/analytics` + `<Analytics/>` in `app/layout.tsx`) to start counting visitors and page views | ✅ |
 | 2026-08-23 | FIX: Speed Insights “No data available” — moved `<SpeedInsights/>` from dynamically-imported `AppShell` (ssr:false) to `app/layout.tsx` body so the tracking script is always injected, as per Vercel docs | ✅ |
 | 2026-08-23 | CHORE: Added Vercel Speed Insights (`@vercel/speed-insights` + `<SpeedInsights/>` in `app-shell.tsx`) to satisfy Vercel dashboard onboarding and start collecting performance metrics | ✅ |
 | 2026-08-23 | FIX: Upload progress now separated per provider — Vercel and Cloudinary can upload simultaneously with independent bars. Global context now tracks `vercel` and `cloudinary` separately, inline bars check `globalProvider`, and minimized notification shows both when needed | ✅ |
