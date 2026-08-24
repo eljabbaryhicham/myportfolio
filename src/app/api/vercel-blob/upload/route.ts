@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { put } from '@vercel/blob';
-import { initializeServerApp } from '@/firebase/server-init';
-import admin from 'firebase-admin';
 import { verifyAdminRequest } from '@/lib/admin-auth';
 
 export async function POST(req: NextRequest) {
@@ -37,23 +35,8 @@ export async function POST(req: NextRequest) {
   try {
     const blob = await put(pathname, file, { access: 'public' });
 
-    try {
-      const app = await initializeServerApp();
-      const db = admin.firestore(app);
-      await db.collection('vercel_blobs').add({
-        provider: 'vercel_blob',
-        url: blob.url,
-        pathname: blob.pathname,
-        size: file.size,
-        contentType: file.type || 'application/octet-stream',
-        filename: file.name,
-        uploadedAt: admin.firestore.FieldValue.serverTimestamp(),
-        uploadedBy: decoded.uid,
-      });
-    } catch (fireErr) {
-      console.warn('Vercel Blob uploaded but Firestore mirror failed', fireErr);
-    }
-
+    // Firestore mirror is handled client-side (VercelBlobAdmin) to avoid
+    // duplicate docs and to work without Admin SDK Firestore permissions.
     return NextResponse.json({
       success: true,
       url: blob.url,

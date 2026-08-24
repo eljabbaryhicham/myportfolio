@@ -6,8 +6,8 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
-import { useCollection, useFirestore, useMemoFirebase, useAuth } from '@/firebase';
-import { collection, query, orderBy } from 'firebase/firestore';
+import { useCollection, useFirestore, useMemoFirebase, useAuth, addDocumentNonBlocking } from '@/firebase';
+import { collection, query, orderBy, serverTimestamp } from 'firebase/firestore';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCloudUploadAlt, faCopy, faTrash, faFileLines, faFilm, faFileImage } from '@fortawesome/free-solid-svg-icons';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
@@ -88,6 +88,23 @@ export default function VercelBlobAdmin() {
         if (!res.ok || !data.success) {
           throw new Error(data.message || 'Upload failed');
         }
+        // Mirror metadata to Firestore (client-side, as Cloudinary does)
+        if (firestore) {
+          try {
+            await addDocumentNonBlocking(collection(firestore, 'vercel_blobs'), {
+              provider: 'vercel_blob',
+              url: data.url,
+              pathname: data.pathname,
+              size: data.size ?? file.size,
+              contentType: data.contentType || file.type || 'application/octet-stream',
+              filename: file.name,
+              uploadedAt: serverTimestamp(),
+              uploadedBy: auth?.currentUser?.uid || null,
+            });
+          } catch (fe: any) {
+            console.warn('Firestore mirror failed', fe);
+          }
+        }
         toast({ title: 'Uploaded to Vercel Blob', description: file.name });
         setProgress(100);
       } catch (e: any) {
@@ -97,7 +114,7 @@ export default function VercelBlobAdmin() {
         setProgress(0);
       }
     }
-  }, [getToken, toast]);
+  }, [getToken, toast, firestore, auth]);
 
   const onDrop = useCallback((accepted: File[]) => handleUpload(accepted), [handleUpload]);
 

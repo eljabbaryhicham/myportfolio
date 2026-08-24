@@ -139,6 +139,7 @@ Firebase Firestore ← useDoc/useCollection hooks → React components
 
 | Date | Change | Status |
 |------|--------|--------|
+| 2026-08-23 | FIX: Vercel Blob showed "Uploaded" but no file appeared — server Firestore mirror (Admin SDK) failed silently, and list is from Firestore `vercel_blobs`. Moved mirror to client-side `addDocumentNonBlocking` in `VercelBlobAdmin` (as Cloudinary does) with `provider:"vercel_blob"`; server now only does `put` | ✅ |
 | 2026-08-23 | FIX: Vercel Blob auth now reuses MediaAdmin logic — `verifyAdminRequest` checks `isSuperAdmin` (eljabbaryhicham@example.com) and Firestore `users/{uid}.permissions.canUploadMedia` (default true), same as MediaAdmin client checks. Adds fallback JWT decode for ADC-not-configured dev, and mirrors Cloudinary protection (no new mechanism, auth kept) | ✅ |
 | 2026-08-23 | FEATURE: Vercel Blob isolated storage — new "Vercel Blob" section inside Media tab (separate from Cloudinary). Installs `@vercel/blob`, adds protected API routes `/api/vercel-blob/(upload|list|delete)` (Bearer admin token, `BLOB_READ_WRITE_TOKEN` placeholder returns 503 until you set it, image 50MB limit, other types unlimited), Firestore mirror `vercel_blobs` with `provider:"vercel_blob"` field, UI `VercelBlobAdmin` with drag-drop, search, copy URL, delete, `firestore.rules` for `vercel_blobs` (admin-only). Cloudinary system untouched, no picker mixing | ✅ |
 | 2026-08-23 | FIX: Project main image fullscreen button moved from center to top-right corner (`top-2 right-2`), matching markdown images | ✅ |
