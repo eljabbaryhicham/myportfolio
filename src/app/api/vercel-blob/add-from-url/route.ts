@@ -38,7 +38,7 @@ export async function POST(req: NextRequest) {
     const urlParts = new URL(url);
     const originalName = urlParts.pathname.split('/').pop() || 'file';
     const sanitized = originalName.replace(/[^a-zA-Z0-9._-]/g, '_') || 'file';
-    const pathname = `vercel-blob/${Date.now()}-${sanitized}`;
+    const pathname = `${Date.now()}-${sanitized}`;
 
     const blob = await put(pathname, buffer, { access: 'public', contentType } as any);
 
