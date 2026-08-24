@@ -28,7 +28,7 @@ const en: Record<string, string> = {
   'about.whatYouGet': 'What We Provide?',
   'about.ourClients': 'Our Clients',
   'about.clientsEmpty': 'No clients to display.',
-  'about.clientsTagline': 'Trusted by 1000+ amazing customer & clients worldwide',
+  'about.clientsTagline': 'Trusted by 1000+ amazing customers & clients worldwide',
   'about.cta.contact': 'Contact Us',
   'about.cta.explore': 'Explore Our Works',
   'about.clientLogoAlt': '{name} logo',
