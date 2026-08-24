@@ -84,10 +84,66 @@ const uploadMediaFromUrlFlow = ai.defineFlow(
 
       console.log(`Uploading to ${libraryId} library from URL: ${input.mediaUrl}`);
 
-      // Upload to Cloudinary.
-      const uploadResult = await cloudinary.uploader.upload(input.mediaUrl, {
-        resource_type: 'auto', // Let Cloudinary detect the resource type
-      });
+      // Fetch the remote file with browser-like headers and handle JS cookie challenges
+      // (e.g., board.jdownloader.org returns a 203-byte HTML challenge for generic fetch)
+      let mediaBuffer: Buffer | null = null;
+      let contentType: string | null = null;
+      try {
+        const fetchWithHeaders = (u: string, extraHeaders: Record<string, string> = {}) =>
+          fetch(u, {
+            headers: {
+              'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+              Accept: 'image/avif,image/webp,image/apng,image/*,*/*;q=0.8',
+              'Accept-Language': 'en-US,en;q=0.9',
+              ...extraHeaders,
+            },
+            redirect: 'follow',
+          });
+        let res = await fetchWithHeaders(input.mediaUrl);
+        let buffer = Buffer.from(await res.arrayBuffer());
+        contentType = res.headers.get('content-type');
+
+        const textSnippet = buffer.length < 2048 ? buffer.toString('utf-8', 0, Math.min(buffer.length, 2048)) : '';
+        if (contentType?.includes('text/html') && textSnippet.includes('firstvisit')) {
+          res = await fetchWithHeaders(input.mediaUrl, { Cookie: 'firstvisit=Max' });
+          if (!res.ok) throw new Error(`Fetch failed: ${res.status} ${res.statusText}`);
+          contentType = res.headers.get('content-type');
+          buffer = Buffer.from(await res.arrayBuffer());
+        }
+
+        // If we got an image buffer (or the URL ends with an image extension), keep it for direct upload
+        const lowerUrl = input.mediaUrl.toLowerCase();
+        const isImageExt = /\.(png|jpe?g|gif|webp|avif|svg|bmp|tiff)$/.test(lowerUrl.split('?')[0]);
+        if ((contentType && contentType.startsWith('image/')) || (isImageExt && buffer.length > 1000 && !contentType?.includes('text/html'))) {
+          mediaBuffer = buffer;
+          if (isImageExt && contentType?.includes('text/html')) {
+            const ext = lowerUrl.split('.').pop()?.split('?')[0] || 'png';
+            const mimeMap: Record<string, string> = { png: 'image/png', jpg: 'image/jpeg', jpeg: 'image/jpeg', gif: 'image/gif', webp: 'image/webp', avif: 'image/avif', svg: 'image/svg+xml', bmp: 'image/bmp' };
+            contentType = mimeMap[ext] || 'image/png';
+          }
+        } else if (contentType?.includes('text/html') && buffer.length < 5000) {
+          // Still got HTML — likely a challenge page, fall back to letting Cloudinary fetch directly (it may handle it)
+          mediaBuffer = null;
+        } else {
+          mediaBuffer = buffer;
+        }
+      } catch (fetchErr) {
+        console.warn('Pre-fetch for Cloudinary URL failed, falling back to direct Cloudinary fetch', fetchErr);
+        mediaBuffer = null;
+      }
+
+      // Upload to Cloudinary — use buffer if we successfully fetched it, otherwise let Cloudinary fetch the URL
+      let uploadResult: any;
+      if (mediaBuffer) {
+        const dataUri = `data:${contentType || 'image/png'};base64,${mediaBuffer.toString('base64')}`;
+        uploadResult = await cloudinary.uploader.upload(dataUri, {
+          resource_type: 'auto',
+        });
+      } else {
+        uploadResult = await cloudinary.uploader.upload(input.mediaUrl, {
+          resource_type: 'auto',
+        });
+      }
 
       console.log('Cloudinary upload successful:', uploadResult.public_id);
 

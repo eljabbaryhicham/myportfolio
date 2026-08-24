@@ -14,11 +14,15 @@ export default function UploadProgressNotification() {
 
   if (!isUploading) return null;
 
-  // Hide the minimized notification when the user is on the Vercel upload section
-  // (admin -> media -> vercel) where the inline progress is visible.
-  // Show it when navigating to other pages or other tabs (cloudinary, other admin tabs).
-  const isOnVercelUploadSection = pathname === '/admin' && activeMediaTab === 'vercel';
-  if (isOnVercelUploadSection) return null;
+  // Hide the minimized notification when the user is on the relevant upload section
+  // where the inline progress is visible. Show it when navigating elsewhere.
+  const isOnUploadSection =
+    pathname === '/admin' &&
+    ((provider === 'vercel' && activeMediaTab === 'vercel') ||
+      (provider === 'cloudinary' && activeMediaTab === 'cloudinary') ||
+      (provider === 'vercel' && activeMediaTab === 'vercel') ||
+      (!provider && activeMediaTab !== null));
+  if (isOnUploadSection) return null;
 
   return (
     <div className="fixed bottom-6 right-6 z-50 w-80 glass-effect border rounded-lg p-4 shadow-2xl animate-in slide-in-from-bottom-2">

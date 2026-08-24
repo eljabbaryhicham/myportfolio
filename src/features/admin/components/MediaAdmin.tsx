@@ -28,6 +28,7 @@ import CdnClapprPlayer from '@/components/CdnClapprPlayer';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
+import { useUploadProgress } from '@/components/upload-progress-context';
 import BulkActionBar from './BulkActionBar';
 
 
@@ -303,10 +304,15 @@ export default function MediaAdmin(props: MediaAdminProps) {
   const { toast } = useToast();
   const firestore = useFirestore();
   const { user } = useUser();
+  const { startUpload: startGlobalUpload, updateProgress: updateGlobalProgress, finishUpload: finishGlobalUpload, isUploading: globalIsUploading, progress: globalProgress, fileName: globalFileName } = useUploadProgress();
 
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadingFileName, setUploadingFileName] = useState('');
+  // Effective values for inline progress when navigating back — show global progress if local is not uploading
+  const effectiveIsUploading = isUploading || globalIsUploading;
+  const effectiveProgress = isUploading ? uploadProgress : globalProgress;
+  const effectiveFileName = isUploading ? uploadingFileName : globalFileName;
   const [previewFile, setPreviewFile] = useState<MediaAsset | null>(null);
   const [isAddFromUrlOpen, setIsAddFromUrlOpen] = useState(false);
   const [isChoosingLibrary, setIsChoosingLibrary] = useState(false);
@@ -412,10 +418,12 @@ export default function MediaAdmin(props: MediaAdminProps) {
     }
 
     setIsUploading(true);
+    if (filesToUpload.length > 0) startGlobalUpload(filesToUpload[0].name, 'cloudinary');
 
     for (const file of filesToUpload) {
       setUploadingFileName(file.name);
       setUploadProgress(0);
+      updateGlobalProgress(0);
 
       const formData = new FormData();
       formData.append('file', file);
@@ -428,6 +436,7 @@ export default function MediaAdmin(props: MediaAdminProps) {
         if (event.lengthComputable) {
           const progress = Math.round((event.loaded / event.total) * 100);
           setUploadProgress(progress);
+          updateGlobalProgress(progress);
         }
       };
 
@@ -496,9 +505,10 @@ export default function MediaAdmin(props: MediaAdminProps) {
     setIsUploading(false);
     setUploadingFileName('');
     setUploadProgress(0);
+    finishGlobalUpload();
     setFilesToUpload([]);
 
-  }, [filesToUpload, toast, firestore, props, uploadVideoFormat, t]);
+  }, [filesToUpload, toast, firestore, props, uploadVideoFormat, t, startGlobalUpload, updateGlobalProgress, finishGlobalUpload]);
 
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -509,7 +519,7 @@ export default function MediaAdmin(props: MediaAdminProps) {
       'text/vtt': ['.vtt'],
       'application/json': ['.json'],
     },
-    disabled: !canUpload || isUploading,
+    disabled: !canUpload || effectiveIsUploading,
   });
   
   const handleDelete = async (publicId: string, docId: string, resourceType: string, libraryId: 'primary' | 'extented') => {
@@ -793,25 +803,25 @@ export default function MediaAdmin(props: MediaAdminProps) {
                 className={cn(
                   'flex-1 border border-dashed rounded-md px-3 py-2 flex items-center justify-center gap-2 cursor-pointer transition-colors text-muted-foreground min-w-0',
                   isDragActive && canUpload ? 'border-primary bg-primary/10' : 'border-border hover:border-primary/50',
-                  (!canUpload || isUploading) && 'opacity-50 cursor-not-allowed'
+                  (!canUpload || effectiveIsUploading) && 'opacity-50 cursor-not-allowed'
                 )}
               >
-                <input {...getInputProps()} disabled={!canUpload || isUploading} />
+                <input {...getInputProps()} disabled={!canUpload || effectiveIsUploading} />
                 <FontAwesomeIcon icon={faCloudUploadAlt} className="h-4 w-4 shrink-0" />
                 <span className="text-xs md:text-sm truncate text-center">
-                  {isUploading ? t('mediaAdmin.uploading') : !canUpload ? t('mediaAdmin.noPermission') : t('mediaAdmin.dragAndDrop')}
+                  {effectiveIsUploading ? t('mediaAdmin.uploading') : !canUpload ? t('mediaAdmin.noPermission') : t('mediaAdmin.dragAndDrop')}
                 </span>
               </div>
-              <Button onClick={() => setIsAddFromUrlOpen(true)} variant="outline" size="sm" disabled={!canUpload || isUploading} className="w-full sm:w-auto justify-center shrink-0">
+              <Button onClick={() => setIsAddFromUrlOpen(true)} variant="outline" size="sm" disabled={!canUpload || effectiveIsUploading} className="w-full sm:w-auto justify-center shrink-0">
                 <FontAwesomeIcon icon={faLink} className="mr-2" />
                 {t('mediaAdmin.addFromUrl')}
               </Button>
             </div>
-            {isUploading && (
+            {effectiveIsUploading && (
               <div className="mt-2 flex items-center gap-2 min-w-0">
-                <Progress value={uploadProgress} className="flex-1" />
+                <Progress value={effectiveProgress} className="flex-1" />
                 <span className="text-xs text-muted-foreground truncate max-w-[45%]">
-                  {t('mediaAdmin.uploadProgress').replace('{name}', uploadingFileName).replace('{progress}', String(Math.round(uploadProgress)))}
+                  {t('mediaAdmin.uploadProgress').replace('{name}', effectiveFileName).replace('{progress}', String(Math.round(effectiveProgress)))}
                 </span>
               </div>
             )}
@@ -1033,10 +1043,10 @@ export default function MediaAdmin(props: MediaAdminProps) {
                 className={cn(
                     'flex-1 border-2 border-dashed rounded-lg p-6 text-center transition-colors relative cursor-pointer', 
                     isDragActive && canUpload ? 'border-primary bg-primary/10' : 'border-border hover:border-primary/50', 
-                    (!canUpload || isUploading) && 'opacity-50 cursor-not-allowed'
+                    (!canUpload || effectiveIsUploading) && 'opacity-50 cursor-not-allowed'
                 )}
             >
-                <input {...getInputProps()} disabled={!canUpload || isUploading} />
+                <input {...getInputProps()} disabled={!canUpload || effectiveIsUploading} />
                 <div className="flex flex-col items-center justify-center gap-2 text-muted-foreground">
                     <FontAwesomeIcon icon={faCloudUploadAlt} className="h-8 w-8" />
                     {isUploading ? (
@@ -1048,15 +1058,15 @@ export default function MediaAdmin(props: MediaAdminProps) {
                     )}
                 </div>
             </div>
-            <Button onClick={() => setIsAddFromUrlOpen(true)} variant="outline" size="sm" className="w-full" disabled={!canUpload || isUploading}>
+            <Button onClick={() => setIsAddFromUrlOpen(true)} variant="outline" size="sm" className="w-full" disabled={!canUpload || effectiveIsUploading}>
                 <FontAwesomeIcon icon={faLink} className="mr-2" />
                 {t('mediaAdmin.addFromUrl')}
             </Button>
-          {isUploading && (
+          {effectiveIsUploading && (
               <div className="mt-4">
-                  <Progress value={uploadProgress} className="w-full" />
+                  <Progress value={effectiveProgress} className="w-full" />
                   <p className="text-sm text-center mt-2 text-muted-foreground">
-                    {t('mediaAdmin.uploadProgress').replace('{name}', uploadingFileName).replace('{progress}', String(Math.round(uploadProgress)))}
+                    {t('mediaAdmin.uploadProgress').replace('{name}', effectiveFileName).replace('{progress}', String(Math.round(effectiveProgress)))}
                   </p>
               </div>
           )}
