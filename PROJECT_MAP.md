@@ -139,6 +139,7 @@ Firebase Firestore ← useDoc/useCollection hooks → React components
 
 | Date | Change | Status |
 |------|--------|--------|
+| 2026-08-23 | CONTENT: About tagline "Trusted by 1000+ amazing clients worldwide" → "Trusted by 1000+ amazing customer & clients worldwide" (EN+FR) | ✅ |
 | 2026-08-23 | FIX: About "Explore Our Works" was still liquid-glass — `Button variant="default"` is `glass-effect` by design, so `bg-primary` was hidden. Switched both Explore CTAs (desktop+mobile) to `variant="destructive"` (solid `bg-destructive`) and defaulted `:root`/`.dark --destructive` to MelliVision red (352 76% 48%) alongside --primary | ✅ |
 | 2026-08-23 | FIX: About "Explore Our Works" hard-forced to MelliVision red (`bg-[#d81e38]`) — previous default→`bg-primary` still rendered grey because the live site had not yet picked up the `:root --primary` change; explicit class makes it red irrespective of theme-variable/cache timing | ✅ |
 | 2026-08-23 | FIX: About "Explore Our Works" now renders in the site theme color. Root cause: the button used `variant="success"` (green), then default (`bg-primary`) which fell back to a GRAY `:root --primary` (0 0% 50%) because no saved `themeColor` was applied. Defaulted `:root`/`.dark --primary` to the MelliVision red (352 76% 48% ≈ #d81e38); `DynamicThemeStyles` still overrides per saved `themeColor` | ✅ |
