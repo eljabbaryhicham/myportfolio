@@ -21,6 +21,8 @@ import { cn } from '@/lib/utils';
 import Preloader from '@/components/preloader';
 import Image from 'next/image';
 import CdnClapprPlayer from '@/components/CdnClapprPlayer';
+import { Checkbox } from '@/components/ui/checkbox';
+import BulkActionBar from './BulkActionBar';
 
 type VercelBlobDoc = {
   id: string;
@@ -58,6 +60,8 @@ export default function VercelBlobAdmin() {
   const [isAddFromUrlOpen, setIsAddFromUrlOpen] = useState(false);
   const [addUrl, setAddUrl] = useState('');
   const [isAddingFromUrl, setIsAddingFromUrl] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [isBulkDeleteOpen, setIsBulkDeleteOpen] = useState(false);
 
   const colRef = useMemoFirebase(() => {
     if (!firestore) return null;
@@ -167,18 +171,57 @@ export default function VercelBlobAdmin() {
       });
       const data = await res.json();
       if (!res.ok || !data.success) throw new Error(data.message || 'Delete failed');
-      // Fallback: also delete Firestore doc client-side if server missed it (ensures library + Vercel stay in sync)
       if (firestore && id) {
         try { await deleteDocumentNonBlocking(doc(firestore, 'vercel_blobs', id)); } catch {}
       }
       toast({ title: 'Deleted' });
     } catch (e: any) {
-      // Try Firestore delete anyway
       if (firestore && id) {
         try { await deleteDocumentNonBlocking(doc(firestore, 'vercel_blobs', id)); } catch {}
       }
       toast({ variant: 'destructive', title: 'Delete failed', description: e?.message });
     }
+  };
+
+  const handleToggleSelect = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedIds.size === 0) return;
+    const token = await getToken();
+    if (!token) {
+      toast({ variant: 'destructive', title: 'Not authenticated' });
+      return;
+    }
+    const ids = Array.from(selectedIds);
+    const blobsToDelete = (blobs || []).filter((b) => ids.includes(b.id));
+    let failed = 0;
+    for (const b of blobsToDelete) {
+      try {
+        const res = await fetch('/api/vercel-blob/delete', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ url: b.url }),
+        });
+        const data = await res.json();
+        if (!res.ok || !data.success) throw new Error(data.message || 'Delete failed');
+        try { await deleteDocumentNonBlocking(doc(firestore!, 'vercel_blobs', b.id)); } catch {}
+      } catch {
+        failed++;
+        // Ensure Firestore doc is removed even if Vercel delete failed
+        try { await deleteDocumentNonBlocking(doc(firestore!, 'vercel_blobs', b.id)); } catch {}
+      }
+    }
+    if (failed > 0) toast({ variant: 'destructive', title: `Deleted ${ids.length - failed}/${ids.length}`, description: `${failed} failed` });
+    else toast({ title: 'Deleted', description: `Deleted ${ids.length} files` });
+    setSelectedIds(new Set());
+    setIsBulkDeleteOpen(false);
   };
 
   const handleAddFromUrl = async () => {
@@ -268,9 +311,13 @@ export default function VercelBlobAdmin() {
           const isImage = b.contentType?.startsWith('image/');
           const isVideo = b.contentType?.startsWith('video/');
           const isNew = b.id === newlyUploadedId || b.pathname === newlyUploadedId;
+          const isSelected = selectedIds.has(b.id);
           return (
-            <div key={b.id} className={cn("flex flex-col gap-2", isNew && "ring-2 ring-primary rounded-lg animate-pulse")}>
-              <div className="relative group aspect-square border rounded-lg overflow-hidden glass-effect p-1">
+            <div key={b.id} className={cn("flex flex-col gap-2", isNew && "ring-2 ring-primary rounded-lg animate-pulse", isSelected && "ring-2 ring-primary rounded-lg")}>
+              <div className={cn("relative group aspect-square border rounded-lg overflow-hidden glass-effect p-1", isSelected && "ring-2 ring-primary")}>
+                <div className="absolute top-2 left-2 z-20" onClick={(e) => e.stopPropagation()}>
+                  <Checkbox checked={isSelected} onCheckedChange={() => handleToggleSelect(b.id)} className="bg-background/80 backdrop-blur-sm border-white/30" />
+                </div>
                 <div className="relative w-full h-full rounded-md overflow-hidden bg-black/50 flex items-center justify-center">
                   {isImage ? (
                     // eslint-disable-next-line @next/next/no-img-element
@@ -479,6 +526,20 @@ export default function VercelBlobAdmin() {
           </DialogClose>
         </DialogContent>
       </Dialog>
+
+      <BulkActionBar selectedCount={selectedIds.size} onClearSelection={() => setSelectedIds(new Set())} onDelete={() => setIsBulkDeleteOpen(true)} />
+      <AlertDialog open={isBulkDeleteOpen} onOpenChange={setIsBulkDeleteOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete {selectedIds.size} files?</AlertDialogTitle>
+            <AlertDialogDescription>This will delete the selected files from Vercel Blob and the library. This cannot be undone.</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleBulkDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Delete</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <Dialog open={isAddFromUrlOpen} onOpenChange={setIsAddFromUrlOpen}>
         <DialogContent className="sm:max-w-md">

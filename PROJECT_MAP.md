@@ -139,6 +139,7 @@ Firebase Firestore ← useDoc/useCollection hooks → React components
 
 | Date | Change | Status |
 |------|--------|--------|
+| 2026-08-23 | FEATURE: Vercel Blob bulk actions — added checkbox on each card, `selectedIds` state, `BulkActionBar` (fixed bottom, shows count + Delete), and bulk delete (deletes from Vercel Blob via `del` + Firestore `vercel_blobs` via batch, with fallback) — parity with Cloudinary | ✅ |
 | 2026-08-23 | FIX: Vercel Blob upload stuck at 95% — slowed simulation to 5→98 (+0.2-1.2 per 600ms) so large videos don’t stall long at 95% before jumping to 100% | ✅ |
 | 2026-08-23 | FIX: Vercel Blob add-from-url now returns contentType/size/filename and client creates Firestore doc with correct type so files appear in the right Images/Videos/Files tab; `vercel-blob/` prefix is intentional (keeps Vercel store organized) but library aggregates all. Tabs use `forceMount` so upload progress persists when switching Cloudinary↔Vercel | ✅ |
 | 2026-08-23 | FIX: Vercel Blob — preview now uses `CdnClapprPlayer` for videos (like Cloudinary), next.config allows `*.vercel-storage.com`, add-from-url ensures Firestore doc appears (client fallback), delete is robust for all types (Vercel `del` + Firestore `where(pathname)` fallback) | ✅ |
