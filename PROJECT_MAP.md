@@ -139,6 +139,7 @@ Firebase Firestore ← useDoc/useCollection hooks → React components
 
 | Date | Change | Status |
 |------|--------|--------|
+| 2026-08-23 | CHORE: Added Vercel Speed Insights (`@vercel/speed-insights` + `<SpeedInsights/>` in `app-shell.tsx`) to satisfy Vercel dashboard onboarding and start collecting performance metrics | ✅ |
 | 2026-08-23 | FIX: Upload progress now separated per provider — Vercel and Cloudinary can upload simultaneously with independent bars. Global context now tracks `vercel` and `cloudinary` separately, inline bars check `globalProvider`, and minimized notification shows both when needed | ✅ |
 | 2026-08-23 | FIX: Upload progress was showing in both Cloudinary and Vercel tabs when minimized and returning — inline bars now check `globalProvider` (`effectiveIsUploading = isUploading || (globalIsUploading && globalProvider === "vercel")` / `"cloudinary"`) so only the relevant tab shows its progress | ✅ |
 | 2026-08-23 | FIX: Cloudinary add-from-url for `board.jdownloader.org/images/logo.png` now fetches with browser User-Agent and handles JS cookie challenge (`firstvisit=Max`) like Vercel, plus MIME fallback from extension. Cloudinary upload progress now also minimized to bottom-right notification when navigating away (via `UploadProgressContext`, like Vercel) and reappears inline when back to Cloudinary tab | ✅ |
