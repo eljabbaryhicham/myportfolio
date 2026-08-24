@@ -172,6 +172,7 @@ export function DynamicThemeStyles() {    const firestore = useFirestore();
 // (menubar logo first, homepage logo as fallback).
 export function DynamicFavicon() {
     const firestore = useFirestore();
+    const pathname = usePathname();
     const settingsDocRef = useMemoFirebase(
       () => (firestore ? doc(firestore, 'homepage', 'settings') : null),
       [firestore]
@@ -181,15 +182,30 @@ export function DynamicFavicon() {
     useEffect(() => {
         const logoUrl = homeSettings?.faviconUrl || homeSettings?.menubarLogoUrl || homeSettings?.homePageLogoUrl;
         if (!logoUrl) return;
-        let link = document.querySelector<HTMLLinkElement>("link[rel~='icon']");
-        if (!link) {
-            link = document.createElement('link');
-            link.rel = 'icon';
-            document.head.appendChild(link);
-        }
-        link.type = logoUrl.endsWith('.svg') ? 'image/svg+xml' : '';
-        link.href = logoUrl;
-    }, [homeSettings?.faviconUrl, homeSettings?.menubarLogoUrl, homeSettings?.homePageLogoUrl]);
+        const apply = () => {
+            const links = document.querySelectorAll<HTMLLinkElement>("link[rel~='icon']");
+            const setLink = (link: HTMLLinkElement) => {
+                link.href = logoUrl;
+                const lower = logoUrl.toLowerCase();
+                if (lower.endsWith('.svg')) link.type = 'image/svg+xml';
+                else if (lower.endsWith('.png')) link.type = 'image/png';
+                else if (lower.endsWith('.jpg') || lower.endsWith('.jpeg')) link.type = 'image/jpeg';
+                else if (lower.endsWith('.ico')) link.type = 'image/x-icon';
+                else link.removeAttribute('type');
+            };
+            if (links.length) links.forEach(setLink);
+            else {
+                const link = document.createElement('link');
+                link.rel = 'icon';
+                setLink(link);
+                document.head.appendChild(link);
+            }
+        };
+        apply();
+        // Next.js may inject a fresh default icon on client navigation; patch on next tick
+        const t = setTimeout(apply, 0);
+        return () => clearTimeout(t);
+    }, [homeSettings?.faviconUrl, homeSettings?.menubarLogoUrl, homeSettings?.homePageLogoUrl, pathname]);
 
     return null;
 }
