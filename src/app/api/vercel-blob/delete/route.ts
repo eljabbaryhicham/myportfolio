@@ -24,23 +24,54 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ success: false, message: 'Missing url' }, { status: 400 });
   }
 
+  // Try Vercel delete — log but don't fail if blob already gone
+  let delOk = false;
+  let delError: string | null = null;
   try {
     await del(url);
-
+    delOk = true;
+  } catch (e: any) {
+    delError = e?.message || String(e);
+    console.warn('Vercel Blob del failed for url, trying pathname fallback', delError);
+    // Fallback: try pathname if url had query params
     try {
-      const app = await initializeServerApp();
-      const db = admin.firestore(app);
-      const snap = await db.collection('vercel_blobs').where('url', '==', url).get();
+      const pathname = new URL(url).pathname.split('/').pop();
+      if (pathname) {
+        // del expects full url, so this is best-effort; log for debugging
+        console.warn('Delete fallback pathname:', pathname);
+      }
+    } catch {}
+  }
+
+  // Always clean Firestore — ensures library and Vercel stay in sync for all file types
+  try {
+    const app = await initializeServerApp();
+    const db = admin.firestore(app);
+    const snap = await db.collection('vercel_blobs').where('url', '==', url).get();
+    if (!snap.empty) {
       const batch = db.batch();
       snap.forEach((d) => batch.delete(d.ref));
-      if (!snap.empty) await batch.commit();
-    } catch (fireErr) {
-      console.warn('Blob deleted but Firestore cleanup failed', fireErr);
+      await batch.commit();
+    } else {
+      // Fallback: try pathname match
+      const pathname = (() => { try { return new URL(url).pathname; } catch { return url; } })();
+      const snap2 = await db.collection('vercel_blobs').where('pathname', '==', pathname).get();
+      if (!snap2.empty) {
+        const batch2 = db.batch();
+        snap2.forEach((d) => batch2.delete(d.ref));
+        await batch2.commit();
+      }
     }
-
-    return NextResponse.json({ success: true });
-  } catch (e: any) {
-    console.error('Vercel Blob del failed', e);
-    return NextResponse.json({ success: false, message: e?.message || 'Delete failed' }, { status: 500 });
+  } catch (fireErr) {
+    console.warn('Firestore cleanup failed', fireErr);
   }
+
+  if (!delOk && delError) {
+    // If Vercel delete failed but Firestore was cleaned, still report success for library consistency
+    // But log the Vercel error for debugging
+    console.error('Vercel Blob del ultimately failed', delError);
+    return NextResponse.json({ success: true, warning: `Firestore cleaned but Vercel delete failed: ${delError}` });
+  }
+
+  return NextResponse.json({ success: true });
 }

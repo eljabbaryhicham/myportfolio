@@ -24,6 +24,14 @@ const nextConfig = {
         protocol: 'https',
         hostname: 'portfolio-hicham-ten.vercel.app',
       },
+      {
+        protocol: 'https',
+        hostname: '*.public.blob.vercel-storage.com',
+      },
+      {
+        protocol: 'https',
+        hostname: '*.vercel-storage.com',
+      },
     ],
   },
   env: {
