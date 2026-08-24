@@ -20,11 +20,11 @@ export async function POST(req: NextRequest) {
       body,
       request: req,
       onBeforeGenerateToken: async (pathname) => {
-        // Keep isolated, allow all types. Enforce image 50MB limit via maximumSizeInBytes
+        // Allow all types — do not restrict allowedContentTypes (empty array = block all)
         const lower = pathname.toLowerCase();
         const isImage = /\.(png|jpe?g|gif|webp|avif|svg|bmp|tiff)$/.test(lower);
         return {
-          allowedContentTypes: [], // allow all
+          // allowedContentTypes omitted = allow all (fixes mp4 not allowed)
           maximumSizeInBytes: isImage ? 50 * 1024 * 1024 : undefined,
           addRandomSuffix: true,
           tokenPayload: JSON.stringify({ uid: decoded.uid, filename: pathname.split('/').pop() || 'file' }),

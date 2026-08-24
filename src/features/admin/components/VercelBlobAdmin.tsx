@@ -14,7 +14,7 @@ import { useCollection, useFirestore, useMemoFirebase, useAuth } from '@/firebas
 import { collection, query, orderBy } from 'firebase/firestore';
 import { upload } from '@vercel/blob/client';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCloudUploadAlt, faCopy, faTrash, faFileLines, faFilm, faFileImage, faFolderOpen, faEye, faXmark } from '@fortawesome/free-solid-svg-icons';
+import { faCloudUploadAlt, faCopy, faTrash, faFileLines, faFilm, faFileImage, faFolderOpen, faEye, faXmark, faLink } from '@fortawesome/free-solid-svg-icons';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { useTranslation } from '@/lib/i18n/useTranslation';
 import { cn } from '@/lib/utils';
@@ -53,6 +53,9 @@ export default function VercelBlobAdmin() {
   const [uploadingFileName, setUploadingFileName] = useState('');
   const [previewFile, setPreviewFile] = useState<VercelBlobDoc | null>(null);
   const [isLibraryOpen, setIsLibraryOpen] = useState(false);
+  const [isAddFromUrlOpen, setIsAddFromUrlOpen] = useState(false);
+  const [addUrl, setAddUrl] = useState('');
+  const [isAddingFromUrl, setIsAddingFromUrl] = useState(false);
 
   const colRef = useMemoFirebase(() => {
     if (!firestore) return null;
@@ -84,27 +87,31 @@ export default function VercelBlobAdmin() {
         continue;
       }
       setIsUploading(true);
-      setUploadProgress(30);
+      setUploadProgress(0);
       setUploadingFileName(file.name);
+      // Simulate progress 0 -> 90 while uploading (client upload has no onprogress)
+      let prog = 0;
+      const interval = setInterval(() => {
+        prog = Math.min(90, prog + Math.random() * 10 + 5);
+        setUploadProgress(prog);
+      }, 300);
       try {
-        // Direct to Vercel Blob via handle-upload (bypasses server body limit — fixes Request Entity Too Large for videos)
         const blob = await upload(file.name, file, {
           access: 'public',
           handleUploadUrl: '/api/vercel-blob/handle-upload',
           headers: { Authorization: `Bearer ${token}` },
         } as any);
+        clearInterval(interval);
         setUploadProgress(100);
-        // Firestore doc is created server-side in onUploadCompleted; no client mirror needed
         toast({ title: 'Uploaded to Vercel Blob', description: blob.url });
+        // Firestore doc is created server-side in onUploadCompleted
+        await new Promise((r) => setTimeout(r, 500));
       } catch (e: any) {
-        // Fallback: try legacy server put for small files if handle-upload fails
+        clearInterval(interval);
         const msg = e?.message || String(e);
-        if (msg.includes('Unexpected token') || msg.includes('Request En')) {
-          toast({ variant: 'destructive', title: 'Upload failed', description: 'Server rejected large payload. Try a smaller file or check BLOB_READ_WRITE_TOKEN.' });
-        } else {
-          toast({ variant: 'destructive', title: 'Upload failed', description: msg });
-        }
+        toast({ variant: 'destructive', title: 'Upload failed', description: msg });
       } finally {
+        clearInterval(interval);
         setIsUploading(false);
         setUploadProgress(0);
         setUploadingFileName('');
@@ -137,6 +144,32 @@ export default function VercelBlobAdmin() {
       toast({ title: 'Deleted' });
     } catch (e: any) {
       toast({ variant: 'destructive', title: 'Delete failed', description: e?.message });
+    }
+  };
+
+  const handleAddFromUrl = async () => {
+    if (!addUrl.trim()) return;
+    const token = await getToken();
+    if (!token) {
+      toast({ variant: 'destructive', title: 'Not authenticated' });
+      return;
+    }
+    setIsAddingFromUrl(true);
+    try {
+      const res = await fetch('/api/vercel-blob/add-from-url', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ url: addUrl.trim() }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) throw new Error(data.message || 'Add from URL failed');
+      toast({ title: 'Added from URL', description: data.url });
+      setIsAddFromUrlOpen(false);
+      setAddUrl('');
+    } catch (e: any) {
+      toast({ variant: 'destructive', title: 'Add from URL failed', description: e?.message });
+    } finally {
+      setIsAddingFromUrl(false);
     }
   };
 
@@ -246,6 +279,10 @@ export default function VercelBlobAdmin() {
           )}
         </div>
       </div>
+      <Button onClick={() => setIsAddFromUrlOpen(true)} variant="outline" size="sm" className="w-full" disabled={isUploading}>
+        <FontAwesomeIcon icon={faLink} className="mr-2" />
+        {t('mediaAdmin.addFromUrl')}
+      </Button>
       {isUploading && (
         <div>
           <Progress value={uploadProgress} className="w-full" />
@@ -262,7 +299,7 @@ export default function VercelBlobAdmin() {
       <DialogContent className="w-[90vw] max-w-6xl h-[85vh] glass-effect p-0 flex flex-col">
         <DialogHeader className="p-4 border-b text-center">
           <DialogTitle className="font-headline">Vercel Blob Library</DialogTitle>
-          <p className="text-sm text-muted-foreground">Isolated from Cloudinary — copy-paste URLs only</p>
+          <p className="text-sm text-muted-foreground">Upload and manage your images and videos. (Images max 50MB, videos/other unlimited.)</p>
         </DialogHeader>
         <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)} className="flex-1 flex flex-col min-h-0">
           <div className="px-4 pt-4 flex items-center gap-2 flex-wrap">
@@ -283,19 +320,25 @@ export default function VercelBlobAdmin() {
             <Input value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder={t('mediaAdmin.searchPlaceholder')} className="max-w-[220px] md:max-w-xs ml-auto glass-effect" />
           </div>
           <div className="px-4 pt-3">
-            <div
-              {...getRootProps()}
-              className={cn(
-                'flex-1 border border-dashed rounded-md px-3 py-2 flex items-center justify-center gap-2 cursor-pointer transition-colors text-muted-foreground min-w-0',
-                isDragActive ? 'border-primary bg-primary/10' : 'border-border hover:border-primary/50',
-                isUploading && 'opacity-50 cursor-not-allowed'
-              )}
-            >
-              <input {...getInputProps()} disabled={isUploading} />
-              <FontAwesomeIcon icon={faCloudUploadAlt} className="h-4 w-4 shrink-0" />
-              <span className="text-xs md:text-sm truncate text-center">
-                {isUploading ? t('mediaAdmin.uploading') : t('mediaAdmin.dragAndDrop')}
-              </span>
+            <div className="flex flex-col sm:flex-row gap-2">
+              <div
+                {...getRootProps()}
+                className={cn(
+                  'flex-1 border border-dashed rounded-md px-3 py-2 flex items-center justify-center gap-2 cursor-pointer transition-colors text-muted-foreground min-w-0',
+                  isDragActive ? 'border-primary bg-primary/10' : 'border-border hover:border-primary/50',
+                  isUploading && 'opacity-50 cursor-not-allowed'
+                )}
+              >
+                <input {...getInputProps()} disabled={isUploading} />
+                <FontAwesomeIcon icon={faCloudUploadAlt} className="h-4 w-4 shrink-0" />
+                <span className="text-xs md:text-sm truncate text-center">
+                  {isUploading ? t('mediaAdmin.uploading') : t('mediaAdmin.dragAndDrop')}
+                </span>
+              </div>
+              <Button onClick={() => setIsAddFromUrlOpen(true)} variant="outline" size="sm" disabled={isUploading} className="w-full sm:w-auto justify-center shrink-0">
+                <FontAwesomeIcon icon={faLink} className="mr-2" />
+                {t('mediaAdmin.addFromUrl')}
+              </Button>
             </div>
             {isUploading && (
               <div className="mt-2 flex items-center gap-2 min-w-0">
@@ -330,7 +373,7 @@ export default function VercelBlobAdmin() {
       <div className="flex items-start justify-between">
         <div className="text-left">
           <h2 className="text-xl font-headline">Vercel Blob Library</h2>
-          <p className="text-muted-foreground mt-1 text-sm">Isolated from Cloudinary — copy-paste URLs only. Images max 50MB, videos/other unlimited.</p>
+          <p className="text-muted-foreground mt-1 text-sm">Upload and manage your images and videos. (Images max 50MB, videos/other unlimited.)</p>
         </div>
         <div className="flex items-center gap-2">
           <Button onClick={() => setIsLibraryOpen(true)} variant="outline" size="sm">
@@ -369,6 +412,24 @@ export default function VercelBlobAdmin() {
           <DialogClose className="absolute top-4 right-4 z-10 h-8 w-8 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center hover:opacity-100 transition-opacity">
             <FontAwesomeIcon icon={faXmark} className="h-4 w-4" />
           </DialogClose>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isAddFromUrlOpen} onOpenChange={setIsAddFromUrlOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>{t('mediaAdmin.addFromUrl')}</DialogTitle>
+            <p className="text-sm text-muted-foreground">Paste a direct URL and it will be fetched and stored in Vercel Blob.</p>
+          </DialogHeader>
+          <div className="flex flex-col gap-4 py-2">
+            <Input placeholder="https://example.com/file.mp4" value={addUrl} onChange={(e) => setAddUrl(e.target.value)} disabled={isAddingFromUrl} />
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setIsAddFromUrlOpen(false)} disabled={isAddingFromUrl}>Cancel</Button>
+              <Button onClick={handleAddFromUrl} disabled={!addUrl.trim() || isAddingFromUrl}>
+                {isAddingFromUrl ? 'Adding...' : 'Add'}
+              </Button>
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
     </div>
