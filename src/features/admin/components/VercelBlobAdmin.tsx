@@ -6,14 +6,15 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Separator } from '@/components/ui/separator';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { useCollection, useFirestore, useMemoFirebase, useAuth } from '@/firebase';
 import { addDocumentNonBlocking } from '@/firebase';
 import { collection, query, orderBy, serverTimestamp } from 'firebase/firestore';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCloudUploadAlt, faCopy, faTrash, faFileLines, faFilm, faFileImage, faEye } from '@fortawesome/free-solid-svg-icons';
+import { faCloudUploadAlt, faCopy, faTrash, faFileLines, faFilm, faFileImage, faFolderOpen, faEye, faXmark } from '@fortawesome/free-solid-svg-icons';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { useTranslation } from '@/lib/i18n/useTranslation';
 import { cn } from '@/lib/utils';
@@ -51,6 +52,7 @@ export default function VercelBlobAdmin() {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [uploadingFileName, setUploadingFileName] = useState('');
   const [previewFile, setPreviewFile] = useState<VercelBlobDoc | null>(null);
+  const [isLibraryOpen, setIsLibraryOpen] = useState(false);
 
   const colRef = useMemoFirebase(() => {
     if (!firestore) return null;
@@ -69,6 +71,32 @@ export default function VercelBlobAdmin() {
     }
   }, [auth]);
 
+  const uploadWithProgress = useCallback((file: File, token: string): Promise<any> => {
+    return new Promise((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+      const fd = new FormData();
+      fd.append('file', file);
+      xhr.open('POST', '/api/vercel-blob/upload');
+      xhr.setRequestHeader('Authorization', `Bearer ${token}`);
+      xhr.upload.onprogress = (e) => {
+        if (e.lengthComputable) {
+          setUploadProgress((e.loaded / e.total) * 100);
+        }
+      };
+      xhr.onload = () => {
+        try {
+          const data = JSON.parse(xhr.responseText);
+          if (xhr.status >= 200 && xhr.status < 300 && data.success) resolve(data);
+          else reject(new Error(data.message || `Upload failed (${xhr.status})`));
+        } catch (e) {
+          reject(e);
+        }
+      };
+      xhr.onerror = () => reject(new Error('Network error'));
+      xhr.send(fd);
+    });
+  }, []);
+
   const handleUpload = useCallback(async (files: File[]) => {
     if (files.length === 0) return;
     const token = await getToken();
@@ -82,20 +110,10 @@ export default function VercelBlobAdmin() {
         continue;
       }
       setIsUploading(true);
-      setUploadProgress(10);
+      setUploadProgress(0);
       setUploadingFileName(file.name);
-      const fd = new FormData();
-      fd.append('file', file);
       try {
-        setUploadProgress(30);
-        const res = await fetch('/api/vercel-blob/upload', {
-          method: 'POST',
-          headers: { Authorization: `Bearer ${token}` },
-          body: fd,
-        });
-        const data = await res.json();
-        if (!res.ok || !data.success) throw new Error(data.message || 'Upload failed');
-        setUploadProgress(80);
+        const data = await uploadWithProgress(file, token);
         if (firestore) {
           try {
             await addDocumentNonBlocking(collection(firestore, 'vercel_blobs'), {
@@ -112,7 +130,6 @@ export default function VercelBlobAdmin() {
             console.warn('Firestore mirror failed', fe);
           }
         }
-        setUploadProgress(100);
         toast({ title: 'Uploaded to Vercel Blob', description: file.name });
       } catch (e: any) {
         toast({ variant: 'destructive', title: 'Upload failed', description: e?.message || String(e) });
@@ -122,7 +139,7 @@ export default function VercelBlobAdmin() {
         setUploadingFileName('');
       }
     }
-  }, [getToken, toast, firestore, auth]);
+  }, [getToken, toast, firestore, auth, uploadWithProgress]);
 
   const onDrop = useCallback((accepted: File[]) => handleUpload(accepted), [handleUpload]);
   const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop, multiple: true });
@@ -238,29 +255,63 @@ export default function VercelBlobAdmin() {
     );
   };
 
-  return (
-    <div className="flex flex-col h-full min-h-0">
-      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)} className="flex-1 flex flex-col min-h-0">
-        <div className="px-4 pt-4 flex items-center gap-2 flex-wrap">
-          <TabsList>
-            <TabsTrigger value="images" className="py-2 px-4 text-base glass-effect data-[state=active]:bg-destructive">
-              <FontAwesomeIcon icon={faFileImage} className="mr-2" />
-              {t('mediaAdmin.tab.images')}
-            </TabsTrigger>
-            <TabsTrigger value="videos" className="py-2 px-4 text-base glass-effect data-[state=active]:bg-destructive">
-              <FontAwesomeIcon icon={faFilm} className="mr-2" />
-              {t('mediaAdmin.tab.videos')}
-            </TabsTrigger>
-            <TabsTrigger value="files" className="py-2 px-4 text-base glass-effect data-[state=active]:bg-destructive">
-              <FontAwesomeIcon icon={faFileLines} className="mr-2" />
-              {t('mediaAdmin.tab.files')}
-            </TabsTrigger>
-          </TabsList>
-          <Input value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder={t('mediaAdmin.searchPlaceholder')} className="max-w-[220px] md:max-w-xs ml-auto glass-effect" />
+  const uploadStrip = (
+    <div className="flex flex-col gap-4">
+      <div
+        {...getRootProps()}
+        className={cn(
+          'flex-1 border-2 border-dashed rounded-lg p-6 text-center transition-colors relative cursor-pointer',
+          isDragActive ? 'border-primary bg-primary/10' : 'border-border hover:border-primary/50',
+          isUploading && 'opacity-50 cursor-not-allowed'
+        )}
+      >
+        <input {...getInputProps()} disabled={isUploading} />
+        <div className="flex flex-col items-center justify-center gap-2 text-muted-foreground">
+          <FontAwesomeIcon icon={faCloudUploadAlt} className="h-8 w-8" />
+          {isUploading ? (
+            <p className="text-sm">{t('mediaAdmin.uploading')}</p>
+          ) : (
+            <p className="text-sm">{t('mediaAdmin.dragAndDrop')}</p>
+          )}
         </div>
+      </div>
+      {isUploading && (
+        <div>
+          <Progress value={uploadProgress} className="w-full" />
+          <p className="text-sm text-center mt-2 text-muted-foreground">
+            {t('mediaAdmin.uploadProgress').replace('{name}', uploadingFileName).replace('{progress}', String(Math.round(uploadProgress)))}
+          </p>
+        </div>
+      )}
+    </div>
+  );
 
-        <div className="px-4 pt-3">
-          <div className="flex flex-col sm:flex-row gap-2">
+  const libraryDialog = (
+    <Dialog open={isLibraryOpen} onOpenChange={setIsLibraryOpen}>
+      <DialogContent className="w-[90vw] max-w-6xl h-[85vh] glass-effect p-0 flex flex-col">
+        <DialogHeader className="p-4 border-b text-center">
+          <DialogTitle className="font-headline">Vercel Blob Library</DialogTitle>
+          <p className="text-sm text-muted-foreground">Isolated from Cloudinary — copy-paste URLs only</p>
+        </DialogHeader>
+        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)} className="flex-1 flex flex-col min-h-0">
+          <div className="px-4 pt-4 flex items-center gap-2 flex-wrap">
+            <TabsList>
+              <TabsTrigger value="images" className="py-2 px-4 text-base glass-effect data-[state=active]:bg-destructive">
+                <FontAwesomeIcon icon={faFileImage} className="mr-2" />
+                {t('mediaAdmin.tab.images')}
+              </TabsTrigger>
+              <TabsTrigger value="videos" className="py-2 px-4 text-base glass-effect data-[state=active]:bg-destructive">
+                <FontAwesomeIcon icon={faFilm} className="mr-2" />
+                {t('mediaAdmin.tab.videos')}
+              </TabsTrigger>
+              <TabsTrigger value="files" className="py-2 px-4 text-base glass-effect data-[state=active]:bg-destructive">
+                <FontAwesomeIcon icon={faFileLines} className="mr-2" />
+                {t('mediaAdmin.tab.files')}
+              </TabsTrigger>
+            </TabsList>
+            <Input value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder={t('mediaAdmin.searchPlaceholder')} className="max-w-[220px] md:max-w-xs ml-auto glass-effect" />
+          </div>
+          <div className="px-4 pt-3">
             <div
               {...getRootProps()}
               className={cn(
@@ -275,31 +326,61 @@ export default function VercelBlobAdmin() {
                 {isUploading ? t('mediaAdmin.uploading') : t('mediaAdmin.dragAndDrop')}
               </span>
             </div>
+            {isUploading && (
+              <div className="mt-2 flex items-center gap-2 min-w-0">
+                <Progress value={uploadProgress} className="flex-1" />
+                <span className="text-xs text-muted-foreground truncate max-w-[45%]">
+                  {t('mediaAdmin.uploadProgress').replace('{name}', uploadingFileName).replace('{progress}', String(Math.round(uploadProgress)))}
+                </span>
+              </div>
+            )}
           </div>
-          {isUploading && (
-            <div className="mt-2 flex items-center gap-2 min-w-0">
-              <Progress value={uploadProgress} className="flex-1" />
-              <span className="text-xs text-muted-foreground truncate max-w-[45%]">
-                {t('mediaAdmin.uploadProgress').replace('{name}', uploadingFileName).replace('{progress}', String(Math.round(uploadProgress)))}
-              </span>
-            </div>
-          )}
-          <p className="text-xs text-muted-foreground mt-2">Vercel Blob — isolated from Cloudinary. Copy-paste URLs only.</p>
-        </div>
+          <ScrollArea className="flex-1 mt-4">
+            <TabsContent value="images" className="p-4 m-0">{renderLibrary(filteredByType.images, 'image')}</TabsContent>
+            <TabsContent value="videos" className="p-4 m-0">{renderLibrary(filteredByType.videos, 'video')}</TabsContent>
+            <TabsContent value="files" className="p-4 m-0">{renderLibrary(filteredByType.files, 'raw')}</TabsContent>
+          </ScrollArea>
+        </Tabs>
+        <DialogClose className={cn(
+          "absolute right-4 top-4 h-8 w-8",
+          "flex items-center justify-center rounded-full transition-opacity",
+          "bg-destructive text-destructive-foreground opacity-70 hover:opacity-100",
+          "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+          "disabled:pointer-events-none"
+        )}>
+          <FontAwesomeIcon icon={faXmark} className="h-4 w-4" />
+        </DialogClose>
+      </DialogContent>
+    </Dialog>
+  );
 
-        <ScrollArea className="flex-1 mt-4">
-          <TabsContent value="images" className="p-4 m-0">{renderLibrary(filteredByType.images, 'image')}</TabsContent>
-          <TabsContent value="videos" className="p-4 m-0">{renderLibrary(filteredByType.videos, 'video')}</TabsContent>
-          <TabsContent value="files" className="p-4 m-0">{renderLibrary(filteredByType.files, 'raw')}</TabsContent>
-        </ScrollArea>
-      </Tabs>
+  return (
+    <div className="flex flex-col h-full gap-6">
+      <div className="flex items-start justify-between">
+        <div className="text-left">
+          <h2 className="text-xl font-headline">Vercel Blob Library</h2>
+          <p className="text-muted-foreground mt-1 text-sm">Isolated from Cloudinary — copy-paste URLs only. Images max 50MB, videos/other unlimited.</p>
+        </div>
+        <div className="flex items-center gap-2">
+          <Button onClick={() => setIsLibraryOpen(true)} variant="outline" size="sm">
+            <FontAwesomeIcon icon={faFolderOpen} className="mr-2" />
+            Browse Library
+          </Button>
+        </div>
+      </div>
+      <Separator className="bg-white/10" />
+      <div className="border rounded-lg p-6 glass-effect flex flex-col gap-4">
+        {uploadStrip}
+      </div>
+
+      {libraryDialog}
 
       <Dialog open={!!previewFile} onOpenChange={(o) => !o && setPreviewFile(null)}>
-        <DialogContent className="max-w-3xl w-[90vw] h-[80vh] p-0 overflow-hidden glass-effect flex flex-col">
-          <DialogHeader className="p-4 border-b">
-            <DialogTitle className="truncate">{previewFile?.filename}</DialogTitle>
+        <DialogContent className="w-[80vw] h-[90vh] glass-effect p-0 flex flex-col items-center justify-center bg-black/80 border-0">
+          <DialogHeader className="absolute top-4 left-4 z-10">
+            <DialogTitle className="text-white/80 font-headline">{previewFile?.filename}</DialogTitle>
           </DialogHeader>
-          <div className="flex-1 min-h-0 bg-black/50 flex items-center justify-center p-4">
+          <div className="flex-1 min-h-0 w-full bg-black/50 flex items-center justify-center p-4">
             {previewFile?.contentType?.startsWith('image/') ? (
               <div className="relative w-full h-full">
                 <Image src={previewFile.url} alt={previewFile.filename} fill className="object-contain" />
@@ -314,6 +395,9 @@ export default function VercelBlobAdmin() {
               </div>
             )}
           </div>
+          <DialogClose className="absolute top-4 right-4 z-10 h-8 w-8 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center hover:opacity-100 transition-opacity">
+            <FontAwesomeIcon icon={faXmark} className="h-4 w-4" />
+          </DialogClose>
         </DialogContent>
       </Dialog>
     </div>

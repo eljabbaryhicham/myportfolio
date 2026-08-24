@@ -139,6 +139,7 @@ Firebase Firestore ← useDoc/useCollection hooks → React components
 
 | Date | Change | Status |
 |------|--------|--------|
+| 2026-08-23 | UI: Vercel Blob tab rebuilt to match Cloudinary exactly — header with title/subtitle + Browse Library button (opens popup dialog), upload area below, dialog with Images/Videos/Files Tabs, search, upload strip, and grid. Fixed progress bar to use XHR `upload.onprogress` for real percentage (was jumpy fetch) | ✅ |
 | 2026-08-23 | UI: Vercel Blob tab now mirrors Cloudinary — Tabs for Images/Videos/Files with icons, same search input, same drag-drop upload strip with progress, same card grid (glass-effect, hover actions, preview/copy/delete), empty states, and preview dialog (image/video/file). Isolated storage kept, no Cloudinary logic touched | ✅ |
 | 2026-08-23 | FIX: Vercel Blob showed "Uploaded" but no file appeared — server Firestore mirror (Admin SDK) failed silently, and list is from Firestore `vercel_blobs`. Moved mirror to client-side `addDocumentNonBlocking` in `VercelBlobAdmin` (as Cloudinary does) with `provider:"vercel_blob"`; server now only does `put` | ✅ |
 | 2026-08-23 | FIX: Vercel Blob auth now reuses MediaAdmin logic — `verifyAdminRequest` checks `isSuperAdmin` (eljabbaryhicham@example.com) and Firestore `users/{uid}.permissions.canUploadMedia` (default true), same as MediaAdmin client checks. Adds fallback JWT decode for ADC-not-configured dev, and mirrors Cloudinary protection (no new mechanism, auth kept) | ✅ |
