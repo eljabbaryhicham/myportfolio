@@ -41,7 +41,8 @@ export default function RootLayout({
         <link rel="preconnect" href="https://res.cloudinary.com" />
         <link rel="preconnect" href="https://static.cloudflareinsights.com" />
 
-        <title>MelliVision</title>
+        <title>MelliVision — Driven By Detail</title>
+        <meta name="description" content="MelliVision — Driven By Detail. Premium motion design, VFX and creative production for brands worldwide. Explore our work." />
         <meta name="theme-color" content="#808080" />
         <script dangerouslySetInnerHTML={{
           __html: `(function(){try{var h=localStorage.getItem('belofted_theme_hsl');if(h){var r=document.querySelector(':root')||document.documentElement;r.style.setProperty('--primary',h);r.style.setProperty('--accent',h);r.style.setProperty('--destructive',h);r.style.setProperty('--ring',h);}var l=localStorage.getItem('belofted_lang');if(l)document.documentElement.lang=l;}catch(e){}})()`

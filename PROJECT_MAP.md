@@ -139,6 +139,9 @@ Firebase Firestore ← useDoc/useCollection hooks → React components
 
 | Date | Change | Status |
 |------|--------|--------|
+| 2026-08-23 | PERF: Hero CLS 0.707 — added `min-h` to heading/subtitle to reserve space for Firestore-driven text, verified `animate-pulse` (opacity only, no layout shift) | ✅ |
+| 2026-08-23 | PERF: Defer Firebase init via `requestIdleCallback`/`setTimeout` in `client-provider.tsx` to reduce main-thread blocking | ✅ |
+| 2026-08-23 | SEO: Added meta description `MelliVision — Driven By Detail. Premium motion design, VFX...` to `app/layout.tsx` | ✅ |
 | 2026-08-23 | PERF: Reduced unused JS (506 KiB) — code-split admin heavy components (`ProjectAdmin`, `MediaAdmin`, `VercelBlobAdmin`, `HomeAdmin`, etc.) and work `CdnClapprPlayer` via `next/dynamic` (ssr:false) so homepage no longer ships admin/players JS | ✅ |
 | 2026-08-23 | PERF: PageSpeed insights — added preconnect for `firestore.googleapis.com` + `studio-8316917408-a299a.firebaseapp.com` (310ms+300ms LCP savings), `/_next/static/*` immutable cache (85 KiB), `browserslist` modern targets (14 KiB legacy JS), and noted `auth/iframe.js` 1,562ms critical path is Firebase Auth (deferred via preconnect) | ✅ |
 | 2026-08-23 | REVERT: Restored `Preloader` on Work/About/Contact (per user request) — Work `min-h-[50vh]` spinner, About `h-[50vh]` + `min-h-[20vh]` clients spinner, Contact `h-[50vh]` spinner. Kept `next/font` and other CLS fixes | ✅ |
