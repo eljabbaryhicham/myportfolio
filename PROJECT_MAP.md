@@ -139,6 +139,7 @@ Firebase Firestore ← useDoc/useCollection hooks → React components
 
 | Date | Change | Status |
 |------|--------|--------|
+| 2026-08-23 | FEATURE: Markdown images in project details (`![alt](url)`) now centered (flex + block mx-auto + globals fallback) and show a fullscreen button on hover (mobile: always 70% visible, desktop: hover) reusing the existing fullscreen dialog | ✅ |
 | 2026-08-23 | FIX: Favicon showed logo on Home but default icon on other pages — `DynamicFavicon` only patched the first `link[rel~="icon"]` once and never re-ran after client navigation (Next re-injects a fresh default icon per route). Now patches ALL icon links and re-runs on pathname change (plus next-tick) with correct MIME type per extension | ✅ |
 | 2026-08-23 | CONTENT: About tagline "Trusted by 1000+ amazing clients worldwide" → "Trusted by 1000+ amazing customers & clients worldwide" (corrected) (EN+FR) | ✅ |
 | 2026-08-23 | FIX: About "Explore Our Works" was still liquid-glass — `Button variant="default"` is `glass-effect` by design, so `bg-primary` was hidden. Switched both Explore CTAs (desktop+mobile) to `variant="destructive"` (solid `bg-destructive`) and defaulted `:root`/`.dark --destructive` to MelliVision red (352 76% 48%) alongside --primary | ✅ |

@@ -63,13 +63,37 @@ const hasDetailsMedia = (details?: string) => !!details && DETAILS_MEDIA_RE.test
 const ProjectDetailsContent = memo(function ProjectDetailsContent({
   details,
   playerType,
+  onImageFullscreen,
 }: {
   details: string;
   playerType?: 'plyr' | 'clappr';
+  onImageFullscreen?: (url: string) => void;
 }) {
   const normalizedDetails = useMemo(() => normalizeSelfClosingMedia(details), [details]);
 
   const components = useMemo(() => ({
+    img: (props: any) => {
+      const { src, alt } = props;
+      if (!src) return null;
+      return (
+        <span className="my-4 flex justify-center">
+          <span className="relative inline-block group/img max-w-full">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={src} alt={alt || ''} className="block max-w-full h-auto rounded-md mx-auto" />
+            {onImageFullscreen && (
+              <button
+                type="button"
+                aria-label="Fullscreen"
+                onClick={() => onImageFullscreen(src)}
+                className="absolute top-2 right-2 h-8 w-8 rounded-md bg-black/60 text-white opacity-70 md:opacity-0 md:group-hover/img:opacity-100 transition-opacity flex items-center justify-center hover:bg-black/80"
+              >
+                <FontAwesomeIcon icon={faExpand} className="h-4 w-4" />
+              </button>
+            )}
+          </span>
+        </span>
+      );
+    },
     video: (props: any) => {
       const { src, poster, children, width, ...rest } = props;
       // Also accept the <video><source src="..." /></video> form
@@ -106,7 +130,7 @@ const ProjectDetailsContent = memo(function ProjectDetailsContent({
         </div>
       );
     },
-  }), [playerType]);
+  }), [playerType, onImageFullscreen]);
 
   return (
     <ReactMarkdown
@@ -1025,7 +1049,7 @@ export default function WorkPage() {
                 </DialogHeader>
                 <ScrollArea className="flex-1">
                     <div className="project-details prose dark:prose-invert max-w-none space-y-4 text-sm text-foreground/80 p-4 md:p-6">
-                        <ProjectDetailsContent details={selectedItem.details || ''} playerType={workPagePlayer} />
+                        <ProjectDetailsContent details={selectedItem.details || ''} playerType={workPagePlayer} onImageFullscreen={setFullscreenImageUrl} />
                     </div>
                 </ScrollArea>
                  <DialogClose className={cn(

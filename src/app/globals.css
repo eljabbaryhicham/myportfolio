@@ -263,8 +263,11 @@ tr.drag-over-bottom {
    ProjectDetailsContent — global width/height overrides fight the players'
    internal layout and make the video spill out of its frame. */
 .project-details img {
+  display: block;
   max-width: 100%;
   height: auto;
+  margin-left: auto;
+  margin-right: auto;
   border-radius: 0.5rem;
 }
 
