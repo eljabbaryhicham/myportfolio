@@ -107,7 +107,7 @@ export default function VercelBlobAdmin() {
       const interval = setInterval(() => {
         prog = Math.min(98, prog + Math.random() * 1 + 0.2);
         setUploadProgress(prog);
-        updateGlobalProgress(prog);
+        updateGlobalProgress(prog, 'vercel');
       }, 600);
       try {
         const blob: any = await upload(file.name, file, {
@@ -117,7 +117,7 @@ export default function VercelBlobAdmin() {
         } as any);
         clearInterval(interval);
         setUploadProgress(100);
-        updateGlobalProgress(100);
+        updateGlobalProgress(100, 'vercel');
         if (firestore) {
           try {
             const docRef = await addDocumentNonBlocking(collection(firestore, 'vercel_blobs'), {
@@ -142,10 +142,10 @@ export default function VercelBlobAdmin() {
         setIsLibraryOpen(true);
         toast({ title: 'Uploaded to Vercel Blob', description: file.name });
         await new Promise((r) => setTimeout(r, 400));
-        finishUpload();
+        finishUpload('vercel');
       } catch (e: any) {
         clearInterval(interval);
-        finishUpload();
+        finishUpload('vercel');
         toast({ variant: 'destructive', title: 'Upload failed', description: e?.message || String(e) });
       } finally {
         clearInterval(interval);

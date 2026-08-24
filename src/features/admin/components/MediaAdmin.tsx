@@ -423,7 +423,7 @@ export default function MediaAdmin(props: MediaAdminProps) {
     for (const file of filesToUpload) {
       setUploadingFileName(file.name);
       setUploadProgress(0);
-      updateGlobalProgress(0);
+      updateGlobalProgress(0, 'cloudinary');
 
       const formData = new FormData();
       formData.append('file', file);
@@ -436,7 +436,7 @@ export default function MediaAdmin(props: MediaAdminProps) {
         if (event.lengthComputable) {
           const progress = Math.round((event.loaded / event.total) * 100);
           setUploadProgress(progress);
-          updateGlobalProgress(progress);
+          updateGlobalProgress(progress, 'cloudinary');
         }
       };
 
@@ -505,7 +505,7 @@ export default function MediaAdmin(props: MediaAdminProps) {
     setIsUploading(false);
     setUploadingFileName('');
     setUploadProgress(0);
-    finishGlobalUpload();
+    finishGlobalUpload('cloudinary');
     setFilesToUpload([]);
 
   }, [filesToUpload, toast, firestore, props, uploadVideoFormat, t, startGlobalUpload, updateGlobalProgress, finishGlobalUpload]);
