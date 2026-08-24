@@ -139,6 +139,7 @@ Firebase Firestore ← useDoc/useCollection hooks → React components
 
 | Date | Change | Status |
 |------|--------|--------|
+| 2026-08-23 | REVERT: Firebase deferral broke page load (children rendered without context) — restored synchronous `initializeFirebase()` in `client-provider.tsx` | ✅ |
 | 2026-08-23 | PERF: Hero CLS 0.707 — added `min-h` to heading/subtitle to reserve space for Firestore-driven text, verified `animate-pulse` (opacity only, no layout shift) | ✅ |
 | 2026-08-23 | PERF: Defer Firebase init via `requestIdleCallback`/`setTimeout` in `client-provider.tsx` to reduce main-thread blocking | ✅ |
 | 2026-08-23 | SEO: Added meta description `MelliVision — Driven By Detail. Premium motion design, VFX...` to `app/layout.tsx` | ✅ |

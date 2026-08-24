@@ -10,22 +10,7 @@ interface FirebaseClientProviderProps {
 }
 
 export function FirebaseClientProvider({ children }: FirebaseClientProviderProps) {
-  const [firebaseServices, setFirebaseServices] = React.useState<ReturnType<typeof initializeFirebase> | null>(null);
-
-  React.useEffect(() => {
-    // Defer Firebase init until after first paint to reduce main-thread blocking
-    const init = () => setFirebaseServices(initializeFirebase());
-    if ('requestIdleCallback' in window) {
-      (window as any).requestIdleCallback(init);
-    } else {
-      setTimeout(init, 1);
-    }
-  }, []);
-
-  if (!firebaseServices) {
-    // Render children without Firebase context during initial paint — they will handle loading states
-    return <>{children}</>;
-  }
+  const [firebaseServices] = React.useState(() => initializeFirebase());
 
   return (
     <FirebaseProvider
