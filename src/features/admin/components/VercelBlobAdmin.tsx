@@ -11,8 +11,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { useCollection, useFirestore, useMemoFirebase, useAuth } from '@/firebase';
-import { addDocumentNonBlocking } from '@/firebase';
-import { collection, query, orderBy, serverTimestamp } from 'firebase/firestore';
+import { collection, query, orderBy } from 'firebase/firestore';
+import { upload } from '@vercel/blob/client';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCloudUploadAlt, faCopy, faTrash, faFileLines, faFilm, faFileImage, faFolderOpen, faEye, faXmark } from '@fortawesome/free-solid-svg-icons';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
@@ -71,32 +71,6 @@ export default function VercelBlobAdmin() {
     }
   }, [auth]);
 
-  const uploadWithProgress = useCallback((file: File, token: string): Promise<any> => {
-    return new Promise((resolve, reject) => {
-      const xhr = new XMLHttpRequest();
-      const fd = new FormData();
-      fd.append('file', file);
-      xhr.open('POST', '/api/vercel-blob/upload');
-      xhr.setRequestHeader('Authorization', `Bearer ${token}`);
-      xhr.upload.onprogress = (e) => {
-        if (e.lengthComputable) {
-          setUploadProgress((e.loaded / e.total) * 100);
-        }
-      };
-      xhr.onload = () => {
-        try {
-          const data = JSON.parse(xhr.responseText);
-          if (xhr.status >= 200 && xhr.status < 300 && data.success) resolve(data);
-          else reject(new Error(data.message || `Upload failed (${xhr.status})`));
-        } catch (e) {
-          reject(e);
-        }
-      };
-      xhr.onerror = () => reject(new Error('Network error'));
-      xhr.send(fd);
-    });
-  }, []);
-
   const handleUpload = useCallback(async (files: File[]) => {
     if (files.length === 0) return;
     const token = await getToken();
@@ -110,36 +84,33 @@ export default function VercelBlobAdmin() {
         continue;
       }
       setIsUploading(true);
-      setUploadProgress(0);
+      setUploadProgress(30);
       setUploadingFileName(file.name);
       try {
-        const data = await uploadWithProgress(file, token);
-        if (firestore) {
-          try {
-            await addDocumentNonBlocking(collection(firestore, 'vercel_blobs'), {
-              provider: 'vercel_blob',
-              url: data.url,
-              pathname: data.pathname,
-              size: data.size ?? file.size,
-              contentType: data.contentType || file.type || 'application/octet-stream',
-              filename: file.name,
-              uploadedAt: serverTimestamp(),
-              uploadedBy: auth?.currentUser?.uid || null,
-            } as any);
-          } catch (fe: any) {
-            console.warn('Firestore mirror failed', fe);
-          }
-        }
-        toast({ title: 'Uploaded to Vercel Blob', description: file.name });
+        // Direct to Vercel Blob via handle-upload (bypasses server body limit — fixes Request Entity Too Large for videos)
+        const blob = await upload(file.name, file, {
+          access: 'public',
+          handleUploadUrl: '/api/vercel-blob/handle-upload',
+          headers: { Authorization: `Bearer ${token}` },
+        } as any);
+        setUploadProgress(100);
+        // Firestore doc is created server-side in onUploadCompleted; no client mirror needed
+        toast({ title: 'Uploaded to Vercel Blob', description: blob.url });
       } catch (e: any) {
-        toast({ variant: 'destructive', title: 'Upload failed', description: e?.message || String(e) });
+        // Fallback: try legacy server put for small files if handle-upload fails
+        const msg = e?.message || String(e);
+        if (msg.includes('Unexpected token') || msg.includes('Request En')) {
+          toast({ variant: 'destructive', title: 'Upload failed', description: 'Server rejected large payload. Try a smaller file or check BLOB_READ_WRITE_TOKEN.' });
+        } else {
+          toast({ variant: 'destructive', title: 'Upload failed', description: msg });
+        }
       } finally {
         setIsUploading(false);
         setUploadProgress(0);
         setUploadingFileName('');
       }
     }
-  }, [getToken, toast, firestore, auth, uploadWithProgress]);
+  }, [getToken, toast]);
 
   const onDrop = useCallback((accepted: File[]) => handleUpload(accepted), [handleUpload]);
   const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop, multiple: true });
