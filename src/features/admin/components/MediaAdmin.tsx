@@ -304,15 +304,15 @@ export default function MediaAdmin(props: MediaAdminProps) {
   const { toast } = useToast();
   const firestore = useFirestore();
   const { user } = useUser();
-  const { startUpload: startGlobalUpload, updateProgress: updateGlobalProgress, finishUpload: finishGlobalUpload, isUploading: globalIsUploading, progress: globalProgress, fileName: globalFileName } = useUploadProgress();
+  const { startUpload: startGlobalUpload, updateProgress: updateGlobalProgress, finishUpload: finishGlobalUpload, isUploading: globalIsUploading, progress: globalProgress, fileName: globalFileName, provider: globalProvider } = useUploadProgress();
 
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadingFileName, setUploadingFileName] = useState('');
-  // Effective values for inline progress when navigating back — show global progress if local is not uploading
-  const effectiveIsUploading = isUploading || globalIsUploading;
-  const effectiveProgress = isUploading ? uploadProgress : globalProgress;
-  const effectiveFileName = isUploading ? uploadingFileName : globalFileName;
+  // Only show global progress inline when it matches this provider (cloudinary)
+  const effectiveIsUploading = isUploading || (globalIsUploading && globalProvider === 'cloudinary');
+  const effectiveProgress = isUploading ? uploadProgress : (globalProvider === 'cloudinary' ? globalProgress : 0);
+  const effectiveFileName = isUploading ? uploadingFileName : (globalProvider === 'cloudinary' ? globalFileName : '');
   const [previewFile, setPreviewFile] = useState<MediaAsset | null>(null);
   const [isAddFromUrlOpen, setIsAddFromUrlOpen] = useState(false);
   const [isChoosingLibrary, setIsChoosingLibrary] = useState(false);

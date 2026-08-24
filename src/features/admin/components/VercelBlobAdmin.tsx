@@ -49,7 +49,7 @@ export default function VercelBlobAdmin() {
   const { toast } = useToast();
   const firestore = useFirestore();
   const auth = useAuth();
-  const { isUploading: globalIsUploading, progress: globalProgress, fileName: globalFileName, startUpload, updateProgress: updateGlobalProgress, finishUpload } = useUploadProgress();
+  const { isUploading: globalIsUploading, progress: globalProgress, fileName: globalFileName, provider: globalProvider, startUpload, updateProgress: updateGlobalProgress, finishUpload } = useUploadProgress();
 
   const [activeTab, setActiveTab] = useState<'images' | 'videos' | 'files'>('images');
   const [searchQuery, setSearchQuery] = useState('');
@@ -63,10 +63,10 @@ export default function VercelBlobAdmin() {
   const [addUrl, setAddUrl] = useState('');
   const [isAddingFromUrl, setIsAddingFromUrl] = useState(false);
 
-  // Sync global upload state to local for inline progress when remounting (e.g., navigating back to Vercel tab)
-  const effectiveIsUploading = isUploading || globalIsUploading;
-  const effectiveProgress = isUploading ? uploadProgress : globalProgress;
-  const effectiveFileName = isUploading ? uploadingFileName : globalFileName;
+  // Only show global progress inline when it matches this provider (vercel)
+  const effectiveIsUploading = isUploading || (globalIsUploading && globalProvider === 'vercel');
+  const effectiveProgress = isUploading ? uploadProgress : (globalProvider === 'vercel' ? globalProgress : 0);
+  const effectiveFileName = isUploading ? uploadingFileName : (globalProvider === 'vercel' ? globalFileName : '');
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [isBulkDeleteOpen, setIsBulkDeleteOpen] = useState(false);
 
