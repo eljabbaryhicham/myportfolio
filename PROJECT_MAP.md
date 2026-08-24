@@ -139,6 +139,7 @@ Firebase Firestore ← useDoc/useCollection hooks → React components
 
 | Date | Change | Status |
 |------|--------|--------|
+| 2026-08-23 | FIX: Vercel Blob bulk actions bar was outside the library popup (fixed viewport). Moved `BulkActionBar` inside the library `DialogContent` with `!relative` styling so it appears inside the popup like Cloudinary | ✅ |
 | 2026-08-23 | FIX: Vercel Blob add-from-url was putting files in `vercel-blob/` subfolder (vs direct uploads at root) so they appeared in a separate folder in Vercel dashboard and were missed in library. Now both use root (`${Date.now()}-${name}`) for consistency; library aggregates all regardless | ✅ |
 | 2026-08-23 | FEATURE: Vercel Blob bulk actions — added checkbox on each card, `selectedIds` state, `BulkActionBar` (fixed bottom, shows count + Delete), and bulk delete (deletes from Vercel Blob via `del` + Firestore `vercel_blobs` via batch, with fallback) — parity with Cloudinary | ✅ |
 | 2026-08-23 | FIX: Vercel Blob upload stuck at 95% — slowed simulation to 5→98 (+0.2-1.2 per 600ms) so large videos don’t stall long at 95% before jumping to 100% | ✅ |

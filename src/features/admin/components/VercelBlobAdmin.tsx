@@ -465,6 +465,14 @@ export default function VercelBlobAdmin() {
             <TabsContent value="files" className="p-4 m-0">{renderLibrary(filteredByType.files, 'raw')}</TabsContent>
           </ScrollArea>
         </Tabs>
+        {selectedIds.size > 0 && (
+          <BulkActionBar
+            selectedCount={selectedIds.size}
+            onClearSelection={() => setSelectedIds(new Set())}
+            onDelete={() => setIsBulkDeleteOpen(true)}
+            className="!relative !bottom-auto !left-auto !translate-x-0 mx-4 mb-4"
+          />
+        )}
         <DialogClose className={cn(
           "absolute right-4 top-4 h-8 w-8",
           "flex items-center justify-center rounded-full transition-opacity",
@@ -527,7 +535,6 @@ export default function VercelBlobAdmin() {
         </DialogContent>
       </Dialog>
 
-      <BulkActionBar selectedCount={selectedIds.size} onClearSelection={() => setSelectedIds(new Set())} onDelete={() => setIsBulkDeleteOpen(true)} />
       <AlertDialog open={isBulkDeleteOpen} onOpenChange={setIsBulkDeleteOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
