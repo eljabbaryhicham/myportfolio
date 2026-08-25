@@ -283,6 +283,14 @@ tr.drag-over-bottom {
     padding-top: 0 !important;
     padding-bottom: 0 !important;
   }
+  /* Optical centering: the stack's trailing elements (scroll hint +
+     TrustedBy) add height BELOW the visual mass (video/title/buttons),
+     so pure flex-centering reads ~10px too high on phones — where the
+     home indicator shrinks usable space further. Transform nudges the
+     mass down WITHOUT touching layout, so it can never cause overflow. */
+  .homepage-hero-stack {
+    transform: translateY(10px);
+  }
 }
 @supports (height: 100dvh) {
   @media (max-width: 768px) {

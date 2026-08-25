@@ -247,7 +247,7 @@ export default function HomePageContent() {
           )}
         </AnimatePresence>
 
-        <div className="flex flex-col items-center gap-1 sm:gap-2 md:gap-3 w-full px-4">
+        <div className="homepage-hero-stack flex flex-col items-center gap-1 sm:gap-2 md:gap-3 w-full px-4">
           <motion.div
             className="w-[min(80vw,500px)] md:w-[min(70vw,600px)]"
             style={{ aspectRatio: "16/9", position: "relative" }}
