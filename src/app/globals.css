@@ -82,7 +82,7 @@
 @layer components {
   .glass-effect {
     @apply relative;
-    background-color: rgb(0 0 0 / 5%);
+    background-color: rgb(0 0 0 / 50%);
   }
 
   .glass-effect::before {
@@ -91,7 +91,7 @@
   }
   
   .dark .glass-effect {
-    background-color: rgb(0 0 0 / 5%);
+    background-color: rgb(0 0 0 / 50%);
   }
 
   .dark .glass-effect::before {
