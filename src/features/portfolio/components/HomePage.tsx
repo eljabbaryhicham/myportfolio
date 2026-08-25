@@ -323,7 +323,7 @@ export default function HomePageContent() {
             <motion.div variants={itemVariants} className="text-foreground/40 text-xs md:text-sm lg:text-base animate-pulse" style={{ textShadow: "0 1px 8px rgba(0,0,0,0.5)" }}>
               {t('home.hero.scroll')}
             </motion.div>
-            <motion.div variants={itemVariants} className="w-full min-h-[88px] md:min-h-[92px]">
+            <motion.div variants={itemVariants} data-trustedby className="w-full min-h-[88px] md:min-h-[92px]">
               <TrustedBy />
             </motion.div>
           </motion.div>

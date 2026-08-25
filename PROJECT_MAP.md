@@ -139,8 +139,8 @@ Firebase Firestore ← useDoc/useCollection hooks → React components
 
 | Date | Change | Status |
 |------|--------|--------|
-| 2026-08-25 | FIX: gap from `html/body h-full` (large viewport) vs shell `100dvh` (small on external open) → body taller than shell = black gap below; removed `h-full` from html/body, made them `min-height:100dvh` (no navbar reservation on homepage — AppNav not rendered there) | ✅ |
-| 2026-08-25 | FIX: Chrome external-link vs direct open gap — shell now `100dvh` (dynamic viewport) with `100svh`+`100vh` fallback + `max(8px, env(safe-area-inset-*))` so address bar expanded/collapsed yields same visual height on every open path | ✅ |
+| 2026-08-25 | DIAG M0: تثبيت قياس حي لأول 2s (`?diag=1` → vv/win/shell/scroll/trusted كل 100ms + resize) لتمييز H1 (dvh stale ~56px) عن H2 (p-2 +16px) عن H3 (TrustedBy 0→92px) | 🔬 |
+| 2026-08-25 | FIX: first-load/refresh gap + Chrome up / Safari down shift — `position:fixed inset-0` shell + `max(8px, env(safe-area-inset-*))` padding so toolbar/notch insets are respected on both browsers; centering now true viewport center on every device | ✅ |
 | 2026-08-25 | FIX: external-link gap (Chrome) + pull-to-refresh stuck at bottom (Safari) — shell now sized by JS `--app-height` from visualViewport/innerHeight re-applied on every resize/orientation (CSS dvh was measured stale on external opens); unconditional scroll reset on `pageshow` fixes post-refresh bottom position | ✅ |
 | 2026-08-25 | FIX: black gap bottom (Chrome) / top (Safari) — whole page shifted due to safe-area + html/body double viewport; removed safe-area padding from inner, restored html/body h-full, shell sole viewport unit with flex centering | ✅ |
 | 2026-08-25 | FIX: mobile Chrome top-shift / Safari bottom-shift — removed global `html,body 100svh/dvh` double-constraint and `+12px` optical nudge (Chrome taller, Safari lower); shell now sole viewport unit, inner uses pure flex centering + safe-area only | ✅ |
@@ -281,7 +281,14 @@ Firebase Firestore ← useDoc/useCollection hooks → React components
 
 ## [ORPHANS & PENDING]
 
-## [ORPHANS & PENDING]
+### قيد التشخيص النشط (M0-M1)
+| # | فرضية | الحالة | الدليل المطلوب |
+|---|---|---|---|
+| H1 | dvh stale mid-toolbar (Chrome external) | 🔬 قياس | vv vs shell في الإطار 0 |
+| H2 | p-2 + h-full border-box 16px | 🔬 قياس | shellH - vv |
+| H3 | TrustedBy CLS 0→92px | ✅ reserve موجود | trusted height log |
+
+## [ORPHANS & PENDING former]
 
 ### Intentionally Kept / Pending
 | # | Item | File | Notes |

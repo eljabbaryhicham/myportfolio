@@ -14,7 +14,35 @@ export function ConditionalLayout({ children }: { children: React.ReactNode }) {
   const isMobile = useIsMobile();
   const homeScrollRef = useRef<HTMLDivElement>(null);
 
-  // Homepage scroll correctness. The shell height is pure CSS 100dvh
+  // M0 تشخيص حي — يُزال بعد M1 (انظر PROJECT_MAP). يقيس في كل 100ms لأول 2s:
+  // vv.height | innerHeight | shell rect | scrollTop | TrustedBy
+  useEffect(() => {
+    if (!isHomePage) return;
+    const isDiag = typeof window !== 'undefined' && (window.location.search.includes('diag=1') || localStorage.getItem('diag') === '1');
+    if (!isDiag) return;
+    const shell = document.querySelector<HTMLElement>('.homepage-shell-fix');
+    const trustedEl = () => document.querySelector<HTMLElement>('[data-trustedby]');
+    let n = 0;
+    const id = setInterval(() => {
+      const vv: VisualViewport | null | undefined = (window as unknown as { visualViewport?: VisualViewport }).visualViewport;
+      const r = shell?.getBoundingClientRect();
+      // eslint-disable-next-line no-console
+      console.log(`[DIAG ${n++}] vv=${Math.round(vv?.height ?? -1)} win=${window.innerHeight} shell=${r ? `${Math.round(r.height)}@${Math.round(r.top)}` : 'null'} scroll=${Math.round(homeScrollRef.current?.scrollTop ?? -1)}/${window.scrollY} trusted=${trustedEl()?.getBoundingClientRect().height ?? -1} safeTop=${getComputedStyle(document.documentElement).getPropertyValue('--safe-top') || 'n/a'}`);
+      if (n > 20) clearInterval(id);
+    }, 100);
+    const onR = () => {
+      const vv: VisualViewport | null | undefined = (window as unknown as { visualViewport?: VisualViewport }).visualViewport;
+      const r = shell?.getBoundingClientRect();
+      // eslint-disable-next-line no-console
+      console.log(`[DIAG resize] vv=${Math.round(vv?.height ?? -1)} win=${window.innerHeight} shell=${r ? Math.round(r.height) : 'null'}`);
+    };
+    const vv2: VisualViewport | null | undefined = (window as unknown as { visualViewport?: VisualViewport }).visualViewport;
+    vv2?.addEventListener('resize', onR);
+    window.addEventListener('resize', onR);
+    return () => { clearInterval(id); vv2?.removeEventListener('resize', onR); window.removeEventListener('resize', onR); };
+  }, [isHomePage]);
+
+  // Homepage scroll correctness. The shell height itself needs NO JS:
   // .homepage-shell-fix is position:fixed inset-0, which the browser lays
   // out against the LIVE viewport on every frame — it cannot go stale the
   // way 100dvh/svh (or any measured value) does when Chrome/Safari resize
