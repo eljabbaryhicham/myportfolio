@@ -14,16 +14,29 @@ export function ConditionalLayout({ children }: { children: React.ReactNode }) {
   const isMobile = useIsMobile();
   const homeScrollRef = useRef<HTMLDivElement>(null);
 
-  // First-load-only: browser scroll restoration / iOS toolbar settle can leave
-  // a residual scrollTop on this container, pushing content toward the top.
-  // Navigating away and back resets it — so reset it ourselves on entry.
+  // First-load: kill scroll-restoration offsets AND iOS address-bar settle
+  // offsets. The single rAF wasn't enough — TrustedBy height arrives
+  // after Firestore, so re-zero scroll after layout settles too.
   useEffect(() => {
     if (!isHomePage) return;
     if ('scrollRestoration' in window.history) {
       window.history.scrollRestoration = 'manual';
     }
-    homeScrollRef.current?.scrollTo({ top: 0 });
-    window.scrollTo({ top: 0 });
+    const reset = () => {
+      homeScrollRef.current?.scrollTo({ top: 0 });
+      window.scrollTo({ top: 0 });
+      document.documentElement.scrollTop = 0;
+      document.body.scrollTop = 0;
+    };
+    reset();
+    const raf1 = requestAnimationFrame(reset);
+    const raf2 = requestAnimationFrame(() => requestAnimationFrame(reset));
+    const t = setTimeout(reset, 350);
+    return () => {
+      cancelAnimationFrame(raf1);
+      cancelAnimationFrame(raf2);
+      clearTimeout(t);
+    };
   }, [isHomePage]);
 
   if (isHomePage) {
