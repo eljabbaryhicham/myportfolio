@@ -111,29 +111,12 @@ export function ConditionalLayout({ children }: { children: React.ReactNode }) {
     return (
       <AnimatePresence>
         <motion.div
-          data-debug-shell="true"
-          className={cn("flex flex-col w-full p-2 homepage-shell-fix", "force-gpu")}
+          className={cn("flex flex-col w-full homepage-shell-fix", "force-gpu")}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.5 }}
-          onAnimationComplete={() => {
-            const el = document.querySelector('[data-debug-shell]');
-            if (el) {
-              const rect = el.getBoundingClientRect();
-              console.log('[DEBUG:SHELL] animationComplete', {
-                shellRect: { w: rect.width, h: rect.height, top: rect.top, left: rect.left, right: rect.right, bottom: rect.bottom },
-                cssAppHeight: getComputedStyle(document.documentElement).getPropertyValue('--app-height'),
-                vvHeight: (window as any).visualViewport?.height,
-                innerHeight: window.innerHeight,
-                dvh: window.matchMedia('(dynamic-height: dynamic)').matches,
-              });
-              (el as HTMLElement).style.setProperty('--debug-border', '1px solid lime');
-            }
-          }}
         >
-          {/* DEBUG: visible border that shows shell dimensions — remove after confirming */}
-          <div style={{ position:'fixed', top:0, left:0, right:0, height:3, background:'red', zIndex:99999, pointerEvents:'none' }} data-debug-bar="initial" />
           <main className="flex-1 min-h-0 w-full glass-effect rounded-lg border border-border/50 overflow-hidden">
             <div ref={homeScrollRef} className={cn("h-full w-full overflow-auto")}>
               {children}

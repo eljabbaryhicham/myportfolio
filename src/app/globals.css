@@ -278,10 +278,8 @@ html, body {
      No competing declarations — eliminates cascade ambiguity on iOS WebKit. */
   height: var(--app-height, 100dvh) !important;
   min-height: var(--app-height, 100dvh) !important;
+  /* Safe-area: only top for notch. No side/bottom padding — main fills edge-to-edge */
   padding-top: max(8px, env(safe-area-inset-top, 0px)) !important;
-  padding-right: max(8px, env(safe-area-inset-right, 0px)) !important;
-  padding-bottom: max(8px, env(safe-area-inset-bottom, 0px)) !important;
-  padding-left: max(8px, env(safe-area-inset-left, 0px)) !important;
   box-sizing: border-box !important;
 }
 .homepage-viewport-fix {
