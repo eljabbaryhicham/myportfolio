@@ -228,6 +228,16 @@ export default function HomePageContent() {
 
   return (
     <div className="hide-cursor-homepage homepage-viewport-fix relative h-full w-full overflow-hidden">
+      <div
+        className="absolute inset-0 z-0 pointer-events-none"
+        style={{
+          backgroundImage: `url(${HERO_VIDEO_POSTER})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          filter: 'blur(40px) brightness(0.4)',
+          transform: 'scale(1.2)',
+        }}
+      />
       <div className="homepage-viewport-fix-inner relative z-10 flex h-full w-full items-center justify-center overflow-auto transition-opacity duration-1000">
         <CursorArrow targetRef={ctaRef} cursorLottieUrl={homeSettings?.cursorLottieUrl} tickLottieUrl={homeSettings?.tickLottieUrl} />
 
