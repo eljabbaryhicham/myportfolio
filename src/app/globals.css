@@ -283,13 +283,12 @@ tr.drag-over-bottom {
     padding-top: 0 !important;
     padding-bottom: 0 !important;
   }
-  /* Optical centering: the stack's trailing elements (scroll hint +
-     TrustedBy) add height BELOW the visual mass (video/title/buttons),
-     so pure flex-centering reads ~10px too high on phones — where the
-     home indicator shrinks usable space further. Transform nudges the
-     mass down WITHOUT touching layout, so it can never cause overflow. */
+  /* Optical centering: HomePage measures the post-button tail (scroll hint +
+     TrustedBy) and exposes half its height as --homepage-optical. Shift by
+     max(10px, measured) so there's always a small nudge even before Firestore
+     data loads. Transform-only → cannot affect layout or cause overflow. */
   .homepage-hero-stack {
-    transform: translateY(10px);
+    transform: translateY(max(10px, var(--homepage-optical, 0px)));
   }
 }
 @supports (height: 100dvh) {
