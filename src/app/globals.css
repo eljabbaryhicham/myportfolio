@@ -268,18 +268,24 @@ tr.drag-over-bottom {
     min-height: 100svh;
   }
   .homepage-shell-fix {
+    /* ONLY the outer shell gets viewport units; everything inside uses h-full
+       percentages so padding (p-2) is subtracted exactly once — nested
+       viewport-height elements were overflowing the body by ~16px. */
     height: 100svh !important;
     min-height: 100svh !important;
   }
   .homepage-viewport-fix {
-    /* svh = small viewport (bar visible) — safe fallback; dvh overrides where supported */
-    height: 100svh !important;
-    min-height: 100svh !important;
+    /* Flow child INSIDE the glass card on mobile (desktop keeps fixed):
+       fills the scroll container's definite height instead of escaping it. */
+    position: relative !important;
+    inset: auto !important;
+    top: auto !important;
     bottom: auto !important;
-    top: 0 !important;
+    height: 100% !important;
+    min-height: 100% !important;
   }
   .homepage-viewport-fix-inner {
-    min-height: 100svh !important;
+    min-height: 100% !important;
     /* safe-area + small optical nudge so content sits *slightly* below true center */
     padding-top: calc(env(safe-area-inset-top, 0px) + 12px) !important;
     padding-bottom: env(safe-area-inset-bottom, 0px) !important;
@@ -297,13 +303,15 @@ tr.drag-over-bottom {
       min-height: 100dvh !important;
     }
     .homepage-viewport-fix {
-      height: 100dvh !important;
-      min-height: 100dvh !important;
+      position: relative !important;
+      inset: auto !important;
+      top: auto !important;
       bottom: auto !important;
-      top: 0 !important;
+      height: 100% !important;
+      min-height: 100% !important;
     }
     .homepage-viewport-fix-inner {
-      min-height: 100dvh !important;
+      min-height: 100% !important;
     }
   }
 }

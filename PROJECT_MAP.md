@@ -139,6 +139,7 @@ Firebase Firestore ← useDoc/useCollection hooks → React components
 
 | Date | Change | Status |
 |------|--------|--------|
+| 2026-08-25 | FIX: mobile page taller than screen — `homepage-shell-fix` (100dvh!) was on all 3 nested wrappers; now outer shell only, homepage de-fixed on mobile to flow inside glass card, inner heights use % not dvh | ✅ |
 | 2026-08-23 | REVERT: Firebase deferral broke page load (children rendered without context) — restored synchronous `initializeFirebase()` in `client-provider.tsx` | ✅ |
 | 2026-08-23 | PERF: Hero CLS 0.707 — added `min-h` to heading/subtitle to reserve space for Firestore-driven text, verified `animate-pulse` (opacity only, no layout shift) | ✅ |
 | 2026-08-23 | PERF: Defer Firebase init via `requestIdleCallback`/`setTimeout` in `client-provider.tsx` to reduce main-thread blocking | ✅ |
