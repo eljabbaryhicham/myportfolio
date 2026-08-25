@@ -272,22 +272,30 @@ tr.drag-over-bottom {
     height: 100svh !important;
     min-height: 100svh !important;
     box-sizing: border-box !important;
+    padding: 8px !important;
+    padding-top: calc(8px + env(safe-area-inset-top, 0px)) !important;
+    padding-bottom: calc(8px + env(safe-area-inset-bottom, 0px)) !important;
+    padding-left: calc(8px + env(safe-area-inset-left, 0px)) !important;
+    padding-right: calc(8px + env(safe-area-inset-right, 0px)) !important;
   }
   .homepage-viewport-fix {
-    height: 100svh !important;
-    min-height: 100svh !important;
-    max-height: 100svh !important;
-    bottom: auto !important;
-    top: 0 !important;
-    box-sizing: border-box;
+    top: env(safe-area-inset-top, 0px) !important;
+    right: env(safe-area-inset-right, 0px) !important;
+    bottom: env(safe-area-inset-bottom, 0px) !important;
+    left: env(safe-area-inset-left, 0px) !important;
+    width: auto !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    inset: auto !important;
+    /* use safe-area-aware insets so the visual gap matches left/right (8px) */
   }
   .homepage-viewport-fix-inner {
-    min-height: 100svh !important;
-    max-height: 100svh !important;
-    padding-top: env(safe-area-inset-top, 0px) !important;
-    padding-bottom: env(safe-area-inset-bottom, 0px) !important;
+    min-height: calc(100svh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 16px) !important;
+    max-height: none !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
     box-sizing: border-box;
-    /* remove the previous 12px optical nudge that made the container taller than viewport */
   }
 }
 @supports (height: 100dvh) {
@@ -301,15 +309,19 @@ tr.drag-over-bottom {
       min-height: 100dvh !important;
     }
     .homepage-viewport-fix {
-      height: 100dvh !important;
-      min-height: 100dvh !important;
-      max-height: 100dvh !important;
-      bottom: auto !important;
-      top: 0 !important;
+      /* dvh tracks the visible viewport as the bar hides/shows */
+      top: env(safe-area-inset-top, 0px) !important;
+      right: env(safe-area-inset-right, 0px) !important;
+      bottom: env(safe-area-inset-bottom, 0px) !important;
+      left: env(safe-area-inset-left, 0px) !important;
+      width: auto !important;
+      height: auto !important;
+      min-height: 0 !important;
+      max-height: none !important;
     }
     .homepage-viewport-fix-inner {
-      min-height: 100dvh !important;
-      max-height: 100dvh !important;
+      min-height: calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 16px) !important;
+      max-height: none !important;
     }
   }
 }
