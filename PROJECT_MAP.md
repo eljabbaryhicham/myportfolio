@@ -1,6 +1,6 @@
 # PROJECT_MAP — MelliVision
 
-> Last updated: 2026-08-23
+> Last updated: 2026-08-25
 
 ---
 
@@ -139,6 +139,7 @@ Firebase Firestore ← useDoc/useCollection hooks → React components
 
 | Date | Change | Status |
 |------|--------|--------|
+| 2026-08-25 | DIAG M0: تثبيت قياس حي لأول 2s (`?diag=1` → vv/win/shell/scroll/trusted كل 100ms + resize) لتمييز H1 (dvh stale ~56px) عن H2 (p-2 +16px) عن H3 (TrustedBy 0→92px) | 🔬 |
 | 2026-08-25 | FIX: first-load/refresh gap + Chrome up / Safari down shift — `position:fixed inset-0` shell + `max(8px, env(safe-area-inset-*))` padding so toolbar/notch insets are respected on both browsers; centering now true viewport center on every device | ✅ |
 | 2026-08-25 | FIX: external-link gap (Chrome) + pull-to-refresh stuck at bottom (Safari) — shell now sized by JS `--app-height` from visualViewport/innerHeight re-applied on every resize/orientation (CSS dvh was measured stale on external opens); unconditional scroll reset on `pageshow` fixes post-refresh bottom position | ✅ |
 | 2026-08-25 | FIX: black gap bottom (Chrome) / top (Safari) — whole page shifted due to safe-area + html/body double viewport; removed safe-area padding from inner, restored html/body h-full, shell sole viewport unit with flex centering | ✅ |
@@ -279,6 +280,15 @@ Firebase Firestore ← useDoc/useCollection hooks → React components
 | 2026-08-22 | FEATURE: upload strip inside the media-picker dialog (drag & drop / click + "Add from URL", progress bar); video-format & library-choice dialogs now shared by both library modes so uploads work while picking media for a form | ✅ |
 
 ## [ORPHANS & PENDING]
+
+### قيد التشخيص النشط (M0-M1)
+| # | فرضية | الحالة | الدليل المطلوب |
+|---|---|---|---|
+| H1 | dvh stale mid-toolbar (Chrome external) | 🔬 قياس | vv vs shell في الإطار 0 |
+| H2 | p-2 + h-full border-box 16px | 🔬 قياس | shellH - vv |
+| H3 | TrustedBy CLS 0→92px | ✅ reserve موجود | trusted height log |
+
+## [ORPHANS & PENDING former]
 
 ### Intentionally Kept / Pending
 | # | Item | File | Notes |
