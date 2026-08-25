@@ -14,35 +14,6 @@ export function ConditionalLayout({ children }: { children: React.ReactNode }) {
   const isMobile = useIsMobile();
   const homeScrollRef = useRef<HTMLDivElement>(null);
 
-  // M0 تشخيص حي — يُزال بعد M1 (انظر PROJECT_MAP). يقيس في كل 100ms لأول 2s:
-  // vv.height | innerHeight | shell rect | scrollTop | TrustedBy
-  useEffect(() => {
-    if (!isHomePage) return;
-    const isDiag = typeof window !== 'undefined' && (window.location.search.includes('diag=1') || localStorage.getItem('diag') === '1');
-    if (!isDiag) return;
-    const shell = document.querySelector<HTMLElement>('.homepage-shell-fix');
-    const trustedEl = () => document.querySelector<HTMLElement>('[data-trustedby]');
-    let n = 0;
-    const id = setInterval(() => {
-      const vv: VisualViewport | null | undefined = (window as unknown as { visualViewport?: VisualViewport }).visualViewport;
-      const r = shell?.getBoundingClientRect();
-      // eslint-disable-next-line no-console
-      console.log(`[DIAG ${n++}] vv=${Math.round(vv?.height ?? -1)} win=${window.innerHeight} docH=${document.documentElement.clientHeight} shell=${r ? `${Math.round(r.height)}@${Math.round(r.top)}` : 'null'} scroll=${Math.round(homeScrollRef.current?.scrollTop ?? -1)}/${window.scrollY} trusted=${trustedEl()?.getBoundingClientRect().height ?? -1}`);
-      if (n > 20) clearInterval(id);
-    }, 100);
-    const onR = () => {
-      const vv: VisualViewport | null | undefined = (window as unknown as { visualViewport?: VisualViewport }).visualViewport;
-      const r = shell?.getBoundingClientRect();
-      // eslint-disable-next-line no-console
-      console.log(`[DIAG resize] vv=${Math.round(vv?.height ?? -1)} win=${window.innerHeight} docH=${document.documentElement.clientHeight} shell=${r ? Math.round(r.height) : 'null'}`);
-    };
-    const vv2: VisualViewport | null | undefined = (window as unknown as { visualViewport?: VisualViewport }).visualViewport;
-    vv2?.addEventListener('resize', onR);
-    vv2?.addEventListener('scroll', onR);
-    window.addEventListener('resize', onR);
-    return () => { clearInterval(id); vv2?.removeEventListener('resize', onR); vv2?.removeEventListener('scroll', onR); window.removeEventListener('resize', onR); };
-  }, [isHomePage]);
-
   // iOS WebKit (Chrome for iOS) viewport fix — external link launches WebKit
   // with a stale viewport height (100dvh/100vh calculated before toolbar settles).
   // We set --app-height from the LIVE visualViewport.height (WebKit) and keep
