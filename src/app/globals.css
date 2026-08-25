@@ -266,24 +266,28 @@ tr.drag-over-bottom {
   html, body {
     height: 100svh;
     min-height: 100svh;
+    box-sizing: border-box;
   }
   .homepage-shell-fix {
     height: 100svh !important;
     min-height: 100svh !important;
+    box-sizing: border-box !important;
   }
   .homepage-viewport-fix {
-    /* svh = small viewport (bar visible) — safe fallback; dvh overrides where supported */
     height: 100svh !important;
     min-height: 100svh !important;
+    max-height: 100svh !important;
     bottom: auto !important;
     top: 0 !important;
+    box-sizing: border-box;
   }
   .homepage-viewport-fix-inner {
     min-height: 100svh !important;
-    /* safe-area + small optical nudge so content sits *slightly* below true center */
-    padding-top: calc(env(safe-area-inset-top, 0px) + 12px) !important;
+    max-height: 100svh !important;
+    padding-top: env(safe-area-inset-top, 0px) !important;
     padding-bottom: env(safe-area-inset-bottom, 0px) !important;
     box-sizing: border-box;
+    /* remove the previous 12px optical nudge that made the container taller than viewport */
   }
 }
 @supports (height: 100dvh) {
@@ -299,11 +303,13 @@ tr.drag-over-bottom {
     .homepage-viewport-fix {
       height: 100dvh !important;
       min-height: 100dvh !important;
+      max-height: 100dvh !important;
       bottom: auto !important;
       top: 0 !important;
     }
     .homepage-viewport-fix-inner {
       min-height: 100dvh !important;
+      max-height: 100dvh !important;
     }
   }
 }
