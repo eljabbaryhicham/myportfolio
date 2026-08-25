@@ -255,43 +255,55 @@ tr.drag-over-bottom {
   cursor: none !important;
 }
 
-/* Mobile homepage sizing.
-   Root cause of uneven margins: the shell has .force-gpu (transform), which
-   makes it the CONTAINING BLOCK for the "fixed" homepage layer. The layer
-   spanned the shell's full padding box (y=0 → 100dvh), covering the
-   top/bottom p-2 margins while the glass card started at y=8px.
-   Fix: switch the layer to position:absolute with the same 8px insets as
-   the shell padding — its edges become pixel-identical to the glass card
-   interior on all four sides, and total height can never exceed the shell. */
+/* Mobile homepage vertical centering — iOS Safari dynamic viewport fix
+   Root cause: fixed inset-0 + min-h-full + html/body h-full all resolve
+   from the *layout* viewport (100vh, includes hidden address-bar area).
+   Visual viewport is ~50-90px shorter when the bar is visible, so
+   flex centering appears too high. Fix: on mobile, size every ancestor
+   from the *visible* viewport (dvh → svh fallback) and nudge the centered
+   block slightly lower for optical centering. */
 @media (max-width: 768px) {
+  html, body {
+    height: 100svh;
+    min-height: 100svh;
+  }
   .homepage-shell-fix {
     height: 100svh !important;
     min-height: 100svh !important;
-    max-height: 100svh !important;
-    box-sizing: border-box !important;
   }
   .homepage-viewport-fix {
-    position: absolute !important;
-    top: 8px !important;
-    right: 8px !important;
-    bottom: 8px !important;
-    left: 8px !important;
-    width: auto !important;
-    height: auto !important;
-    min-height: 0 !important;
-    max-height: none !important;
+    /* svh = small viewport (bar visible) — safe fallback; dvh overrides where supported */
+    height: 100svh !important;
+    min-height: 100svh !important;
+    bottom: auto !important;
+    top: 0 !important;
   }
   .homepage-viewport-fix-inner {
-    min-height: 100% !important;
-    max-height: none !important;
+    min-height: 100svh !important;
+    /* safe-area + small optical nudge so content sits *slightly* below true center */
+    padding-top: calc(env(safe-area-inset-top, 0px) + 12px) !important;
+    padding-bottom: env(safe-area-inset-bottom, 0px) !important;
+    box-sizing: border-box;
   }
 }
 @supports (height: 100dvh) {
   @media (max-width: 768px) {
+    html, body {
+      height: 100dvh;
+      min-height: 100dvh;
+    }
     .homepage-shell-fix {
       height: 100dvh !important;
       min-height: 100dvh !important;
-      max-height: 100dvh !important;
+    }
+    .homepage-viewport-fix {
+      height: 100dvh !important;
+      min-height: 100dvh !important;
+      bottom: auto !important;
+      top: 0 !important;
+    }
+    .homepage-viewport-fix-inner {
+      min-height: 100dvh !important;
     }
   }
 }

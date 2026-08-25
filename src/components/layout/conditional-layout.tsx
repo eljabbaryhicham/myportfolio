@@ -22,8 +22,8 @@ export function ConditionalLayout({ children }: { children: React.ReactNode }) {
           exit={{ opacity: 0 }}
           transition={{ duration: 0.5 }}
         >
-          <main className="h-full w-full glass-effect rounded-lg border border-border/50 overflow-hidden">
-            <div className="h-full w-full overflow-auto">
+          <main className="h-full w-full homepage-shell-fix glass-effect rounded-lg border border-border/50 overflow-hidden">
+            <div className={cn("h-full w-full overflow-auto homepage-shell-fix")}>
               {children}
             </div>
           </main>

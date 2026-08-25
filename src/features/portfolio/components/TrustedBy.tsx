@@ -23,7 +23,7 @@ export default function TrustedBy() {
     () => firestore ? query(collection(firestore, 'clients'), orderBy('order')) : null,
     [firestore]
   );
-  const { data: clients, isLoading } = useCollection<Client>(clientsQuery);
+  const { data: clients } = useCollection<Client>(clientsQuery);
 
   const visibleClients = useMemo(
     () => (clients || []).filter((c) => c.isVisible !== false),
@@ -31,12 +31,6 @@ export default function TrustedBy() {
   );
 
   const names = visibleClients.map((c) => c.name);
-  if (isLoading) {
-    // Reserve the same height the real section will have (~86px) so the
-    // homepage flex centering doesn't jump between first paint (0px) and
-    // cached paint (~86px). Invisible but layout-stable.
-    return <div className="w-full min-h-[86px] py-5 border-t border-b border-transparent opacity-0 pointer-events-none select-none" aria-hidden="true" />;
-  }
   if (names.length === 0) return null;
 
   return (
