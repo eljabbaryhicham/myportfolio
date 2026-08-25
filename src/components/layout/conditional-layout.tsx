@@ -1,6 +1,7 @@
 
 'use client';
 
+import { useEffect, useRef } from 'react';
 import { usePathname } from 'next/navigation';
 import { AppNav } from './app-nav';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -11,6 +12,19 @@ export function ConditionalLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const isHomePage = pathname === '/';
   const isMobile = useIsMobile();
+  const homeScrollRef = useRef<HTMLDivElement>(null);
+
+  // First-load-only: browser scroll restoration / iOS toolbar settle can leave
+  // a residual scrollTop on this container, pushing content toward the top.
+  // Navigating away and back resets it — so reset it ourselves on entry.
+  useEffect(() => {
+    if (!isHomePage) return;
+    if ('scrollRestoration' in window.history) {
+      window.history.scrollRestoration = 'manual';
+    }
+    homeScrollRef.current?.scrollTo({ top: 0 });
+    window.scrollTo({ top: 0 });
+  }, [isHomePage]);
 
   if (isHomePage) {
     return (
@@ -23,7 +37,7 @@ export function ConditionalLayout({ children }: { children: React.ReactNode }) {
           transition={{ duration: 0.5 }}
         >
           <main className="h-full w-full glass-effect rounded-lg border border-border/50 overflow-hidden">
-            <div className={cn("h-full w-full overflow-auto")}>
+            <div ref={homeScrollRef} className={cn("h-full w-full overflow-auto")}>
               {children}
             </div>
           </main>
