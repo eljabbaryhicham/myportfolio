@@ -18,34 +18,40 @@ export function ConditionalLayout({ children }: { children: React.ReactNode }) {
   // with a stale viewport height (100dvh/100vh calculated before toolbar settles).
   // A blocking <script> in layout.tsx sets --app-height before first paint.
   // This effect keeps it in sync via visualViewport + polling + synthetic scroll nudge.
+  // Shell uses box-sizing: border-box, so height = total (content + padding).
+  // --app-height = viewport height; padding is inside the box automatically.
   useEffect(() => {
     if (!isHomePage) return;
     const root = document.documentElement;
     const vv: VisualViewport | null | undefined = (window as unknown as { visualViewport?: VisualViewport }).visualViewport;
+
     const updateHeight = () => {
-      const h = Math.round(vv?.height || window.innerHeight || root.clientHeight);
-      if (h > 0) {
-        root.style.setProperty('--app-height', `${h}px`);
-        console.log('[DEBUG:HEIGHT]', { vvH: vv?.height, innerH: window.innerHeight, clientH: root.clientHeight, applied: h });
-      }
+      const vpH = vv?.height || window.innerHeight || root.clientHeight;
+      if (vpH <= 0) return;
+      // box-sizing: border-box → height = total (content + padding).
+      // Set --app-height = viewport height so shell total fills viewport exactly.
+      // Padding is inside the box, content = viewport - padding automatically.
+      const h = Math.round(vpH);
+      if (h > 0) root.style.setProperty('--app-height', `${h}px`);
     };
+    // Read padding after first layout
     updateHeight();
     console.log('[DEBUG:HEIGHT] mount', { vv: vv?.height, innerH: window.innerHeight, time: Date.now() });
-    const raf1 = requestAnimationFrame(updateHeight);
     const t300 = setTimeout(updateHeight, 300);
     const t800 = setTimeout(updateHeight, 800);
     const t1500 = setTimeout(updateHeight, 1500);
     const t2500 = setTimeout(updateHeight, 2500);
     const poll = setInterval(updateHeight, 100);
-    const tPollEnd = setTimeout(() => clearInterval(poll), 3000);
-    const onResize = () => requestAnimationFrame(updateHeight);
+    const tPollEnd = setTimeout(() => { clearInterval(poll); }, 3000);
+    const onResize = () => {
+      requestAnimationFrame(updateHeight);
+    };
     vv?.addEventListener('resize', onResize);
     vv?.addEventListener('scroll', onResize);
     window.addEventListener('resize', onResize);
     window.addEventListener('scroll', onResize);
     window.addEventListener('orientationchange', onResize);
     window.addEventListener('pageshow', onResize);
-    // Synthetic scroll nudge: forces iOS toolbar settle + layout recalc
     const tNudge = setTimeout(() => {
       if (window.scrollY === 0 && (homeScrollRef.current?.scrollTop ?? 0) === 0) {
         window.scrollTo(0, 1);
@@ -56,7 +62,6 @@ export function ConditionalLayout({ children }: { children: React.ReactNode }) {
       }
     }, 500);
     return () => {
-      cancelAnimationFrame(raf1);
       clearTimeout(t300); clearTimeout(t800); clearTimeout(t1500); clearTimeout(t2500);
       clearInterval(poll); clearTimeout(tPollEnd); clearTimeout(tNudge);
       root.style.removeProperty('--app-height');
@@ -111,7 +116,7 @@ export function ConditionalLayout({ children }: { children: React.ReactNode }) {
     return (
       <AnimatePresence>
         <motion.div
-          className={cn("flex flex-col w-full homepage-shell-fix", "force-gpu")}
+          className={cn("flex flex-col w-full p-2 homepage-shell-fix", "force-gpu")}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
