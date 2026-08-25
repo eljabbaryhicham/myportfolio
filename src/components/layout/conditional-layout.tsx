@@ -16,52 +16,54 @@ export function ConditionalLayout({ children }: { children: React.ReactNode }) {
 
   // iOS WebKit (Chrome for iOS) viewport fix — external link launches WebKit
   // with a stale viewport height (100dvh/100vh calculated before toolbar settles).
-  // Per spec: bind hero height to visualViewport.height via --app-height, update on:
-  // visualViewport resize/scroll, immediately on load, and again after 300ms/800ms
-  // to catch toolbar settling (iOS doesn't always fire resize). Also poll + synthetic scroll nudge.
+  // A blocking <script> in layout.tsx sets --app-height before first paint.
+  // This effect keeps it in sync via visualViewport + polling + synthetic scroll nudge.
   useEffect(() => {
     if (!isHomePage) return;
     const root = document.documentElement;
+    const vv: VisualViewport | null | undefined = (window as unknown as { visualViewport?: VisualViewport }).visualViewport;
     const updateHeight = () => {
-      const vv: VisualViewport | null | undefined = (window as unknown as { visualViewport?: VisualViewport }).visualViewport;
       const h = Math.round(vv?.height || window.innerHeight || root.clientHeight);
-      if (h > 0) root.style.setProperty('--app-height', `${h}px`);
+      if (h > 0) {
+        root.style.setProperty('--app-height', `${h}px`);
+        console.log('[DEBUG:HEIGHT]', { vvH: vv?.height, innerH: window.innerHeight, clientH: root.clientHeight, applied: h });
+      }
     };
-    // once immediately on load
     updateHeight();
+    console.log('[DEBUG:HEIGHT] mount', { vv: vv?.height, innerH: window.innerHeight, time: Date.now() });
     const raf1 = requestAnimationFrame(updateHeight);
-    // once again after short delay to catch toolbar settling
     const t300 = setTimeout(updateHeight, 300);
     const t800 = setTimeout(updateHeight, 800);
-    const t900 = setTimeout(updateHeight, 900);
-    // Poll for first 3s — extra safety for WebKit that fires no resize at all
+    const t1500 = setTimeout(updateHeight, 1500);
+    const t2500 = setTimeout(updateHeight, 2500);
     const poll = setInterval(updateHeight, 100);
     const tPollEnd = setTimeout(() => clearInterval(poll), 3000);
-    const vv: VisualViewport | null | undefined = (window as unknown as { visualViewport?: VisualViewport }).visualViewport;
     const onResize = () => requestAnimationFrame(updateHeight);
     vv?.addEventListener('resize', onResize);
     vv?.addEventListener('scroll', onResize);
     window.addEventListener('resize', onResize);
+    window.addEventListener('scroll', onResize);
     window.addEventListener('orientationchange', onResize);
     window.addEventListener('pageshow', onResize);
-    // Fallback/extra safety net: tiny synthetic scroll nudges iOS into settling toolbar + firing layout
+    // Synthetic scroll nudge: forces iOS toolbar settle + layout recalc
     const tNudge = setTimeout(() => {
-      // Only nudge if at top — don't fight intentional scroll
       if (window.scrollY === 0 && (homeScrollRef.current?.scrollTop ?? 0) === 0) {
         window.scrollTo(0, 1);
-        window.scrollTo(0, 0);
-        requestAnimationFrame(updateHeight);
+        requestAnimationFrame(() => {
+          window.scrollTo(0, 0);
+          requestAnimationFrame(updateHeight);
+        });
       }
     }, 500);
     return () => {
       cancelAnimationFrame(raf1);
-      clearTimeout(t300); clearTimeout(t800); clearTimeout(t900);
-      clearInterval(poll); clearTimeout(tPollEnd);
-      clearTimeout(tNudge);
+      clearTimeout(t300); clearTimeout(t800); clearTimeout(t1500); clearTimeout(t2500);
+      clearInterval(poll); clearTimeout(tPollEnd); clearTimeout(tNudge);
       root.style.removeProperty('--app-height');
       vv?.removeEventListener('resize', onResize);
       vv?.removeEventListener('scroll', onResize);
       window.removeEventListener('resize', onResize);
+      window.removeEventListener('scroll', onResize);
       window.removeEventListener('orientationchange', onResize);
       window.removeEventListener('pageshow', onResize);
     };
@@ -109,12 +111,29 @@ export function ConditionalLayout({ children }: { children: React.ReactNode }) {
     return (
       <AnimatePresence>
         <motion.div
+          data-debug-shell="true"
           className={cn("flex flex-col w-full p-2 homepage-shell-fix", "force-gpu")}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.5 }}
+          onAnimationComplete={() => {
+            const el = document.querySelector('[data-debug-shell]');
+            if (el) {
+              const rect = el.getBoundingClientRect();
+              console.log('[DEBUG:SHELL] animationComplete', {
+                shellRect: { w: rect.width, h: rect.height, top: rect.top, left: rect.left, right: rect.right, bottom: rect.bottom },
+                cssAppHeight: getComputedStyle(document.documentElement).getPropertyValue('--app-height'),
+                vvHeight: (window as any).visualViewport?.height,
+                innerHeight: window.innerHeight,
+                dvh: window.matchMedia('(dynamic-height: dynamic)').matches,
+              });
+              (el as HTMLElement).style.setProperty('--debug-border', '1px solid lime');
+            }
+          }}
         >
+          {/* DEBUG: visible border that shows shell dimensions — remove after confirming */}
+          <div style={{ position:'fixed', top:0, left:0, right:0, height:3, background:'red', zIndex:99999, pointerEvents:'none' }} data-debug-bar="initial" />
           <main className="flex-1 min-h-0 w-full glass-effect rounded-lg border border-border/50 overflow-hidden">
             <div ref={homeScrollRef} className={cn("h-full w-full overflow-auto")}>
               {children}

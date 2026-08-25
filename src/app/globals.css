@@ -266,8 +266,6 @@ tr.drag-over-bottom {
 html, body {
   height: 100%;
   min-height: 100%;
-  /* iOS WebKit: -webkit-fill-available is more reliable than 100vh at first paint, especially on external-link */
-  min-height: -webkit-fill-available;
 }
 .homepage-shell-fix {
   position: fixed !important;
@@ -275,16 +273,9 @@ html, body {
   left: 0 !important;
   right: 0 !important;
   bottom: auto !important;
-  /* CSS fallback chain: vh → -webkit-fill-available (iOS 12-15) → svh → dvh */
-  height: 100vh !important;
-  height: -webkit-fill-available !important;
-  height: 100svh !important;
-  height: 100dvh !important;
-  min-height: 100vh !important;
-  min-height: -webkit-fill-available !important;
-  min-height: 100svh !important;
-  min-height: 100dvh !important;
-  /* JS live height (WebKit visualViewport) wins — fixes iOS Chrome external-link where 100dvh is stale at first paint */
+  /* Single height source: --app-height set by blocking script + JS effect.
+     Fallback 100dvh only used for the brief window before blocking script runs.
+     No competing declarations — eliminates cascade ambiguity on iOS WebKit. */
   height: var(--app-height, 100dvh) !important;
   min-height: var(--app-height, 100dvh) !important;
   padding-top: max(8px, env(safe-area-inset-top, 0px)) !important;
