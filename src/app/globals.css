@@ -255,28 +255,48 @@ tr.drag-over-bottom {
   cursor: none !important;
 }
 
-/* Mobile homepage vertical centering — iOS Safari dynamic viewport fix
-   Root cause: fixed inset-0 + min-h-full + html/body h-full all resolve
-   from the *layout* viewport (100vh, includes hidden address-bar area).
-   Visual viewport is ~50-90px shorter when the bar is visible, so
-   flex centering appears too high. Fix: on mobile, size every ancestor
-   from the *visible* viewport (dvh → svh fallback) and nudge the centered
-   block slightly lower for optical centering. */
-@media (max-width: 768px) {
+/* Homepage viewport — single source of truth for height.
+   Only the outer shell gets viewport units (100dvh → 100svh fallback);
+   everything inside uses h-full/% so p-2 (16px) is subtracted exactly
+   once. Previously the hero was `fixed inset-0` (viewport height) inside
+   `h-full p-2` (shell height), so the hero was 16px taller than the
+   visible card and required a small scroll — most visible on external-
+   link entries where the toolbar settles late. Now the hero flows
+   inside the glass card on ALL breakpoints, so the first section never
+   exceeds the visible shell. */
+html, body {
+  height: 100svh;
+  min-height: 100svh;
+}
+.homepage-shell-fix {
+  height: 100svh !important;
+  min-height: 100svh !important;
+}
+.homepage-viewport-fix {
+  position: relative !important;
+  inset: auto !important;
+  top: auto !important;
+  bottom: auto !important;
+  height: 100% !important;
+  min-height: 100% !important;
+}
+.homepage-viewport-fix-inner {
+  height: 100% !important;
+  min-height: 100% !important;
+  padding-top: calc(env(safe-area-inset-top, 0px) + 12px) !important;
+  padding-bottom: env(safe-area-inset-bottom, 0px) !important;
+  box-sizing: border-box;
+}
+@supports (height: 100dvh) {
   html, body {
-    height: 100svh;
-    min-height: 100svh;
+    height: 100dvh;
+    min-height: 100dvh;
   }
   .homepage-shell-fix {
-    /* ONLY the outer shell gets viewport units; everything inside uses h-full
-       percentages so padding (p-2) is subtracted exactly once — nested
-       viewport-height elements were overflowing the body by ~16px. */
-    height: 100svh !important;
-    min-height: 100svh !important;
+    height: 100dvh !important;
+    min-height: 100dvh !important;
   }
   .homepage-viewport-fix {
-    /* Flow child INSIDE the glass card on mobile (desktop keeps fixed):
-       fills the scroll container's definite height instead of escaping it. */
     position: relative !important;
     inset: auto !important;
     top: auto !important;
@@ -285,34 +305,8 @@ tr.drag-over-bottom {
     min-height: 100% !important;
   }
   .homepage-viewport-fix-inner {
+    height: 100% !important;
     min-height: 100% !important;
-    /* safe-area + small optical nudge so content sits *slightly* below true center */
-    padding-top: calc(env(safe-area-inset-top, 0px) + 12px) !important;
-    padding-bottom: env(safe-area-inset-bottom, 0px) !important;
-    box-sizing: border-box;
-  }
-}
-@supports (height: 100dvh) {
-  @media (max-width: 768px) {
-    html, body {
-      height: 100dvh;
-      min-height: 100dvh;
-    }
-    .homepage-shell-fix {
-      height: 100dvh !important;
-      min-height: 100dvh !important;
-    }
-    .homepage-viewport-fix {
-      position: relative !important;
-      inset: auto !important;
-      top: auto !important;
-      bottom: auto !important;
-      height: 100% !important;
-      min-height: 100% !important;
-    }
-    .homepage-viewport-fix-inner {
-      min-height: 100% !important;
-    }
   }
 }
 

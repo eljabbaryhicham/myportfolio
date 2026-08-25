@@ -227,8 +227,8 @@ export default function HomePageContent() {
   }, [homeSettings?.heroVideoUrl]);
 
   return (
-    <div className="hide-cursor-homepage homepage-viewport-fix fixed inset-0 overflow-y-auto overflow-x-hidden">
-      <div className="homepage-viewport-fix-inner relative z-10 min-h-full w-full flex items-center justify-center transition-opacity duration-1000">
+    <div className="hide-cursor-homepage homepage-viewport-fix relative h-full w-full overflow-hidden">
+      <div className="homepage-viewport-fix-inner relative z-10 flex h-full w-full items-center justify-center overflow-auto transition-opacity duration-1000">
         <CursorArrow targetRef={ctaRef} cursorLottieUrl={homeSettings?.cursorLottieUrl} tickLottieUrl={homeSettings?.tickLottieUrl} />
 
         <Particles />

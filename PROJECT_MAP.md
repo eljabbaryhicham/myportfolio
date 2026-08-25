@@ -139,6 +139,7 @@ Firebase Firestore ← useDoc/useCollection hooks → React components
 
 | Date | Change | Status |
 |------|--------|--------|
+| 2026-08-25 | FIX: homepage taller than visible screen on external-link open (desktop+mobile) — hero was `fixed inset-0` (viewport height) inside `h-full p-2` shell (card height), so +16px overflow + second scroll container. Made hero flow inside the glass card on ALL breakpoints (`relative h-full` / `h-full overflow-auto` + viewport units only on outer shell via 100dvh→svh), so first section never exceeds the visible shell. No spacing/typography/animation changes | ✅ |
 | 2026-08-25 | FIX: homepage off on external-link entry (toolbar starts expanded, visualViewport shrinks after settle) — re-apply scroll reset on visualViewport resize / pageshow / visibilitychange for first 1.5s + extra 900ms fallback reset | ✅ |
 | 2026-08-25 | FIX: homepage offset on first load only — TrustedBy returned null while Firestore loading (0→~92px snap pushed centered content high); wrapped with min-h-[88px] md:min-h-[92px] reserve and hardened scroll reset (rAF×2 + 350ms timeout + document scrollTop) | ✅ |
 | 2026-08-25 | FIX: homepage content high on first mobile load — residual scrollTop from scroll-restoration/toolbar settle; reset container+window scroll & scrollRestoration=manual on home entry | ✅ |
