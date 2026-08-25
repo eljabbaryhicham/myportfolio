@@ -17,6 +17,10 @@ export function ConditionalLayout({ children }: { children: React.ReactNode }) {
   // First-load: kill scroll-restoration offsets AND iOS address-bar settle
   // offsets. The single rAF wasn't enough — TrustedBy height arrives
   // after Firestore, so re-zero scroll after layout settles too.
+  // External-referrer entries (link clicked from another app) start
+  // with the toolbar fully expanded; visualViewport then shrinks on
+  // settle, which can leave the homepage shell at a stale height
+  // until a navigation triggers a relayout — re-apply there too.
   useEffect(() => {
     if (!isHomePage) return;
     if ('scrollRestoration' in window.history) {
@@ -31,11 +35,31 @@ export function ConditionalLayout({ children }: { children: React.ReactNode }) {
     reset();
     const raf1 = requestAnimationFrame(reset);
     const raf2 = requestAnimationFrame(() => requestAnimationFrame(reset));
-    const t = setTimeout(reset, 350);
+    const t1 = setTimeout(reset, 350);
+    const t2 = setTimeout(reset, 900);
+
+    // External-link handoff: also reset when the viewport re-measures
+    // (toolbar collapse) or the page is shown/visible after being
+    // opened in background. Only for the first ~1.5s to avoid
+    // interfering with intentional scrolling.
+    let armed = true;
+    const onResize = () => { if (armed) reset(); };
+    const onShow = () => { if (armed) { reset(); setTimeout(reset, 80); } };
+    const vv: VisualViewport | null | undefined = (window as Window & typeof globalThis).visualViewport;
+    vv?.addEventListener('resize', onResize);
+    window.addEventListener('pageshow', onShow);
+    document.addEventListener('visibilitychange', onShow);
+    const disarm = setTimeout(() => { armed = false; }, 1500);
+
     return () => {
       cancelAnimationFrame(raf1);
       cancelAnimationFrame(raf2);
-      clearTimeout(t);
+      clearTimeout(t1);
+      clearTimeout(t2);
+      clearTimeout(disarm);
+      vv?.removeEventListener('resize', onResize);
+      window.removeEventListener('pageshow', onShow);
+      document.removeEventListener('visibilitychange', onShow);
     };
   }, [isHomePage]);
 
