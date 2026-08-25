@@ -33,6 +33,9 @@ export function ConditionalLayout({ children }: { children: React.ReactNode }) {
     const t1 = setTimeout(applyHeight, 100);
     const t2 = setTimeout(applyHeight, 350);
     const t3 = setTimeout(applyHeight, 900);
+    // Poll for first 3s — iOS WebKit external-link toolbar settles without firing resize in some cases
+    const poll = setInterval(applyHeight, 100);
+    const tPollEnd = setTimeout(() => clearInterval(poll), 3000);
     const vv: VisualViewport | null | undefined = (window as unknown as { visualViewport?: VisualViewport }).visualViewport;
     const onResize = () => requestAnimationFrame(applyHeight);
     vv?.addEventListener('resize', onResize);
@@ -43,6 +46,7 @@ export function ConditionalLayout({ children }: { children: React.ReactNode }) {
     return () => {
       cancelAnimationFrame(raf1);
       clearTimeout(t1); clearTimeout(t2); clearTimeout(t3);
+      clearInterval(poll); clearTimeout(tPollEnd);
       // keep --app-height on unmount? No, remove to allow fallback on other pages
       root.style.removeProperty('--app-height');
       vv?.removeEventListener('resize', onResize);
