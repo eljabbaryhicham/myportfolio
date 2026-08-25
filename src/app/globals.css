@@ -255,73 +255,44 @@ tr.drag-over-bottom {
   cursor: none !important;
 }
 
-/* Mobile homepage vertical centering — iOS Safari dynamic viewport fix
-   Root cause: fixed inset-0 + min-h-full + html/body h-full all resolve
-   from the *layout* viewport (100vh, includes hidden address-bar area).
-   Visual viewport is ~50-90px shorter when the bar is visible, so
-   flex centering appears too high. Fix: on mobile, size every ancestor
-   from the *visible* viewport (dvh → svh fallback) and nudge the centered
-   block slightly lower for optical centering. */
+/* Mobile homepage sizing — single source of truth:
+   the fixed homepage layer is pinned top:0 with height = DYNAMIC viewport
+   (100dvh / 100svh fallback), so it can NEVER be taller than the visible
+   screen, with or without browser chrome. No safe-area math anywhere:
+   shell keeps its uniform p-2 so margins match on all four sides. */
 @media (max-width: 768px) {
-  html, body {
-    height: 100svh;
-    min-height: 100svh;
-    box-sizing: border-box;
-  }
   .homepage-shell-fix {
     height: 100svh !important;
     min-height: 100svh !important;
+    max-height: 100svh !important;
     box-sizing: border-box !important;
-    padding: 8px !important;
-    padding-top: calc(8px + env(safe-area-inset-top, 0px)) !important;
-    padding-bottom: calc(8px + env(safe-area-inset-bottom, 0px)) !important;
-    padding-left: calc(8px + env(safe-area-inset-left, 0px)) !important;
-    padding-right: calc(8px + env(safe-area-inset-right, 0px)) !important;
   }
   .homepage-viewport-fix {
-    top: env(safe-area-inset-top, 0px) !important;
-    right: env(safe-area-inset-right, 0px) !important;
-    bottom: env(safe-area-inset-bottom, 0px) !important;
-    left: env(safe-area-inset-left, 0px) !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: auto !important;
     width: auto !important;
-    height: auto !important;
+    height: 100svh !important;
     min-height: 0 !important;
     max-height: none !important;
-    inset: auto !important;
-    /* use safe-area-aware insets so the visual gap matches left/right (8px) */
   }
   .homepage-viewport-fix-inner {
-    min-height: calc(100svh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 16px) !important;
+    min-height: 100% !important;
     max-height: none !important;
     padding-top: 0 !important;
     padding-bottom: 0 !important;
-    box-sizing: border-box;
   }
 }
 @supports (height: 100dvh) {
   @media (max-width: 768px) {
-    html, body {
-      height: 100dvh;
-      min-height: 100dvh;
-    }
     .homepage-shell-fix {
       height: 100dvh !important;
       min-height: 100dvh !important;
+      max-height: 100dvh !important;
     }
     .homepage-viewport-fix {
-      /* dvh tracks the visible viewport as the bar hides/shows */
-      top: env(safe-area-inset-top, 0px) !important;
-      right: env(safe-area-inset-right, 0px) !important;
-      bottom: env(safe-area-inset-bottom, 0px) !important;
-      left: env(safe-area-inset-left, 0px) !important;
-      width: auto !important;
-      height: auto !important;
-      min-height: 0 !important;
-      max-height: none !important;
-    }
-    .homepage-viewport-fix-inner {
-      min-height: calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 16px) !important;
-      max-height: none !important;
+      height: 100dvh !important;
     }
   }
 }
