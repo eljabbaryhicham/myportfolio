@@ -255,22 +255,24 @@ tr.drag-over-bottom {
   cursor: none !important;
 }
 
-/* Homepage viewport — single source of truth for height.
-   Only the outer shell gets viewport units (100dvh → 100svh fallback);
-   everything inside uses h-full/% so p-2 (16px) is subtracted exactly
-   once. Previously the hero was `fixed inset-0` (viewport height) inside
-   `h-full p-2` (shell height), so the hero was 16px taller than the
-   visible card and required a small scroll — most visible on external-
-   link entries where the toolbar settles late. Now the hero flows
-   inside the glass card on ALL breakpoints, so the first section never
-   exceeds the visible shell. */
+/* Homepage viewport — the shell is position:fixed inset-0, so the BROWSER
+   lays it out against the live viewport on every frame. This is immune to
+   the stale-measurement problem of 100vh/dvh/svh (and JS-measured heights):
+   when Chrome/Safari resize the viewport mid-toolbar-animation after an
+   external-link open, a fixed box re-fits automatically — no gap, ever,
+   on any browser or device. The hero flows inside it (relative h-full),
+   and p-2 provides the 8px frame margin. */
 html, body {
-  height: 100svh;
-  min-height: 100svh;
+  height: 100%;
+  min-height: 100%;
 }
 .homepage-shell-fix {
-  height: 100svh !important;
-  min-height: 100svh !important;
+  position: fixed !important;
+  inset: 0 !important;
+  padding-top: max(8px, env(safe-area-inset-top, 0px)) !important;
+  padding-right: max(8px, env(safe-area-inset-right, 0px)) !important;
+  padding-bottom: max(8px, env(safe-area-inset-bottom, 0px)) !important;
+  padding-left: max(8px, env(safe-area-inset-left, 0px)) !important;
 }
 .homepage-viewport-fix {
   position: relative !important;
@@ -281,33 +283,11 @@ html, body {
   min-height: 100% !important;
 }
 .homepage-viewport-fix-inner {
-  height: 100% !important;
   min-height: 100% !important;
-  padding-top: calc(env(safe-area-inset-top, 0px) + 12px) !important;
-  padding-bottom: env(safe-area-inset-bottom, 0px) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
   box-sizing: border-box;
-}
-@supports (height: 100dvh) {
-  html, body {
-    height: 100dvh;
-    min-height: 100dvh;
-  }
-  .homepage-shell-fix {
-    height: 100dvh !important;
-    min-height: 100dvh !important;
-  }
-  .homepage-viewport-fix {
-    position: relative !important;
-    inset: auto !important;
-    top: auto !important;
-    bottom: auto !important;
-    height: 100% !important;
-    min-height: 100% !important;
-  }
-  .homepage-viewport-fix-inner {
-    height: 100% !important;
-    min-height: 100% !important;
-  }
 }
 
 /* Embedded media inside project details (Markdown + raw HTML).

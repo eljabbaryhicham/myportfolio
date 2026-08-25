@@ -48,7 +48,7 @@ export default function RootLayout({
           __html: `(function(){try{var h=localStorage.getItem('belofted_theme_hsl');if(h){var r=document.querySelector(':root')||document.documentElement;r.style.setProperty('--primary',h);r.style.setProperty('--accent',h);r.style.setProperty('--destructive',h);r.style.setProperty('--ring',h);}var l=localStorage.getItem('belofted_lang');if(l)document.documentElement.lang=l;}catch(e){}})()`
         }} />
       </head>
-      <body className={cn('font-body antialiased text-center')} style={{ background: '#000' }} suppressHydrationWarning>
+      <body className={cn('font-body antialiased text-center h-full')} style={{ background: '#000' }} suppressHydrationWarning>
         <AppShell>
           {children}
         </AppShell>
