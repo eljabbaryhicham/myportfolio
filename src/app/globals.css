@@ -255,24 +255,39 @@ tr.drag-over-bottom {
   cursor: none !important;
 }
 
-/* Homepage viewport — the shell is position:fixed inset-0, so the BROWSER
-   lays it out against the live viewport on every frame. This is immune to
-   the stale-measurement problem of 100vh/dvh/svh (and JS-measured heights):
-   when Chrome/Safari resize the viewport mid-toolbar-animation after an
-   external-link open, a fixed box re-fits automatically — no gap, ever,
-   on any browser or device. The hero flows inside it (relative h-full),
-   and p-2 provides the 8px frame margin. */
+/* Homepage viewport — iOS WebKit (Chrome for iOS) reports viewport
+   differently when launched from external link (height calculated too early,
+   before toolbar settles → stale 100vh/dvh). Robust fix:
+   1) CSS 100dvh is preferred (modern, handles toolbar), with 100svh/100vh fallback.
+   2) JS --app-height from visualViewport.height (WebKit) wins when available,
+      updated on visualViewport.resize + window.resize + orientationchange + pageshow
+      so the shell always matches the settled visual viewport, on every entry path.
+   3) Safe-area insets respected for notch/home indicator. */
 html, body {
   height: 100%;
   min-height: 100%;
 }
 .homepage-shell-fix {
   position: fixed !important;
-  inset: 0 !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: auto !important;
+  /* CSS fallback chain: legacy → svh → dvh */
+  height: 100vh !important;
+  height: 100svh !important;
+  height: 100dvh !important;
+  min-height: 100vh !important;
+  min-height: 100svh !important;
+  min-height: 100dvh !important;
+  /* JS live height (WebKit visualViewport) wins when set — fixes early measurement on iOS external open */
+  height: var(--app-height, 100dvh) !important;
+  min-height: var(--app-height, 100dvh) !important;
   padding-top: max(8px, env(safe-area-inset-top, 0px)) !important;
   padding-right: max(8px, env(safe-area-inset-right, 0px)) !important;
   padding-bottom: max(8px, env(safe-area-inset-bottom, 0px)) !important;
   padding-left: max(8px, env(safe-area-inset-left, 0px)) !important;
+  box-sizing: border-box !important;
 }
 .homepage-viewport-fix {
   position: relative !important;

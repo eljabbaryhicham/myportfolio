@@ -27,30 +27,65 @@ export function ConditionalLayout({ children }: { children: React.ReactNode }) {
       const vv: VisualViewport | null | undefined = (window as unknown as { visualViewport?: VisualViewport }).visualViewport;
       const r = shell?.getBoundingClientRect();
       // eslint-disable-next-line no-console
-      console.log(`[DIAG ${n++}] vv=${Math.round(vv?.height ?? -1)} win=${window.innerHeight} shell=${r ? `${Math.round(r.height)}@${Math.round(r.top)}` : 'null'} scroll=${Math.round(homeScrollRef.current?.scrollTop ?? -1)}/${window.scrollY} trusted=${trustedEl()?.getBoundingClientRect().height ?? -1} safeTop=${getComputedStyle(document.documentElement).getPropertyValue('--safe-top') || 'n/a'}`);
+      console.log(`[DIAG ${n++}] vv=${Math.round(vv?.height ?? -1)} win=${window.innerHeight} docH=${document.documentElement.clientHeight} shell=${r ? `${Math.round(r.height)}@${Math.round(r.top)}` : 'null'} scroll=${Math.round(homeScrollRef.current?.scrollTop ?? -1)}/${window.scrollY} trusted=${trustedEl()?.getBoundingClientRect().height ?? -1}`);
       if (n > 20) clearInterval(id);
     }, 100);
     const onR = () => {
       const vv: VisualViewport | null | undefined = (window as unknown as { visualViewport?: VisualViewport }).visualViewport;
       const r = shell?.getBoundingClientRect();
       // eslint-disable-next-line no-console
-      console.log(`[DIAG resize] vv=${Math.round(vv?.height ?? -1)} win=${window.innerHeight} shell=${r ? Math.round(r.height) : 'null'}`);
+      console.log(`[DIAG resize] vv=${Math.round(vv?.height ?? -1)} win=${window.innerHeight} docH=${document.documentElement.clientHeight} shell=${r ? Math.round(r.height) : 'null'}`);
     };
     const vv2: VisualViewport | null | undefined = (window as unknown as { visualViewport?: VisualViewport }).visualViewport;
     vv2?.addEventListener('resize', onR);
+    vv2?.addEventListener('scroll', onR);
     window.addEventListener('resize', onR);
-    return () => { clearInterval(id); vv2?.removeEventListener('resize', onR); window.removeEventListener('resize', onR); };
+    return () => { clearInterval(id); vv2?.removeEventListener('resize', onR); vv2?.removeEventListener('scroll', onR); window.removeEventListener('resize', onR); };
   }, [isHomePage]);
 
-  // Homepage scroll correctness. The shell height itself needs NO JS:
-  // .homepage-shell-fix is position:fixed inset-0, which the browser lays
-  // out against the LIVE viewport on every frame — it cannot go stale the
-  // way 100dvh/svh (or any measured value) does when Chrome/Safari resize
-  // the viewport mid-toolbar-animation after external-link opens.
-  // This effect only guarantees we always START at scrollTop=0:
+  // iOS WebKit (Chrome for iOS) viewport fix — external link launches WebKit
+  // with a stale viewport height (100dvh/100vh calculated before toolbar settles).
+  // We set --app-height from the LIVE visualViewport.height (WebKit) and keep
+  // it in sync on every visualViewport.resize/scroll + window.resize + orientation
+  // + pageshow, so the shell always matches the settled visual viewport.
+  // Uses rAF + timeouts for early toolbar animation (first 900ms).
+  useEffect(() => {
+    if (!isHomePage) return;
+    const root = document.documentElement;
+    const applyHeight = () => {
+      const vv: VisualViewport | null | undefined = (window as unknown as { visualViewport?: VisualViewport }).visualViewport;
+      const h = Math.round(vv?.height || window.innerHeight || root.clientHeight);
+      if (h > 0) root.style.setProperty('--app-height', `${h}px`);
+    };
+    applyHeight();
+    const raf1 = requestAnimationFrame(applyHeight);
+    const t1 = setTimeout(applyHeight, 100);
+    const t2 = setTimeout(applyHeight, 350);
+    const t3 = setTimeout(applyHeight, 900);
+    const vv: VisualViewport | null | undefined = (window as unknown as { visualViewport?: VisualViewport }).visualViewport;
+    const onResize = () => requestAnimationFrame(applyHeight);
+    vv?.addEventListener('resize', onResize);
+    vv?.addEventListener('scroll', onResize);
+    window.addEventListener('resize', onResize);
+    window.addEventListener('orientationchange', onResize);
+    window.addEventListener('pageshow', onResize);
+    return () => {
+      cancelAnimationFrame(raf1);
+      clearTimeout(t1); clearTimeout(t2); clearTimeout(t3);
+      // keep --app-height on unmount? No, remove to allow fallback on other pages
+      root.style.removeProperty('--app-height');
+      vv?.removeEventListener('resize', onResize);
+      vv?.removeEventListener('scroll', onResize);
+      window.removeEventListener('resize', onResize);
+      window.removeEventListener('orientationchange', onResize);
+      window.removeEventListener('pageshow', onResize);
+    };
+  }, [isHomePage]);
+
+  // Homepage scroll correctness — guarantees we always START at scrollTop=0:
   // scroll-restoration and Safari pull-to-refresh can reload with the page
-  // scrolled, so reset on mount + pageshow (+ briefly during toolbar
-  // settle), without fighting intentional scrolling afterwards.
+  // scrolled, so reset on mount + pageshow (+ briefly during toolbar settle),
+  // without fighting intentional scrolling afterwards. Does not break Android/desktop.
   useEffect(() => {
     if (!isHomePage) return;
     if ('scrollRestoration' in window.history) {
