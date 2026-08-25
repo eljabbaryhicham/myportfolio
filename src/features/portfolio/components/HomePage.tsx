@@ -190,22 +190,6 @@ export default function HomePageContent() {
   const logoScale = homeSettings?.homePageLogoScale || 1;
   const logoColor = homeSettings?.homePageLogoColor || '';
 
-  // Optical centering on mobile: everything AFTER the buttons (scroll hint +
-  // TrustedBy marquee) adds ~130px of "tail" below the visual mass, so pure
-  // flex-centering pushes the mass too high. Measure the tail and shift the
-  // stack down by half of it (capped) via a CSS var consumed in globals.css.
-  const tailRef = useRef<HTMLDivElement>(null);
-  const [opticalOffset, setOpticalOffset] = useState(0);
-  useEffect(() => {
-    const el = tailRef.current;
-    if (!el || typeof ResizeObserver === 'undefined') return;
-    const measure = () => setOpticalOffset(Math.min(el.offsetHeight / 2, 80));
-    measure();
-    const ro = new ResizeObserver(measure);
-    ro.observe(el);
-    return () => ro.disconnect();
-  }, []);
-
   useEffect(() => {
     // Preload the default hero poster with high priority for LCP
     const link = document.createElement('link');
@@ -263,10 +247,7 @@ export default function HomePageContent() {
           )}
         </AnimatePresence>
 
-        <div
-          className="homepage-hero-stack flex flex-col items-center gap-1 sm:gap-2 md:gap-3 w-full px-4"
-          style={{ '--homepage-optical': `${opticalOffset}px` } as React.CSSProperties}
-        >
+        <div className="flex flex-col items-center gap-1 sm:gap-2 md:gap-3 w-full px-4">
           <motion.div
             className="w-[min(80vw,500px)] md:w-[min(70vw,600px)]"
             style={{ aspectRatio: "16/9", position: "relative" }}
@@ -339,14 +320,12 @@ export default function HomePageContent() {
                 </Link>
               </Button>
             </motion.div>
-            <div ref={tailRef} className="flex flex-col items-center w-full gap-1 sm:gap-2 md:gap-3">
-              <motion.div variants={itemVariants} className="text-foreground/40 text-xs md:text-sm lg:text-base animate-pulse" style={{ textShadow: "0 1px 8px rgba(0,0,0,0.5)" }}>
-                {t('home.hero.scroll')}
-              </motion.div>
-              <motion.div variants={itemVariants} className="w-full">
-                <TrustedBy />
-              </motion.div>
-            </div>
+            <motion.div variants={itemVariants} className="text-foreground/40 text-xs md:text-sm lg:text-base animate-pulse" style={{ textShadow: "0 1px 8px rgba(0,0,0,0.5)" }}>
+              {t('home.hero.scroll')}
+            </motion.div>
+            <motion.div variants={itemVariants} className="w-full">
+              <TrustedBy />
+            </motion.div>
           </motion.div>
         </div>
       </div>
