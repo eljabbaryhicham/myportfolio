@@ -227,8 +227,8 @@ export default function HomePageContent() {
   }, [homeSettings?.heroVideoUrl]);
 
   return (
-    <div className="hide-cursor-homepage h-full w-full overflow-y-auto overflow-x-hidden">
-      <div className="relative z-10 min-h-full w-full flex items-center justify-center transition-opacity duration-1000">
+    <div className="hide-cursor-homepage homepage-viewport-fix fixed inset-0 overflow-y-auto overflow-x-hidden">
+      <div className="homepage-viewport-fix-inner relative z-10 min-h-full w-full flex items-center justify-center transition-opacity duration-1000">
         <CursorArrow targetRef={ctaRef} cursorLottieUrl={homeSettings?.cursorLottieUrl} tickLottieUrl={homeSettings?.tickLottieUrl} />
 
         <Particles />
@@ -290,10 +290,10 @@ export default function HomePageContent() {
             animate={isLoading ? "hidden" : "visible"}
           >
             <motion.div variants={itemVariants} className="text-center space-y-2 max-w-lg md:max-w-xl lg:max-w-2xl px-4" style={{ textShadow: "0 2px 12px rgba(0,0,0,0.6)" }}>
-              <h2 className="text-base sm:text-lg md:text-3xl lg:text-4xl font-headline tracking-tight min-h-[1.5rem] md:min-h-[2.5rem]" style={{ color: homeSettings?.homePageTitleColor || 'rgba(255,255,255,0.9)' }}>
+              <h2 className="text-base sm:text-lg md:text-3xl lg:text-4xl font-headline tracking-tight min-h-[3rem] md:min-h-[2.5rem]" style={{ color: homeSettings?.homePageTitleColor || 'rgba(255,255,255,0.9)' }}>
                 {homeSettings?.homePageTitle || t('home.hero.heading')}
               </h2>
-              <p className="text-xs sm:text-sm md:text-lg lg:text-xl text-foreground/60 leading-relaxed min-h-[2.5rem] md:min-h-[1.75rem]" style={{ textShadow: "0 1px 8px rgba(0,0,0,0.5)" }}>
+              <p className="text-xs sm:text-sm md:text-lg lg:text-xl text-foreground/60 leading-relaxed min-h-[3.25rem] md:min-h-[1.75rem]" style={{ textShadow: "0 1px 8px rgba(0,0,0,0.5)" }}>
                 {homeSettings?.homePageSubtitle || t('home.hero.subtitle')}
               </p>
             </motion.div>

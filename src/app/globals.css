@@ -255,21 +255,43 @@ tr.drag-over-bottom {
   cursor: none !important;
 }
 
-/* Mobile homepage: ensure nothing overflows the screen.
-   The motion.div shell must use dvh (dynamic viewport height) so it tracks
-   the visible area as the mobile browser chrome shows/hides. */
+/* Mobile homepage sizing.
+   Root cause of uneven margins: the shell has .force-gpu (transform), which
+   makes it the CONTAINING BLOCK for the "fixed" homepage layer. The layer
+   spanned the shell's full padding box (y=0 → 100dvh), covering the
+   top/bottom p-2 margins while the glass card started at y=8px.
+   Fix: switch the layer to position:absolute with the same 8px insets as
+   the shell padding — its edges become pixel-identical to the glass card
+   interior on all four sides, and total height can never exceed the shell. */
 @media (max-width: 768px) {
-  html, body {
-    overflow: hidden !important;
-  }
   .homepage-shell-fix {
     height: 100svh !important;
+    min-height: 100svh !important;
+    max-height: 100svh !important;
+    box-sizing: border-box !important;
+  }
+  .homepage-viewport-fix {
+    position: absolute !important;
+    top: 8px !important;
+    right: 8px !important;
+    bottom: 8px !important;
+    left: 8px !important;
+    width: auto !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+  }
+  .homepage-viewport-fix-inner {
+    min-height: 100% !important;
+    max-height: none !important;
   }
 }
 @supports (height: 100dvh) {
   @media (max-width: 768px) {
     .homepage-shell-fix {
       height: 100dvh !important;
+      min-height: 100dvh !important;
+      max-height: 100dvh !important;
     }
   }
 }
