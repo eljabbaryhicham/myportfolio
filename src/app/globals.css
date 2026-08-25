@@ -255,24 +255,32 @@ tr.drag-over-bottom {
   cursor: none !important;
 }
 
-/* Homepage viewport — the shell is position:fixed inset-0, so the BROWSER
-   lays it out against the live viewport on every frame. This is immune to
-   the stale-measurement problem of 100vh/dvh/svh (and JS-measured heights):
-   when Chrome/Safari resize the viewport mid-toolbar-animation after an
-   external-link open, a fixed box re-fits automatically — no gap, ever,
-   on any browser or device. The hero flows inside it (relative h-full),
-   and p-2 provides the 8px frame margin. */
+/* Homepage viewport — uses modern dynamic viewport unit 100dvh so the
+   shell is always exactly the *visible* viewport, whether Chrome's
+   address bar is expanded, collapsed, or animating after an external-
+   link open, and whether opened directly or via Intent. 100svh is the
+   stable small-viewport fallback, 100vh the ultimate legacy fallback.
+   The hero flows inside (relative h-full) and p-2 is correctly
+   subtracted via flex-1 (no extra JS, no window.innerHeight). */
 html, body {
   height: 100%;
   min-height: 100%;
 }
 .homepage-shell-fix {
-  position: fixed !important;
-  inset: 0 !important;
+  height: 100vh !important;
+  min-height: 100vh !important;
+  height: 100svh !important;
+  min-height: 100svh !important;
   padding-top: max(8px, env(safe-area-inset-top, 0px)) !important;
   padding-right: max(8px, env(safe-area-inset-right, 0px)) !important;
   padding-bottom: max(8px, env(safe-area-inset-bottom, 0px)) !important;
   padding-left: max(8px, env(safe-area-inset-left, 0px)) !important;
+}
+@supports (height: 100dvh) {
+  .homepage-shell-fix {
+    height: 100dvh !important;
+    min-height: 100dvh !important;
+  }
 }
 .homepage-viewport-fix {
   position: relative !important;
