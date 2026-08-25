@@ -314,9 +314,9 @@ export default function HomePageContent() {
                   {t('nav.about')}
                 </Link>
               </Button>
-              <Button ref={ctaRef} asChild size="lg" className="group transition-shadow duration-300 min-h-[44px] md:h-12 md:px-8 md:text-lg text-white" style={{ backgroundColor: "#d81e38", boxShadow: "0 0 20px rgba(216,30,56,0.3)" }}
-                onMouseEnter={(e) => e.currentTarget.style.boxShadow = "0 0 35px rgba(216,30,56,0.5)"}
-                onMouseLeave={(e) => e.currentTarget.style.boxShadow = "0 0 20px rgba(216,30,56,0.3)"}
+              <Button ref={ctaRef} asChild size="lg" className="group transition-shadow duration-300 min-h-[44px] md:h-12 md:px-8 md:text-lg text-white" style={{ backgroundColor: "hsl(var(--primary))", boxShadow: "0 0 20px hsl(var(--primary) / 0.3)" }}
+                onMouseEnter={(e) => e.currentTarget.style.boxShadow = "0 0 35px hsl(var(--primary) / 0.5)"}
+                onMouseLeave={(e) => e.currentTarget.style.boxShadow = "0 0 20px hsl(var(--primary) / 0.3)"}
               >
                 <Link href="/work">
                   {t('home.hero.cta')}
