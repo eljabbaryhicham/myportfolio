@@ -16,38 +16,48 @@ export function ConditionalLayout({ children }: { children: React.ReactNode }) {
 
   // iOS WebKit (Chrome for iOS) viewport fix — external link launches WebKit
   // with a stale viewport height (100dvh/100vh calculated before toolbar settles).
-  // We set --app-height from the LIVE visualViewport.height (WebKit) and keep
-  // it in sync on every visualViewport.resize/scroll + window.resize + orientation
-  // + pageshow, so the shell always matches the settled visual viewport.
-  // Uses rAF + timeouts for early toolbar animation (first 900ms).
+  // Per spec: bind hero height to visualViewport.height via --app-height, update on:
+  // visualViewport resize/scroll, immediately on load, and again after 300ms/800ms
+  // to catch toolbar settling (iOS doesn't always fire resize). Also poll + synthetic scroll nudge.
   useEffect(() => {
     if (!isHomePage) return;
     const root = document.documentElement;
-    const applyHeight = () => {
+    const updateHeight = () => {
       const vv: VisualViewport | null | undefined = (window as unknown as { visualViewport?: VisualViewport }).visualViewport;
       const h = Math.round(vv?.height || window.innerHeight || root.clientHeight);
       if (h > 0) root.style.setProperty('--app-height', `${h}px`);
     };
-    applyHeight();
-    const raf1 = requestAnimationFrame(applyHeight);
-    const t1 = setTimeout(applyHeight, 100);
-    const t2 = setTimeout(applyHeight, 350);
-    const t3 = setTimeout(applyHeight, 900);
-    // Poll for first 3s — iOS WebKit external-link toolbar settles without firing resize in some cases
-    const poll = setInterval(applyHeight, 100);
+    // once immediately on load
+    updateHeight();
+    const raf1 = requestAnimationFrame(updateHeight);
+    // once again after short delay to catch toolbar settling
+    const t300 = setTimeout(updateHeight, 300);
+    const t800 = setTimeout(updateHeight, 800);
+    const t900 = setTimeout(updateHeight, 900);
+    // Poll for first 3s — extra safety for WebKit that fires no resize at all
+    const poll = setInterval(updateHeight, 100);
     const tPollEnd = setTimeout(() => clearInterval(poll), 3000);
     const vv: VisualViewport | null | undefined = (window as unknown as { visualViewport?: VisualViewport }).visualViewport;
-    const onResize = () => requestAnimationFrame(applyHeight);
+    const onResize = () => requestAnimationFrame(updateHeight);
     vv?.addEventListener('resize', onResize);
     vv?.addEventListener('scroll', onResize);
     window.addEventListener('resize', onResize);
     window.addEventListener('orientationchange', onResize);
     window.addEventListener('pageshow', onResize);
+    // Fallback/extra safety net: tiny synthetic scroll nudges iOS into settling toolbar + firing layout
+    const tNudge = setTimeout(() => {
+      // Only nudge if at top — don't fight intentional scroll
+      if (window.scrollY === 0 && (homeScrollRef.current?.scrollTop ?? 0) === 0) {
+        window.scrollTo(0, 1);
+        window.scrollTo(0, 0);
+        requestAnimationFrame(updateHeight);
+      }
+    }, 500);
     return () => {
       cancelAnimationFrame(raf1);
-      clearTimeout(t1); clearTimeout(t2); clearTimeout(t3);
+      clearTimeout(t300); clearTimeout(t800); clearTimeout(t900);
       clearInterval(poll); clearTimeout(tPollEnd);
-      // keep --app-height on unmount? No, remove to allow fallback on other pages
+      clearTimeout(tNudge);
       root.style.removeProperty('--app-height');
       vv?.removeEventListener('resize', onResize);
       vv?.removeEventListener('scroll', onResize);

@@ -159,6 +159,7 @@ Verification: `efdb0b2` — `100vh→100svh→100dvh→var(--app-height)` + `vis
 
 | Date | Change | Status |
 |------|--------|--------|
+| 2026-08-25 | FIX: iOS Chrome external-link still gapped (scroll fixes it) — per spec: hero now `height: var(--app-height)` from `visualViewport.height` with `resize+scroll` listeners + immediate + `300/800ms` delays + `setInterval` poll + synthetic `scrollTo(1)→scrollTo(0)` nudge after 500ms to force toolbar settle recalc | ✅ |
 | 2026-08-25 | FIX: iOS Chrome external-link still gapped after 100dvh→var fix — added `-webkit-fill-available` fallback (iOS 12-15) + polling `setInterval(100ms×3s)` for WebKit toolbar settle that fires no resize, plus `visualViewport.scroll` listener; hero video has no JS-measured height (pure CSS `object-cover`), so no library stale-height to patch | ✅ |
 | 2026-08-25 | FIX: iOS Chrome external-link floating card + black gap — audit per spec: no stray `100vh` (only shell with `100vh→100svh→100dvh→var(--app-height)` fallback), no single-capture `innerHeight` (now live `visualViewport.resize` + `resize` + `orientationchange` + `pageshow`), no hardcoded `max-height` wrapper, meta `viewport-fit=cover` added for full-bleed safe-area | ✅ |
 | 2026-08-25 | CLEANUP M6: remove DIAG M0 logger (`?diag=1`) + `data-trustedby` — GWT scenarios verified and moved to [ACCEPTANCE] | ✅ |
