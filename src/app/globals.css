@@ -262,9 +262,20 @@ tr.drag-over-bottom {
    stable small-viewport fallback, 100vh the ultimate legacy fallback.
    The hero flows inside (relative h-full) and p-2 is correctly
    subtracted via flex-1 (no extra JS, no window.innerHeight). */
+/* html/body must NOT be h-full (100% of large viewport). They would stay
+   at the *large* viewport height (toolbar collapsed) while the shell uses
+   100dvh (toolbar expanded = small) → body taller than shell → black gap
+   at bottom on external-link opens. Let them be auto, shell is the only
+   viewport-sized element. */
 html, body {
-  height: 100%;
-  min-height: 100%;
+  height: auto;
+  min-height: 100vh;
+  min-height: 100svh;
+}
+@supports (height: 100dvh) {
+  html, body {
+    min-height: 100dvh;
+  }
 }
 .homepage-shell-fix {
   height: 100vh !important;

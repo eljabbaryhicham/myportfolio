@@ -139,6 +139,7 @@ Firebase Firestore ← useDoc/useCollection hooks → React components
 
 | Date | Change | Status |
 |------|--------|--------|
+| 2026-08-25 | FIX: gap from `html/body h-full` (large viewport) vs shell `100dvh` (small on external open) → body taller than shell = black gap below; removed `h-full` from html/body, made them `min-height:100dvh` (no navbar reservation on homepage — AppNav not rendered there) | ✅ |
 | 2026-08-25 | FIX: Chrome external-link vs direct open gap — shell now `100dvh` (dynamic viewport) with `100svh`+`100vh` fallback + `max(8px, env(safe-area-inset-*))` so address bar expanded/collapsed yields same visual height on every open path | ✅ |
 | 2026-08-25 | FIX: external-link gap (Chrome) + pull-to-refresh stuck at bottom (Safari) — shell now sized by JS `--app-height` from visualViewport/innerHeight re-applied on every resize/orientation (CSS dvh was measured stale on external opens); unconditional scroll reset on `pageshow` fixes post-refresh bottom position | ✅ |
 | 2026-08-25 | FIX: black gap bottom (Chrome) / top (Safari) — whole page shifted due to safe-area + html/body double viewport; removed safe-area padding from inner, restored html/body h-full, shell sole viewport unit with flex centering | ✅ |
