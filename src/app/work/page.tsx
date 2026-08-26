@@ -1099,7 +1099,7 @@ export default function WorkPage() {
                     <div className="flex flex-col flex-1 min-h-0 h-full">
                       <DialogHeader className="p-4 md:p-6 flex-shrink-0 relative">
                         <div className="text-center" onPointerDown={(e) => { if (isMobile) dragControls.start(e); }}>
-                          <DialogTitle className="text-base md:text-2xl font-headline">
+                          <DialogTitle className="text-base md:text-2xl font-headline px-[20%]">
                             {selectedItem.title}
                           </DialogTitle>
                           <DialogDescription className="text-sm md:text-base text-center text-foreground/70 mt-2 md:mt-4 whitespace-pre-wrap max-w-2xl mx-auto">
