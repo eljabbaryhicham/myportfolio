@@ -44,7 +44,14 @@ export default function UploadProgressNotification() {
   const goToMediaTab = (provider: 'vercel' | 'cloudinary') => {
     localStorage.setItem('adminActiveTab', 'media');
     localStorage.setItem('adminInnerMediaTab', provider);
-    router.push('/admin');
+    // If already on admin page, dispatch event to open library directly
+    if (pathname === '/admin') {
+      window.dispatchEvent(new CustomEvent('media-library-maximize', {
+        detail: { provider, tab: 'images', library: 'primary', docId: null }
+      }));
+    } else {
+      router.push('/admin');
+    }
   };
 
   // Active uploads

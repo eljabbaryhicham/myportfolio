@@ -85,7 +85,7 @@ export default function AddFromUrlDialog({ isOpen, onOpenChange, onUploadComplet
   }, [isSubmitting]);
   
   const handleClose = (open: boolean) => {
-    if (!open) {
+    if (!open && !isSubmitting) {
         form.reset();
         setProgress(0);
     }

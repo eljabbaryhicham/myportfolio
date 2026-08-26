@@ -458,11 +458,30 @@ export default forwardRef<MediaLibraryRef, MediaLibraryProps>(function MediaLibr
       setFullLibraryActiveTab(tab);
     }
     setLocalNewlyUploadedId(docId);
-    setIsFullLibraryOpen(true);
     consumeCompletedUpload();
     const timer = setTimeout(() => setLocalNewlyUploadedId(null), 3000);
     return () => clearTimeout(timer);
   }, [completedUpload, consumeCompletedUpload, provider, setActiveTabFn]);
+
+  // ---- Listen for maximize button navigation from notification ----
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      if (!detail || detail.provider !== provider) return;
+      setFullLibraryActiveTab(detail.tab || 'images');
+      if (provider === 'cloudinary' && detail.library) {
+        setFullLibraryActiveLibrary(detail.library);
+      }
+      setLocalNewlyUploadedId(detail.docId || null);
+      setIsFullLibraryOpen(true);
+      if (detail.docId) {
+        const timer = setTimeout(() => setLocalNewlyUploadedId(null), 3000);
+        return () => clearTimeout(timer);
+      }
+    };
+    window.addEventListener('media-library-maximize', handler);
+    return () => window.removeEventListener('media-library-maximize', handler);
+  }, [provider]);
 
   // ---- Firestore queries ----
   const cloudinaryColRef = useMemoFirebase(() => {
