@@ -70,14 +70,15 @@ const PlyrPlayer = forwardRef(({ source, poster, autoPlay = true, thumbnailVttUr
                 element.dataset.plyrEmbedId = source;
             } else {
                 const video = document.createElement('video');
+                const isAndroid = typeof navigator !== 'undefined' && /Android/i.test(navigator.userAgent);
                 video.setAttribute('playsinline', '');
-                video.setAttribute('webkit-playsinline', '');
                 video.setAttribute('controls', '');
                 video.setAttribute('preload', 'metadata');
-                video.setAttribute('crossorigin', 'anonymous');
-                if (poster) {
-                    video.setAttribute('poster', poster);
+                if (isAndroid) {
+                  video.setAttribute('webkit-playsinline', '');
+                  video.setAttribute('crossorigin', 'anonymous');
                 }
+                if (poster) video.setAttribute('poster', poster);
                 // Hide the preloader only when a video frame is actually
                 // PRESENTED on screen — data events fire before paint.
                 let settled = false;
@@ -87,22 +88,30 @@ const PlyrPlayer = forwardRef(({ source, poster, autoPlay = true, thumbnailVttUr
                     setIsLoading(false);
                 };
                 const rvfc = (video as any).requestVideoFrameCallback;
-                // For autoplay:false (details) rvfc/playing will never fire until
-                // user hits play — rely on metadata events so the poster +
-                // controls are visible immediately on iOS.
-                if (rvfc && autoPlay) {
-                    rvfc.call(video, () => requestAnimationFrame(() => done()));
-                } else if (!autoPlay) {
-                    ['loadedmetadata', 'loadeddata', 'canplay'].forEach((evt) =>
-                        video.addEventListener(evt, () => setTimeout(done, 200), { once: true } as any)
-                    );
+                if (isAndroid) {
+                  if (rvfc && autoPlay) {
+                      rvfc.call(video, () => requestAnimationFrame(() => done()));
+                  } else if (!autoPlay) {
+                      ['loadedmetadata', 'loadeddata', 'canplay'].forEach((evt) =>
+                          video.addEventListener(evt, () => setTimeout(done, 200), { once: true } as any)
+                      );
+                  } else {
+                      ['playing', 'loadeddata'].forEach((evt) =>
+                          video.addEventListener(evt, done, { once: true })
+                      );
+                      video.addEventListener('canplay', () => setTimeout(done, 300), { once: true });
+                  }
                 } else {
-                    ['playing', 'loadeddata'].forEach((evt) =>
-                        video.addEventListener(evt, done, { once: true })
-                    );
-                    video.addEventListener('canplay', () => setTimeout(done, 300), { once: true });
+                  if (rvfc) {
+                      rvfc.call(video, () => requestAnimationFrame(() => done()));
+                  } else {
+                      ['playing', 'loadeddata'].forEach((evt) =>
+                          video.addEventListener(evt, done, { once: true })
+                      );
+                  }
+                  video.addEventListener('canplay', () => setTimeout(done, 300), { once: true });
                 }
-                const safety = setTimeout(done, autoPlay ? 10000 : 3500);
+                const safety = setTimeout(done, isAndroid ? (autoPlay ? 10000 : 3500) : 10000);
                 video.addEventListener('loadstart', () => {
                   if (isMounted && !settled) setIsLoading(true);
                 });
@@ -293,14 +302,15 @@ const PlyrPlayer = forwardRef(({ source, poster, autoPlay = true, thumbnailVttUr
   }, [autoPlay, isLoading]);
 
 
+  const isAndroidRender = typeof navigator !== 'undefined' && /Android/i.test(navigator.userAgent);
   return (
-    <div className={cn("relative w-full h-full", "isolate")}>
+    <div className={cn("relative w-full h-full", isAndroidRender ? "isolate" : "force-gpu")}>
       {isLoading && (
-          <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/40 pointer-events-none">
+          <div className={cn("absolute inset-0 z-20 flex items-center justify-center pointer-events-none", isAndroidRender ? "bg-black/40" : "bg-black/20")}>
               <Preloader />
           </div>
       )}
-      <div ref={containerRef} className="relative w-full h-full opacity-100">
+      <div ref={containerRef} className={cn("relative w-full h-full", isAndroidRender ? "opacity-100" : (isLoading ? 'opacity-0' : 'opacity-100'))}>
          {/* Plyr will be injected here */}
       </div>
     </div>
