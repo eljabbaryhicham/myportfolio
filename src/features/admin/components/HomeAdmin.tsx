@@ -699,13 +699,17 @@ export default function HomeAdmin() {
                                             <FormItem>
                                                 <FormLabel>Glass Opacity (%)</FormLabel>
                                                 <FormControl>
-                                                    <Slider
-                                                        min={0}
-                                                        max={100}
-                                                        step={1}
-                                                        value={[field.value ?? 25]}
-                                                        onValueChange={(v) => field.onChange(v[0])}
-                                                    />
+                                                    <div className="flex items-center gap-3">
+                                                        <Slider
+                                                            className="flex-1"
+                                                            min={0}
+                                                            max={100}
+                                                            step={1}
+                                                            value={[field.value ?? 25]}
+                                                            onValueChange={(v) => field.onChange(v[0])}
+                                                        />
+                                                        <span className="w-12 text-center text-sm font-mono">{field.value ?? 25}%</span>
+                                                    </div>
                                                 </FormControl>
                                                 <FormDescription>
                                                     Controls the opacity of the dark background layer on glass panels (0% = invisible, 100% = fully black).
@@ -722,13 +726,17 @@ export default function HomeAdmin() {
                                             <FormItem>
                                                 <FormLabel>Embedded Media Width (%)</FormLabel>
                                                 <FormControl>
-                                                    <Slider
-                                                        min={10}
-                                                        max={100}
-                                                        step={5}
-                                                        value={[field.value ?? 100]}
-                                                        onValueChange={(v) => field.onChange(v[0])}
-                                                    />
+                                                    <div className="flex items-center gap-3">
+                                                        <Slider
+                                                            className="flex-1"
+                                                            min={10}
+                                                            max={100}
+                                                            step={5}
+                                                            value={[field.value ?? 100]}
+                                                            onValueChange={(v) => field.onChange(v[0])}
+                                                        />
+                                                        <span className="w-12 text-center text-sm font-mono">{field.value ?? 100}%</span>
+                                                    </div>
                                                 </FormControl>
                                                 <FormDescription>
                                                     Controls the width of images, videos, and file download cards inside project details.
