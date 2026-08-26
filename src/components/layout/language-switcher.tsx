@@ -62,16 +62,6 @@ export function LanguageSwitcher({ className }: { className?: string }) {
         className
       )}
     >
-      {/* Inactive language label sits on the opposite side the knob is leaving */}
-      <span
-        className={cn(
-          "absolute inset-y-0 flex items-center text-[10px] font-semibold leading-none tracking-wider transition-opacity duration-300",
-          isEn ? "left-1.5 text-white/40" : "right-1.5 text-white/40"
-        )}
-      >
-        {isEn ? 'FR' : 'EN'}
-      </span>
-
       {/* Circular knob that slides and shows the active language inside it */}
       <motion.span
         className="absolute top-1 left-1 z-10 flex h-6 w-6 items-center justify-center rounded-full bg-destructive shadow-[0_0_12px_hsl(var(--primary)/0.6)]"
