@@ -75,15 +75,9 @@ const PlyrPlayer = forwardRef(({ source, poster, autoPlay = true, thumbnailVttUr
                     settled = true;
                     setIsLoading(false);
                 };
-                const rvfc = (video as any).requestVideoFrameCallback;
-                if (rvfc) {
-                    rvfc.call(video, () => requestAnimationFrame(() => done()));
-                } else {
-                    ['playing', 'loadeddata'].forEach((evt) =>
-                        video.addEventListener(evt, done, { once: true })
-                    );
-                }
-                video.addEventListener('canplay', () => setTimeout(done, 300), { once: true });
+                // Wait for the video to actually start playing before hiding preloader
+                video.addEventListener('playing', done, { once: true });
+                // Safety: if playing never fires (e.g. autoplay blocked), fallback after delay
                 const safety = setTimeout(done, 10000);
                 video.addEventListener('loadstart', () => {
                     if (isMounted && !settled) setIsLoading(true);
@@ -97,7 +91,7 @@ const PlyrPlayer = forwardRef(({ source, poster, autoPlay = true, thumbnailVttUr
 
             const onPlayerReady = () => {
                 playerReadyRef.current = true;
-                if ((isYoutube || isVimeo) && isMounted) setIsLoading(false);
+                // For YouTube/Vimeo, wait for 'playing' event instead of hiding immediately
             };
             const onPlayerError = () => {
                 if (isMounted) setIsLoading(false);
@@ -105,6 +99,8 @@ const PlyrPlayer = forwardRef(({ source, poster, autoPlay = true, thumbnailVttUr
             const wireEvents = (p: PlyrInstance) => {
                 p.on('ready', onPlayerReady);
                 p.on('error', onPlayerError);
+                // Hide preloader only when video actually starts playing
+                p.on('playing', () => { if (isMounted) setIsLoading(false); });
             };
 
             const mobileControls = ['play-large', 'play', 'current-time', 'progress', 'settings', 'pip', 'fullscreen'];

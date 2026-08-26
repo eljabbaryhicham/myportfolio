@@ -167,13 +167,8 @@ const CdnClapprPlayer = forwardRef(function CdnClapprPlayer({ source, poster, au
             video.setAttribute('webkit-playsinline', '');
             video.setAttribute('playsinline', '');
           }
-          const rvfc = (video as any).requestVideoFrameCallback;
-          if (rvfc) {
-            rvfc.call(video, () => requestAnimationFrame(() => done()));
-          } else {
-            video.addEventListener('playing', done, { once: true });
-            video.addEventListener('loadeddata', () => setTimeout(done, 300), { once: true });
-          }
+          // Wait for the video to actually start playing before hiding preloader
+          video.addEventListener('playing', done, { once: true });
           spinnerSafetyRef.current = setTimeout(done, 10000);
           return true;
         };
