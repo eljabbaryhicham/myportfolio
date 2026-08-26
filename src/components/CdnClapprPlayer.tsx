@@ -5,13 +5,10 @@ import Preloader from './preloader';
 import { useToast } from '@/hooks/use-toast';
 import { useIsMobile } from '@/hooks/use-mobile';
 
-// Make Clappr and its plugins available on the window object for type safety
+// Make Clappr available on the window object for type safety
 declare global {
     interface Window {
         Clappr: any;
-        DashShakaPlayback: any;
-        LevelSelector: any;
-        HlsJsPlayback: any;
     }
 }
 
@@ -21,22 +18,6 @@ interface CdnClapprPlayerProps {
   autoPlay?: boolean;
   watermark?: string;
 }
-
-const loadScript = (src: string, id: string): Promise<void> => {
-    return new Promise((resolve, reject) => {
-        if (document.getElementById(id)) {
-            resolve();
-            return;
-        }
-        const script = document.createElement('script');
-        script.id = id;
-        script.src = src;
-        script.async = true;
-        script.onload = () => resolve();
-        script.onerror = (e) => reject(new Error(`Failed to load script: ${src}.`));
-        document.head.appendChild(script);
-    });
-};
 
 const CdnClapprPlayer = forwardRef(function CdnClapprPlayer({ source, poster, autoPlay = true, watermark }: CdnClapprPlayerProps, ref) {
   const playerContainerRef = useRef<HTMLDivElement>(null);
@@ -58,32 +39,17 @@ const CdnClapprPlayer = forwardRef(function CdnClapprPlayer({ source, poster, au
       setIsLoading(true);
 
       try {
-        await loadScript('https://cdn.jsdelivr.net/npm/@clappr/player@0.13.0/dist/clappr.min.js', 'clappr-script');
-        
-        if (!isMounted) return;
+        // Clappr core is a UMD bundle: importing it registers window.Clappr.
+        // Progressive mp4/webm uses Clappr's built-in HTML5 playback, so no
+        // external plugins are required (avoids cross-core-version breakage).
+        await import('@clappr/player');
+        if (!isMounted || !window.Clappr) return;
 
-        const canNativeHls = (() => {
-          const v = document.createElement('video');
-          return !!v.canPlayType('application/vnd.apple.mpegurl');
-        })();
         const isHlsSource = source.includes('.m3u8');
-        const needHlsJs = isHlsSource && !canNativeHls;
-
-        const extraScripts: Promise<void>[] = [
-            loadScript('https://cdn.jsdelivr.net/gh/clappr/dash-shaka-playback@latest/dist/dash-shaka-playback.js', 'clappr-shaka-playback'),
-            loadScript('https://cdn.jsdelivr.net/gh/clappr/clappr-level-selector-plugin@latest/dist/level-selector.min.js', 'clappr-level-selector'),
-        ];
-        if (needHlsJs) {
-          extraScripts.push(loadScript('https://cdn.jsdelivr.net/npm/@clappr/hlsjs-playback@3.0.1/dist/hlsjs-playback.min.js', 'clappr-hls-playback'));
-        }
-        await Promise.all(extraScripts);
 
         if (!isMounted || !container) return;
-        
-        const plugins = [];
-        if (window.DashShakaPlayback) plugins.push(window.DashShakaPlayback);
-        if (window.LevelSelector) plugins.push(window.LevelSelector);
-        if (needHlsJs && window.HlsJsPlayback) plugins.push(window.HlsJsPlayback);
+
+        const plugins: any[] = [];
 
         const playerButtons = isMobile
           ? ['play', 'pip', 'fullscreen']
