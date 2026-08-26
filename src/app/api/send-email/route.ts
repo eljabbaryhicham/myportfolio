@@ -6,10 +6,35 @@ import { firebaseConfig } from '@/firebase/config';
 import { DEFAULT_EMAIL_TEMPLATE_HTML, DEFAULT_AUTOREPLY_TEMPLATE_HTML } from '@/lib/default-email-template';
 
 const formSchema = z.object({
-  name: z.string(),
+  name: z.string().min(1, 'Name is required').max(100, 'Name is too long'),
   email: z.string().email(),
-  message: z.string(),
+  message: z.string().min(1, 'Message is required').max(5000, 'Message is too long'),
 });
+
+// Very small in-memory rate limiter: max N requests per IP per window.
+// In-memory is fine for a single serverless instance; enough to blunt spam.
+const RATE_LIMIT_WINDOW_MS = 60_000;
+const RATE_LIMIT_MAX = 5;
+const hits = new Map<string, { count: number; resetAt: number }>();
+
+function isRateLimited(ip: string): boolean {
+  const now = Date.now();
+  const entry = hits.get(ip);
+  if (!entry || entry.resetAt < now) {
+    hits.set(ip, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS });
+    return false;
+  }
+  entry.count += 1;
+  return entry.count > RATE_LIMIT_MAX;
+}
+
+function clientIp(req: NextRequest): string {
+  return (
+    req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
+    req.headers.get('x-real-ip') ||
+    'unknown'
+  );
+}
 
 function escapeHtml(str: string): string {
   return str
@@ -65,6 +90,10 @@ export async function POST(req: NextRequest) {
 
   if (!parseResult.success) {
     return NextResponse.json({ success: false, message: 'Invalid form data.', errors: parseResult.error.flatten() }, { status: 400 });
+  }
+
+  if (isRateLimited(clientIp(req))) {
+    return NextResponse.json({ success: false, message: 'Too many requests. Please try again in a minute.' }, { status: 429 });
   }
 
   const { name, email, message } = parseResult.data;
