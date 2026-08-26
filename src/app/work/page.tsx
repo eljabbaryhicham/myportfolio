@@ -65,19 +65,22 @@ const ProjectDetailsContent = memo(function ProjectDetailsContent({
   details,
   playerType,
   onImageFullscreen,
+  mediaWidth,
 }: {
   details: string;
   playerType?: 'plyr' | 'clappr';
   onImageFullscreen?: (url: string) => void;
+  mediaWidth?: number;
 }) {
   const normalizedDetails = useMemo(() => normalizeSelfClosingMedia(details), [details]);
+  const widthPercent = mediaWidth && mediaWidth < 100 ? `${mediaWidth}%` : '100%';
 
   const components = useMemo(() => ({
     img: (props: any) => {
       const { src, alt } = props;
       if (!src) return null;
       return (
-        <span className="my-4 flex justify-center">
+        <span className="my-4 flex justify-center" style={{ maxWidth: widthPercent, margin: '1rem auto' }}>
           <span className="relative inline-block group/img max-w-full">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={src} alt={alt || ''} className="block max-w-full h-auto rounded-md mx-auto" />
@@ -97,7 +100,6 @@ const ProjectDetailsContent = memo(function ProjectDetailsContent({
     },
     video: (props: any) => {
       const { src, poster, children, width, ...rest } = props;
-      // Also accept the <video><source src="..." /></video> form
       let videoSrc: string | undefined = src;
       if (!videoSrc && children) {
         const kids = Array.isArray(children) ? children : [children];
@@ -107,16 +109,11 @@ const ProjectDetailsContent = memo(function ProjectDetailsContent({
         if (sourceChild) videoSrc = sourceChild.props.src;
       }
       if (!videoSrc) return <video {...rest}>{children}</video>;
-      // Optional player width via the width attribute: "70", "70%", "320px".
-      // Bare numbers are treated as percentages. Defaults to full width.
-      let frameWidth = '100%';
+      let frameWidth = widthPercent;
       const w = typeof width === 'string' ? width.trim() : '';
       if (/^\d+(\.\d+)?$/.test(w)) frameWidth = `${w}%`;
       else if (/^\d+(\.\d+)?(px|%)$/.test(w)) frameWidth = w;
       return (
-        // [&>*]:absolute/inset-0 pins the player root (Plyr or Clappr) inside
-        // the 16:9 frame — `.details-video-frame` (globals.css) forces every
-        // nested layer (Clappr/Plyr wrappers included) to fill the box.
         <div
           className="details-video-frame relative my-4 mx-auto aspect-video overflow-hidden rounded-md bg-black [&>*]:absolute [&>*]:inset-0"
           style={{ width: frameWidth }}
@@ -138,7 +135,7 @@ const ProjectDetailsContent = memo(function ProjectDetailsContent({
         return <a href={href} {...rest}>{children}</a>;
       }
       return (
-        <div className="my-3 flex items-center gap-3 rounded-lg border border-border/50 bg-muted/30 p-3 transition-colors hover:bg-muted/50 group/file">
+        <div className="my-3 flex items-center gap-3 rounded-lg border border-border/50 bg-muted/30 p-3 transition-colors hover:bg-muted/50 group/file" style={{ maxWidth: widthPercent, margin: '0.75rem auto' }}>
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary">
             <FontAwesomeIcon icon={faArrowDown} className="h-4 w-4" />
           </div>
@@ -159,7 +156,7 @@ const ProjectDetailsContent = memo(function ProjectDetailsContent({
         </div>
       );
     },
-  }), [playerType, onImageFullscreen]);
+  }), [playerType, onImageFullscreen, widthPercent]);
 
   return (
     <ReactMarkdown
@@ -1082,7 +1079,7 @@ export default function WorkPage() {
                 </DialogHeader>
                 <ScrollArea className="flex-1">
                     <div className="project-details prose dark:prose-invert max-w-none space-y-4 text-sm text-foreground/80 p-4 md:p-6">
-                        <ProjectDetailsContent details={selectedItem.details || ''} playerType={workPagePlayer} onImageFullscreen={setFullscreenImageUrl} />
+                        <ProjectDetailsContent details={selectedItem.details || ''} playerType={workPagePlayer} onImageFullscreen={setFullscreenImageUrl} mediaWidth={selectedItem.mediaWidth} />
                     </div>
                 </ScrollArea>
                  <DialogClose className={cn(
