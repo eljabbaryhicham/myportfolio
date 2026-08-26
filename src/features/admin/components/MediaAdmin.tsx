@@ -332,13 +332,6 @@ export default forwardRef<MediaAdminRef, MediaAdminProps>(function MediaAdmin(pr
   const [backgroundTarget, setBackgroundTarget] = useState<'home' | 'website'>('home');
   const [backgroundFile, setBackgroundFile] = useState<MediaAsset | null>(null);
 
-  const xhrRef = useRef<XMLHttpRequest[]>([]);
-
-  useEffect(() => {
-    return () => {
-      xhrRef.current.forEach(xhr => xhr.abort());
-    };
-  }, []);
 
   // Full library dialog state (standalone mode only)
   const [isFullLibraryOpen, setIsFullLibraryOpen] = useState(false);
@@ -470,7 +463,6 @@ export default forwardRef<MediaAdminRef, MediaAdminProps>(function MediaAdmin(pr
       formData.append('upload_preset', uploadPreset);
 
       const xhr = new XMLHttpRequest();
-      xhrRef.current.push(xhr);
       xhr.open('POST', `https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`, true);
 
       xhr.upload.onprogress = (event) => {
@@ -543,7 +535,6 @@ export default forwardRef<MediaAdminRef, MediaAdminProps>(function MediaAdmin(pr
 
       await new Promise(resolve => {
         xhr.onloadend = () => {
-          xhrRef.current = xhrRef.current.filter(h => h !== xhr);
           resolve(undefined);
         };
       });
