@@ -116,10 +116,6 @@ export default function AddFromUrlDialog({ isOpen, onOpenChange, onUploadComplet
         updateGlobalProgress(100, 'cloudinary');
         const docRef = await addDocumentNonBlocking(collection(firestore, 'media'), { ...result.media }) as DocumentReference | undefined;
         if (docRef) {
-          toast({
-            title: t('addFromUrl.toast.success.title'),
-            description: result.message,
-          });
           onUploadComplete(docRef.id, result.media.resource_type as 'image' | 'video', values.libraryId);
         } else {
           toast({

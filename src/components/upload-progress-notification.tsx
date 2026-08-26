@@ -62,10 +62,10 @@ export default function UploadProgressNotification() {
     }
   };
 
-  // Active uploads
+  // Active uploads — hide at 100% since the completed card replaces them
   const activeUploads = [
-    vercel.isUploading ? { ...vercel, provider: 'vercel' as const } : null,
-    cloudinary.isUploading ? { ...cloudinary, provider: 'cloudinary' as const } : null,
+    vercel.isUploading && vercel.progress < 100 ? { ...vercel, provider: 'vercel' as const } : null,
+    cloudinary.isUploading && cloudinary.progress < 100 ? { ...cloudinary, provider: 'cloudinary' as const } : null,
   ].filter(Boolean) as Array<{ isUploading: boolean; progress: number; fileName: string; provider: 'vercel' | 'cloudinary' }>;
 
   // Filter active uploads: hide when user is on the matching admin tab

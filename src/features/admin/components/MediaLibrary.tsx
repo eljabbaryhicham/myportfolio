@@ -594,7 +594,6 @@ export default forwardRef<MediaLibraryRef, MediaLibraryProps>(function MediaLibr
             if (newId) signalCompletedUpload(newId, resourceType, 'vercel_blob');
           } catch (e) { console.error('MediaLibrary: Firestore add after Vercel upload failed', e); }
         }
-        toast({ title: 'Uploaded to Vercel Blob', description: file.name });
         await new Promise((r) => setTimeout(r, 400));
         finishUpload('vercel');
       } catch (e: any) {
@@ -736,7 +735,6 @@ export default forwardRef<MediaLibraryRef, MediaLibraryProps>(function MediaLibr
             if (docRef && !isDialog && props.onUploadComplete) props.onUploadComplete(docRef.id, response.resource_type, libraryId);
             if (docRef) signalCompletedUpload(docRef.id, response.resource_type, libraryId);
           }
-          toast({ title: t('mediaAdmin.toast.uploadSuccessful.title'), description: t('mediaAdmin.toast.uploadSuccessful.description').replace('{file}', file.name).replace('{library}', libraryId === 'primary' ? 'Library Primary' : 'Library Extented') });
         } else {
           const error = JSON.parse(xhr.responseText).error;
           toast({ variant: 'destructive', title: t('mediaAdmin.toast.uploadFailed.title').replace('{file}', file.name), description: t('mediaAdmin.toast.uploadFailed.description').replace('{error}', error.message || 'Unknown error') });
