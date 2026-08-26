@@ -146,8 +146,6 @@ const ProjectDetailsContent = memo(function ProjectDetailsContent({
           <a
             href={href}
             download
-            target="_blank"
-            rel="noopener noreferrer"
             className="shrink-0 inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/90 transition-colors no-underline"
           >
             <FontAwesomeIcon icon={faArrowDown} className="h-3 w-3" />
