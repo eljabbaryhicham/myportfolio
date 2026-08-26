@@ -112,6 +112,13 @@
     linear-gradient(180deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 30%, transparent 60%),
     linear-gradient(135deg, rgba(255,255,255,0.04) 0%, transparent 50%) !important;
 }
+/* Active tabs share the glass border/shine but use the brand red fill */
+.glass-effect[data-state="active"] {
+  background-color: hsl(var(--primary)) !important;
+  background-image: none !important;
+  color: hsl(var(--primary-foreground)) !important;
+  border-color: hsl(var(--primary)) !important;
+}
 
 @layer utilities {
   .animate-spinning-circle-border {

@@ -59,6 +59,74 @@ const normalizeSelfClosingMedia = (md: string) =>
 const DETAILS_MEDIA_RE = /<\s*(video|audio|img|source)\b|!\[[^\]]*\]\([^)]+\)/i;
 const hasDetailsMedia = (details?: string) => !!details && DETAILS_MEDIA_RE.test(details);
 
+// Heavy video players (Clappr/Plyr + hls.js) are expensive on mobile —
+// mounting 3+ at once in project details stalls Android. Render a cheap
+// poster + tap-to-load placeholder and only mount the real player when the
+// element is visible (IntersectionObserver) or the user taps play.
+function LazyDetailsVideo({
+  videoSrc,
+  poster,
+  playerType,
+}: {
+  videoSrc: string;
+  poster?: string;
+  playerType?: 'plyr' | 'clappr';
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [inView, setInView] = useState(false);
+  const [activated, setActivated] = useState(false);
+  const shouldLoad = inView || activated;
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    if (activated) return; // already loaded, no need to observe
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting) {
+          setInView(true);
+          io.disconnect();
+        }
+      },
+      { rootMargin: '200px', threshold: 0 }
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, [activated]);
+  if (!shouldLoad) {
+    return (
+      <div
+        ref={ref}
+        className="absolute inset-0 flex flex-col items-center justify-center bg-black cursor-pointer select-none"
+        role="button"
+        tabIndex={0}
+        aria-label="Play video"
+        onClick={() => setActivated(true)}
+        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setActivated(true); } }}
+      >
+        {poster ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={poster} alt="" className="absolute inset-0 h-full w-full object-cover opacity-70" />
+        ) : null}
+        <div className="relative z-10 flex flex-col items-center gap-2 text-white/90">
+          <span className="flex h-14 w-14 items-center justify-center rounded-full bg-white/15 backdrop-blur-md border border-white/20 shadow-lg">
+            <FontAwesomeIcon icon={faFilm} className="h-6 w-6" />
+          </span>
+          <span className="text-xs tracking-wide text-white/70">Tap to play</span>
+        </div>
+      </div>
+    );
+  }
+  return (
+    <Suspense fallback={<Preloader />}>
+      {playerType === 'plyr' ? (
+        <MemoizedPlyrPlayer source={videoSrc} poster={poster} autoPlay={false} />
+      ) : (
+        <MemoizedCdnClapprPlayer source={videoSrc} poster={poster} autoPlay={false} />
+      )}
+    </Suspense>
+  );
+}
+
 // Renders project-details markdown; embedded <video> tags play through the
 // same player chosen for the work page (workPagePlayer setting). Memoized so
 // dialog mouse-move re-renders never reset playback.
@@ -129,13 +197,7 @@ const ProjectDetailsContent = memo(function ProjectDetailsContent({
           <div
             className="details-video-frame relative aspect-video overflow-hidden rounded-md bg-black [&>*]:absolute [&>*]:inset-0"
           >
-            <Suspense fallback={<Preloader />}>
-              {playerType === 'plyr' ? (
-                <MemoizedPlyrPlayer source={videoSrc} poster={poster} autoPlay={false} />
-              ) : (
-                <MemoizedCdnClapprPlayer source={videoSrc} poster={poster} autoPlay={false} />
-              )}
-            </Suspense>
+            <LazyDetailsVideo videoSrc={videoSrc} poster={poster} playerType={playerType} />
           </div>
         </div>
       );
@@ -150,13 +212,13 @@ const ProjectDetailsContent = memo(function ProjectDetailsContent({
         return <a href={href} {...rest}>{children}</a>;
       }
       return (
-        <div className="my-3 flex items-center gap-3 rounded-lg border border-border/50 bg-muted/30 p-3 transition-colors hover:bg-muted/50 group/file" style={{ maxWidth: widthPercent, margin: '0.75rem auto' }}>
+        <div className="my-3 flex w-full min-w-0 items-center gap-3 overflow-hidden rounded-lg border border-border/50 bg-muted/30 p-3 transition-colors hover:bg-muted/50 group/file" style={{ maxWidth: widthPercent, width: '100%', boxSizing: 'border-box', marginLeft: 'auto', marginRight: 'auto' }}>
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary">
             <FontAwesomeIcon icon={faArrowDown} className="h-4 w-4" />
           </div>
-          <div className="min-w-0 flex-1">
+          <div className="min-w-0 flex-1 overflow-hidden">
             <p className="text-sm font-medium truncate">{filename}</p>
-            <p className="text-xs text-muted-foreground">File attachment</p>
+            <p className="text-xs text-muted-foreground truncate">File attachment</p>
           </div>
           <button
             type="button"

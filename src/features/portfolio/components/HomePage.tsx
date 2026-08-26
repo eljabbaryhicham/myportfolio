@@ -38,26 +38,26 @@ interface HomePageSettings {
 }
 
 function Particles() {
-  const circles = [];
-  for (let i = 0; i < 20; i++) {
-    const size = Math.random() * 3 + 1;
-    const duration = Math.random() * 10 + 10;
-    circles.push(
-      <motion.div
-        key={i}
-        className="absolute rounded-full bg-white/10"
-        style={{
-          left: `${Math.random() * 100}%`,
-          top: `${Math.random() * 100}%`,
-          width: size,
-          height: size,
-        }}
-        animate={{ y: [0, -30, 0], opacity: [0.1, 0.4, 0.1] }}
-        transition={{ duration, repeat: Infinity, ease: "easeInOut", delay: Math.random() * 10 }}
-      />
-    );
-  }
-  return <div className="absolute inset-0 pointer-events-none overflow-hidden">{circles}</div>;
+  const circles = useRef<Array<{ size: number; left: string; top: string; duration: number; delay: number }>>(Array.from({ length: 20 }, () => ({
+    size: Math.random() * 3 + 1,
+    left: `${Math.random() * 100}%`,
+    top: `${Math.random() * 100}%`,
+    duration: Math.random() * 10 + 10,
+    delay: Math.random() * 10,
+  }))).current;
+  return (
+    <div className="absolute inset-0 pointer-events-none overflow-hidden" aria-hidden>
+      {circles.map((c, i) => (
+        <motion.div
+          key={i}
+          className="absolute rounded-full bg-white/10"
+          style={{ left: c.left, top: c.top, width: c.size, height: c.size }}
+          animate={{ y: [0, -30, 0], opacity: [0.1, 0.4, 0.1] }}
+          transition={{ duration: c.duration, repeat: Infinity, ease: "easeInOut", delay: c.delay }}
+        />
+      ))}
+    </div>
+  );
 }
 
 function CursorArrow({ targetRef, cursorLottieUrl, tickLottieUrl }: { targetRef: React.RefObject<HTMLButtonElement | null>; cursorLottieUrl?: string; tickLottieUrl?: string }) {
@@ -183,8 +183,14 @@ export default function HomePageContent() {
     [firestore]
   );
   const { data: homeSettings, isLoading: isLoadingSettings } = useDoc<HomePageSettings>(settingsDocRef);
-  
-  const isLoading = isLoadingSettings;
+  // Only show the full-screen preloader on the very first load (no cached data yet);
+  // on client-side navigations Firestore may briefly be isLoading while re-attaching,
+  // but we already have data to render so we must not flash a black overlay.
+  const hasReceivedData = useRef(false);
+  if (homeSettings) hasReceivedData.current = true;
+  const isLoading = isLoadingSettings && !hasReceivedData.current && !homeSettings;
+  const hasLoadedOnce = useRef(false);
+  useEffect(() => { if (!isLoading) hasLoadedOnce.current = true; }, [isLoading]);
 
   const homeLogoUrl = homeSettings?.homePageLogoUrl;
   const isLogoVisible = homeSettings?.isHomePageLogoVisible ?? true;
@@ -315,7 +321,7 @@ export default function HomePageContent() {
                   {t('nav.about')}
                 </Link>
               </Button>
-              <Button ref={ctaRef} asChild size="lg" className="group transition-shadow duration-300 min-h-[36px] md:h-12 px-3 sm:px-4 md:px-8 text-[11px] sm:text-xs md:text-lg text-white shrink min-w-0" style={{ backgroundColor: "hsl(var(--primary))", boxShadow: "0 0 20px hsl(var(--primary) / 0.3)" }}
+              <Button ref={ctaRef} asChild size="lg" variant="destructive" className="group transition-shadow duration-300 min-h-[36px] md:h-12 px-3 sm:px-4 md:px-8 text-[11px] sm:text-xs md:text-lg shrink min-w-0 border-0" style={{ boxShadow: "0 0 20px hsl(var(--primary) / 0.3)" }}
                 onMouseEnter={(e) => e.currentTarget.style.boxShadow = "0 0 35px hsl(var(--primary) / 0.5)"}
                 onMouseLeave={(e) => e.currentTarget.style.boxShadow = "0 0 20px hsl(var(--primary) / 0.3)"}
               >
