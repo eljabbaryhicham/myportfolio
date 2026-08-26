@@ -166,7 +166,7 @@ export function AppNav() {
         <div className={cn(
           "flex h-[7vh] min-h-[60px] flex-row items-center justify-between rounded-lg border border-border/50 glass-effect"
           )}>
-          <nav className="flex h-full flex-1 items-center justify-between px-[4vw]">
+          <nav className="flex h-full flex-1 items-center justify-center gap-3 px-[4vw] sm:gap-5">
             {accessibleNavItems.map(renderNavItem)}
           </nav>
         </div>
