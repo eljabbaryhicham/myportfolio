@@ -340,6 +340,13 @@ html, body {
      expensive part (now disabled on coarse pointers below). */
   contain: layout paint;
 }
+@supports (-webkit-touch-callout: none) {
+  /* iOS Safari: contain:layout breaks aspect-ratio + absolute children
+     inside overflow:hidden, causing the video to be 0-height or clipped. */
+  .details-video-frame {
+    contain: none;
+  }
+}
 .details-video-frame .plyr,
 .details-video-frame .plyr__video-wrapper {
   width: 100%;

@@ -60,12 +60,45 @@ const normalizeSelfClosingMedia = (md: string) =>
 const DETAILS_MEDIA_RE = /<\s*(video|audio|img|source)\b|!\[[^\]]*\]\([^)]+\)/i;
 const hasDetailsMedia = (details?: string) => !!details && DETAILS_MEDIA_RE.test(details);
 
-// Keep the configured player (Plyr/Clappr) on all devices — the stall is not
+function isIOSDevice() {
+  if (typeof navigator === 'undefined') return false;
+  const ua = navigator.userAgent || '';
+  return /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && (navigator as any).maxTouchPoints > 1);
+}
+
+// Native video for iOS: Safari has strict inline + HLS requirements and
+// Plyr/Clappr's custom controls + hls.js often fail inside a transformed
+// dialog. A plain <video> with native controls is the most reliable.
+function IOSNativeVideo({ videoSrc, poster }: { videoSrc: string; poster?: string }) {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const isHls = videoSrc.includes('.m3u8');
+  // iOS Safari can play HLS natively; no hls.js needed.
+  return (
+    // eslint-disable-next-line jsx-a11y/media-has-caption
+    <video
+      ref={videoRef}
+      src={videoSrc}
+      poster={poster}
+      controls
+      playsInline
+      // @ts-ignore - webkit-playsinline is required for older iOS
+      webkit-playsinline="true"
+      preload="metadata"
+      crossOrigin="anonymous"
+      className="absolute inset-0 h-full w-full object-contain bg-black"
+      controlsList="nodownload"
+      style={{ WebkitOverflowScrolling: 'touch' } as any}
+    />
+  );
+}
+
+// Keep the configured player (Plyr/Clappr) on desktop — the stall is not
 // the player itself but the surrounding compositing/decoders. Each frame is
 // mounted lazily so off-screen videos don't allocate decoders, and the
 // heavy work (script fetch + Clappr init) is deferred until the dialog's
 // enter animation has finished, so it doesn't compete with framer-motion
-// and glass paint on low-end Android.
+// and glass paint. On iOS we bypass Plyr/Clappr entirely for a native
+// <video> which is the only reliably working path in Mobile Safari.
 function LazyDetailsVideo({
   videoSrc,
   poster,
@@ -79,6 +112,7 @@ function LazyDetailsVideo({
   const [inView, setInView] = useState(false);
   const [activated, setActivated] = useState(false);
   const [ready, setReady] = useState(false);
+  const ios = useMemo(() => isIOSDevice(), []);
   const shouldLoad = inView || activated;
   useEffect(() => {
     const t = setTimeout(() => setReady(true), 420);
@@ -105,18 +139,19 @@ function LazyDetailsVideo({
     return (
       <div
         ref={ref}
-        className="absolute inset-0 flex flex-col items-center justify-center bg-black cursor-pointer select-none"
+        className="absolute inset-0 flex flex-col items-center justify-center bg-black cursor-pointer select-none touch-manipulation"
         role="button"
         tabIndex={0}
         aria-label="Play video"
         onClick={() => setActivated(true)}
+        onTouchEnd={(e) => { e.preventDefault(); setActivated(true); }}
         onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setActivated(true); } }}
       >
         {poster ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={poster} alt="" className="absolute inset-0 h-full w-full object-cover opacity-70" loading="lazy" decoding="async" />
         ) : null}
-        <div className="relative z-10 flex flex-col items-center gap-2 text-white/90">
+        <div className="relative z-10 flex flex-col items-center gap-2 text-white/90 pointer-events-none">
           <span className="flex h-14 w-14 items-center justify-center rounded-full bg-white/15 backdrop-blur-md border border-white/20 shadow-lg">
             <FontAwesomeIcon icon={faFilm} className="h-6 w-6" />
           </span>
@@ -124,6 +159,9 @@ function LazyDetailsVideo({
         </div>
       </div>
     );
+  }
+  if (ios) {
+    return <IOSNativeVideo videoSrc={videoSrc} poster={poster} />;
   }
   return (
     <Suspense fallback={<Preloader />}>
@@ -1208,7 +1246,7 @@ export default function WorkPage() {
                     <DialogTitle className="font-headline">{t('work.details.title').replace('{title}', selectedItem.title)}</DialogTitle>
                 </DialogHeader>
                 <ScrollArea className="flex-1 min-w-0 [&>div>div]:!block [&>div>div]:min-w-0 [&>div>div]:w-full">
-                    <div className="project-details prose dark:prose-invert max-w-full w-full min-w-0 overflow-hidden break-words space-y-4 text-sm text-foreground/80 p-4 md:p-6 box-border">
+                    <div className="project-details prose prose-sm sm:prose-base dark:prose-invert max-w-full w-full min-w-0 overflow-hidden break-words space-y-4 text-xs sm:text-sm text-foreground/80 p-3 sm:p-4 md:p-6 box-border prose-p:my-2 prose-p:leading-relaxed prose-headings:break-words prose-h1:text-lg sm:prose-h1:text-xl prose-h2:text-base sm:prose-h2:text-lg prose-h3:text-sm sm:prose-h3:text-base prose-li:text-xs sm:prose-li:text-sm prose-a:break-all">
                         <ProjectDetailsContent details={selectedItem.details || ''} playerType={workPagePlayer} onImageFullscreen={setFullscreenImageUrl} mediaWidth={homeSettings?.mediaWidth} showMediaTitles={homeSettings?.showMediaTitles ?? true} />
                     </div>
                 </ScrollArea>
