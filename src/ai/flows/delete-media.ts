@@ -9,11 +9,15 @@
  */
 import { ai } from '@/ai/genkit';
 import { z } from 'zod';
+import { initializeServerApp } from '@/firebase/server-init';
+import admin from 'firebase-admin';
+import { SUPERADMIN_EMAIL } from '@/lib/constants';
 
 const DeleteMediaInputSchema = z.object({
   publicId: z.string().min(1),
   resourceType: z.enum(['image', 'video', 'raw']),
   libraryId: z.enum(['primary', 'extented']),
+  idToken: z.string().optional(),
 });
 export type DeleteMediaInput = z.infer<typeof DeleteMediaInputSchema>;
 
@@ -22,6 +26,25 @@ const DeleteMediaOutputSchema = z.object({
   message: z.string(),
 });
 export type DeleteMediaOutput = z.infer<typeof DeleteMediaOutputSchema>;
+
+// Only an authenticated superadmin (or a user with the delete permission) may
+// delete a Cloudinary asset. Denies closed on any verification failure.
+async function canDeleteMedia(idToken?: string): Promise<boolean> {
+  if (!idToken) return false;
+  try {
+    const app = await initializeServerApp();
+    const decoded = await admin.auth(app).verifyIdToken(idToken);
+    if (decoded.email === SUPERADMIN_EMAIL) return true;
+    const snap = await admin.firestore(app).collection('users').doc(decoded.uid).get();
+    if (snap.exists) {
+      const data = snap.data() as any;
+      if (data?.permissions?.canDeleteMedia === true) return true;
+    }
+    return false;
+  } catch {
+    return false;
+  }
+}
 
 /**
  * Server-side wrapper around the delete flow.
@@ -38,7 +61,11 @@ const deleteMediaFlow = ai.defineFlow(
     inputSchema: DeleteMediaInputSchema,
     outputSchema: DeleteMediaOutputSchema,
   },
-  async ({ publicId, resourceType, libraryId }): Promise<DeleteMediaOutput> => {
+  async ({ publicId, resourceType, libraryId, idToken }): Promise<DeleteMediaOutput> => {
+    if (!(await canDeleteMedia(idToken))) {
+      return { success: false, message: 'Unauthorized. You are not allowed to delete media.' };
+    }
+
     const suffix = libraryId === 'primary' ? '_1' : '_2';
 
     const cloudName = process.env[`CLOUDINARY_CLOUD_NAME${suffix}`];

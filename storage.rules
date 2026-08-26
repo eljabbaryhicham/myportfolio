@@ -1,14 +1,17 @@
 rules_version = '2';
 service firebase.storage {
   match /b/{bucket}/o {
-    // Allow public read access to all files
+    // Public read for all assets served on the site.
     match /{allPaths=**} {
       allow get: if true;
     }
 
-    // Allow authenticated users to write to the 'uploads' directory
+    // Writes restricted to authenticated admin users. The caller's user doc
+    // must exist and grant canUploadMedia (superadmin email bypasses).
     match /uploads/{allPaths=**} {
-      allow write: if request.auth != null;
+      allow write: if request.auth != null
+        && (request.auth.token.email == 'eljabbaryhicham@example.com'
+            || (get(/databases/(default)/documents/users/$(request.auth.uid)).data.permissions.canUploadMedia == true));
     }
   }
 }

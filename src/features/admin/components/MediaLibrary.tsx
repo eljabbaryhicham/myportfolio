@@ -766,11 +766,14 @@ export default forwardRef<MediaLibraryRef, MediaLibraryProps>(function MediaLibr
   const handleCloudinaryDelete = async (file: UnifiedFile) => {
     if (!firestore || !canDelete) return;
     const raw = file._raw as MediaAsset;
+    const token = await getToken();
+    if (!token) { toast({ variant: 'destructive', title: 'Not authenticated' }); return; }
     try {
       const result = await deleteMediaAsset({
         publicId: raw.public_id,
         resourceType: (['image', 'video', 'raw'].includes(raw.resource_type) ? raw.resource_type : 'image') as 'image' | 'video' | 'raw',
         libraryId: raw.libraryId || 'primary',
+        idToken: token,
       });
       await deleteDocumentNonBlocking(doc(firestore, 'media', file.id));
       if (result.success) {
@@ -885,11 +888,14 @@ export default forwardRef<MediaLibraryRef, MediaLibraryProps>(function MediaLibr
   // ---- Bulk delete: Cloudinary ----
   const handleCloudinaryBulkDelete = async () => {
     if (!firestore || !canDelete) return;
+    const token = await getToken();
+    if (!token) { toast({ variant: 'destructive', title: 'Not authenticated' }); return; }
     const results = await Promise.allSettled(
       (cloudinaryAssets || []).filter(a => selectedIds.has(a.id)).map(a => deleteMediaAsset({
         publicId: a.public_id,
         resourceType: (['image', 'video', 'raw'].includes(a.resource_type) ? a.resource_type : 'image') as 'image' | 'video' | 'raw',
         libraryId: a.libraryId || 'primary',
+        idToken: token,
       }))
     );
     const failedCount = results.filter(r => r.status === 'rejected' || !(r as any).value.success).length;

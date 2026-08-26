@@ -21,13 +21,29 @@ const DEFAULT_PERMISSIONS = {
   canEditHome: false,
 };
 
-export async function syncAuthUsersToFirestore(): Promise<{
+// Server-side gate: only the superadmin may run admin-management actions.
+// Accepts the caller's Firebase ID token and verifies it cryptographically.
+async function requireSuperAdmin(idToken: string): Promise<admin.app.App | null> {
+  if (!idToken) return null;
+  try {
+    const app = await initializeServerApp();
+    const decoded = await admin.auth(app).verifyIdToken(idToken);
+    if (decoded.email === SUPERADMIN_EMAIL) return app;
+    return null;
+  } catch (e) {
+    console.warn('requireSuperAdmin: verification failed, denying.', e);
+    return null;
+  }
+}
+
+export async function syncAuthUsersToFirestore(idToken: string): Promise<{
   synced: number;
   users: Array<{ email: string; username: string }>;
   error?: string;
 }> {
   try {
-    const app = await initializeServerApp();
+    const app = await requireSuperAdmin(idToken);
+    if (!app) return { synced: 0, users: [], error: 'Unauthorized. Only the superadmin can sync users.' };
     const auth = admin.auth(app);
     const db = admin.firestore(app);
 
@@ -86,9 +102,10 @@ export async function syncAuthUsersToFirestore(): Promise<{
   }
 }
 
-export async function deleteAdminUser(uid: string): Promise<{ success: boolean; error?: string }> {
+export async function deleteAdminUser(uid: string, idToken: string): Promise<{ success: boolean; error?: string }> {
   try {
-    const app = await initializeServerApp();
+    const app = await requireSuperAdmin(idToken);
+    if (!app) return { success: false, error: 'Unauthorized. Only the superadmin can delete users.' };
     const auth = admin.auth(app);
     const db = admin.firestore(app);
 

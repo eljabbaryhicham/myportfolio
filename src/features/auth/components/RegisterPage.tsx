@@ -81,16 +81,8 @@ export default function RegisterPage() {
         uid: userCredential.user.uid,
         username: values.username,
         email: userCredential.user.email,
-        role: 'admin',
+        role: 'user',
         createdAt: new Date().toISOString(),
-        permissions: {
-          canUploadMedia: true,
-          canDeleteMedia: false,
-          canEditProjects: true,
-          canEditAbout: false,
-          canEditContact: false,
-          canEditHome: false,
-        }
       }, {});
 
       toast({

@@ -3,7 +3,7 @@
 
 import { useTranslation } from '@/lib/i18n/useTranslation';
 import { SUPERADMIN_EMAIL } from '@/lib/constants';
-import { useCollection, useFirestore, useMemoFirebase, updateDocumentNonBlocking, useUser } from '@/firebase';
+import { useCollection, useFirestore, useMemoFirebase, updateDocumentNonBlocking, useUser, useAuth } from '@/firebase';
 import { collection, query, orderBy, doc } from 'firebase/firestore';
 import {
   Table,
@@ -103,6 +103,7 @@ export default function AdminManagement() {
   const { t } = useTranslation();
   const firestore = useFirestore();
   const { user: currentUser } = useUser();
+  const auth = useAuth();
   const { toast } = useToast();
 
   const usersQuery = useMemoFirebase(
@@ -127,7 +128,12 @@ export default function AdminManagement() {
   const handleDeleteUser = async (userId: string, username: string) => {
     if (!isSuperAdmin) return;
     
-    const result = await deleteAdminUser(userId);
+    const token = await auth.currentUser?.getIdToken();
+    if (!token) {
+      toast({ variant: 'destructive', title: t('adminMgmt.toast.deleteFailed.title'), description: 'Not authenticated' });
+      return;
+    }
+    const result = await deleteAdminUser(userId, token);
 
     if (result.success) {
       toast({
@@ -163,7 +169,9 @@ export default function AdminManagement() {
     if (!isSuperAdmin) return;
     setIsSyncing(true);
     try {
-      const result = await syncAuthUsersToFirestore();
+      const token = await auth.currentUser?.getIdToken();
+      if (!token) throw new Error('Not authenticated');
+      const result = await syncAuthUsersToFirestore(token);
       if (result.error) {
         toast({
           variant: 'destructive',

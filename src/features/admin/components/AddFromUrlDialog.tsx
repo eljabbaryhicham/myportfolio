@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/firebase';
 import { uploadMediaFromUrl } from '@/ai/flows/upload-media-from-url';
 import { useFirestore, addDocumentNonBlocking } from '@/firebase';
 import { collection, DocumentReference } from 'firebase/firestore';
@@ -40,6 +41,7 @@ interface AddFromUrlDialogProps {
 export default function AddFromUrlDialog({ isOpen, onOpenChange, onUploadComplete }: AddFromUrlDialogProps) {
   const { t } = useTranslation();
   const { toast } = useToast();
+  const auth = useAuth();
   const firestore = useFirestore();
   const { startUpload, updateProgress: updateGlobalProgress, finishUpload } = useUploadProgress();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -98,7 +100,8 @@ export default function AddFromUrlDialog({ isOpen, onOpenChange, onUploadComplet
     const urlFilename = values.mediaUrl.split('/').pop() || 'file';
     startUpload(urlFilename, 'cloudinary');
     try {
-      const result = await uploadMediaFromUrl(values);
+      const idToken = await auth.currentUser?.getIdToken();
+      const result = await uploadMediaFromUrl({ ...values, idToken });
       if (result.success && result.media && firestore) {
         if (result.media.resource_type === 'raw') {
           toast({

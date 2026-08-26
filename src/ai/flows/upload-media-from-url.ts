@@ -7,11 +7,15 @@
  */
 import { ai } from '@/ai/genkit';
 import { z } from 'zod';
+import { initializeServerApp } from '@/firebase/server-init';
+import admin from 'firebase-admin';
+import { SUPERADMIN_EMAIL } from '@/lib/constants';
 
 const UploadMediaFromUrlInputSchema = z.object({
   mediaUrl: z.string().url(),
   libraryId: z.enum(['primary', 'extented']),
   videoFormat: z.enum(['mp4', 'm3u8', 'webm']).optional(),
+  idToken: z.string().optional(),
 });
 export type UploadMediaFromUrlInput = z.infer<typeof UploadMediaFromUrlInputSchema>;
 
@@ -45,6 +49,50 @@ export async function uploadMediaFromUrl(
     return await uploadMediaFromUrlFlow(input);
 }
 
+// Deny requests to internal/private/loopback hosts (SSRF protection).
+function isInternalUrl(raw: string): boolean {
+  try {
+    const u = new URL(raw);
+    const host = u.hostname.toLowerCase();
+    if (host === 'localhost' || host === '0.0.0.0' || host.endsWith('.local')) return true;
+    if (/^(127\.|10\.|192\.168\.|169\.254\.|172\.(1[6-9]|2\d|3[01])\.)/.test(host)) return true;
+    if (host === 'metadata' || host === 'metadata.google.internal' || host.endsWith('.internal')) return true;
+    // IPv6 loopback / unique-local
+    if (host.startsWith('[') && /(::1|::ffff:127\.|fc00:|fd00:|fe80:)/.test(host)) return true;
+    const ipv4 = host.match(/^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/);
+    if (ipv4) {
+      const n = ipv4.slice(1).map(Number);
+      if (n.every((x) => x <= 255)) {
+        if (n[0] === 10 || (n[0] === 172 && n[1] >= 16 && n[1] <= 31) ||
+            (n[0] === 192 && n[1] === 168) || n[0] === 127 || n[0] === 0 ||
+            (n[0] === 169 && n[1] === 254)) return true;
+      }
+    }
+    return false;
+  } catch {
+    return true;
+  }
+}
+
+// Only an authenticated superadmin (or a user with the upload permission) may
+// fetch/upload from an arbitrary URL. Denies closed on any failure.
+async function canUploadFromUrl(idToken?: string): Promise<boolean> {
+  if (!idToken) return false;
+  try {
+    const app = await initializeServerApp();
+    const decoded = await admin.auth(app).verifyIdToken(idToken);
+    if (decoded.email === SUPERADMIN_EMAIL) return true;
+    const snap = await admin.firestore(app).collection('users').doc(decoded.uid).get();
+    if (snap.exists) {
+      const data = snap.data() as any;
+      if (data?.permissions?.canUploadMedia === true) return true;
+    }
+    return false;
+  } catch {
+    return false;
+  }
+}
+
 
 /**
  * A Genkit flow that uploads a file from a URL to a specific Cloudinary library.
@@ -59,6 +107,13 @@ const uploadMediaFromUrlFlow = ai.defineFlow(
     try {
       const { libraryId, videoFormat } = input;
       const suffix = libraryId === 'primary' ? '_1' : '_2';
+
+      if (!(await canUploadFromUrl(input.idToken))) {
+        return { success: false, message: 'Unauthorized. You are not allowed to upload media.', media: undefined };
+      }
+      if (isInternalUrl(input.mediaUrl)) {
+        return { success: false, message: 'Blocked: this URL points to an internal or private host.', media: undefined };
+      }
 
       const cloudName = process.env[`CLOUDINARY_CLOUD_NAME${suffix}`];
       const apiKey = process.env[`CLOUDINARY_API_KEY${suffix}`];

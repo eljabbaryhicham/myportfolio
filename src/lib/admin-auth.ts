@@ -4,63 +4,44 @@ import admin from 'firebase-admin';
 
 import { SUPERADMIN_EMAIL } from '@/lib/constants';
 
-function decodeJwtPayload(token: string): any | null {
-  try {
-    const parts = token.split('.');
-    if (parts.length !== 3) return null;
-    const payload = Buffer.from(parts[1], 'base64url').toString('utf-8');
-    return JSON.parse(payload);
-  } catch {
-    return null;
-  }
-}
-
 export async function verifyAdminRequest(req: NextRequest): Promise<{ uid: string; email?: string } | null> {
   const authHeader = req.headers.get('Authorization') || req.headers.get('authorization');
   if (!authHeader?.startsWith('Bearer ')) return null;
   const token = authHeader.replace('Bearer ', '').trim();
   if (!token) return null;
 
-  // 1. Try strict verification via Admin SDK
+  // Only path: strict verification via the Admin SDK. A token that cannot be
+  // cryptographically verified is NEVER honored — no unverified-decode fallback.
+  let app: admin.app.App;
   try {
-    const app = await initializeServerApp();
-    const decoded = await admin.auth(app).verifyIdToken(token);
-    // decoded contains uid, email, etc.
-    // Check superadmin or permissions
-    if (decoded.email === SUPERADMIN_EMAIL) return decoded as any;
-
-    // For non-superadmin, check Firestore permissions (canUploadMedia)
-    // If Firestore check fails, still allow if token is valid (fallback to default true as client does: ?? true)
-    try {
-      const db = admin.firestore(app);
-      const snap = await db.collection('users').doc(decoded.uid).get();
-      if (snap.exists) {
-        const data = snap.data() as any;
-        const canUpload = data?.permissions?.canUploadMedia ?? true;
-        if (canUpload) return decoded as any;
-        // If explicitly false, deny
-        return null;
-      }
-      // No user doc => default allow (matches client `?? true`)
-      return decoded as any;
-    } catch (e) {
-      console.warn('verifyAdminRequest: Firestore permission check failed, denying access', e);
-      return null;
-    }
+    app = await initializeServerApp();
   } catch (e) {
-    console.warn('verifyAdminRequest: strict verification failed, trying fallback decode', e);
-    // 2. Fallback: decode without verification (for dev / ADC not configured)
-    const payload = decodeJwtPayload(token);
-    if (!payload || !payload.sub) return null;
-    const now = Math.floor(Date.now() / 1000);
-    if (payload.exp && payload.exp < now) return null;
+    console.error('verifyAdminRequest: Firebase Admin SDK not initialized, denying access.', e);
+    return null;
+  }
 
-    if (payload.email === SUPERADMIN_EMAIL) {
-      if (process.env.NODE_ENV === 'production') {
-        console.warn('verifyAdminRequest: using unverified JWT fallback in production — configure FIREBASE_SERVICE_ACCOUNT for proper verification');
-      }
-      return { uid: payload.sub, email: payload.email };
+  let decoded;
+  try {
+    decoded = await admin.auth(app).verifyIdToken(token);
+  } catch (e) {
+    console.warn('verifyAdminRequest: token verification failed, denying access.', e);
+    return null;
+  }
+
+  if (decoded.email === SUPERADMIN_EMAIL) return decoded as any;
+
+  // Non-superadmin: require an existing user doc that explicitly grants
+  // canUploadMedia. No doc or missing permission => deny (fail closed).
+  try {
+    const db = admin.firestore(app);
+    const snap = await db.collection('users').doc(decoded.uid).get();
+    if (snap.exists) {
+      const data = snap.data() as any;
+      if (data?.permissions?.canUploadMedia === true) return decoded as any;
     }
+    return null;
+  } catch (e) {
+    console.warn('verifyAdminRequest: Firestore permission check failed, denying access', e);
     return null;
   }
 }

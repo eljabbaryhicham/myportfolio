@@ -1,87 +1,106 @@
-
 rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Helper function to identify the superadmin
+    // Superadmin (fixed email) has universal read/write access.
     function isSuperAdmin() {
       return request.auth != null && request.auth.token.email == 'eljabbaryhicham@example.com';
     }
 
-    // Helper function to check if a user is signed in
     function isSignedIn() {
       return request.auth != null;
     }
 
-    // SUPERADMIN OVERRIDE: Superadmin has universal read/write access to everything.
-    // This rule is checked first and provides a master key.
+    // Look up the caller's own user document (if any).
+    function myUser() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    // Whether the caller's user doc grants a given permission.
+    function hasPerm(perm) {
+      return isSignedIn()
+        && exists(/databases/$(database)/documents/users/$(request.auth.uid))
+        && myUser().permissions[perm] == true;
+    }
+
+    function isAdmin() {
+      return isSignedIn()
+        && exists(/databases/$(database)/documents/users/$(request.auth.uid))
+        && (myUser().role == 'admin' || myUser().role == 'superadmin');
+    }
+
+    // SUPERADMIN OVERRIDE: applied first, master key.
     match /{document=**} {
       allow read, write: if isSuperAdmin();
     }
 
-    // Projects: Publicly readable, writable by admins.
+    // Projects: publicly readable; writable by admins with canEditProjects.
     match /projects/{projectId} {
       allow get, list: if true;
-      // Allow write for non-superadmin users if they are authenticated.
-      // Superadmin access is already granted by the global rule.
-      allow write: if isSignedIn() && !isSuperAdmin();
+      allow write: if hasPerm('canEditProjects');
     }
 
-    // Contact: Publicly readable, writable by admins.
+    // Contact: publicly readable; writable by admins with canEditContact.
     match /contact/{contactId} {
       allow get, list: if true;
-      allow write: if isSignedIn() && !isSuperAdmin();
+      allow write: if hasPerm('canEditContact');
     }
 
-    // Homepage: Publicly readable, writable by admins.
+    // Homepage: publicly readable; writable by admins with canEditHome.
     match /homepage/{settingsId} {
       allow get, list: if true;
-      allow write: if isSignedIn() && !isSuperAdmin();
+      allow write: if hasPerm('canEditHome');
     }
 
-    // About page content: Publicly readable, writable by admins.
+    // About: publicly readable; writable by admins with canEditAbout.
     match /about/{docId} {
       allow get, list: if true;
-      allow write: if isSignedIn() && !isSuperAdmin();
+      allow write: if hasPerm('canEditAbout');
     }
 
-    // Clients: Publicly readable (About page logo carousel), writable by admins.
+    // Clients (About carousel): publicly readable; writable by admins with canEditAbout.
     match /clients/{clientId} {
       allow get, list: if true;
-      allow write: if isSignedIn() && !isSuperAdmin();
+      allow write: if hasPerm('canEditAbout');
     }
 
-    // Vercel Blob: Isolated storage (separate from Cloudinary), admin-only
+    // Vercel Blob metadata: admin-only.
     match /vercel_blobs/{docId} {
-      allow get, list: if isSignedIn() && !isSuperAdmin();
-      allow create, delete: if isSignedIn() && !isSuperAdmin();
+      allow get, list: if isAdmin();
+      allow create: if hasPerm('canUploadMedia');
+      allow delete: if hasPerm('canDeleteMedia');
       allow update: if false;
     }
 
-    // Media: Readable by admins, with specific create/delete permissions.
+    // Media metadata: admin-only, gated by explicit perms.
     match /media/{mediaId} {
-      // Allow list/get for non-superadmins if they are authenticated.
-      allow list, get: if isSignedIn() && !isSuperAdmin();
-      // Allow create for non-superadmins if their user document says they can.
-      allow create: if isSignedIn() && !isSuperAdmin() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.permissions.canUploadMedia == true;
-      // Allow delete for non-superadmins if their user document says they can.
-      allow delete: if isSignedIn() && !isSuperAdmin() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.permissions.canDeleteMedia == true;
-      allow update: if false; // No one should update media documents directly.
+      allow list, get: if isAdmin();
+      allow create: if hasPerm('canUploadMedia');
+      allow delete: if hasPerm('canDeleteMedia');
+      allow update: if false;
     }
 
     // Users:
     match /users/{userId} {
-      // Admins can read their own user document.
-      allow get: if isSignedIn() && request.auth.uid == userId;
-      // Allow LIST for non-superadmins if they are authenticated (for the admin management page).
-      allow list: if isSignedIn() && !isSuperAdmin();
-      // Allow creation of a user document only if the user is creating their own.
-      allow create: if isSignedIn() && request.auth.uid == userId;
-      // Allow admins to update their own document, or a superadmin to update any.
-      allow update: if isSignedIn() && request.auth.uid == userId;
+      // Users can read their own doc; admins can read any user doc.
+      allow get: if isSignedIn() && (request.auth.uid == userId || isAdmin());
+      // Only admins can list users (admin management page).
+      allow list: if isAdmin();
+      // A user may create their own doc ONLY as an unprivileged account. Setting
+      // an elevated role or permissions is reserved for existing admins/superadmin.
+      allow create: if isSuperAdmin()
+        || (request.auth.uid == userId
+            && request.resource.data.role == 'user'
+            && request.resource.data.permissions == null);
+      // Users may edit their own doc; admins may edit any (permissions UI).
+      // Prevent self-elevation: a non-admins updating their own doc cannot add
+      // role/permissions; existing admins (canEditHome) may manage others.
+      allow update: if isSuperAdmin()
+        || (request.auth.uid == userId && request.resource.data.role == 'user' && request.resource.data.permissions == null)
+        || hasPerm('canEditHome');
       // Prevent non-superadmins from deleting user documents.
-      allow delete: if false;
+      allow delete: if isSuperAdmin();
     }
   }
 }
