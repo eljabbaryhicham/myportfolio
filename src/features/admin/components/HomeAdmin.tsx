@@ -88,6 +88,7 @@ interface HomePageSettings {
     mediaWidth?: number;
     showMediaTitles?: boolean;
     glassColor?: string;
+    navButtonSize?: number;
 }
 
 const settingsSchema = z.object({
@@ -126,6 +127,7 @@ const settingsSchema = z.object({
   mediaWidth: z.number().min(10).max(100).optional(),
   showMediaTitles: z.boolean().optional(),
   glassColor: z.string().optional(),
+  navButtonSize: z.number().min(28).max(64).optional(),
 });
 
 type SettingsFormValues = z.infer<typeof settingsSchema>;
@@ -206,6 +208,7 @@ export default function HomeAdmin() {
       mediaWidth: 100,
       showMediaTitles: true,
       glassColor: '#000000',
+      navButtonSize: 40,
     },
   });
 
@@ -511,6 +514,29 @@ export default function HomeAdmin() {
                                                 </FormControl>
                                                 <FormDescription>
                                                     {t('homeAdmin.menubarLogoSizeDescription') || 'Adjust the size of the logo in the navigation bar'}
+                                                </FormDescription>
+                                                 <FormMessage />
+                                             </FormItem>
+                                         )}
+                                     />
+
+                                    <FormField
+                                        control={control}
+                                        name="navButtonSize"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>{t('homeAdmin.navButtonSize') || 'Menu Button Size'} — {field.value || 40}px</FormLabel>
+                                                <FormControl>
+                                                    <Slider
+                                                        value={[field.value || 40]}
+                                                        onValueChange={(value) => field.onChange(value[0])}
+                                                        min={28}
+                                                        max={64}
+                                                        step={1}
+                                                    />
+                                                </FormControl>
+                                                <FormDescription>
+                                                    {t('homeAdmin.navButtonSizeDescription') || 'Adjust the size of the navigation menu buttons'}
                                                 </FormDescription>
                                                  <FormMessage />
                                              </FormItem>

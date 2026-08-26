@@ -30,6 +30,7 @@ interface HomePageSettings {
     homePageLogoUrl?: string;
     menubarLogoSize?: number;
     menubarLogoUrl?: string;
+    navButtonSize?: number;
 }
 
 const MENUBAR_LOGO_CACHE_KEY = 'menubar-logo-url';
@@ -102,10 +103,11 @@ export function AppNav() {
           href={item.href}
           className={cn(
             "group relative flex items-center justify-center rounded-full transition-all duration-300 aspect-square",
-            isMobile ? 'h-[clamp(2.5rem,10vw,3rem)] w-[clamp(2.5rem,10vw,3rem)]' : "h-10 w-10",
+            isMobile ? 'h-[clamp(2.5rem,10vw,3rem)] w-[clamp(2.5rem,10vw,3rem)]' : "",
             "text-white",
             isActive ? "" : (isSpecialButton ? "bg-cyan-500/80" : "glass-effect"),
           )}
+          style={!isMobile ? { width: homeSettings?.navButtonSize || 40, height: homeSettings?.navButtonSize || 40 } : undefined}
         >
           {isActive && (
             <motion.div

@@ -1246,6 +1246,40 @@ export default forwardRef<MediaLibraryRef, MediaLibraryProps>(function MediaLibr
         {setBackgroundDialog}
         {cloudinaryUploadFlowDialogs}
         {bulkDeleteDialog}
+        {/* Format choice dialog for media selection */}
+        <Dialog open={!!formatChoiceAsset} onOpenChange={(open) => { if (!open) setFormatChoiceAsset(null); }}>
+          <DialogContent className="w-[80vw] glass-effect">
+            <DialogHeader>
+              <DialogTitle>{t('mediaAdmin.chooseFormat')}</DialogTitle>
+              <DialogDescription>{t('mediaAdmin.chooseFormatDescription')}</DialogDescription>
+            </DialogHeader>
+            <div className="py-4 space-y-3">
+              {formatChoiceAsset?.resourceType === 'video' ? (
+                <div className="flex flex-col gap-2">
+                  <Button onClick={() => { if (formatChoiceAsset) { handleConfirmFormatPick(formatVariant(formatChoiceAsset.url, 'mp4')); } }} variant="outline" className="justify-start">
+                    <FontAwesomeIcon icon={faFilm} className="mr-2 h-4 w-4" /> MP4
+                  </Button>
+                  <Button onClick={() => { if (formatChoiceAsset) { handleConfirmFormatPick(formatVariant(formatChoiceAsset.url, 'webm')); } }} variant="outline" className="justify-start">
+                    <FontAwesomeIcon icon={faFilm} className="mr-2 h-4 w-4" /> WebM
+                  </Button>
+                  <Button onClick={() => { if (formatChoiceAsset) { handleConfirmFormatPick(hlsVariant(formatChoiceAsset.url)); } }} variant="outline" className="justify-start">
+                    <FontAwesomeIcon icon={faFilm} className="mr-2 h-4 w-4" /> HLS (m3u8)
+                  </Button>
+                  <Button onClick={() => { if (formatChoiceAsset) { handleConfirmFormatPick(formatChoiceAsset.url); } }} variant="ghost" className="justify-start text-muted-foreground">
+                    {t('mediaAdmin.copy.default')}
+                  </Button>
+                </div>
+              ) : (
+                <Button onClick={() => { if (formatChoiceAsset) { handleConfirmFormatPick(formatChoiceAsset.url); } }} className="w-full">
+                  <FontAwesomeIcon icon={faFileImage} className="mr-2 h-4 w-4" /> {t('mediaAdmin.select')}
+                </Button>
+              )}
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setFormatChoiceAsset(null)}>{t('adminMgmt.cancel')}</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </>
     );
   }
