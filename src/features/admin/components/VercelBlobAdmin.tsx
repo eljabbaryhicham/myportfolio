@@ -44,7 +44,7 @@ function formatBytes(bytes: number) {
   return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
 }
 
-export default function VercelBlobAdmin() {
+export default function VercelBlobAdmin({ libraryOpen: externalLibraryOpen, onLibraryOpenChange: externalOnLibraryOpenChange }: { libraryOpen?: boolean; onLibraryOpenChange?: (open: boolean) => void } = {}) {
   const { t } = useTranslation();
   const { toast } = useToast();
   const firestore = useFirestore();
@@ -141,7 +141,7 @@ export default function VercelBlobAdmin() {
         if (lowerType.startsWith('image/')) setActiveTab('images');
         else if (lowerType.startsWith('video/')) setActiveTab('videos');
         else setActiveTab('files');
-        setIsLibraryOpen(true);
+        (externalOnLibraryOpenChange ?? setIsLibraryOpen)(true);
         toast({ title: 'Uploaded to Vercel Blob', description: file.name });
         await new Promise((r) => setTimeout(r, 400));
         finishUpload('vercel');
@@ -417,7 +417,7 @@ export default function VercelBlobAdmin() {
   );
 
   const libraryDialog = (
-    <Dialog open={isLibraryOpen} onOpenChange={setIsLibraryOpen}>
+    <Dialog open={externalLibraryOpen ?? isLibraryOpen} onOpenChange={externalOnLibraryOpenChange ?? setIsLibraryOpen}>
       <DialogContent className="w-[90vw] max-w-6xl h-[85vh] glass-effect p-0 flex flex-col">
         <DialogHeader className="p-4 border-b text-center">
           <DialogTitle className="font-headline">Vercel Blob Library</DialogTitle>

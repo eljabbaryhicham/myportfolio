@@ -49,6 +49,7 @@ function AdminPage() {
   const [dialogActiveTab, setDialogActiveTab] = useState<'images' | 'videos' | 'files'>('images');
   const [dialogActiveLibrary, setDialogActiveLibrary] = useState<'primary' | 'extented'>('primary');
   const [innerMediaTab, setInnerMediaTab] = useState('cloudinary');
+  const [isVercelLibraryOpen, setIsVercelLibraryOpen] = useState(false);
   const { setActiveMediaTab, completedUpload, consumeCompletedUpload } = useUploadProgress();
 
   const typedUser = user as AppUser | null;
@@ -94,6 +95,7 @@ function AdminPage() {
     }
     if (libraryId === 'vercel_blob') {
       setInnerMediaTab('vercel');
+      setIsVercelLibraryOpen(true);
     } else {
       setDialogActiveTab(resourceType === 'video' ? 'videos' : resourceType === 'raw' ? 'files' : 'images');
       setDialogActiveLibrary(libraryId);
@@ -283,7 +285,7 @@ function AdminPage() {
                       <MediaAdmin onUploadComplete={handleUploadComplete} onLibraryOpenRequest={() => setIsLibraryOpen(true)} onMediaSelect={handleOpenPortfolioFormWithMedia} />
                     </TabsContent>
                     <TabsContent value="vercel" forceMount className="data-[state=inactive]:hidden">
-                      <VercelBlobAdmin />
+                      <VercelBlobAdmin libraryOpen={isVercelLibraryOpen} onLibraryOpenChange={setIsVercelLibraryOpen} />
                     </TabsContent>
                   </Tabs>
               </TabsContent>

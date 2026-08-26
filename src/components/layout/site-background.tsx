@@ -149,22 +149,22 @@ export function DynamicThemeStyles() {    const firestore = useFirestore();
       }
     }, [primaryHsl]);
 
-    if (!primaryHsl) return null;
+    const primary = primaryHsl || '352 76% 48%';
   
     return (
       <style>{`
         :root {
-            --primary: ${primaryHsl};
-            --accent: ${primaryHsl};
-            --destructive: ${primaryHsl};
-            --ring: ${primaryHsl};
+            --primary: ${primary};
+            --accent: ${primary};
+            --destructive: ${primary};
+            --ring: ${primary};
             --glass-bg: rgba(15, 25, 40, ${glassOpacity});
         }
         .dark {
-            --primary: ${primaryHsl};
-            --accent: ${primaryHsl};
-            --destructive: ${primaryHsl};
-            --ring: ${primaryHsl};
+            --primary: ${primary};
+            --accent: ${primary};
+            --destructive: ${primary};
+            --ring: ${primary};
             --glass-bg: rgba(15, 25, 40, ${glassOpacity});
         }
       `}</style>

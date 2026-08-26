@@ -192,10 +192,10 @@ const detailsSanitizeSchema = {
   tagNames: [...(defaultSchema.tagNames || []), 'video', 'audio', 'source', 'a'],
   attributes: {
     ...defaultSchema.attributes,
-    video: [...(defaultSchema.attributes?.video || []), 'src', 'controls', 'autoplay', 'loop', 'muted', 'playsinline', 'poster', 'preload', 'width', 'height', 'data-*'],
+    video: [...(defaultSchema.attributes?.video || []), 'src', 'controls', 'autoplay', 'loop', 'muted', 'playsinline', 'poster', 'preload', 'width', 'height', 'title', 'data-*'],
     audio: ['src', 'controls', 'loop', 'muted', 'preload'],
     source: ['src', 'type'],
-    a: [...(defaultSchema.attributes?.a || []), 'href', 'download', 'target', 'rel', 'data-*'],
+    a: [...(defaultSchema.attributes?.a || []), 'href', 'download', 'target', 'rel', 'title', 'data-*'],
   },
 };
 

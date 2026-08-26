@@ -21,6 +21,7 @@ if (typeof globalThis.localStorage === 'object' && typeof globalThis.localStorag
   } as Storage;
 }
 
+
 const AppShell = dynamic(
   () => import('@/components/layout/app-shell'),
   { ssr: false }
