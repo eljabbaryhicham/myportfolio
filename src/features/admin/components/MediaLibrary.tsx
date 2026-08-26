@@ -671,11 +671,11 @@ export default forwardRef<MediaLibraryRef, MediaLibraryProps>(function MediaLibr
     if (!canUpload) { toast({ variant: 'destructive', title: t('mediaAdmin.toast.permissionDenied.title'), description: t('mediaAdmin.toast.permissionDenied.description') }); return; }
     setFilesToUpload(acceptedFiles);
     if (acceptedFiles.some(f => f.type.startsWith('video/'))) {
-      setIsChoosingVideoFormat(true);
+      setUploadVideoFormat('mp4');
     } else {
       setUploadVideoFormat('mp4');
-      setIsChoosingLibrary(true);
     }
+    setIsChoosingLibrary(true);
   }, [canUpload, toast, t]);
 
   const handleCloudinaryLibraryChoiceAndUpload = useCallback(async (libraryId: 'primary' | 'extented') => {
@@ -1021,63 +1021,28 @@ export default forwardRef<MediaLibraryRef, MediaLibraryProps>(function MediaLibr
   // ---- Upload flow dialogs (Cloudinary) ----
   const cloudinaryUploadFlowDialogs = provider === 'cloudinary' ? (
     <>
-      <Dialog open={isChoosingVideoFormat} onOpenChange={setIsChoosingVideoFormat}>
-        <DialogContent className="w-[80vw] glass-effect">
-          <DialogHeader>
-            <DialogTitle>{t('mediaAdmin.chooseVideoFormat')}</DialogTitle>
-            <DialogDescription>{t('mediaAdmin.chooseVideoFormatDescription')}</DialogDescription>
-          </DialogHeader>
-          <RadioGroup defaultValue="mp4" onValueChange={(value: 'mp4' | 'm3u8' | 'webm') => setUploadVideoFormat(value)}>
-            <div className="flex items-center space-x-2"><RadioGroupItem value="mp4" id="r1" /><Label htmlFor="r1">{t('mediaAdmin.mp4')}</Label></div>
-            <div className="flex items-center space-x-2"><RadioGroupItem value="m3u8" id="r2" /><Label htmlFor="r2">{t('mediaAdmin.m3u8')}</Label></div>
-            <div className="flex items-center space-x-2"><RadioGroupItem value="webm" id="r3" /><Label htmlFor="r3">{t('mediaAdmin.webm')}</Label></div>
-          </RadioGroup>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsChoosingVideoFormat(false)}>{t('mediaAdmin.cancel')}</Button>
-            <Button onClick={() => { setIsChoosingVideoFormat(false); setIsChoosingLibrary(true); }}>{t('mediaAdmin.next')}</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-      <Dialog open={!!formatChoiceAsset} onOpenChange={(open) => { if (!open) setFormatChoiceAsset(null); }}>
-        <DialogContent className="w-[80vw] max-w-md glass-effect">
-          <DialogHeader>
-            <DialogTitle>{t('mediaAdmin.pickFormat.title')}</DialogTitle>
-            <DialogDescription className="truncate">{formatChoiceAsset?.filename}</DialogDescription>
-          </DialogHeader>
-          {formatChoiceAsset && (
-            <div className="grid grid-cols-2 gap-2 py-2">
-              <Button variant="outline" onClick={() => handleConfirmFormatPick(stripTransforms(formatChoiceAsset.url))}>{t('mediaAdmin.copy.default')}</Button>
-              {formatChoiceAsset.resourceType === 'video' && (
-                <>
-                  <Button variant="outline" onClick={() => handleConfirmFormatPick(formatVariant(formatChoiceAsset.url, 'mp4'))}>{t('mediaAdmin.copy.mp4')}</Button>
-                  <Button variant="outline" onClick={() => handleConfirmFormatPick(formatVariant(formatChoiceAsset.url, 'webm'))}>{t('mediaAdmin.copy.webm')}</Button>
-                  <Button variant="outline" onClick={() => handleConfirmFormatPick(hlsVariant(formatChoiceAsset.url))}>{t('mediaAdmin.copy.hls')}</Button>
-                </>
-              )}
-              {formatChoiceAsset.resourceType === 'image' && (
-                <>
-                  <Button variant="outline" onClick={() => handleConfirmFormatPick(formatVariant(formatChoiceAsset.url, 'webp'))}>WebP</Button>
-                  <Button variant="outline" onClick={() => handleConfirmFormatPick(formatVariant(formatChoiceAsset.url, 'avif'))}>AVIF</Button>
-                  <Button variant="outline" onClick={() => handleConfirmFormatPick(formatVariant(formatChoiceAsset.url, 'jpg'))}>JPG</Button>
-                  <Button variant="outline" onClick={() => handleConfirmFormatPick(formatVariant(formatChoiceAsset.url, 'png'))}>PNG</Button>
-                </>
-              )}
-            </div>
-          )}
-          <DialogFooter>
-            <Button variant="ghost" onClick={() => setFormatChoiceAsset(null)}>{t('mediaAdmin.cancel')}</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
       <Dialog open={isChoosingLibrary} onOpenChange={setIsChoosingLibrary}>
         <DialogContent className="w-[80vw] glass-effect">
           <DialogHeader>
-            <DialogTitle>{t('mediaAdmin.chooseLibrary')}</DialogTitle>
-            <DialogDescription>{t('mediaAdmin.chooseLibraryDescription')}</DialogDescription>
+            <DialogTitle>{t('mediaAdmin.chooseUploadSettings')}</DialogTitle>
+            <DialogDescription>{t('mediaAdmin.chooseUploadSettingsDescription')}</DialogDescription>
           </DialogHeader>
-          <div className="flex justify-center gap-4 py-4">
-            <Button onClick={() => handleCloudinaryLibraryChoiceAndUpload('primary')} size="lg" className="w-48"><FontAwesomeIcon icon={faUniversity} className="mr-2" /> {t('mediaAdmin.libraryPrimary')}</Button>
-            <Button onClick={() => handleCloudinaryLibraryChoiceAndUpload('extented')} size="lg" className="w-48"><FontAwesomeIcon icon={faUniversity} className="mr-2" /> {t('mediaAdmin.libraryExtented')}</Button>
+          {filesToUpload.some(f => f.type.startsWith('video/')) && (
+            <div className="space-y-2">
+              <p className="text-sm font-medium">{t('mediaAdmin.chooseVideoFormat')}</p>
+              <RadioGroup defaultValue="mp4" onValueChange={(value: 'mp4' | 'm3u8' | 'webm') => setUploadVideoFormat(value)}>
+                <div className="flex items-center space-x-2"><RadioGroupItem value="mp4" id="r1" /><Label htmlFor="r1">{t('mediaAdmin.mp4')}</Label></div>
+                <div className="flex items-center space-x-2"><RadioGroupItem value="m3u8" id="r2" /><Label htmlFor="r2">{t('mediaAdmin.m3u8')}</Label></div>
+                <div className="flex items-center space-x-2"><RadioGroupItem value="webm" id="r3" /><Label htmlFor="r3">{t('mediaAdmin.webm')}</Label></div>
+              </RadioGroup>
+            </div>
+          )}
+          <div className="space-y-2">
+            <p className="text-sm font-medium">{t('mediaAdmin.chooseLibrary')}</p>
+            <div className="flex justify-center gap-4 py-2">
+              <Button onClick={() => handleCloudinaryLibraryChoiceAndUpload('primary')} size="lg" className="w-48"><FontAwesomeIcon icon={faUniversity} className="mr-2" /> {t('mediaAdmin.libraryPrimary')}</Button>
+              <Button onClick={() => handleCloudinaryLibraryChoiceAndUpload('extented')} size="lg" className="w-48"><FontAwesomeIcon icon={faUniversity} className="mr-2" /> {t('mediaAdmin.libraryExtented')}</Button>
+            </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsChoosingLibrary(false)}>{t('mediaAdmin.cancel')}</Button>
