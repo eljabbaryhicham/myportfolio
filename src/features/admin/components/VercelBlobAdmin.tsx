@@ -15,7 +15,7 @@ import { collection, query, orderBy, serverTimestamp, doc } from 'firebase/fires
 import { upload } from '@vercel/blob/client';
 import { useUploadProgress } from '@/components/upload-progress-context';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCloudUploadAlt, faCopy, faTrash, faFileLines, faFilm, faFileImage, faFolderOpen, faEye, faXmark, faLink, faSpinner } from '@fortawesome/free-solid-svg-icons';
+import { faCloudUploadAlt, faCopy, faTrash, faFileLines, faFilm, faFileImage, faFolderOpen, faEye, faXmark, faLink, faSpinner, faMinus } from '@fortawesome/free-solid-svg-icons';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { useTranslation } from '@/lib/i18n/useTranslation';
 import { cn } from '@/lib/utils';
@@ -645,13 +645,21 @@ export default function VercelBlobAdmin({ libraryOpen: externalLibraryOpen, onLi
               </div>
             )}
             <div className="flex justify-end gap-2">
-              <Button variant="outline" onClick={() => setIsAddFromUrlOpen(false)} disabled={isAddingFromUrl}>Cancel</Button>
+              <Button variant="outline" onClick={() => setIsAddFromUrlOpen(false)}>
+                {isAddingFromUrl ? 'Minimize' : 'Cancel'}
+              </Button>
               <Button onClick={handleAddFromUrl} disabled={!addUrl.trim() || isAddingFromUrl}>
                 {isAddingFromUrl && <FontAwesomeIcon icon={faSpinner} className="mr-2 h-4 w-4 animate-spin" />}
                 {isAddingFromUrl ? 'Adding...' : 'Add'}
               </Button>
             </div>
           </div>
+          {isAddingFromUrl && (
+            <DialogClose className="absolute right-4 top-4 h-8 w-8 flex items-center justify-center rounded-full bg-primary text-primary-foreground opacity-70 hover:opacity-100 transition-opacity">
+              <FontAwesomeIcon icon={faMinus} className="h-4 w-4" />
+              <span className="sr-only">Minimize</span>
+            </DialogClose>
+          )}
         </DialogContent>
       </Dialog>
     </div>
