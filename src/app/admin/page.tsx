@@ -77,6 +77,11 @@ function AdminPage() {
     if (savedTab) {
       setActiveTab(savedTab);
     }
+    const savedInnerTab = localStorage.getItem('adminInnerMediaTab');
+    if (savedInnerTab && (savedInnerTab === 'cloudinary' || savedInnerTab === 'vercel')) {
+      setInnerMediaTab(savedInnerTab);
+      localStorage.removeItem('adminInnerMediaTab');
+    }
   }, []);
   
   useEffect(() => {

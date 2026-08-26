@@ -1,16 +1,17 @@
 'use client';
 
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useUploadProgress } from '@/components/upload-progress-context';
 import { Progress } from '@/components/ui/progress';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCloudUploadAlt, faXmark } from '@fortawesome/free-solid-svg-icons';
+import { faCloudUploadAlt, faExternalLinkAlt } from '@fortawesome/free-solid-svg-icons';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
 export default function UploadProgressNotification() {
   const { vercel, cloudinary, activeMediaTab } = useUploadProgress();
   const pathname = usePathname();
+  const router = useRouter();
 
   const activeUploads = [
     vercel.isUploading ? { ...vercel, provider: 'vercel' as const } : null,
@@ -29,6 +30,12 @@ export default function UploadProgressNotification() {
 
   if (visibleUploads.length === 0) return null;
 
+  const goToMediaTab = (provider: 'vercel' | 'cloudinary') => {
+    localStorage.setItem('adminActiveTab', 'media');
+    localStorage.setItem('adminInnerMediaTab', provider);
+    router.push('/admin');
+  };
+
   return (
     <div className="fixed bottom-6 right-6 z-50 flex flex-col gap-3 w-80">
       {visibleUploads.map((u) => (
@@ -46,7 +53,18 @@ export default function UploadProgressNotification() {
           </div>
           <div className="mt-3">
             <Progress value={u.progress} className="h-2" />
-            <p className="text-xs text-muted-foreground mt-1 text-right">{Math.round(u.progress)}%</p>
+            <div className="flex items-center justify-between mt-1">
+              <p className="text-xs text-muted-foreground">{Math.round(u.progress)}%</p>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-6 px-2 text-xs text-primary"
+                onClick={() => goToMediaTab(u.provider)}
+              >
+                <FontAwesomeIcon icon={faExternalLinkAlt} className="mr-1 h-3 w-3" />
+                View upload
+              </Button>
+            </div>
           </div>
         </div>
       ))}
