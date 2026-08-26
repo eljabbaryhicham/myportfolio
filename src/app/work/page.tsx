@@ -77,14 +77,12 @@ function LazyDetailsVideo({
   const ref = useRef<HTMLDivElement>(null);
   const [inView, setInView] = useState(false);
   const [activated, setActivated] = useState(false);
-  const isAndroid = useMemo(() => typeof navigator !== 'undefined' && /Android/i.test(navigator.userAgent), []);
   const [ready, setReady] = useState(false);
   const shouldLoad = inView || activated;
   useEffect(() => {
-    if (!isAndroid) { setReady(true); return; }
     const t = setTimeout(() => setReady(true), 420);
     return () => clearTimeout(t);
-  }, [isAndroid]);
+  }, []);
   useEffect(() => {
     if (!ready) return;
     const el = ref.current;
@@ -687,12 +685,12 @@ export default function WorkPage() {
     }
   }, [isDialogOpen]);
 
-  // Android only: full-screen SiteBackground decoder competes with
-  // details Plyr/Clappr decoders + glass. iOS must not receive this
-  // (Android fix regresses iOS playback).
+  // Pause the fullscreen SiteBackground decoder while any dialog is
+  // open — it competes with the details Plyr/Clappr decoders. Hide the
+  // layer from the compositor only on Android (Android fix regresses iOS).
   useEffect(() => {
-    if (typeof navigator !== 'undefined' && !/Android/i.test(navigator.userAgent)) return;
     if (typeof document === 'undefined') return;
+    const isAndroid = typeof navigator !== 'undefined' && /Android/i.test(navigator.userAgent);
     const bgWrap = document.querySelector('div.-z-10') as HTMLElement | null;
     const bgVideo = bgWrap?.querySelector('video') as HTMLVideoElement | null;
     const anyOpen = !!selectedItem || isDetailsModalOpen || isContactFormOpen || !!fullscreenImageUrl;
@@ -701,10 +699,10 @@ export default function WorkPage() {
         bgVideo.pause();
         (bgWrap as any)._pausedByDialog = true;
       }
-      if (bgWrap) bgWrap.style.visibility = 'hidden';
+      if (isAndroid && bgWrap) bgWrap.style.visibility = 'hidden';
       document.documentElement.classList.add('work-dialog-open');
     } else {
-      if (bgWrap) bgWrap.style.visibility = '';
+      if (isAndroid && bgWrap) bgWrap.style.visibility = '';
       document.documentElement.classList.remove('work-dialog-open');
       if (bgWrap && (bgWrap as any)._pausedByDialog) {
         delete (bgWrap as any)._pausedByDialog;
@@ -712,7 +710,7 @@ export default function WorkPage() {
       }
     }
     return () => {
-      if (bgWrap) bgWrap.style.visibility = '';
+      if (isAndroid && bgWrap) bgWrap.style.visibility = '';
       document.documentElement.classList.remove('work-dialog-open');
     };
   }, [selectedItem, isDetailsModalOpen, isContactFormOpen, fullscreenImageUrl]);

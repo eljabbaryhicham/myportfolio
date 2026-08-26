@@ -336,14 +336,19 @@ html, body {
 
 /* 16:9 frame for videos embedded in project details. */
 .is-android .details-video-frame {
-  /* Android only: rectangular scissor is cheap; rounded clip was the
-     expensive per-frame mask. iOS must not receive this. */
+  /* Android only: rectangular scissor + content-visibility skips offscreen
+     decoders. iOS must not receive the Android rectangular fix. */
   contain: layout paint;
+  content-visibility: auto;
+  contain-intrinsic-size: 400px 225px;
 }
 @supports (-webkit-touch-callout: none) {
-  /* iOS Safari: contain breaks aspect-ratio + absolute children. */
+  /* iOS Safari: keep original rounded clipping, but enable lightweight
+     offscreen skipping without layout-breaking contain. */
   .details-video-frame {
-    contain: none;
+    contain: content;
+    content-visibility: auto;
+    contain-intrinsic-size: 400px 225px;
   }
 }
 .details-video-frame .plyr,
