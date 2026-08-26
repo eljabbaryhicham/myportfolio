@@ -1,30 +1,11 @@
 
-'use client';
-
 import './globals.css';
 import { cn } from '@/lib/utils';
-import dynamic from 'next/dynamic';
 import React from 'react';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 import { Analytics } from '@vercel/analytics/next';
 import { bungee, quicksand, dancingScript } from './fonts';
-
-if (typeof globalThis.localStorage === 'object' && typeof globalThis.localStorage.getItem !== 'function') {
-  const storage: Record<string, string> = {};
-  globalThis.localStorage = {
-    getItem: (k: string) => storage[k] ?? null,
-    setItem: (k: string, v: string) => { storage[k] = String(v); },
-    removeItem: (k: string) => { delete storage[k]; },
-    clear: () => { Object.keys(storage).forEach(k => delete storage[k]); },
-    key: (i: number) => Object.keys(storage)[i] ?? null,
-    get length() { return Object.keys(storage).length; },
-  } as Storage;
-}
-
-const AppShell = dynamic(
-  () => import('@/components/layout/app-shell'),
-  { ssr: false }
-);
+import AppShell from '@/components/layout/app-shell';
 
 export default function RootLayout({
   children,
