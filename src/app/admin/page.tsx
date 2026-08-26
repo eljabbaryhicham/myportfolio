@@ -27,6 +27,7 @@ import { DEFAULT_DETAILS_TEMPLATE } from '@/features/admin/components/PortfolioI
 import { useFirestore, useUser } from '@/firebase';
 const AdminManagement = dynamic(() => import('@/features/admin/components/AdminManagement'), { ssr: false, loading: () => <Preloader /> });
 const AboutAdmin = dynamic(() => import('@/features/admin/components/AboutAdmin'), { ssr: false, loading: () => <Preloader /> });
+const UnifiedMediaPicker = dynamic(() => import('@/features/admin/components/UnifiedMediaPicker'), { ssr: false, loading: () => <Preloader /> });
 import { useTranslation } from '@/lib/i18n/useTranslation';
 import { useUploadProgress } from '@/components/upload-progress-context';
 
@@ -331,27 +332,20 @@ function AdminPage() {
         canEdit={canEditProjects}
         onDelete={handleDeletePortfolioItem}
       />
-      <MediaAdmin 
-        isDialog={true}
+      <UnifiedMediaPicker
         isOpen={isLibraryOpen}
         onOpenChange={(isOpen) => {
             setIsLibraryOpen(isOpen);
-            if (!isOpen) {
-                // If library is closed, clear selection mode
-                setLibrarySelectionConfig(null);
+            if (!isOpen) setLibrarySelectionConfig(null);
+        }}
+        onMediaSelect={(url, type, filename) => {
+            const handler = librarySelectionConfig ? librarySelectionConfig.onSelect : handleOpenPortfolioFormWithMedia;
+            handler(url, type, filename);
+            if (librarySelectionConfig) {
+              setIsLibraryOpen(false);
+              setLibrarySelectionConfig(null);
             }
         }}
-        onMediaSelect={librarySelectionConfig ? librarySelectionConfig.onSelect : handleOpenPortfolioFormWithMedia}
-        isSelectionMode={!!librarySelectionConfig}
-        onSelectionComplete={() => {
-            setIsLibraryOpen(false);
-            setLibrarySelectionConfig(null);
-        }}
-        activeTab={dialogActiveTab}
-        setActiveTab={setDialogActiveTab}
-        activeLibrary={dialogActiveLibrary}
-        setActiveLibrary={setDialogActiveLibrary}
-        newlyUploadedId={newlyUploadedId}
       />
     </>
   );

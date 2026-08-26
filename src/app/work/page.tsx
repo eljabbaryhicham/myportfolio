@@ -26,7 +26,7 @@ import Preloader from '@/components/preloader';
 import { useIsExtraWide } from '@/hooks/use-is-extra-wide';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { PortfolioItemFormSheet } from '@/features/admin/components/PortfolioItemForm';
-import MediaAdmin from '@/features/admin/components/MediaAdmin';
+import UnifiedMediaPicker from '@/features/admin/components/UnifiedMediaPicker';
 import { useToast } from '@/hooks/use-toast';
 import { motion, AnimatePresence, PanInfo, useDragControls } from 'framer-motion';
 import { useSearchParams, usePathname } from 'next/navigation';
@@ -1297,30 +1297,19 @@ export default function WorkPage() {
             canEdit={canEditProjects}
             onDelete={handleDeleteItem}
           />
-          <MediaAdmin 
-            isDialog={true}
+          <UnifiedMediaPicker
             isOpen={isLibraryOpen}
             onOpenChange={(isOpen) => {
                 setIsLibraryOpen(isOpen);
-                if (!isOpen) {
-                    setLibrarySelectionConfig(null);
-                }
+                if (!isOpen) setLibrarySelectionConfig(null);
             }}
             onMediaSelect={(url, type, filename) => {
               if (librarySelectionConfig?.onSelect) {
                 librarySelectionConfig.onSelect(url, type, filename);
+                setIsLibraryOpen(false);
+                setLibrarySelectionConfig(null);
               }
             }}
-            isSelectionMode={!!librarySelectionConfig}
-            onSelectionComplete={() => {
-              setIsLibraryOpen(false);
-              setLibrarySelectionConfig(null);
-            }}
-            activeTab={dialogActiveTab}
-            setActiveTab={setDialogActiveTab}
-            activeLibrary={dialogActiveLibrary}
-            setActiveLibrary={setDialogActiveLibrary}
-            newlyUploadedId={null}
           />
         </>
       )}

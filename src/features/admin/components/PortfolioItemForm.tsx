@@ -41,7 +41,7 @@ import { faXmark, faImages, faPaperclip } from '@fortawesome/free-solid-svg-icon
 import { useToast } from '@/hooks/use-toast';
 import { Switch } from '@/components/ui/switch';
 import { useTranslation } from '@/lib/i18n/useTranslation';
-import MediaAdmin from './MediaAdmin';
+import UnifiedMediaPicker from './UnifiedMediaPicker';
 
 
 // Pre-filled Details content for NEW projects (existing projects untouched).
@@ -247,8 +247,6 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onCho
 
     const [mediaPickerField, setMediaPickerField] = useState<'description' | 'details' | null>(null);
     const [isMediaPickerOpen, setIsMediaPickerOpen] = useState(false);
-    const [activeMediaTab, setActiveMediaTab] = useState<'images' | 'videos' | 'files'>('images');
-    const [activeMediaLibrary, setActiveMediaLibrary] = useState<'primary' | 'extented'>('primary');
     const cursorPosRef = useRef<number>(0);
     const textareaRefs = useRef<{ [key: string]: HTMLTextAreaElement }>({});
 
@@ -617,24 +615,13 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onCho
                 </DialogClose>
             </DialogContent>
         </Dialog>
-        <MediaAdmin
-            isDialog={true}
+        <UnifiedMediaPicker
             isOpen={isMediaPickerOpen}
             onOpenChange={(open) => {
                 setIsMediaPickerOpen(open);
                 if (!open) setMediaPickerField(null);
             }}
             onMediaSelect={handleMediaInserted}
-            isSelectionMode={!!mediaPickerField}
-            onSelectionComplete={() => {
-                setIsMediaPickerOpen(false);
-                setMediaPickerField(null);
-            }}
-            activeTab={activeMediaTab}
-            setActiveTab={setActiveMediaTab}
-            activeLibrary={activeMediaLibrary}
-            setActiveLibrary={setActiveMediaLibrary}
-            newlyUploadedId={null}
         />
     </>)
 }
