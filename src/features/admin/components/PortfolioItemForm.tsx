@@ -256,7 +256,7 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onCho
         setIsMediaPickerOpen(true);
     }, [form]);
 
-    const handleMediaInserted = useCallback((url: string, type: 'image' | 'video' | 'raw', _filename: string) => {
+    const handleMediaInserted = useCallback((url: string, type: 'image' | 'video' | 'raw', filename: string) => {
         if (!mediaPickerField) return;
         const currentValue = form.getValues(mediaPickerField) || '';
         const pos = cursorPosRef.current;
@@ -266,6 +266,8 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onCho
         let insertion = '';
         if (type === 'video') {
             insertion = `<video src="${url}" controls />\n`;
+        } else if (type === 'raw') {
+            insertion = `<a href="${url}" download data-filename="${filename}">Download</a>\n`;
         } else {
             insertion = `![media](${url})\n`;
         }

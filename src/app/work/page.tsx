@@ -125,9 +125,37 @@ const ProjectDetailsContent = memo(function ProjectDetailsContent({
             {playerType === 'plyr' ? (
               <MemoizedPlyrPlayer source={videoSrc} poster={poster} autoPlay={false} />
             ) : (
-              <CdnClapprPlayer source={videoSrc} poster={poster} autoPlay={false} />
+              <MemoizedCdnClapprPlayer source={videoSrc} poster={poster} autoPlay={false} />
             )}
           </Suspense>
+        </div>
+      );
+    },
+    a: (props: any) => {
+      const { href, download, children, ...rest } = props;
+      const filename = props['data-filename'] || (typeof children === 'string' ? children : '') || 'Download';
+      if (!download || !href) {
+        return <a href={href} {...rest}>{children}</a>;
+      }
+      return (
+        <div className="my-3 flex items-center gap-3 rounded-lg border border-border/50 bg-muted/30 p-3 transition-colors hover:bg-muted/50 group/file">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary">
+            <FontAwesomeIcon icon={faArrowDown} className="h-4 w-4" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-medium truncate">{filename}</p>
+            <p className="text-xs text-muted-foreground">File attachment</p>
+          </div>
+          <a
+            href={href}
+            download
+            target="_blank"
+            rel="noopener noreferrer"
+            className="shrink-0 inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
+          >
+            <FontAwesomeIcon icon={faArrowDown} className="h-3 w-3" />
+            Download
+          </a>
         </div>
       );
     },
@@ -149,12 +177,13 @@ const ProjectDetailsContent = memo(function ProjectDetailsContent({
 // through rehype-raw first, then gets sanitized with this schema.
 const detailsSanitizeSchema = {
   ...defaultSchema,
-  tagNames: [...(defaultSchema.tagNames || []), 'video', 'audio', 'source'],
+  tagNames: [...(defaultSchema.tagNames || []), 'video', 'audio', 'source', 'a'],
   attributes: {
     ...defaultSchema.attributes,
     video: [...(defaultSchema.attributes?.video || []), 'src', 'controls', 'autoplay', 'loop', 'muted', 'playsinline', 'poster', 'preload', 'width', 'height'],
     audio: ['src', 'controls', 'loop', 'muted', 'preload'],
     source: ['src', 'type'],
+    a: [...(defaultSchema.attributes?.a || []), 'href', 'download', 'data-filename', 'target', 'rel'],
   },
 };
 
