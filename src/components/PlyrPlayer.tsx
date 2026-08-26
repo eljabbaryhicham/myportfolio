@@ -63,10 +63,8 @@ const PlyrPlayer = forwardRef(({ source, poster, autoPlay = true, thumbnailVttUr
                 const video = document.createElement('video');
                 video.setAttribute('controls', '');
                 video.setAttribute('playsinline', '');
-                // @ts-ignore
                 video.setAttribute('webkit-playsinline', 'true');
-                video.setAttribute('preload', 'metadata');
-                video.setAttribute('crossorigin', 'anonymous');
+                video.setAttribute('preload', 'auto');
                 if (poster) video.setAttribute('poster', poster);
 
                 let settled = false;
@@ -76,16 +74,10 @@ const PlyrPlayer = forwardRef(({ source, poster, autoPlay = true, thumbnailVttUr
                     setIsLoading(false);
                 };
 
-                const rvfc = (video as any).requestVideoFrameCallback;
-                if (rvfc) {
-                    rvfc.call(video, () => requestAnimationFrame(() => done()));
-                } else {
-                    video.addEventListener('playing', done, { once: true });
-                    video.addEventListener('loadeddata', done, { once: true });
-                }
-                video.addEventListener('canplay', () => setTimeout(done, 200), { once: true });
+                video.addEventListener('playing', done, { once: true });
+                video.addEventListener('loadeddata', done, { once: true });
                 video.addEventListener('error', done, { once: true });
-                const safety = setTimeout(done, 8000);
+                const safety = setTimeout(done, 15000);
 
                 video.src = source;
                 container.appendChild(video);
