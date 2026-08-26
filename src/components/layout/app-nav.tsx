@@ -13,7 +13,7 @@ import { faHouse, faImage, faCircleInfo, faEnvelope, faShieldHalved, faFlask } f
 import Logo from "../logo";
 import { doc } from "firebase/firestore";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { LanguageSwitcher, useLanguage } from "@/components/layout/language-switcher";
+import { useLanguage } from "@/components/layout/language-switcher";
 import translations from "@/lib/i18n/translations";
 
 const navItems = [
@@ -169,7 +169,6 @@ export function AppNav() {
           <nav className="flex h-full flex-1 items-center justify-between px-[4vw]">
             {accessibleNavItems.map(renderNavItem)}
           </nav>
-          <LanguageSwitcher />
         </div>
       </motion.div>
     );
@@ -209,10 +208,6 @@ export function AppNav() {
         >
            {accessibleNavItems.map(renderNavItem)}
         </nav>
-        <div className="flex flex-col items-center gap-2">
-          <LanguageSwitcher />
-          <div className="h-8 w-8"></div>
-        </div>
       </div>
     </motion.aside>
   );
