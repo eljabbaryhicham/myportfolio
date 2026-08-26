@@ -102,7 +102,7 @@ function AdminPage() {
       setIsLibraryOpen(true);
     }
     consumeCompletedUpload();
-    setTimeout(() => setNewlyUploadedId(null), 2000);
+    setTimeout(() => setNewlyUploadedId(null), 3000);
   }, [completedUpload, activeTab, consumeCompletedUpload, setActiveTab]);
 
 
@@ -212,7 +212,18 @@ function AdminPage() {
     setIsLibraryOpen(true); // Open the library
     
     // Reset the animation highlight after a delay
-    setTimeout(() => setNewlyUploadedId(null), 2000);
+    setTimeout(() => setNewlyUploadedId(null), 2500);
+  };
+
+  // Dedicated handler for Vercel Blob - identical semantics to handleUploadComplete above,
+  // but targets the Vercel library dialog instead of Cloudinary's.
+  const handleVercelUploadComplete = (docId: string, resourceType: 'image' | 'video' | 'raw') => {
+    if (!docId) return;
+    setNewlyUploadedId(docId);
+    if (activeTab !== 'media') setActiveTab('media');
+    setInnerMediaTab('vercel');
+    setIsVercelLibraryOpen(true);
+    setTimeout(() => setNewlyUploadedId(null), 2500);
   };
 
   if (isUserLoading || !user) {
@@ -285,7 +296,7 @@ function AdminPage() {
                       <MediaAdmin onUploadComplete={handleUploadComplete} onLibraryOpenRequest={() => setIsLibraryOpen(true)} onMediaSelect={handleOpenPortfolioFormWithMedia} />
                     </TabsContent>
                     <TabsContent value="vercel" forceMount className="data-[state=inactive]:hidden">
-                      <VercelBlobAdmin libraryOpen={isVercelLibraryOpen} onLibraryOpenChange={setIsVercelLibraryOpen} newlyUploadedId={newlyUploadedId} />
+                      <VercelBlobAdmin libraryOpen={isVercelLibraryOpen} onLibraryOpenChange={setIsVercelLibraryOpen} newlyUploadedId={newlyUploadedId} onUploadComplete={handleVercelUploadComplete} />
                     </TabsContent>
                   </Tabs>
               </TabsContent>

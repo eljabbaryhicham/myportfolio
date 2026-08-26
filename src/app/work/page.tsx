@@ -212,12 +212,12 @@ const ProjectDetailsContent = memo(function ProjectDetailsContent({
         return <a href={href} {...rest}>{children}</a>;
       }
       return (
-        <div className="my-3 flex w-full min-w-0 items-center gap-3 overflow-hidden rounded-lg border border-border/50 bg-muted/30 p-3 transition-colors hover:bg-muted/50 group/file" style={{ maxWidth: widthPercent, width: '100%', boxSizing: 'border-box', marginLeft: 'auto', marginRight: 'auto' }}>
+        <div className="my-3 flex max-w-full min-w-0 items-center gap-2 overflow-hidden rounded-lg border border-border/50 bg-muted/30 p-3 transition-colors hover:bg-muted/50 group/file box-border" style={{ maxWidth: widthPercent === '100%' ? '100%' : `min(${widthPercent}, 100%)`, width: '100%', marginLeft: 'auto', marginRight: 'auto' }}>
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary">
             <FontAwesomeIcon icon={faArrowDown} className="h-4 w-4" />
           </div>
           <div className="min-w-0 flex-1 overflow-hidden">
-            <p className="text-sm font-medium truncate">{filename}</p>
+            <p className="text-sm font-medium truncate break-all">{filename}</p>
             <p className="text-xs text-muted-foreground truncate">File attachment</p>
           </div>
           <button
@@ -227,7 +227,7 @@ const ProjectDetailsContent = memo(function ProjectDetailsContent({
               e.stopPropagation();
               window.open(href, '_blank', 'noopener,noreferrer');
             }}
-            className="shrink-0 inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/90 transition-colors no-underline cursor-pointer"
+            className="shrink-0 inline-flex items-center gap-1 rounded-md bg-primary px-2.5 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/90 transition-colors no-underline cursor-pointer whitespace-nowrap"
           >
             <FontAwesomeIcon icon={faArrowDown} className="h-3 w-3" />
             Download
@@ -1146,18 +1146,18 @@ export default function WorkPage() {
       
       {/* Nested Dialog for Details */}
       <Dialog open={isDetailsModalOpen} onOpenChange={setDetailsModalOpen}>
-        <DialogContent className="w-[80vw] h-[80dvh] md:h-[90dvh] glass-effect p-0 flex flex-col group"
+        <DialogContent className="w-[80vw] max-w-[95vw] min-w-0 overflow-hidden h-[80dvh] md:h-[90dvh] glass-effect p-0 flex flex-col group"
           onMouseMove={handleDialogMouseMove}
           onMouseEnter={handleDialogMouseEnter}
           onMouseLeave={handleDialogMouseLeave}
         >
             {selectedItem && (
                 <>
-                <DialogHeader className="p-4 md:p-6 pb-0">
+                <DialogHeader className="p-4 md:p-6 pb-0 min-w-0">
                     <DialogTitle className="font-headline">{t('work.details.title').replace('{title}', selectedItem.title)}</DialogTitle>
                 </DialogHeader>
-                <ScrollArea className="flex-1">
-                    <div className="project-details prose dark:prose-invert max-w-none space-y-4 text-sm text-foreground/80 p-4 md:p-6">
+                <ScrollArea className="flex-1 min-w-0 [&>div>div]:!block [&>div>div]:min-w-0 [&>div>div]:w-full">
+                    <div className="project-details prose dark:prose-invert max-w-full w-full min-w-0 overflow-hidden break-words space-y-4 text-sm text-foreground/80 p-4 md:p-6 box-border">
                         <ProjectDetailsContent details={selectedItem.details || ''} playerType={workPagePlayer} onImageFullscreen={setFullscreenImageUrl} mediaWidth={homeSettings?.mediaWidth} showMediaTitles={homeSettings?.showMediaTitles ?? true} />
                     </div>
                 </ScrollArea>

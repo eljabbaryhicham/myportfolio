@@ -44,7 +44,7 @@ function formatBytes(bytes: number) {
   return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
 }
 
-export default function VercelBlobAdmin({ libraryOpen: externalLibraryOpen, onLibraryOpenChange: externalOnLibraryOpenChange, newlyUploadedId: externalNewlyUploadedId }: { libraryOpen?: boolean; onLibraryOpenChange?: (open: boolean) => void; newlyUploadedId?: string | null } = {}) {
+export default function VercelBlobAdmin({ libraryOpen: externalLibraryOpen, onLibraryOpenChange: externalOnLibraryOpenChange, newlyUploadedId: externalNewlyUploadedId, onUploadComplete }: { libraryOpen?: boolean; onLibraryOpenChange?: (open: boolean) => void; newlyUploadedId?: string | null; onUploadComplete?: (docId: string, resourceType: 'image' | 'video' | 'raw') => void } = {}) {
   const { t } = useTranslation();
   const { toast } = useToast();
   const firestore = useFirestore();
@@ -62,8 +62,6 @@ export default function VercelBlobAdmin({ libraryOpen: externalLibraryOpen, onLi
   const [isAddFromUrlOpen, setIsAddFromUrlOpen] = useState(false);
   const [addUrl, setAddUrl] = useState('');
   const [isAddingFromUrl, setIsAddingFromUrl] = useState(false);
-  // Optimistic blobs for immediate highlight before Firestore delivers the new doc
-  const [optimisticBlobs, setOptimisticBlobs] = useState<VercelBlobDoc[]>([]);
 
   // Only show global progress inline when it matches this provider (vercel)
   const effectiveIsUploading = isUploading || (globalIsUploading && globalProvider === 'vercel');
@@ -120,6 +118,10 @@ export default function VercelBlobAdmin({ libraryOpen: externalLibraryOpen, onLi
         clearInterval(interval);
         setUploadProgress(100);
         updateGlobalProgress(100, 'vercel');
+        const lowerType = file.type.toLowerCase();
+        if (lowerType.startsWith('image/')) setActiveTab('images');
+        else if (lowerType.startsWith('video/')) setActiveTab('videos');
+        else setActiveTab('files');
         if (firestore) {
           try {
             const docRef = await addDocumentNonBlocking(collection(firestore, 'vercel_blobs'), {
@@ -134,31 +136,24 @@ export default function VercelBlobAdmin({ libraryOpen: externalLibraryOpen, onLi
             } as any);
             const newId = (docRef as any)?.id || blob.pathname;
             const resourceType = file.type.startsWith('video/') ? 'video' : file.type.startsWith('image/') ? 'image' : 'raw';
-            // Optimistic entry for immediate highlight (exact same pattern as Cloudinary's immediate UI feedback)
-            const optimisticEntry: VercelBlobDoc = {
-              id: newId,
-              provider: 'vercel_blob',
-              url: blob.url,
-              pathname: blob.pathname,
-              size: blob.size ?? file.size,
-              contentType: blob.contentType || file.type || 'application/octet-stream',
-              filename: file.name,
-              uploadedAt: new Date(),
-            } as any;
-            setOptimisticBlobs((prev) => [optimisticEntry, ...prev]);
-            setNewlyUploadedId(newId);
-            setTimeout(() => setNewlyUploadedId(null), 4000);
-            // Auto-remove optimistic entry once Firestore is expected to have delivered (or after 10s fallback)
-            setTimeout(() => setOptimisticBlobs((prev) => prev.filter((o) => o.id !== newId && o.pathname !== blob.pathname)), 10000);
-            signalCompletedUpload(newId, resourceType, 'vercel_blob');
+            // Exact parity with Cloudinary: direct callback first (immediate parent highlight + open),
+            // local highlight for in-dialog uploads, then the global signal as fallback.
+            if (newId && onUploadComplete) {
+              onUploadComplete(newId, resourceType);
+            }
+            if (newId) {
+              setNewlyUploadedId(newId);
+              setTimeout(() => setNewlyUploadedId(null), 3000);
+            }
+            if (newId) signalCompletedUpload(newId, resourceType, 'vercel_blob');
           } catch {}
         }
-        const lowerType = file.type.toLowerCase();
-        if (lowerType.startsWith('image/')) setActiveTab('images');
-        else if (lowerType.startsWith('video/')) setActiveTab('videos');
-        else setActiveTab('files');
-        await new Promise((r) => setTimeout(r, 300));
-        (externalOnLibraryOpenChange ?? setIsLibraryOpen)(true);
+        // Fallback open when no direct callback is wired (e.g. standalone usage elsewhere);
+        // when onUploadComplete is present the parent is responsible for opening.
+        if (!onUploadComplete) {
+          await new Promise((r) => setTimeout(r, 300));
+          (externalOnLibraryOpenChange ?? setIsLibraryOpen)(true);
+        }
         toast({ title: 'Uploaded to Vercel Blob', description: file.name });
         await new Promise((r) => setTimeout(r, 400));
         finishUpload('vercel');
@@ -175,7 +170,7 @@ export default function VercelBlobAdmin({ libraryOpen: externalLibraryOpen, onLi
         setTimeout(() => finishUpload(), 1000);
       }
     }
-  }, [getToken, toast, firestore, auth, finishUpload, startUpload, updateGlobalProgress]);
+  }, [getToken, toast, firestore, auth, finishUpload, startUpload, updateGlobalProgress, onUploadComplete, externalOnLibraryOpenChange]);
 
   const onDrop = useCallback((accepted: File[]) => handleUpload(accepted), [handleUpload]);
   const { getRootProps: getRootPropsMain, getInputProps: getInputPropsMain, isDragActive: isDragActiveMain } = useDropzone({ onDrop, multiple: true });
@@ -307,20 +302,15 @@ export default function VercelBlobAdmin({ libraryOpen: externalLibraryOpen, onLi
     }
   };
 
-  // Merge optimistic blobs (immediate local feedback) with Firestore blobs, deduped by id/pathname so highlight appears instantly
   const filteredByType = useMemo(() => {
-    const firestoreBlobs = blobs || [];
-    const seenIds = new Set(firestoreBlobs.map((b) => b.id));
-    const seenPaths = new Set(firestoreBlobs.map((b) => b.pathname));
-    const stillPending = optimisticBlobs.filter((o) => !seenIds.has(o.id) && !seenPaths.has(o.pathname));
-    const all = [...stillPending, ...firestoreBlobs];
+    const all = blobs || [];
     const q = searchQuery.toLowerCase();
     const matchesSearch = (b: VercelBlobDoc) => !q || b.filename?.toLowerCase().includes(q) || b.url.toLowerCase().includes(q);
     const images = all.filter((b) => b.contentType?.startsWith('image/') && matchesSearch(b));
     const videos = all.filter((b) => b.contentType?.startsWith('video/') && matchesSearch(b));
     const files = all.filter((b) => !b.contentType?.startsWith('image/') && !b.contentType?.startsWith('video/') && matchesSearch(b));
     return { images, videos, files };
-  }, [blobs, optimisticBlobs, searchQuery]);
+  }, [blobs, searchQuery]);
 
   const renderLibrary = (assets: VercelBlobDoc[], type: 'image' | 'video' | 'raw') => {
     if (isLoading) {
@@ -344,8 +334,9 @@ export default function VercelBlobAdmin({ libraryOpen: externalLibraryOpen, onLi
         {assets.map((b) => {
           const isImage = b.contentType?.startsWith('image/');
           const isVideo = b.contentType?.startsWith('video/');
-          const effectiveId = externalNewlyUploadedId ?? newlyUploadedId;
-          const isNew = effectiveId && (b.id === effectiveId || b.pathname === effectiveId || b.id === newlyUploadedId || b.pathname === newlyUploadedId);
+          // Exact parity with Cloudinary's MediaFileCard isNewlyUploaded={file.id === newlyUploadedId}
+          const highlightedId = externalNewlyUploadedId ?? newlyUploadedId;
+          const isNew = !!highlightedId && b.id === highlightedId;
           const isSelected = selectedIds.has(b.id);
           return (
             <div key={b.id} className={cn("flex flex-col gap-2", isNew && "animate-shake", isSelected && "ring-2 ring-primary rounded-lg")}>
