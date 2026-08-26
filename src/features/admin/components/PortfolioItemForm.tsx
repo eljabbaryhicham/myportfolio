@@ -76,7 +76,6 @@ const formSchema = z.object({
   order: z.number().optional(),
   isVisible: z.boolean().optional(),
   useVideoFrameAsPoster: z.boolean().optional(),
-  mediaWidth: z.number().min(10).max(100).optional(),
 });
 
 type PortfolioItemFormValues = z.infer<typeof formSchema>;
@@ -109,7 +108,6 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onCho
         order: undefined,
           isVisible: true,
           useVideoFrameAsPoster: false,
-          mediaWidth: 100,
         }
     });
 
@@ -161,7 +159,6 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onCho
             order: item.order ?? 0,
             isVisible: item.isVisible ?? true,
             useVideoFrameAsPoster: item.useVideoFrameAsPoster || false,
-            mediaWidth: item.mediaWidth ?? 100,
         } : {
             title: '',
             description: '',
@@ -198,7 +195,6 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onCho
           thumbnailHint: values.thumbnailHint || '',
           isVisible: values.isVisible ?? true,
           useVideoFrameAsPoster: values.useVideoFrameAsPoster || false,
-          mediaWidth: values.mediaWidth ?? 100,
         });
     };
 
@@ -553,32 +549,6 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onCho
                                     <FormMessage />
                                 </FormItem>
                             )}
-                            />
-                            <FormField
-                                control={form.control}
-                                name="mediaWidth"
-                                render={({ field }) => (
-                                    <FormItem className="glass-effect rounded-lg p-4">
-                                        <FormLabel>Embedded Media Width (%)</FormLabel>
-                                        <FormControl>
-                                            <div className="flex items-center gap-3">
-                                                <input
-                                                    type="range"
-                                                    min={10}
-                                                    max={100}
-                                                    step={5}
-                                                    className="flex-1 accent-primary"
-                                                    value={field.value ?? 100}
-                                                    onChange={(e) => field.onChange(Number(e.target.value))}
-                                                />
-                                                <span className="w-12 text-center text-sm font-mono">{field.value ?? 100}%</span>
-                                            </div>
-                                        </FormControl>
-                                        <FormDescription>
-                                            Controls the width of images, videos, and file cards inside project details.
-                                        </FormDescription>
-                                    </FormItem>
-                                )}
                             />
                             <FormField
                                 control={form.control}

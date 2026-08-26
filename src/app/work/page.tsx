@@ -148,7 +148,7 @@ const ProjectDetailsContent = memo(function ProjectDetailsContent({
             download
             target="_blank"
             rel="noopener noreferrer"
-            className="shrink-0 inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
+            className="shrink-0 inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/90 transition-colors no-underline"
           >
             <FontAwesomeIcon icon={faArrowDown} className="h-3 w-3" />
             Download
@@ -1079,7 +1079,7 @@ export default function WorkPage() {
                 </DialogHeader>
                 <ScrollArea className="flex-1">
                     <div className="project-details prose dark:prose-invert max-w-none space-y-4 text-sm text-foreground/80 p-4 md:p-6">
-                        <ProjectDetailsContent details={selectedItem.details || ''} playerType={workPagePlayer} onImageFullscreen={setFullscreenImageUrl} mediaWidth={selectedItem.mediaWidth} />
+                        <ProjectDetailsContent details={selectedItem.details || ''} playerType={workPagePlayer} onImageFullscreen={setFullscreenImageUrl} mediaWidth={homeSettings?.mediaWidth} />
                     </div>
                 </ScrollArea>
                  <DialogClose className={cn(

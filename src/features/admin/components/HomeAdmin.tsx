@@ -84,6 +84,7 @@ interface HomePageSettings {
     arrowLottieUrl?: string;
     faviconUrl?: string;
     glassOpacity?: number;
+    mediaWidth?: number;
 }
 
 const settingsSchema = z.object({
@@ -119,6 +120,7 @@ const settingsSchema = z.object({
   arrowLottieUrl: z.string().optional(),
   faviconUrl: z.string().optional(),
   glassOpacity: z.number().min(0).max(100).optional(),
+  mediaWidth: z.number().min(10).max(100).optional(),
 });
 
 type SettingsFormValues = z.infer<typeof settingsSchema>;
@@ -196,6 +198,7 @@ export default function HomeAdmin() {
       arrowLottieUrl: '',
       faviconUrl: '',
       glassOpacity: 25,
+      mediaWidth: 100,
     },
   });
 
@@ -237,6 +240,7 @@ export default function HomeAdmin() {
         arrowLottieUrl: homeSettings.arrowLottieUrl || '',
         faviconUrl: homeSettings.faviconUrl || '',
         glassOpacity: homeSettings.glassOpacity ?? 25,
+        mediaWidth: homeSettings.mediaWidth ?? 100,
       });
     }
   }, [homeSettings, form]);
@@ -705,6 +709,29 @@ export default function HomeAdmin() {
                                                 </FormControl>
                                                 <FormDescription>
                                                     Controls the opacity of the dark background layer on glass panels (0% = invisible, 100% = fully black).
+                                                </FormDescription>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+
+                                    <FormField
+                                        control={control}
+                                        name="mediaWidth"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>Embedded Media Width (%)</FormLabel>
+                                                <FormControl>
+                                                    <Slider
+                                                        min={10}
+                                                        max={100}
+                                                        step={5}
+                                                        value={[field.value ?? 100]}
+                                                        onValueChange={(v) => field.onChange(v[0])}
+                                                    />
+                                                </FormControl>
+                                                <FormDescription>
+                                                    Controls the width of images, videos, and file download cards inside project details.
                                                 </FormDescription>
                                                 <FormMessage />
                                             </FormItem>
