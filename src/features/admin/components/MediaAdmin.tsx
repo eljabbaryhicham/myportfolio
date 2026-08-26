@@ -360,7 +360,7 @@ export default forwardRef<MediaAdminRef, MediaAdminProps>(function MediaAdmin(pr
   const activeLibrary = props.isDialog ? props.activeLibrary : 'primary';
   const setActiveLibrary = props.isDialog ? props.setActiveLibrary : () => {};
   
-  const newlyUploadedId = props.isDialog ? props.newlyUploadedId : null;
+  const newlyUploadedId = props.isDialog ? props.newlyUploadedId : completedUpload?.docId ?? null;
 
   const typedUser = user as AppUser | null;
   const isSuperAdmin = typedUser?.email === 'eljabbaryhicham@example.com';
