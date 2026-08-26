@@ -269,7 +269,6 @@ interface StandaloneMediaAdminProps {
   isDialog?: false;
   onMediaSelect: (url: string, type: 'image' | 'video' | 'raw', filename: string) => void;
   onUploadComplete: (docId: string, resourceType: 'image' | 'video' | 'raw', libraryId: 'primary' | 'extented') => void;
-  onLibraryOpenRequest: () => void;
   isOpen?: never;
   onOpenChange?: never;
   isSelectionMode?: never;
@@ -327,6 +326,11 @@ export default function MediaAdmin(props: MediaAdminProps) {
   const [isSetBackgroundOpen, setIsSetBackgroundOpen] = useState(false);
   const [backgroundTarget, setBackgroundTarget] = useState<'home' | 'website'>('home');
   const [backgroundFile, setBackgroundFile] = useState<MediaAsset | null>(null);
+
+  // Full library dialog state (standalone mode only)
+  const [isFullLibraryOpen, setIsFullLibraryOpen] = useState(false);
+  const [fullLibraryActiveTab, setFullLibraryActiveTab] = useState<'images' | 'videos' | 'files'>('images');
+  const [fullLibraryActiveLibrary, setFullLibraryActiveLibrary] = useState<'primary' | 'extented'>('primary');
 
   const activeTab = props.isDialog ? props.activeTab : 'images';
   const setActiveTab = props.isDialog ? props.setActiveTab : () => {};
@@ -1034,7 +1038,7 @@ export default function MediaAdmin(props: MediaAdminProps) {
                 <p className="text-muted-foreground mt-1 text-sm">{t('mediaAdmin.description')}</p>
             </div>
             <div className="flex items-center gap-2">
-                <Button onClick={props.onLibraryOpenRequest} variant="outline" size="sm">
+                <Button onClick={() => setIsFullLibraryOpen(true)} variant="outline" size="sm">
                     <FontAwesomeIcon icon={faFolderOpen} className="mr-2" />
                     {t('mediaAdmin.browseFullLibrary')}
                 </Button>
@@ -1105,6 +1109,104 @@ export default function MediaAdmin(props: MediaAdminProps) {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      {/* Full Library Dialog (standalone mode) */}
+      <Dialog open={isFullLibraryOpen} onOpenChange={setIsFullLibraryOpen}>
+          <DialogContent className="w-[80vw] h-[90vh] glass-effect p-0 flex flex-col">
+              <DialogHeader className="p-4 border-b text-center">
+                  <DialogTitle className="font-headline">{t('mediaAdmin.mediaLibrary')}</DialogTitle>
+                  <DialogDescription>{t('mediaAdmin.description')}</DialogDescription>
+              </DialogHeader>
+              <Tabs value={fullLibraryActiveLibrary} onValueChange={(value) => setFullLibraryActiveLibrary(value as 'primary' | 'extented')} className='px-4 pt-4'>
+                  <TabsList>
+                      <TabsTrigger value="primary" className="py-2 px-4 text-base glass-effect data-[state=active]:bg-destructive">{t('mediaAdmin.tab.libraryPrimary')}</TabsTrigger>
+                      <TabsTrigger value="extented" className="py-2 px-4 text-base glass-effect data-[state=active]:bg-destructive">{t('mediaAdmin.tab.libraryExtented')}</TabsTrigger>
+                  </TabsList>
+              </Tabs>
+              <Tabs value={fullLibraryActiveTab} onValueChange={(value) => setFullLibraryActiveTab(value as 'images' | 'videos' | 'files')} className="flex-1 flex flex-col min-h-0">
+                  <div className='px-4 pt-4 flex items-center gap-2 flex-wrap'>
+                      <TabsList>
+                          <TabsTrigger value="images" className="py-2 px-4 text-base glass-effect data-[state=active]:bg-destructive">
+                              <FontAwesomeIcon icon={faFileImage} className="mr-2" />
+                              {t('mediaAdmin.tab.images')}
+                          </TabsTrigger>
+                          <TabsTrigger value="videos" className="py-2 px-4 text-base glass-effect data-[state=active]:bg-destructive">
+                              <FontAwesomeIcon icon={faFilm} className="mr-2" />
+                              {t('mediaAdmin.tab.videos')}
+                          </TabsTrigger>
+                          <TabsTrigger value="files" className="py-2 px-4 text-base glass-effect data-[state=active]:bg-destructive">
+                              <FontAwesomeIcon icon={faFileLines} className="mr-2" />
+                              {t('mediaAdmin.tab.files')}
+                          </TabsTrigger>
+                      </TabsList>
+                      <Input
+                          value={searchQuery}
+                          onChange={(e) => setSearchQuery(e.target.value)}
+                          placeholder={t('mediaAdmin.searchPlaceholder')}
+                          className="max-w-[220px] md:max-w-xs ml-auto glass-effect"
+                      />
+                  </div>
+                  <div className="px-4 pt-3">
+                      <div className="flex flex-col sm:flex-row gap-2">
+                          <div
+                              {...getRootProps()}
+                              className={cn(
+                                  'flex-1 border border-dashed rounded-md px-3 py-2 flex items-center justify-center gap-2 cursor-pointer transition-colors text-muted-foreground min-w-0',
+                                  isDragActive && canUpload ? 'border-primary bg-primary/10' : 'border-border hover:border-primary/50',
+                                  (!canUpload || effectiveIsUploading) && 'opacity-50 cursor-not-allowed'
+                              )}
+                          >
+                              <input {...getInputProps()} disabled={!canUpload || effectiveIsUploading} />
+                              <FontAwesomeIcon icon={faCloudUploadAlt} className="h-4 w-4 shrink-0" />
+                              <span className="text-xs md:text-sm truncate text-center">
+                                  {effectiveIsUploading ? t('mediaAdmin.uploading') : !canUpload ? t('mediaAdmin.noPermission') : t('mediaAdmin.dragAndDrop')}
+                              </span>
+                          </div>
+                          <Button onClick={() => setIsAddFromUrlOpen(true)} variant="outline" size="sm" disabled={!canUpload || effectiveIsUploading} className="w-full sm:w-auto justify-center shrink-0">
+                              <FontAwesomeIcon icon={faLink} className="mr-2" />
+                              {t('mediaAdmin.addFromUrl')}
+                          </Button>
+                      </div>
+                      {effectiveIsUploading && (
+                          <div className="mt-2 flex items-center gap-2 min-w-0">
+                              <Progress value={effectiveProgress} className="flex-1" />
+                              <span className="text-xs text-muted-foreground truncate max-w-[45%]">
+                                  {t('mediaAdmin.uploadProgress').replace('{name}', effectiveFileName).replace('{progress}', String(Math.round(effectiveProgress)))}
+                              </span>
+                          </div>
+                      )}
+                  </div>
+                  <ScrollArea className="flex-1">
+                      <TabsContent value="images" className="p-4 m-0">
+                          {renderLibrary(imageAssets, 'image')}
+                      </TabsContent>
+                      <TabsContent value="videos" className="p-4 m-0">
+                          {renderLibrary(videoAssets, 'video')}
+                      </TabsContent>
+                      <TabsContent value="files" className="p-4 m-0">
+                          {renderLibrary(otherAssets, 'raw')}
+                      </TabsContent>
+                  </ScrollArea>
+                  {showBulkSelect && (
+                      <BulkActionBar
+                          selectedCount={selectedIds.size}
+                          onClearSelection={() => setSelectedIds(new Set())}
+                          onDelete={() => setIsBulkDeleteOpen(true)}
+                          className="!relative !bottom-auto !left-auto !translate-x-0 mx-4 mb-4"
+                      />
+                  )}
+              </Tabs>
+              <DialogClose className={cn(
+                  "absolute right-4 top-4 h-8 w-8",
+                  "flex items-center justify-center rounded-full transition-opacity",
+                  "bg-destructive text-destructive-foreground opacity-70 hover:opacity-100",
+                  "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+                  "disabled:pointer-events-none"
+              )}>
+                  <FontAwesomeIcon icon={faXmark} className="h-4 w-4" />
+                  <span className="sr-only">{t('mediaAdmin.close')}</span>
+              </DialogClose>
+          </DialogContent>
+      </Dialog>
     </>
   );
 }
