@@ -14,14 +14,12 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { useAuth, useFirestore, setDocumentNonBlocking } from '@/firebase';
-import {
-  createUserWithEmailAndPassword,
-} from 'firebase/auth';
+import { useAuth, useFirestore } from '@/firebase';
 import { useToast } from '@/hooks/use-toast';
 import { useState } from 'react';
-import { doc } from 'firebase/firestore';
+import { doc, setDoc, query, collection, where, getDocs } from 'firebase/firestore';
 import { useTranslation } from '@/lib/i18n/useTranslation';
+import { firebaseConfig } from '@/firebase/config';
 
 const formSchema = z.object({
   username: z.string().min(3, { message: 'Username must be at least 3 characters.' }).regex(/^[a-zA-Z0-9]+$/, 'Username can only contain letters and numbers.'),
@@ -54,17 +52,60 @@ export default function NewAdminForm({ onSuccess }: NewAdminFormProps) {
   const handleSignUp = async (values: RegisterFormValues) => {
     if (!auth || !firestore) return;
     setIsSubmitting(true);
-    
+
     const email = `${values.username.toLowerCase()}@example.com`;
     try {
-      // We create the user but don't sign them in on this client
-      const userCredential = await createUserWithEmailAndPassword(auth, email, values.password);
-      
-      const userDocRef = doc(firestore, 'users', userCredential.user.uid);
-      await setDocumentNonBlocking(userDocRef, {
-        uid: userCredential.user.uid,
+      // Check if username is already taken in Firestore
+      const usersQuery = query(collection(firestore, 'users'), where('username', '==', values.username));
+      const existingUsers = await getDocs(usersQuery);
+      if (!existingUsers.empty) {
+        toast({
+          variant: 'destructive',
+          title: t('newAdmin.toast.error.title'),
+          description: t('newAdmin.toast.error.description'),
+        });
+        setIsSubmitting(false);
+        return;
+      }
+
+      // Use Firebase Auth REST API to create user WITHOUT signing them in on this client.
+      // createUserWithEmailAndPassword auto-signs in the new user, which replaces the super admin session.
+      const response = await fetch(
+        `https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=${firebaseConfig.apiKey}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password: values.password, returnSecureToken: true }),
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        if (errorData.error?.message === 'EMAIL_EXISTS') {
+          toast({
+            variant: 'destructive',
+            title: t('newAdmin.toast.error.title'),
+            description: t('newAdmin.toast.error.description'),
+          });
+        } else {
+          toast({
+            variant: 'destructive',
+            title: t('newAdmin.toast.error.title'),
+            description: errorData.error?.message || 'Failed to create admin user.',
+          });
+        }
+        setIsSubmitting(false);
+        return;
+      }
+
+      const result = await response.json();
+      const newUid = result.localId;
+
+      // Write the user document to Firestore (blocking — must complete before we're done)
+      await setDoc(doc(firestore, 'users', newUid), {
+        uid: newUid,
         username: values.username,
-        email: userCredential.user.email,
+        email,
         role: 'admin',
         createdAt: new Date().toISOString(),
         permissions: {
@@ -75,22 +116,19 @@ export default function NewAdminForm({ onSuccess }: NewAdminFormProps) {
           canEditContact: false,
           canEditHome: false,
         }
-      }, {});
-
-      // Sign out the newly created user from the current session
-      // This is important because createUserWithEmailAndPassword automatically signs the user in
-      await auth.signOut();
+      });
 
       toast({
         title: t('newAdmin.toast.created.title'),
         description: t('newAdmin.toast.created.description').replace('{username}', values.username),
       });
+      form.reset();
       onSuccess();
     } catch (error: any) {
       toast({
         variant: 'destructive',
         title: t('newAdmin.toast.error.title'),
-        description: error.code === 'auth/email-already-in-use' ? t('newAdmin.toast.error.description') : error.message,
+        description: error.message || 'An unexpected error occurred.',
       });
     } finally {
         setIsSubmitting(false);
