@@ -4,9 +4,8 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useUploadProgress } from '@/components/upload-progress-context';
 import { Progress } from '@/components/ui/progress';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCloudUploadAlt, faExternalLinkAlt } from '@fortawesome/free-solid-svg-icons';
+import { faCloudUploadAlt, faArrowUpRightFromSquare } from '@fortawesome/free-solid-svg-icons';
 import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
 
 export default function UploadProgressNotification() {
   const { vercel, cloudinary, activeMediaTab } = useUploadProgress();
@@ -50,21 +49,19 @@ export default function UploadProgressNotification() {
                 <p className="text-xs text-muted-foreground truncate">{u.fileName}</p>
               </div>
             </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-8 w-8 p-0 shrink-0"
+              onClick={() => goToMediaTab(u.provider)}
+              title="Open in media library"
+            >
+              <FontAwesomeIcon icon={faArrowUpRightFromSquare} className="h-4 w-4" />
+            </Button>
           </div>
           <div className="mt-3">
             <Progress value={u.progress} className="h-2" />
-            <div className="flex items-center justify-between mt-1">
-              <p className="text-xs text-muted-foreground">{Math.round(u.progress)}%</p>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-6 px-2 text-xs text-primary"
-                onClick={() => goToMediaTab(u.provider)}
-              >
-                <FontAwesomeIcon icon={faExternalLinkAlt} className="mr-1 h-3 w-3" />
-                View upload
-              </Button>
-            </div>
+            <p className="text-xs text-muted-foreground mt-1 text-right">{Math.round(u.progress)}%</p>
           </div>
         </div>
       ))}
