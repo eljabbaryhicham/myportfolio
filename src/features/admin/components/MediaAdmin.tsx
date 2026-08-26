@@ -344,6 +344,7 @@ export default forwardRef<MediaAdminRef, MediaAdminProps>(function MediaAdmin(pr
   const [isFullLibraryOpen, setIsFullLibraryOpen] = useState(false);
   const [fullLibraryActiveTab, setFullLibraryActiveTab] = useState<'images' | 'videos' | 'files'>('images');
   const [fullLibraryActiveLibrary, setFullLibraryActiveLibrary] = useState<'primary' | 'extented'>('primary');
+  const [localNewlyUploadedId, setLocalNewlyUploadedId] = useState<string | null>(null);
 
   useImperativeHandle(ref, () => ({
     openFullLibrary: (tab: 'images' | 'videos' | 'files', library: 'primary' | 'extented') => {
@@ -356,12 +357,15 @@ export default forwardRef<MediaAdminRef, MediaAdminProps>(function MediaAdmin(pr
   // Auto-open full library after upload completes (standalone mode, Cloudinary only)
   useEffect(() => {
     if (props.isDialog || !completedUpload || completedUpload.libraryId === 'vercel_blob') return;
-    const { resourceType, libraryId } = completedUpload;
+    const { docId, resourceType, libraryId } = completedUpload;
     const tab = resourceType === 'video' ? 'videos' : resourceType === 'raw' ? 'files' : 'images';
     setFullLibraryActiveTab(tab);
     setFullLibraryActiveLibrary(libraryId);
+    setLocalNewlyUploadedId(docId);
     setIsFullLibraryOpen(true);
     consumeCompletedUpload();
+    const timer = setTimeout(() => setLocalNewlyUploadedId(null), 3000);
+    return () => clearTimeout(timer);
   }, [completedUpload, consumeCompletedUpload, props.isDialog]);
 
   const activeTab = props.isDialog ? props.activeTab : 'images';
@@ -369,7 +373,7 @@ export default forwardRef<MediaAdminRef, MediaAdminProps>(function MediaAdmin(pr
   const activeLibrary = props.isDialog ? props.activeLibrary : 'primary';
   const setActiveLibrary = props.isDialog ? props.setActiveLibrary : () => {};
   
-  const newlyUploadedId = props.isDialog ? props.newlyUploadedId : completedUpload?.docId ?? null;
+  const newlyUploadedId = props.isDialog ? props.newlyUploadedId : localNewlyUploadedId;
 
   const typedUser = user as AppUser | null;
   const isSuperAdmin = typedUser?.email === SUPERADMIN_EMAIL;
