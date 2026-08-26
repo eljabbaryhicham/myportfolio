@@ -22,4 +22,5 @@ export interface HomePageSettings {
     aboutSubtitle?: string;
     contactHeading?: string;
     contactSubtitle?: string;
+    glassOpacity?: number;
 }

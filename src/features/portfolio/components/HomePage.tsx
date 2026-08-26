@@ -204,12 +204,6 @@ export default function HomePageContent() {
   }, []);
 
   useEffect(() => {
-    const opacity = (homeSettings?.glassOpacity ?? 25) / 100;
-    document.documentElement.style.setProperty('--glass-bg', `rgba(0,0,0,${opacity})`);
-    return () => { document.documentElement.style.removeProperty('--glass-bg'); };
-  }, [homeSettings?.glassOpacity]);
-
-  useEffect(() => {
     const videoUrl = homeSettings?.heroVideoUrl;
     const video = videoRef.current;
     if (!video || !videoUrl || videoUrl === HERO_VIDEO_URL) return;
