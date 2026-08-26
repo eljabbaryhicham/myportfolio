@@ -2,6 +2,7 @@
 'use client';
 
 import Image from 'next/image';
+import Link from 'next/link';
 import {
   Dialog,
   DialogContent,
@@ -141,6 +142,9 @@ const ProjectDetailsContent = memo(function ProjectDetailsContent({
       const { href, download, children, ...rest } = props;
       const filename = props['data-filename'] || (typeof children === 'string' ? children : '') || 'Download';
       if (!download || !href) {
+        if (href?.startsWith('/') && !href?.startsWith('//')) {
+          return <Link href={href} {...rest}>{children}</Link>;
+        }
         return <a href={href} {...rest}>{children}</a>;
       }
       return (
