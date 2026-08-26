@@ -28,6 +28,7 @@ type UploadProgressContextType = UploadProgressState & {
   startUpload: (fileName: string, provider: 'vercel' | 'cloudinary') => void;
   updateProgress: (progress: number, provider?: 'vercel' | 'cloudinary') => void;
   finishUpload: (provider?: 'vercel' | 'cloudinary') => void;
+  clearFileName: (provider: 'vercel' | 'cloudinary') => void;
   setActiveMediaTab: (tab: string | null) => void;
   completedUpload: CompletedUpload;
   signalCompletedUpload: (docId: string, resourceType: 'image' | 'video' | 'raw', libraryId: 'primary' | 'extented' | 'vercel_blob') => void;
@@ -85,17 +86,17 @@ export function UploadProgressProvider({ children }: { children: React.ReactNode
   const finishUpload = useCallback((provider?: 'vercel' | 'cloudinary') => {
     setState((prev) => {
       const target = provider || prev.provider;
-      if (!target) return { ...prev, isUploading: false, progress: 0, fileName: '', provider: null };
+      if (!target) return { ...prev, isUploading: false, progress: 0, provider: null };
       const next = {
         ...prev,
-        [target]: { isUploading: false, progress: 0, fileName: '' },
+        [target]: { ...prev[target], isUploading: false, progress: 0 },
       };
       if (prev.provider === target) {
         next.isUploading = next.vercel.isUploading || next.cloudinary.isUploading;
         if (!next.isUploading) {
           next.progress = 0;
-          next.fileName = '';
           next.provider = null;
+          // Keep fileName — the notification effect needs it to detect completion
         } else {
           const other = target === 'vercel' ? 'cloudinary' : 'vercel';
           if (next[other].isUploading) {
@@ -113,6 +114,14 @@ export function UploadProgressProvider({ children }: { children: React.ReactNode
     setState((prev) => ({ ...prev, activeMediaTab: tab }));
   }, []);
 
+  const clearFileName = useCallback((provider: 'vercel' | 'cloudinary') => {
+    setState((prev) => ({
+      ...prev,
+      [provider]: { ...prev[provider], fileName: '' },
+      ...(prev.provider === provider ? { fileName: '' } : {}),
+    }));
+  }, []);
+
   const signalCompletedUpload = useCallback((docId: string, resourceType: 'image' | 'video' | 'raw', libraryId: 'primary' | 'extented' | 'vercel_blob') => {
     const data = { docId, resourceType, libraryId };
     setCompletedUpload(data);
@@ -125,7 +134,7 @@ export function UploadProgressProvider({ children }: { children: React.ReactNode
   }, []);
 
   return (
-    <UploadProgressContext.Provider value={{ ...state, setUploadProgress, startUpload, updateProgress, finishUpload, setActiveMediaTab, completedUpload, signalCompletedUpload, consumeCompletedUpload }}>
+    <UploadProgressContext.Provider value={{ ...state, setUploadProgress, startUpload, updateProgress, finishUpload, clearFileName, setActiveMediaTab, completedUpload, signalCompletedUpload, consumeCompletedUpload }}>
       {children}
     </UploadProgressContext.Provider>
   );

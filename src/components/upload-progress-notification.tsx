@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { useEffect, useRef, useState } from 'react';
 
 export default function UploadProgressNotification() {
-  const { vercel, cloudinary, activeMediaTab } = useUploadProgress();
+  const { vercel, cloudinary, activeMediaTab, clearFileName, completedUpload } = useUploadProgress();
   const pathname = usePathname();
   const router = useRouter();
 
@@ -18,20 +18,22 @@ export default function UploadProgressNotification() {
   const prevVercelUploading = useRef(vercel.isUploading);
   const prevCloudinaryUploading = useRef(cloudinary.isUploading);
 
-  // Detect upload completion (was uploading, now not)
+  // Detect upload completion (was uploading, now not) — fileName stays set by finishUpload for this detection
   useEffect(() => {
     if (prevVercelUploading.current && !vercel.isUploading && vercel.fileName) {
       setRecentlyCompleted(prev => [...prev, { provider: 'vercel', fileName: vercel.fileName, completedAt: Date.now() }]);
+      clearFileName('vercel');
     }
     prevVercelUploading.current = vercel.isUploading;
-  }, [vercel.isUploading, vercel.fileName]);
+  }, [vercel.isUploading, vercel.fileName, clearFileName]);
 
   useEffect(() => {
     if (prevCloudinaryUploading.current && !cloudinary.isUploading && cloudinary.fileName) {
       setRecentlyCompleted(prev => [...prev, { provider: 'cloudinary', fileName: cloudinary.fileName, completedAt: Date.now() }]);
+      clearFileName('cloudinary');
     }
     prevCloudinaryUploading.current = cloudinary.isUploading;
-  }, [cloudinary.isUploading, cloudinary.fileName]);
+  }, [cloudinary.isUploading, cloudinary.fileName, clearFileName]);
 
   // Clean up expired completed entries (older than 3s)
   useEffect(() => {
@@ -44,10 +46,16 @@ export default function UploadProgressNotification() {
   const goToMediaTab = (provider: 'vercel' | 'cloudinary') => {
     localStorage.setItem('adminActiveTab', 'media');
     localStorage.setItem('adminInnerMediaTab', provider);
+    const tab = completedUpload?.resourceType === 'video' ? 'videos' : completedUpload?.resourceType === 'raw' ? 'files' : 'images';
     // If already on admin page, dispatch event to open library directly
     if (pathname === '/admin') {
       window.dispatchEvent(new CustomEvent('media-library-maximize', {
-        detail: { provider, tab: 'images', library: 'primary', docId: null }
+        detail: {
+          provider,
+          tab,
+          library: completedUpload?.libraryId || 'primary',
+          docId: completedUpload?.docId || null,
+        }
       }));
     } else {
       router.push('/admin');
