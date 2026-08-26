@@ -38,6 +38,7 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useTranslation } from '@/lib/i18n/useTranslation';
 import { DEFAULT_EMAIL_TEMPLATE_HTML, DEFAULT_AUTOREPLY_TEMPLATE_HTML } from '@/lib/default-email-template';
 import UnifiedMediaPicker from './UnifiedMediaPicker';
@@ -171,6 +172,7 @@ export default function HomeAdmin() {
   const [libraryCollection, setLibraryCollection] = useState<'primary' | 'extented'>('primary');
   const [isEmailPreviewOpen, setIsEmailPreviewOpen] = useState(false);
   const [emailPreviewField, setEmailPreviewField] = useState<'emailTemplateHtml' | 'autoReplyTemplateHtml'>('emailTemplateHtml');
+  const [homeTab, setHomeTab] = useState<'appearance' | 'backgrounds' | 'navigation' | 'player' | 'preloader' | 'email'>('appearance');
 
   const form = useForm<SettingsFormValues>({
     resolver: zodResolver(settingsSchema),
@@ -340,9 +342,17 @@ export default function HomeAdmin() {
                 <div className="p-6">
                     <Form {...form}>
                         <div className="space-y-8 max-w-2xl mx-auto">
-                            <fieldset disabled={!canEditHome} className="group space-y-8">
-                                
-                                {/* Homepage Background Settings */}
+                            <fieldset disabled={!canEditHome} className="group">
+                                <Tabs value={homeTab} onValueChange={(v) => setHomeTab(v as any)} className="space-y-4">
+                                <TabsList className="flex flex-wrap sticky top-0 z-10 glass-effect">
+                                    <TabsTrigger value="appearance" className="px-3 py-1.5 text-sm glass-effect data-[state=active]:bg-destructive">{t('homeAdmin.tab.appearance') || 'Appearance'}</TabsTrigger>
+                                    <TabsTrigger value="backgrounds" className="px-3 py-1.5 text-sm glass-effect data-[state=active]:bg-destructive">{t('homeAdmin.tab.backgrounds') || 'Backgrounds'}</TabsTrigger>
+                                    <TabsTrigger value="player" className="px-3 py-1.5 text-sm glass-effect data-[state=active]:bg-destructive">{t('homeAdmin.tab.player') || 'Player & Global'}</TabsTrigger>
+                                    <TabsTrigger value="preloader" className="px-3 py-1.5 text-sm glass-effect data-[state=active]:bg-destructive">{t('homeAdmin.tab.preloader') || 'Preloader'}</TabsTrigger>
+                                    <TabsTrigger value="email" className="px-3 py-1.5 text-sm glass-effect data-[state=active]:bg-destructive">{t('homeAdmin.tab.email') || 'Email'}</TabsTrigger>
+                                </TabsList>
+                                <TabsContent value="appearance" className="m-0 space-y-4">
+                                {/* Homepage Appearance */}
                                 <div className="space-y-4 p-4 rounded-lg border glass-effect">
                                     <h3 className="font-headline text-lg">{t('homeAdmin.homepageHeading')}</h3>
                                     
@@ -619,9 +629,12 @@ export default function HomeAdmin() {
                                             </FormItem>
                                         )}
                                     />
-
-                                    <Separator />
-                                     <h3 className="font-headline text-lg pt-4">{t('homeAdmin.backgroundsHeading')}</h3>
+                                </div>
+                                </TabsContent>
+                                <TabsContent value="backgrounds" className="m-0 space-y-4">
+                                {/* Backgrounds */}
+                                <div className="space-y-4 p-4 rounded-lg border glass-effect">
+                                    <h3 className="font-headline text-lg">{t('homeAdmin.backgroundsHeading')}</h3>
 
                                      {/* Homepage background */}
                                      <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground pt-2">{t('homeAdmin.homepageBackground')}</h4>
@@ -757,10 +770,10 @@ export default function HomeAdmin() {
                                             )}
                                         />
                                     )}
-                                </div>
-                                <Separator />
-
-                                {/* Player Settings */}
+                                 </div>
+                                </TabsContent>
+                                <TabsContent value="player" className="m-0 space-y-4">
+                                {/* Player & Global Settings */}
                                 <div className="space-y-4 p-4 rounded-lg border glass-effect">
                                      <h3 className="font-headline text-lg">{t('homeAdmin.globalSettings')}</h3>
 
@@ -908,7 +921,12 @@ export default function HomeAdmin() {
                                     />
 
                                     <Separator />
-
+                                </div>
+                                </TabsContent>
+                                <TabsContent value="preloader" className="m-0 space-y-4">
+                                {/* Preloader & Animations */}
+                                <div className="space-y-4 p-4 rounded-lg border glass-effect">
+                                <h3 className="font-headline text-lg">{t('homeAdmin.preloaderTabHeading') || 'Preloader & Animations'}</h3>
                                     <FormField
                                         control={control}
                                         name="preloaderType"
@@ -1110,8 +1128,9 @@ export default function HomeAdmin() {
                                                 </FormItem>
                                         )}
                                     />
-                                </div>
-
+                                 </div>
+                                </TabsContent>
+                                <TabsContent value="email" className="m-0 space-y-4">
                                 {/* Email Templates */}
                                 <div className="space-y-4 p-4 rounded-lg border glass-effect">
                                     <h3 className="font-headline text-lg">{t('homeAdmin.emailTemplatesHeading')}</h3>
@@ -1178,6 +1197,8 @@ export default function HomeAdmin() {
                                         </Button>
                                     </div>
                                 </div>
+                                </TabsContent>
+                                </Tabs>
                             </fieldset>
                         </div>
                     </Form>

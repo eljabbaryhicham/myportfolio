@@ -1,6 +1,7 @@
 'use client';
 
 import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
+import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import translations from '@/lib/i18n/translations';
 
@@ -49,34 +50,39 @@ export function LanguageSwitcher({ className }: { className?: string }) {
   const t = (key: string) => translations[lang]?.[key] ?? translations.en[key] ?? key;
 
   return (
-    <div className={cn(
-      "flex items-center overflow-hidden rounded-full border border-white/10 bg-white/5 backdrop-blur-sm",
-      className
-    )}>
-      <button
-        onClick={() => setLang('en')}
-        className={cn(
-          "px-2.5 py-1 text-[10px] font-semibold tracking-wider transition-all duration-300 whitespace-nowrap",
-          lang === 'en'
-            ? "bg-destructive text-white"
-            : "text-white/60 hover:text-white"
-        )}
-        title={t('layout.toggleLang')}
-      >
-        EN
-      </button>
-      <button
-        onClick={() => setLang('fr')}
-        className={cn(
-          "px-2.5 py-1 text-[10px] font-semibold tracking-wider transition-all duration-300 whitespace-nowrap",
-          lang === 'fr'
-            ? "bg-destructive text-white"
-            : "text-white/60 hover:text-white"
-        )}
-        title={t('layout.toggleLang')}
-      >
-        FR
-      </button>
+    <div
+      className={cn(
+        "relative flex items-center rounded-full border border-white/10 bg-white/10 p-0.5 backdrop-blur-md shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]",
+        className
+      )}
+      role="group"
+      aria-label={t('layout.toggleLang')}
+    >
+      {(['en', 'fr'] as const).map((opt) => {
+        const isActive = lang === opt;
+        const label = opt === 'en' ? 'EN' : 'FR';
+        return (
+          <button
+            key={opt}
+            onClick={() => setLang(opt)}
+            aria-pressed={isActive}
+            className={cn(
+              "relative z-10 px-2.5 py-1 text-[10px] font-semibold tracking-wider transition-colors duration-300 whitespace-nowrap",
+              isActive ? "text-white" : "text-white/50 hover:text-white/80"
+            )}
+            title={t('layout.toggleLang')}
+          >
+            {isActive && (
+              <motion.span
+                layoutId="lang-active-pill"
+                className="absolute inset-0 rounded-full bg-destructive shadow-[0_0_12px_hsl(var(--primary)/0.6)]"
+                transition={{ type: "spring", stiffness: 400, damping: 30 }}
+              />
+            )}
+            <span className="relative z-10">{label}</span>
+          </button>
+        );
+      })}
     </div>
   );
 }
