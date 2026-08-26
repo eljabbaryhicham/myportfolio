@@ -2,7 +2,7 @@
 'use client';
 
 import { useTranslation } from '@/lib/i18n/useTranslation';
-import React, { useCallback, useState, useEffect, useMemo, useRef } from 'react';
+import React, { useCallback, useState, useEffect, useMemo, useRef, forwardRef, useImperativeHandle } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
@@ -298,7 +298,11 @@ interface DialogMediaAdminProps {
 
 type MediaAdminProps = StandaloneMediaAdminProps | DialogMediaAdminProps;
 
-export default function MediaAdmin(props: MediaAdminProps) {
+export interface MediaAdminRef {
+  openFullLibrary: (tab: 'images' | 'videos' | 'files', library: 'primary' | 'extented') => void;
+}
+
+export default forwardRef<MediaAdminRef, MediaAdminProps>(function MediaAdmin(props, ref) {
   const { t } = useTranslation();
   const { toast } = useToast();
   const firestore = useFirestore();
@@ -331,6 +335,14 @@ export default function MediaAdmin(props: MediaAdminProps) {
   const [isFullLibraryOpen, setIsFullLibraryOpen] = useState(false);
   const [fullLibraryActiveTab, setFullLibraryActiveTab] = useState<'images' | 'videos' | 'files'>('images');
   const [fullLibraryActiveLibrary, setFullLibraryActiveLibrary] = useState<'primary' | 'extented'>('primary');
+
+  useImperativeHandle(ref, () => ({
+    openFullLibrary: (tab: 'images' | 'videos' | 'files', library: 'primary' | 'extented') => {
+      setFullLibraryActiveTab(tab);
+      setFullLibraryActiveLibrary(library);
+      setIsFullLibraryOpen(true);
+    },
+  }));
 
   const activeTab = props.isDialog ? props.activeTab : 'images';
   const setActiveTab = props.isDialog ? props.setActiveTab : () => {};
@@ -1220,4 +1232,4 @@ export default function MediaAdmin(props: MediaAdminProps) {
       </Dialog>
     </>
   );
-}
+})
