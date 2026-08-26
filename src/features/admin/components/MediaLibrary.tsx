@@ -444,24 +444,16 @@ export default forwardRef<MediaLibraryRef, MediaLibraryProps>(function MediaLibr
     return () => { if (timer) clearInterval(timer); };
   }, [isAddingFromUrl]);
 
-  // ---- Auto-open full library after upload completes ----
+  // ---- Consume completed upload after delay (notification handles navigation) ----
   useEffect(() => {
     if (!completedUpload) return;
     if (provider === 'cloudinary' && completedUpload.libraryId === 'vercel_blob') return;
     if (provider === 'vercel_blob' && completedUpload.libraryId !== 'vercel_blob') return;
-    const { docId, resourceType, libraryId } = completedUpload;
-    const tab = resourceType === 'video' ? 'videos' : resourceType === 'raw' ? 'files' : 'images';
-    if (provider === 'cloudinary') {
-      setFullLibraryActiveTab(tab);
-      setFullLibraryActiveLibrary((libraryId === 'primary' || libraryId === 'extented') ? libraryId : 'primary');
-    } else {
-      setFullLibraryActiveTab(tab);
-    }
-    setLocalNewlyUploadedId(docId);
-    consumeCompletedUpload();
-    const timer = setTimeout(() => setLocalNewlyUploadedId(null), 3000);
+    // Don't auto-open library — the maximize button in the notification handles navigation.
+    // Just consume the data after a short delay so the notification can detect the transition.
+    const timer = setTimeout(() => consumeCompletedUpload(), 3500);
     return () => clearTimeout(timer);
-  }, [completedUpload, consumeCompletedUpload, provider, setActiveTabFn]);
+  }, [completedUpload, consumeCompletedUpload, provider]);
 
   // ---- Listen for maximize button navigation from notification ----
   useEffect(() => {

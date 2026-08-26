@@ -68,13 +68,8 @@ export default function UploadProgressNotification() {
     return true;
   });
 
-  // Filter completed uploads: hide when user is on the matching admin tab
-  const visibleCompleted = recentlyCompleted.filter((c) => {
-    if (pathname !== '/admin') return true;
-    if (c.provider === 'vercel' && activeMediaTab === 'vercel') return false;
-    if (c.provider === 'cloudinary' && activeMediaTab === 'cloudinary') return false;
-    return true;
-  });
+  // Show completed uploads always (don't filter by tab — user needs the maximize button)
+  const visibleCompleted = recentlyCompleted;
 
   if (visibleActiveUploads.length === 0 && visibleCompleted.length === 0) return null;
 

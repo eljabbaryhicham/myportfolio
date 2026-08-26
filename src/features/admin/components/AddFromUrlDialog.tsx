@@ -21,6 +21,7 @@ import { Progress } from '@/components/ui/progress';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
+import { useUploadProgress } from '@/components/upload-progress-context';
 
 const formSchema = z.object({
   mediaUrl: z.string().url({ message: 'Please enter a valid URL.' }),
@@ -40,6 +41,7 @@ export default function AddFromUrlDialog({ isOpen, onOpenChange, onUploadComplet
   const { t } = useTranslation();
   const { toast } = useToast();
   const firestore = useFirestore();
+  const { startUpload, updateProgress: updateGlobalProgress, finishUpload } = useUploadProgress();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [progress, setProgress] = useState(0);
   const [isVideoUrl, setIsVideoUrl] = useState(false);
@@ -94,6 +96,8 @@ export default function AddFromUrlDialog({ isOpen, onOpenChange, onUploadComplet
 
   const handleSubmit = async (values: FormValues) => {
     setIsSubmitting(true);
+    const urlFilename = values.mediaUrl.split('/').pop() || 'file';
+    startUpload(urlFilename, 'cloudinary');
     try {
       const result = await uploadMediaFromUrl(values);
       if (result.success && result.media && firestore) {
@@ -105,9 +109,11 @@ export default function AddFromUrlDialog({ isOpen, onOpenChange, onUploadComplet
             duration: 8000,
           });
           setIsSubmitting(false);
+          finishUpload('cloudinary');
           return;
         }
         setProgress(100);
+        updateGlobalProgress(100, 'cloudinary');
         const docRef = await addDocumentNonBlocking(collection(firestore, 'media'), { ...result.media }) as DocumentReference | undefined;
         if (docRef) {
           toast({
@@ -126,7 +132,8 @@ export default function AddFromUrlDialog({ isOpen, onOpenChange, onUploadComplet
         setTimeout(() => {
           onOpenChange(false);
           setIsSubmitting(false);
-        }, 500); // Wait for progress bar to show 100%
+          finishUpload('cloudinary');
+        }, 500);
       } else {
         toast({
           variant: 'destructive',
@@ -135,6 +142,7 @@ export default function AddFromUrlDialog({ isOpen, onOpenChange, onUploadComplet
           duration: 8000,
         });
         setIsSubmitting(false);
+        finishUpload('cloudinary');
       }
     } catch (error: any) {
       toast({
@@ -143,6 +151,7 @@ export default function AddFromUrlDialog({ isOpen, onOpenChange, onUploadComplet
         description: error.message || 'An unexpected error occurred during upload.',
       });
       setIsSubmitting(false);
+      finishUpload('cloudinary');
     }
   };
 
