@@ -2,7 +2,6 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
 import Preloader from './preloader';
-import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { useIsMobile } from '@/hooks/use-mobile';
 
@@ -163,31 +162,19 @@ export default function CdnClapprPlayer({ source, poster, autoPlay = true, water
         const wireVideoElement = (): boolean => {
           const video = container.querySelector('video');
           if (!video) return false;
-          video.setAttribute('webkit-playsinline', '');
-          video.setAttribute('playsinline', '');
           const isAndroid = typeof navigator !== 'undefined' && /Android/i.test(navigator.userAgent);
-          const rvfc = (video as any).requestVideoFrameCallback;
           if (isAndroid) {
-            if (rvfc && autoPlay) {
-              rvfc.call(video, () => requestAnimationFrame(() => done()));
-            } else if (!autoPlay) {
-              ['loadedmetadata', 'loadeddata', 'canplay'].forEach((evt) =>
-                video.addEventListener(evt, () => setTimeout(done, 200), { once: true } as any)
-              );
-            } else {
-              video.addEventListener('playing', done, { once: true });
-              video.addEventListener('loadeddata', () => setTimeout(done, 300), { once: true });
-            }
-            spinnerSafetyRef.current = setTimeout(done, autoPlay ? 10000 : 3500);
-          } else {
-            if (rvfc) {
-              rvfc.call(video, () => requestAnimationFrame(() => done()));
-            } else {
-              video.addEventListener('playing', done, { once: true });
-              video.addEventListener('loadeddata', () => setTimeout(done, 300), { once: true });
-            }
-            spinnerSafetyRef.current = setTimeout(done, 10000);
+            video.setAttribute('webkit-playsinline', '');
+            video.setAttribute('playsinline', '');
           }
+          const rvfc = (video as any).requestVideoFrameCallback;
+          if (rvfc) {
+            rvfc.call(video, () => requestAnimationFrame(() => done()));
+          } else {
+            video.addEventListener('playing', done, { once: true });
+            video.addEventListener('loadeddata', () => setTimeout(done, 300), { once: true });
+          }
+          spinnerSafetyRef.current = setTimeout(done, 10000);
           return true;
         };
         if (!wireVideoElement() && isMounted) {
@@ -267,18 +254,17 @@ export default function CdnClapprPlayer({ source, poster, autoPlay = true, water
     }
   }, [autoPlay, isLoading]); // Re-run when isLoading changes to ensure play is called after ready
 
-  const isAndroidRender = typeof navigator !== 'undefined' && /Android/i.test(navigator.userAgent);
   return (
-    <div className={cn("w-full h-full relative bg-black", isAndroidRender ? "isolate" : "")}>
+    <div className="w-full h-full relative bg-black">
       {isLoading && (
-        <div className={cn("absolute inset-0 z-10 flex items-center justify-center pointer-events-none", isAndroidRender ? "bg-black/40" : "bg-black")}>
+        <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/40 pointer-events-none">
             <Preloader />
         </div>
       )}
       <div
         id={containerId}
         ref={playerContainerRef}
-        className={cn("w-full h-full", isAndroidRender ? "opacity-100" : (isLoading ? 'opacity-0' : 'opacity-100'))}
+        className="w-full h-full"
       />
     </div>
   );

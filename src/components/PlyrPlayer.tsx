@@ -4,7 +4,6 @@
 import React, { useEffect, useRef, forwardRef, useImperativeHandle, useState } from 'react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import Preloader from './preloader';
-import { cn } from '@/lib/utils';
 import 'plyr/dist/plyr.css';
 import Hls from 'hls.js';
 
@@ -302,15 +301,14 @@ const PlyrPlayer = forwardRef(({ source, poster, autoPlay = true, thumbnailVttUr
   }, [autoPlay, isLoading]);
 
 
-  const isAndroidRender = typeof navigator !== 'undefined' && /Android/i.test(navigator.userAgent);
   return (
     <div className="relative w-full h-full">
       {isLoading && (
-          <div className={cn("absolute inset-0 z-20 flex items-center justify-center pointer-events-none", isAndroidRender ? "bg-black/40" : "bg-black/20")}>
+          <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/20 pointer-events-none">
               <Preloader />
           </div>
       )}
-      <div ref={containerRef} className={cn("relative w-full h-full", isAndroidRender ? "opacity-100" : (isLoading ? 'opacity-0' : 'opacity-100'))}>
+      <div ref={containerRef} className="relative w-full h-full">
          {/* Plyr will be injected here */}
       </div>
     </div>

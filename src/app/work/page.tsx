@@ -60,49 +60,8 @@ const normalizeSelfClosingMedia = (md: string) =>
 const DETAILS_MEDIA_RE = /<\s*(video|audio|img|source)\b|!\[[^\]]*\]\([^)]+\)/i;
 const hasDetailsMedia = (details?: string) => !!details && DETAILS_MEDIA_RE.test(details);
 
-function isIOSDevice() {
-  if (typeof navigator === 'undefined') return false;
-  const ua = navigator.userAgent || '';
-  return /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && (navigator as any).maxTouchPoints > 1);
-}
-
-function IOSNativeVideo({ videoSrc, poster }: { videoSrc: string; poster?: string }) {
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const [showPoster, setShowPoster] = useState(true);
-
-  return (
-    <div className="absolute inset-0 bg-black">
-      {showPoster && poster && (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
-          src={poster}
-          alt=""
-          className="absolute inset-0 h-full w-full object-contain z-10"
-          loading="eager"
-          decoding="async"
-        />
-      )}
-      {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
-      <video
-        ref={videoRef}
-        src={videoSrc}
-        poster={poster}
-        controls
-        playsInline
-        // @ts-ignore
-        webkit-playsinline="true"
-        preload="none"
-        className="absolute inset-0 h-full w-full object-contain bg-black"
-        onCanPlay={() => setShowPoster(false)}
-        onWaiting={() => setShowPoster(false)}
-        onPlaying={() => setShowPoster(false)}
-      />
-    </div>
-  );
-}
-
-// Android: defer heavy init past dialog animation. iOS: use native <video>
-// for reliable controls + no Plyr/Clappr overhead. Desktop: original.
+// Android: defer heavy Clappr/Plyr init past the dialog's enter
+// animation. iOS/desktop keep the original immediate behaviour.
 function LazyDetailsVideo({
   videoSrc,
   poster,
@@ -116,7 +75,6 @@ function LazyDetailsVideo({
   const [inView, setInView] = useState(false);
   const [activated, setActivated] = useState(false);
   const isAndroid = useMemo(() => typeof navigator !== 'undefined' && /Android/i.test(navigator.userAgent), []);
-  const isIOS = useMemo(() => isIOSDevice(), []);
   const [ready, setReady] = useState(false);
   const shouldLoad = inView || activated;
   useEffect(() => {
@@ -165,9 +123,6 @@ function LazyDetailsVideo({
         </div>
       </div>
     );
-  }
-  if (isIOS) {
-    return <IOSNativeVideo videoSrc={videoSrc} poster={poster} />;
   }
   return (
     <Suspense fallback={<Preloader />}>
@@ -1247,14 +1202,14 @@ export default function WorkPage() {
         >
             {selectedItem && (
                 <>
-                <DialogHeader className="p-4 md:p-6 pb-0 min-w-0 shrink-0">
+                <DialogHeader className="p-4 md:p-6 pb-0 min-w-0">
                     <DialogTitle className="font-headline text-base sm:text-lg md:text-xl break-words leading-tight hyphens-auto">{t('work.details.title').replace('{title}', selectedItem.title)}</DialogTitle>
                 </DialogHeader>
-                <div className="flex-1 min-w-0 overflow-y-auto overflow-x-hidden overscroll-contain">
+                <ScrollArea className="flex-1 min-w-0 [&>div>div]:!block [&>div>div]:min-w-0 [&>div>div]:w-full">
                     <div className="project-details prose prose-sm sm:prose-base dark:prose-invert max-w-full w-full min-w-0 overflow-hidden break-words space-y-4 text-xs sm:text-sm text-foreground/80 p-3 sm:p-4 md:p-6 box-border prose-p:my-2 prose-p:leading-relaxed prose-headings:break-words prose-h1:text-lg sm:prose-h1:text-xl prose-h2:text-base sm:prose-h2:text-lg prose-h3:text-sm sm:prose-h3:text-base prose-li:text-xs sm:prose-li:text-sm prose-a:break-all">
                         <ProjectDetailsContent details={selectedItem.details || ''} playerType={workPagePlayer} onImageFullscreen={setFullscreenImageUrl} mediaWidth={homeSettings?.mediaWidth} showMediaTitles={homeSettings?.showMediaTitles ?? true} />
                     </div>
-                </div>
+                </ScrollArea>
                  <DialogClose className={cn(
                     "absolute top-4 right-4 z-[101] h-10 w-10 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center md:hover:!opacity-100 ring-offset-background transition-opacity focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
                     isMobile ? "opacity-70" : (isCloseButtonVisible ? "opacity-70" : "opacity-0")
