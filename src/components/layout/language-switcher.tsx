@@ -47,33 +47,35 @@ export function useLanguage() {
 export function LanguageSwitcher({ className }: { className?: string }) {
   const { lang, setLang } = useLanguage();
   const t = (key: string) => translations[lang]?.[key] ?? translations.en[key] ?? key;
-  const other: Lang = lang === 'en' ? 'fr' : 'en';
 
   return (
     <div className={cn(
-      "group relative flex items-center overflow-hidden rounded-full border border-white/10 bg-white/5 backdrop-blur-sm transition-all duration-300",
+      "flex items-center overflow-hidden rounded-full border border-white/10 bg-white/5 backdrop-blur-sm",
       className
     )}>
-      {/* Active language (calls out to the right) */}
       <button
-        onClick={() => setLang(other)}
+        onClick={() => setLang('en')}
         className={cn(
-          "px-2 py-1 text-[10px] font-semibold tracking-wider transition-all duration-300 whitespace-nowrap",
+          "px-2.5 py-1 text-[10px] font-semibold tracking-wider transition-all duration-300 whitespace-nowrap",
           lang === 'en'
-            ? "bg-destructive text-white rounded-full"
-            : "text-white/60 hover:text-white rounded-full"
+            ? "bg-destructive text-white"
+            : "text-white/60 hover:text-white"
         )}
         title={t('layout.toggleLang')}
       >
-        {lang === 'en' ? 'EN' : 'FR'}
+        EN
       </button>
-      {/* Inactive language (slides in on hover) */}
       <button
-        onClick={() => setLang(other)}
-        className="px-2 py-1 text-[10px] font-semibold tracking-wider text-white/80 hover:text-white transition-all duration-300 opacity-0 max-w-0 group-hover:opacity-100 group-hover:max-w-10 group-hover:px-2 overflow-hidden whitespace-nowrap"
+        onClick={() => setLang('fr')}
+        className={cn(
+          "px-2.5 py-1 text-[10px] font-semibold tracking-wider transition-all duration-300 whitespace-nowrap",
+          lang === 'fr'
+            ? "bg-destructive text-white"
+            : "text-white/60 hover:text-white"
+        )}
         title={t('layout.toggleLang')}
       >
-        {other === 'en' ? 'EN' : 'FR'}
+        FR
       </button>
     </div>
   );
