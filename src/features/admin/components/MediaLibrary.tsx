@@ -560,21 +560,19 @@ export default forwardRef<MediaLibraryRef, MediaLibraryProps>(function MediaLibr
         continue;
       }
       setIsUploading(true);
-      setUploadProgress(5);
+      setUploadProgress(0);
       setUploadingFileName(file.name);
       startGlobalUpload(file.name, 'vercel');
-      let prog = 5;
-      const interval = setInterval(() => {
-        prog = Math.min(98, prog + Math.random() * 1 + 0.2);
-        setUploadProgress(prog);
-        updateGlobalProgress(prog, 'vercel');
-      }, 600);
       try {
         const blob: any = await upload(file.name, file, {
           access: 'public', handleUploadUrl: '/api/vercel-blob/handle-upload',
           headers: { Authorization: `Bearer ${token}` },
+          onUploadProgress: ({ loaded, total }: { loaded: number; total: number }) => {
+            const progress = Math.round((loaded / total) * 100);
+            setUploadProgress(progress);
+            updateGlobalProgress(progress, 'vercel');
+          },
         } as any);
-        clearInterval(interval);
         setUploadProgress(100);
         updateGlobalProgress(100, 'vercel');
         finishUpload('vercel');
@@ -596,11 +594,9 @@ export default forwardRef<MediaLibraryRef, MediaLibraryProps>(function MediaLibr
           } catch (e) { console.error('MediaLibrary: Firestore add after Vercel upload failed', e); }
         }
       } catch (e: any) {
-        clearInterval(interval);
         finishUpload('vercel');
         toast({ variant: 'destructive', title: 'Upload failed', description: e?.message || String(e) });
       } finally {
-        clearInterval(interval);
         setIsUploading(false);
         setUploadProgress(0);
         setUploadingFileName('');
