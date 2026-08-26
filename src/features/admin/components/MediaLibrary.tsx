@@ -577,6 +577,7 @@ export default forwardRef<MediaLibraryRef, MediaLibraryProps>(function MediaLibr
         clearInterval(interval);
         setUploadProgress(100);
         updateGlobalProgress(100, 'vercel');
+        finishUpload('vercel');
         const lowerType = file.type.toLowerCase();
         const tab = lowerType.startsWith('image/') ? 'images' : lowerType.startsWith('video/') ? 'videos' : 'files';
         setActiveTabFn(tab);
@@ -594,8 +595,6 @@ export default forwardRef<MediaLibraryRef, MediaLibraryProps>(function MediaLibr
             if (newId) signalCompletedUpload(newId, resourceType, 'vercel_blob');
           } catch (e) { console.error('MediaLibrary: Firestore add after Vercel upload failed', e); }
         }
-        await new Promise((r) => setTimeout(r, 400));
-        finishUpload('vercel');
       } catch (e: any) {
         clearInterval(interval);
         finishUpload('vercel');
@@ -714,6 +713,7 @@ export default forwardRef<MediaLibraryRef, MediaLibraryProps>(function MediaLibr
       };
       xhr.onload = async () => {
         if (xhr.status === 200) {
+          finishGlobalUpload('cloudinary');
           const response = JSON.parse(xhr.responseText);
           let finalUrl = response.secure_url;
           if (response.resource_type === 'video' && uploadVideoFormat === 'm3u8') {
@@ -746,7 +746,6 @@ export default forwardRef<MediaLibraryRef, MediaLibraryProps>(function MediaLibr
     setIsUploading(false);
     setUploadingFileName('');
     setUploadProgress(0);
-    finishGlobalUpload('cloudinary');
     setFilesToUpload([]);
   }, [filesToUpload, toast, firestore, props.onUploadComplete, isDialog, uploadVideoFormat, t, startGlobalUpload, updateGlobalProgress, finishGlobalUpload, signalCompletedUpload, canUpload]);
 
