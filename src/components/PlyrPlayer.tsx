@@ -22,15 +22,12 @@ const PlyrPlayer = forwardRef(({ source, poster, autoPlay = true, thumbnailVttUr
   const containerRef = useRef<HTMLDivElement>(null);
   const playerRef = useRef<PlyrInstance | null>(null);
   const hlsRef = useRef<Hls | null>(null);
-  const nativeVideoRef = useRef<HTMLVideoElement | null>(null);
   const isMobile = useIsMobile();
   const [isLoading, setIsLoading] = useState(true);
   const playerReadyRef = useRef(false);
 
   useImperativeHandle(ref, () => playerRef.current, []);
 
-  // iOS: skip Plyr + hls.js entirely — Safari's native HLS is faster.
-  // Desktop/Android: use Plyr with hls.js for HLS, native for mp4.
   useEffect(() => {
     let isMounted = true;
 
@@ -41,65 +38,18 @@ const PlyrPlayer = forwardRef(({ source, poster, autoPlay = true, thumbnailVttUr
 
         const isYoutube = source.includes('youtube.com') || source.includes('youtu.be');
         const isVimeo = source.includes('vimeo.com');
-        const isIOS = typeof navigator !== 'undefined' && /iPad|iPhone|iPod/.test(navigator.userAgent)
-          || (typeof navigator !== 'undefined' && navigator.platform === 'MacIntel' && (navigator as any).maxTouchPoints > 1);
 
         try {
-            // Cleanup previous
             if (playerRef.current) {
                 try { playerRef.current.destroy(); } catch {}
             }
             if (hlsRef.current) { hlsRef.current.destroy(); }
-            if (nativeVideoRef.current) { nativeVideoRef.current.pause(); nativeVideoRef.current.removeAttribute('src'); nativeVideoRef.current.load(); }
             container.innerHTML = '';
             playerRef.current = null;
             hlsRef.current = null;
-            nativeVideoRef.current = null;
             playerReadyRef.current = false;
             if (!isMounted) return;
 
-            // ── iOS: native <video> with Safari HLS ──────────────────────
-            if (isIOS && !isYoutube && !isVimeo) {
-                const video = document.createElement('video');
-                video.setAttribute('controls', '');
-                video.setAttribute('playsinline', '');
-                video.setAttribute('webkit-playsinline', 'true');
-                video.setAttribute('preload', 'auto');
-                if (poster) video.setAttribute('poster', poster);
-
-                let settled = false;
-                const done = () => {
-                    if (settled || !isMounted) return;
-                    settled = true;
-                    setIsLoading(false);
-                };
-
-                const dismissIfReady = () => {
-                    if (video.readyState >= 1) done(); // HAVE_METADATA or more
-                };
-
-                video.addEventListener('loadedmetadata', dismissIfReady, { once: true });
-                video.addEventListener('canplay', dismissIfReady, { once: true });
-                video.addEventListener('playing', done, { once: true });
-                video.addEventListener('loadeddata', done, { once: true });
-                video.addEventListener('error', done, { once: true });
-                // Poll readyState briefly in case events fire before listener attaches
-                const pollId = setInterval(() => {
-                    if (settled) { clearInterval(pollId); return; }
-                    dismissIfReady();
-                }, 100);
-                const safety = setTimeout(() => { clearInterval(pollId); done(); }, 5000);
-
-                video.src = source;
-                container.appendChild(video);
-                nativeVideoRef.current = video;
-                if (autoPlay) {
-                    video.play().catch(() => {});
-                }
-                return;
-            }
-
-            // ── Desktop/Android: Plyr + hls.js ──────────────────────────
             const { default: Plyr } = await import('plyr');
             if (!isMounted) return;
 
@@ -237,12 +187,6 @@ const PlyrPlayer = forwardRef(({ source, poster, autoPlay = true, thumbnailVttUr
     return () => {
         isMounted = false;
         if (hlsRef.current) { hlsRef.current.destroy(); hlsRef.current = null; }
-        if (nativeVideoRef.current) {
-            nativeVideoRef.current.pause();
-            nativeVideoRef.current.removeAttribute('src');
-            nativeVideoRef.current.load();
-            nativeVideoRef.current = null;
-        }
         const player = playerRef.current;
         if (player) {
             try { player.stop(); player.destroy(); } catch {}
@@ -255,19 +199,6 @@ const PlyrPlayer = forwardRef(({ source, poster, autoPlay = true, thumbnailVttUr
   // Playback control: autoplay / pause
   useEffect(() => {
     let isMounted = true;
-
-    // iOS native video
-    const nativeVid = nativeVideoRef.current;
-    if (nativeVid) {
-        if (autoPlay) {
-            nativeVid.play().catch(() => {});
-        } else {
-            nativeVid.pause();
-        }
-        return () => { isMounted = false; };
-    }
-
-    // Plyr instance
     const player = playerRef.current;
     if (player) {
         const handleReady = () => {

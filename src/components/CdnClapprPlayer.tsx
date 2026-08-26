@@ -40,10 +40,7 @@ const loadScript = (src: string, id: string): Promise<void> => {
 
 export default function CdnClapprPlayer({ source, poster, autoPlay = true, watermark }: CdnClapprPlayerProps) {
   const playerContainerRef = useRef<HTMLDivElement>(null);
-  const nativeVideoRef = useRef<HTMLVideoElement | null>(null);
   const playerRef = useRef<any>(null);
-  // Stable id — regenerating it on every render can desync Clappr's
-  // `parentId` lookup while scripts are still loading.
   const [containerId] = useState(() => `cdn-clappr-player-${Math.random().toString(36).substring(7)}`);
   
   const [isLoading, setIsLoading] = useState(true);
@@ -59,64 +56,6 @@ export default function CdnClapprPlayer({ source, poster, autoPlay = true, water
       const container = playerContainerRef.current;
       if (!container) return;
       setIsLoading(true);
-
-      const isIOS = typeof navigator !== 'undefined'
-        && (/iPad|iPhone|iPod/.test(navigator.userAgent)
-          || (navigator.platform === 'MacIntel' && (navigator as any).maxTouchPoints > 1));
-
-      // iOS: skip Clappr entirely — Safari native HLS/MP4 is faster
-      if (isIOS) {
-        try {
-          if (playerRef.current) {
-            try { playerRef.current.stop(); playerRef.current.destroy(); } catch {}
-          }
-          if (nativeVideoRef.current) {
-            nativeVideoRef.current.pause();
-            nativeVideoRef.current.removeAttribute('src');
-            nativeVideoRef.current.load();
-          }
-          container.innerHTML = '';
-          playerRef.current = null;
-          nativeVideoRef.current = null;
-
-          const video = document.createElement('video');
-          video.setAttribute('controls', '');
-          video.setAttribute('playsinline', '');
-          video.setAttribute('webkit-playsinline', 'true');
-          video.setAttribute('preload', 'auto');
-          if (poster) video.setAttribute('poster', poster);
-
-          let settled = false;
-          const done = () => {
-            if (settled || !isMounted) return;
-            settled = true;
-            setIsLoading(false);
-          };
-          const dismissIfReady = () => {
-            if (video.readyState >= 1) done();
-          };
-          video.addEventListener('loadedmetadata', dismissIfReady, { once: true });
-          video.addEventListener('canplay', dismissIfReady, { once: true });
-          video.addEventListener('playing', done, { once: true });
-          video.addEventListener('loadeddata', done, { once: true });
-          video.addEventListener('error', done, { once: true });
-          const pollId = setInterval(() => {
-            if (settled) { clearInterval(pollId); return; }
-            dismissIfReady();
-          }, 100);
-          const safety = setTimeout(() => { clearInterval(pollId); done(); }, 5000);
-
-          video.src = source;
-          container.appendChild(video);
-          nativeVideoRef.current = video;
-          if (autoPlay) video.play().catch(() => {});
-          return;
-        } catch (err) {
-          console.error('iOS native video init error:', err);
-          if (isMounted) setIsLoading(false);
-          return;
-        }
-      }
 
       try {
         await loadScript('https://cdn.jsdelivr.net/npm/@clappr/player@latest/dist/clappr.min.js', 'clappr-script');
@@ -274,12 +213,6 @@ export default function CdnClapprPlayer({ source, poster, autoPlay = true, water
         clearTimeout(spinnerSafetyRef.current);
         spinnerSafetyRef.current = null;
       }
-      if (nativeVideoRef.current) {
-        nativeVideoRef.current.pause();
-        nativeVideoRef.current.removeAttribute('src');
-        nativeVideoRef.current.load();
-        nativeVideoRef.current = null;
-      }
       const player = playerRef.current;
       if (player) {
         try {
@@ -296,17 +229,6 @@ export default function CdnClapprPlayer({ source, poster, autoPlay = true, water
 
   // Effect to control playback based on autoPlay prop
   useEffect(() => {
-    // iOS native video
-    const nativeVid = nativeVideoRef.current;
-    if (nativeVid) {
-      if (autoPlay) {
-        nativeVid.play().catch(() => {});
-      } else {
-        nativeVid.pause();
-      }
-      return;
-    }
-    // Clappr instance
     const player = playerRef.current;
     if (player && player.core) {
       if (autoPlay) {
