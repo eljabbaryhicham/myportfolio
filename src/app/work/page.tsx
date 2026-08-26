@@ -60,8 +60,32 @@ const normalizeSelfClosingMedia = (md: string) =>
 const DETAILS_MEDIA_RE = /<\s*(video|audio|img|source)\b|!\[[^\]]*\]\([^)]+\)/i;
 const hasDetailsMedia = (details?: string) => !!details && DETAILS_MEDIA_RE.test(details);
 
-// Android only: defer heavy Clappr/Plyr init past the dialog's enter
-// animation. iOS/desktop keep the original immediate behaviour.
+function isIOSDevice() {
+  if (typeof navigator === 'undefined') return false;
+  const ua = navigator.userAgent || '';
+  return /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && (navigator as any).maxTouchPoints > 1);
+}
+
+function IOSNativeVideo({ videoSrc, poster }: { videoSrc: string; poster?: string }) {
+  return (
+    // eslint-disable-next-line jsx-a11y/media-has-caption
+    <video
+      src={videoSrc}
+      poster={poster}
+      controls
+      playsInline
+      // @ts-ignore
+      webkit-playsinline="true"
+      preload="metadata"
+      crossOrigin="anonymous"
+      className="absolute inset-0 h-full w-full object-contain bg-black"
+      controlsList="nodownload"
+    />
+  );
+}
+
+// Android: defer heavy init past dialog animation. iOS: use native <video>
+// for reliable controls + no Plyr/Clappr overhead. Desktop: original.
 function LazyDetailsVideo({
   videoSrc,
   poster,
@@ -75,6 +99,7 @@ function LazyDetailsVideo({
   const [inView, setInView] = useState(false);
   const [activated, setActivated] = useState(false);
   const isAndroid = useMemo(() => typeof navigator !== 'undefined' && /Android/i.test(navigator.userAgent), []);
+  const isIOS = useMemo(() => isIOSDevice(), []);
   const [ready, setReady] = useState(false);
   const shouldLoad = inView || activated;
   useEffect(() => {
@@ -123,6 +148,9 @@ function LazyDetailsVideo({
         </div>
       </div>
     );
+  }
+  if (isIOS) {
+    return <IOSNativeVideo videoSrc={videoSrc} poster={poster} />;
   }
   return (
     <Suspense fallback={<Preloader />}>
