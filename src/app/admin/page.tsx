@@ -254,8 +254,8 @@ function AdminPage() {
               </TabsList>
               <div className="md:ml-auto">
                 <TabsList className="flex-wrap h-auto justify-center">
-                  <TabsTrigger value="media" className="glass-effect bg-blue-900/50 text-white data-[state=active]:bg-destructive data-[state=active]:animate-glow px-4 py-2">{t('admin.tabs.media')}</TabsTrigger>
-                  {isSuperAdmin && <TabsTrigger value="admins" className="glass-effect bg-blue-900/50 text-white data-[state=active]:bg-destructive data-[state=active]:animate-glow px-4 py-2">{t('admin.tabs.admins')}</TabsTrigger>}
+                  <TabsTrigger value="media" className="glass-effect text-white data-[state=active]:bg-destructive data-[state=active]:animate-glow px-4 py-2">{t('admin.tabs.media')}</TabsTrigger>
+                  {isSuperAdmin && <TabsTrigger value="admins" className="glass-effect text-white data-[state=active]:bg-destructive data-[state=active]:animate-glow px-4 py-2">{t('admin.tabs.admins')}</TabsTrigger>}
                 </TabsList>
               </div>
             </div>

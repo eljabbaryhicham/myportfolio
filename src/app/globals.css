@@ -37,7 +37,7 @@
     --border: 220 20% 85%;
     --input: 220 20% 90%;
     --ring: 0 0% 50%;
-    --glass-bg: rgba(15, 25, 40, 0.25);
+    --glass-bg: rgba(0, 0, 0, 0.25);
   }
   
   .dark {
@@ -68,7 +68,7 @@
     --border: 220 15% 20%;
     --input: 220 15% 20%;
     --ring: 0 0% 50%;
-    --glass-bg: rgba(15, 25, 40, 0.25);
+    --glass-bg: rgba(0, 0, 0, 0.25);
   }
 }
 
@@ -84,7 +84,7 @@
 @layer components {
   .glass-effect {
     @apply relative;
-    background-color: var(--glass-bg, rgba(15, 25, 40, 0.25));
+    background-color: var(--glass-bg, rgba(0, 0, 0, 0.25));
     background-image:
       linear-gradient(180deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 30%, transparent 60%),
       linear-gradient(135deg, rgba(255,255,255,0.04) 0%, transparent 50%);
@@ -107,7 +107,7 @@
 /* Outside @layer — beats Tailwind utility layer so glass-effect background
    wins over DialogContent's bg-background class. */
 .glass-effect {
-  background-color: var(--glass-bg, rgba(15, 25, 40, 0.25)) !important;
+  background-color: var(--glass-bg, rgba(0, 0, 0, 0.25)) !important;
   background-image:
     linear-gradient(180deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 30%, transparent 60%),
     linear-gradient(135deg, rgba(255,255,255,0.04) 0%, transparent 50%) !important;

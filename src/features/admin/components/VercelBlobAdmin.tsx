@@ -131,7 +131,7 @@ export default function VercelBlobAdmin({ libraryOpen: externalLibraryOpen, onLi
               uploadedBy: auth?.currentUser?.uid || null,
             } as any);
             const newId = (docRef as any)?.id || blob.pathname;
-            setNewlyUploadedId(newId);
+            setNewlyUploadedId(blob.pathname || newId);
             setTimeout(() => setNewlyUploadedId(null), 2000);
             const resourceType = file.type.startsWith('video/') ? 'video' : file.type.startsWith('image/') ? 'image' : 'raw';
             signalCompletedUpload(newId, resourceType, 'vercel_blob');
@@ -141,6 +141,7 @@ export default function VercelBlobAdmin({ libraryOpen: externalLibraryOpen, onLi
         if (lowerType.startsWith('image/')) setActiveTab('images');
         else if (lowerType.startsWith('video/')) setActiveTab('videos');
         else setActiveTab('files');
+        await new Promise((r) => setTimeout(r, 300));
         (externalOnLibraryOpenChange ?? setIsLibraryOpen)(true);
         toast({ title: 'Uploaded to Vercel Blob', description: file.name });
         await new Promise((r) => setTimeout(r, 400));

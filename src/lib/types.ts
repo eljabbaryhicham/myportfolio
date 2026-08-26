@@ -24,4 +24,5 @@ export interface HomePageSettings {
     contactSubtitle?: string;
     glassOpacity?: number;
     mediaWidth?: number;
+    showMediaTitles?: boolean;
 }

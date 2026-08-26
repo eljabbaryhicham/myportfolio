@@ -67,11 +67,13 @@ const ProjectDetailsContent = memo(function ProjectDetailsContent({
   playerType,
   onImageFullscreen,
   mediaWidth,
+  showMediaTitles = true,
 }: {
   details: string;
   playerType?: 'plyr' | 'clappr';
   onImageFullscreen?: (url: string) => void;
   mediaWidth?: number;
+  showMediaTitles?: boolean;
 }) {
   const normalizedDetails = useMemo(() => normalizeSelfClosingMedia(details), [details]);
   const widthPercent = mediaWidth && mediaWidth < 100 ? `${mediaWidth}%` : '100%';
@@ -83,7 +85,7 @@ const ProjectDetailsContent = memo(function ProjectDetailsContent({
       const filename = alt && alt !== 'media' ? alt : null;
       return (
         <div className="my-4 mx-auto rounded-lg border border-border/50 bg-muted/30 p-[2%]" style={{ maxWidth: widthPercent }}>
-          {filename && (
+          {showMediaTitles && filename && (
             <p className="mb-2 text-center text-xs text-muted-foreground truncate">{filename}</p>
           )}
           <span className="relative inline-block group/img max-w-full">
@@ -121,7 +123,7 @@ const ProjectDetailsContent = memo(function ProjectDetailsContent({
       else if (/^\d+(\.\d+)?(px|%)$/.test(w)) frameWidth = w;
       return (
         <div className="my-4 mx-auto rounded-lg border border-border/50 bg-muted/30 p-[2%]" style={{ maxWidth: widthPercent }}>
-          {filename && (
+          {showMediaTitles && filename && (
             <p className="mb-2 text-center text-xs text-muted-foreground truncate">{filename}</p>
           )}
           <div
@@ -171,7 +173,7 @@ const ProjectDetailsContent = memo(function ProjectDetailsContent({
         </div>
       );
     },
-  }), [playerType, onImageFullscreen, widthPercent]);
+  }), [playerType, onImageFullscreen, widthPercent, showMediaTitles]);
 
   return (
     <ReactMarkdown
@@ -1094,7 +1096,7 @@ export default function WorkPage() {
                 </DialogHeader>
                 <ScrollArea className="flex-1">
                     <div className="project-details prose dark:prose-invert max-w-none space-y-4 text-sm text-foreground/80 p-4 md:p-6">
-                        <ProjectDetailsContent details={selectedItem.details || ''} playerType={workPagePlayer} onImageFullscreen={setFullscreenImageUrl} mediaWidth={homeSettings?.mediaWidth} />
+                        <ProjectDetailsContent details={selectedItem.details || ''} playerType={workPagePlayer} onImageFullscreen={setFullscreenImageUrl} mediaWidth={homeSettings?.mediaWidth} showMediaTitles={homeSettings?.showMediaTitles ?? true} />
                     </div>
                 </ScrollArea>
                  <DialogClose className={cn(

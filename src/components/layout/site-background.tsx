@@ -158,14 +158,14 @@ export function DynamicThemeStyles() {    const firestore = useFirestore();
             --accent: ${primary};
             --destructive: ${primary};
             --ring: ${primary};
-            --glass-bg: rgba(15, 25, 40, ${glassOpacity});
+            --glass-bg: rgba(0, 0, 0, ${glassOpacity});
         }
         .dark {
             --primary: ${primary};
             --accent: ${primary};
             --destructive: ${primary};
             --ring: ${primary};
-            --glass-bg: rgba(15, 25, 40, ${glassOpacity});
+            --glass-bg: rgba(0, 0, 0, ${glassOpacity});
         }
       `}</style>
     );

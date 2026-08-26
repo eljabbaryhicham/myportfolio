@@ -85,6 +85,7 @@ interface HomePageSettings {
     faviconUrl?: string;
     glassOpacity?: number;
     mediaWidth?: number;
+    showMediaTitles?: boolean;
 }
 
 const settingsSchema = z.object({
@@ -121,6 +122,7 @@ const settingsSchema = z.object({
   faviconUrl: z.string().optional(),
   glassOpacity: z.number().min(0).max(100).optional(),
   mediaWidth: z.number().min(10).max(100).optional(),
+  showMediaTitles: z.boolean().optional(),
 });
 
 type SettingsFormValues = z.infer<typeof settingsSchema>;
@@ -199,6 +201,7 @@ export default function HomeAdmin() {
       faviconUrl: '',
       glassOpacity: 25,
       mediaWidth: 100,
+      showMediaTitles: true,
     },
   });
 
@@ -241,6 +244,7 @@ export default function HomeAdmin() {
         faviconUrl: homeSettings.faviconUrl || '',
         glassOpacity: homeSettings.glassOpacity ?? 25,
         mediaWidth: homeSettings.mediaWidth ?? 100,
+        showMediaTitles: homeSettings.showMediaTitles ?? true,
       });
     }
   }, [homeSettings, form]);
@@ -527,8 +531,29 @@ export default function HomeAdmin() {
                                             </FormItem>
                                         )}
                                     />
-                                      <Separator />
 
+                                    <FormField
+                                        control={control}
+                                        name="showMediaTitles"
+                                        render={({ field }) => (
+                                            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
+                                                <div className="space-y-0.5">
+                                                    <FormLabel>Show Media Titles</FormLabel>
+                                                    <FormDescription>
+                                                        Show filename titles above images and videos in project descriptions.
+                                                    </FormDescription>
+                                                </div>
+                                                <FormControl>
+                                                    <Switch
+                                                        checked={field.value ?? true}
+                                                        onCheckedChange={field.onChange}
+                                                    />
+                                                </FormControl>
+                                            </FormItem>
+                                        )}
+                                    />
+
+                                    <Separator />
                                      <h3 className="font-headline text-lg pt-4">{t('homeAdmin.backgroundsHeading')}</h3>
 
                                      {/* Homepage background */}
