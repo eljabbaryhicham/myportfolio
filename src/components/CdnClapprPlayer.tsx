@@ -112,8 +112,13 @@ const CdnClapprPlayer = forwardRef(function CdnClapprPlayer({ source, poster, au
             hlsjsConfig: {
               startLevel: -1,
               capLevelToPlayerSize: true,
-              maxBufferLength: isMobile ? 30 : 60,
-              maxMaxBufferLength: isMobile ? 60 : 120,
+              maxBufferLength: isMobile ? 20 : 30,
+              maxMaxBufferLength: isMobile ? 40 : 60,
+              // Conservative ABR estimate: avoid leaping straight to the highest
+              // rendition on large-screen/iOS-fallback players (causes stutter).
+              abrEwmaDefaultEstimate: 3000000,
+              abrBandWidthFactor: 0.85,
+              abrBandWidthUpFactor: 0.9,
               enableWorker: true,
               lowLatencyMode: false,
             },

@@ -14,9 +14,24 @@ export default function UploadProgressNotification() {
   const router = useRouter();
 
   const [completed, setCompleted] = useState<Array<{ provider: 'vercel' | 'cloudinary'; fileName: string; id: number }>>([]);
+  const [dismissedActive, setDismissedActive] = useState<Array<'vercel' | 'cloudinary'>>([]);
   const prevVercelUploading = useRef(vercel.isUploading);
   const prevCloudinaryUploading = useRef(cloudinary.isUploading);
   const nextId = useRef(0);
+
+  // Re-show an active upload's card whenever a fresh upload starts for that
+  // provider (dismiss only affects the current run, not future uploads).
+  useEffect(() => {
+    if (vercel.isUploading && vercel.fileName) {
+      setDismissedActive(prev => prev.filter(p => p !== 'vercel'));
+    }
+  }, [vercel.isUploading, vercel.fileName]);
+
+  useEffect(() => {
+    if (cloudinary.isUploading && cloudinary.fileName) {
+      setDismissedActive(prev => prev.filter(p => p !== 'cloudinary'));
+    }
+  }, [cloudinary.isUploading, cloudinary.fileName]);
 
   useEffect(() => {
     if (prevVercelUploading.current && !vercel.isUploading && vercel.fileName) {
@@ -62,6 +77,7 @@ export default function UploadProgressNotification() {
   ].filter(Boolean) as Array<{ isUploading: boolean; progress: number; fileName: string; provider: 'vercel' | 'cloudinary' }>;
 
   const visibleActiveUploads = activeUploads.filter((u) => {
+    if (dismissedActive.includes(u.provider)) return false;
     if (pathname !== '/admin') return true;
     if (u.provider === 'vercel' && activeMediaTab === 'vercel') return false;
     if (u.provider === 'cloudinary' && activeMediaTab === 'cloudinary') return false;
@@ -84,15 +100,27 @@ export default function UploadProgressNotification() {
                 <p className="text-xs text-muted-foreground truncate">{u.fileName}</p>
               </div>
             </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-8 w-8 p-0 shrink-0"
-              onClick={() => goToMediaTab(u.provider)}
-              title="Open in media library"
-            >
-              <FontAwesomeIcon icon={faArrowUpRightFromSquare} className="h-4 w-4" />
-            </Button>
+            <div className="flex items-center gap-1 shrink-0">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-8 w-8 p-0 shrink-0"
+                onClick={() => goToMediaTab(u.provider)}
+                title="Open in media library"
+              >
+                <FontAwesomeIcon icon={faArrowUpRightFromSquare} className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-8 w-8 p-0 shrink-0"
+                onClick={() => setDismissedActive(prev => [...prev, u.provider])}
+                title="Dismiss"
+                aria-label="Dismiss"
+              >
+                <FontAwesomeIcon icon={faXmark} className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
           <div className="mt-3">
             <Progress value={u.progress} className="h-2" />

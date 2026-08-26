@@ -62,7 +62,9 @@ const PlyrPlayer = forwardRef(({ source, poster, autoPlay = true, thumbnailVttUr
                 const video = document.createElement('video');
                 video.setAttribute('playsinline', '');
                 video.setAttribute('controls', '');
-                video.setAttribute('preload', 'metadata');
+                // 'auto' starts downloading immediately (poster shows while it
+                // loads) — 'metadata' on a large file made playback start slow.
+                video.setAttribute('preload', 'auto');
                 const isAndroid = typeof navigator !== 'undefined' && /Android/i.test(navigator.userAgent);
                 if (isAndroid) {
                     video.setAttribute('webkit-playsinline', '');
@@ -131,8 +133,14 @@ const PlyrPlayer = forwardRef(({ source, poster, autoPlay = true, thumbnailVttUr
                 const hls = new Hls({
                     startLevel: -1,
                     capLevelToPlayerSize: true,
-                    maxBufferLength: isMobile ? 30 : 60,
-                    maxMaxBufferLength: isMobile ? 60 : 120,
+                    maxBufferLength: isMobile ? 20 : 30,
+                    maxMaxBufferLength: isMobile ? 40 : 60,
+                    // Conservative assumed bandwidth so ABR doesn't leap to the
+                    // highest (e.g. 1080p) rendition on a large desktop player
+                    // before real throughput is known — the #1 cause of stall.
+                    abrEwmaDefaultEstimate: 3_000_000,
+                    abrBandWidthFactor: 0.85,
+                    abrBandWidthUpFactor: 0.9,
                     enableWorker: true,
                     lowLatencyMode: false,
                 });
