@@ -44,14 +44,16 @@ function formatBytes(bytes: number) {
   return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
 }
 
-export default function VercelBlobAdmin({ libraryOpen: externalLibraryOpen, onLibraryOpenChange: externalOnLibraryOpenChange, newlyUploadedId: externalNewlyUploadedId, onUploadComplete }: { libraryOpen?: boolean; onLibraryOpenChange?: (open: boolean) => void; newlyUploadedId?: string | null; onUploadComplete?: (docId: string, resourceType: 'image' | 'video' | 'raw') => void } = {}) {
+export default function VercelBlobAdmin({ libraryOpen: externalLibraryOpen, onLibraryOpenChange: externalOnLibraryOpenChange, newlyUploadedId: externalNewlyUploadedId, onUploadComplete, activeTab: controlledActiveTab, setActiveTab: controlledSetActiveTab }: { libraryOpen?: boolean; onLibraryOpenChange?: (open: boolean) => void; newlyUploadedId?: string | null; onUploadComplete?: (docId: string, resourceType: 'image' | 'video' | 'raw') => void; activeTab?: 'images' | 'videos' | 'files'; setActiveTab?: (tab: 'images' | 'videos' | 'files') => void } = {}) {
   const { t } = useTranslation();
   const { toast } = useToast();
   const firestore = useFirestore();
   const auth = useAuth();
   const { isUploading: globalIsUploading, progress: globalProgress, fileName: globalFileName, provider: globalProvider, startUpload, updateProgress: updateGlobalProgress, finishUpload, signalCompletedUpload } = useUploadProgress();
 
-  const [activeTab, setActiveTab] = useState<'images' | 'videos' | 'files'>('images');
+  const [internalActiveTab, setInternalActiveTab] = useState<'images' | 'videos' | 'files'>('images');
+  const activeTab = controlledActiveTab ?? internalActiveTab;
+  const setActiveTab = controlledSetActiveTab ?? setInternalActiveTab;
   const [searchQuery, setSearchQuery] = useState('');
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);

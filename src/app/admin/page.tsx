@@ -50,6 +50,7 @@ function AdminPage() {
   const [dialogActiveLibrary, setDialogActiveLibrary] = useState<'primary' | 'extented'>('primary');
   const [innerMediaTab, setInnerMediaTab] = useState('cloudinary');
   const [isVercelLibraryOpen, setIsVercelLibraryOpen] = useState(false);
+  const [vercelActiveTab, setVercelActiveTab] = useState<'images' | 'videos' | 'files'>('images');
   const { setActiveMediaTab, completedUpload, consumeCompletedUpload } = useUploadProgress();
 
   const typedUser = user as AppUser | null;
@@ -95,6 +96,7 @@ function AdminPage() {
     }
     if (libraryId === 'vercel_blob') {
       setInnerMediaTab('vercel');
+      setVercelActiveTab(resourceType === 'video' ? 'videos' : resourceType === 'raw' ? 'files' : 'images');
       setIsVercelLibraryOpen(true);
     } else {
       setDialogActiveTab(resourceType === 'video' ? 'videos' : resourceType === 'raw' ? 'files' : 'images');
@@ -222,8 +224,9 @@ function AdminPage() {
     setNewlyUploadedId(docId);
     if (activeTab !== 'media') setActiveTab('media');
     setInnerMediaTab('vercel');
+    setVercelActiveTab(resourceType === 'video' ? 'videos' : resourceType === 'raw' ? 'files' : 'images');
     setIsVercelLibraryOpen(true);
-    setTimeout(() => setNewlyUploadedId(null), 2500);
+    setTimeout(() => setNewlyUploadedId(null), 3000);
   };
 
   if (isUserLoading || !user) {
@@ -296,7 +299,7 @@ function AdminPage() {
                       <MediaAdmin onUploadComplete={handleUploadComplete} onLibraryOpenRequest={() => setIsLibraryOpen(true)} onMediaSelect={handleOpenPortfolioFormWithMedia} />
                     </TabsContent>
                     <TabsContent value="vercel" forceMount className="data-[state=inactive]:hidden">
-                      <VercelBlobAdmin libraryOpen={isVercelLibraryOpen} onLibraryOpenChange={setIsVercelLibraryOpen} newlyUploadedId={newlyUploadedId} onUploadComplete={handleVercelUploadComplete} />
+                      <VercelBlobAdmin libraryOpen={isVercelLibraryOpen} onLibraryOpenChange={setIsVercelLibraryOpen} newlyUploadedId={newlyUploadedId} onUploadComplete={handleVercelUploadComplete} activeTab={vercelActiveTab} setActiveTab={setVercelActiveTab} />
                     </TabsContent>
                   </Tabs>
               </TabsContent>

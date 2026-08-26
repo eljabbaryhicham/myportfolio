@@ -59,10 +59,57 @@ const normalizeSelfClosingMedia = (md: string) =>
 const DETAILS_MEDIA_RE = /<\s*(video|audio|img|source)\b|!\[[^\]]*\]\([^)]+\)/i;
 const hasDetailsMedia = (details?: string) => !!details && DETAILS_MEDIA_RE.test(details);
 
-// Heavy video players (Clappr/Plyr + hls.js) are expensive on mobile —
+function isAndroidDevice() {
+  if (typeof navigator === 'undefined') return false;
+  return /Android/i.test(navigator.userAgent || (navigator as any).userAgentData?.platform || '');
+}
+
+// Lightweight native video for Android: no Clappr/Plyr, no extra CDN scripts.
+// For .m3u8, attach hls.js directly to a <video> element (single dynamic import).
+function AndroidLightVideo({ videoSrc, poster }: { videoSrc: string; poster?: string }) {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+    const isHls = videoSrc.includes('.m3u8');
+    if (!isHls) return;
+    // Native HLS (unlikely on Android Chrome) would just work via src
+    if (video.canPlayType('application/vnd.apple.mpegurl')) return;
+    let hls: any = null;
+    let cancelled = false;
+    import('hls.js').then(({ default: Hls }) => {
+      if (cancelled || !video || !Hls.isSupported()) return;
+      hls = new Hls({ startLevel: 0, capLevelToPlayerSize: true });
+      hls.loadSource(videoSrc);
+      hls.attachMedia(video);
+    });
+    return () => { cancelled = true; try { hls?.destroy(); } catch {} };
+  }, [videoSrc]);
+  const isHls = videoSrc.includes('.m3u8');
+  const canNativeHls = typeof document !== 'undefined' && (() => {
+    const v = document.createElement('video');
+    return !!v.canPlayType('application/vnd.apple.mpegurl');
+  })();
+  return (
+    // eslint-disable-next-line jsx-a11y/media-has-caption
+    <video
+      ref={videoRef}
+      src={!isHls || canNativeHls ? videoSrc : undefined}
+      poster={poster}
+      controls
+      playsInline
+      preload="metadata"
+      className="absolute inset-0 h-full w-full object-contain bg-black"
+      controlsList="nodownload"
+    />
+  );
+}
+
+// Heavy players (Clappr/Plyr + hls.js) are expensive on mobile —
 // mounting 3+ at once in project details stalls Android. Render a cheap
 // poster + tap-to-load placeholder and only mount the real player when the
 // element is visible (IntersectionObserver) or the user taps play.
+// On Android the heavy players are bypassed entirely for a native <video>.
 function LazyDetailsVideo({
   videoSrc,
   poster,
@@ -76,6 +123,7 @@ function LazyDetailsVideo({
   const [inView, setInView] = useState(false);
   const [activated, setActivated] = useState(false);
   const shouldLoad = inView || activated;
+  const android = useMemo(() => isAndroidDevice(), []);
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
@@ -115,6 +163,9 @@ function LazyDetailsVideo({
         </div>
       </div>
     );
+  }
+  if (android) {
+    return <AndroidLightVideo videoSrc={videoSrc} poster={poster} />;
   }
   return (
     <Suspense fallback={<Preloader />}>
