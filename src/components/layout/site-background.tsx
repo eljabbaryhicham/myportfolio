@@ -142,7 +142,7 @@ export function DynamicThemeStyles() {    const firestore = useFirestore();
     const themeColor = homeSettings?.themeColor;
     const primaryHsl = themeColor ? hexToHsl(themeColor) : null;
     const glassOpacity = (homeSettings?.glassOpacity ?? 25) / 100;
-    const glassTransparency = (homeSettings?.glassTransparency ?? 100) / 100;
+    const glassTransparency = Math.max((homeSettings?.glassTransparency ?? 100) / 100, 0.05);
 
     useEffect(() => {
       if (primaryHsl) {
