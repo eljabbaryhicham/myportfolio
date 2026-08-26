@@ -363,11 +363,25 @@ html, body {
   display: block;
 }
 /* Mobile/iOS: browsers can fall back to the media's intrinsic size despite
-   percentage widths — pin the media to ALL four edges of its wrapper (and
-   zero its margins) so nothing can nudge it off-center inside the frame. */
+    percentage widths — pin the media to ALL four edges of its wrapper (and
+    zero its margins) so nothing can nudge it off-center inside the frame. */
 .details-video-frame video,
 .details-video-frame iframe {
   position: absolute;
   inset: 0 !important;
   margin: 0 !important;
+}
+/* Android perf: project-details may contain several videos. Offscreen frames
+   must not keep decoders/layout alive. Browser skips rendering until scrolled
+   into view. Presentational cost of glass gradients is also reduced on
+   coarse pointers (covers most Android devices). */
+.details-video-frame {
+  content-visibility: auto;
+  contain-intrinsic-size: 400px 225px;
+  contain: layout paint style;
+}
+@media (pointer: coarse) {
+  .details-video-frame {
+    will-change: auto;
+  }
 }

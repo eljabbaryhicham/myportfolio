@@ -86,6 +86,7 @@ interface HomePageSettings {
     glassOpacity?: number;
     mediaWidth?: number;
     showMediaTitles?: boolean;
+    glassColor?: string;
 }
 
 const settingsSchema = z.object({
@@ -123,6 +124,7 @@ const settingsSchema = z.object({
   glassOpacity: z.number().min(0).max(100).optional(),
   mediaWidth: z.number().min(10).max(100).optional(),
   showMediaTitles: z.boolean().optional(),
+  glassColor: z.string().optional(),
 });
 
 type SettingsFormValues = z.infer<typeof settingsSchema>;
@@ -202,6 +204,7 @@ export default function HomeAdmin() {
       glassOpacity: 25,
       mediaWidth: 100,
       showMediaTitles: true,
+      glassColor: '#000000',
     },
   });
 
@@ -245,6 +248,7 @@ export default function HomeAdmin() {
         glassOpacity: homeSettings.glassOpacity ?? 25,
         mediaWidth: homeSettings.mediaWidth ?? 100,
         showMediaTitles: homeSettings.showMediaTitles ?? true,
+        glassColor: homeSettings.glassColor || '#000000',
       });
     }
   }, [homeSettings, form]);
@@ -717,7 +721,7 @@ export default function HomeAdmin() {
                                         )}
                                      />
 
-                                    <FormField
+                                     <FormField
                                         control={control}
                                         name="glassOpacity"
                                         render={({ field }) => (
@@ -738,6 +742,26 @@ export default function HomeAdmin() {
                                                 </FormControl>
                                                 <FormDescription>
                                                     Controls the opacity of the dark background layer on glass panels (0% = invisible, 100% = fully black).
+                                                </FormDescription>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+
+                                    <FormField
+                                        control={control}
+                                        name="glassColor"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>Glass Color</FormLabel>
+                                                <div className="flex items-center gap-4">
+                                                    <FormControl>
+                                                        <Input type="color" {...field} value={field.value || '#000000'} className="p-1 h-10 w-14 cursor-pointer" />
+                                                    </FormControl>
+                                                    <Input type="text" {...field} value={field.value || '#000000'} placeholder="#000000" />
+                                                </div>
+                                                <FormDescription>
+                                                    Base color for glass panels (combined with opacity above). Default black (#000000).
                                                 </FormDescription>
                                                 <FormMessage />
                                             </FormItem>

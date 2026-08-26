@@ -25,4 +25,5 @@ export interface HomePageSettings {
     glassOpacity?: number;
     mediaWidth?: number;
     showMediaTitles?: boolean;
+    glassColor?: string;
 }

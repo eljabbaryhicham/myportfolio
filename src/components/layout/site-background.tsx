@@ -142,6 +142,16 @@ export function DynamicThemeStyles() {    const firestore = useFirestore();
     const themeColor = homeSettings?.themeColor;
     const primaryHsl = themeColor ? hexToHsl(themeColor) : null;
     const glassOpacity = (homeSettings?.glassOpacity ?? 25) / 100;
+    const hexToRgb = (hex: string): [number, number, number] | null => {
+      if (!hex?.startsWith('#')) return null;
+      const v = hex.replace('#', '');
+      const full = v.length === 3 ? v.split('').map(c => c + c).join('') : v;
+      if (full.length !== 6) return null;
+      const n = parseInt(full, 16);
+      if (isNaN(n)) return null;
+      return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+    };
+    const glassRgb = hexToRgb(homeSettings?.glassColor || '#000000') || [0, 0, 0];
 
     useEffect(() => {
       if (primaryHsl) {
@@ -158,14 +168,14 @@ export function DynamicThemeStyles() {    const firestore = useFirestore();
             --accent: ${primary};
             --destructive: ${primary};
             --ring: ${primary};
-            --glass-bg: rgba(0, 0, 0, ${glassOpacity});
+            --glass-bg: rgba(${glassRgb[0]}, ${glassRgb[1]}, ${glassRgb[2]}, ${glassOpacity});
         }
         .dark {
             --primary: ${primary};
             --accent: ${primary};
             --destructive: ${primary};
             --ring: ${primary};
-            --glass-bg: rgba(0, 0, 0, ${glassOpacity});
+            --glass-bg: rgba(${glassRgb[0]}, ${glassRgb[1]}, ${glassRgb[2]}, ${glassOpacity});
         }
       `}</style>
     );

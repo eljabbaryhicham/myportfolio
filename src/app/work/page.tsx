@@ -73,13 +73,12 @@ function AndroidLightVideo({ videoSrc, poster }: { videoSrc: string; poster?: st
     if (!video) return;
     const isHls = videoSrc.includes('.m3u8');
     if (!isHls) return;
-    // Native HLS (unlikely on Android Chrome) would just work via src
     if (video.canPlayType('application/vnd.apple.mpegurl')) return;
     let hls: any = null;
     let cancelled = false;
     import('hls.js').then(({ default: Hls }) => {
       if (cancelled || !video || !Hls.isSupported()) return;
-      hls = new Hls({ startLevel: 0, capLevelToPlayerSize: true });
+      hls = new Hls({ startLevel: 0, capLevelToPlayerSize: true, maxBufferLength: 10 });
       hls.loadSource(videoSrc);
       hls.attachMedia(video);
     });
@@ -98,9 +97,13 @@ function AndroidLightVideo({ videoSrc, poster }: { videoSrc: string; poster?: st
       poster={poster}
       controls
       playsInline
-      preload="metadata"
-      className="absolute inset-0 h-full w-full object-contain bg-black"
+      preload="none"
+      className="block w-full h-full object-contain bg-black"
       controlsList="nodownload"
+      // Isolate this video from the main page's compositing — prevents the
+      // background blur/filter and glass panels from forcing a repaint of the
+      // decoder output on low-end Android GPUs.
+      style={{ contentVisibility: 'auto' as any, containIntrinsicSize: '400px 225px' } as any}
     />
   );
 }
@@ -122,12 +125,16 @@ function LazyDetailsVideo({
   const ref = useRef<HTMLDivElement>(null);
   const [inView, setInView] = useState(false);
   const [activated, setActivated] = useState(false);
-  const shouldLoad = inView || activated;
   const android = useMemo(() => isAndroidDevice(), []);
+  // On Android, mounting several decoders at once (one per embedded video)
+  // overwhelms the hardware decoder. Only the explicitly tapped video mounts;
+  // the scroll-triggered preload stays desktop-only.
+  const shouldLoad = android ? activated : (inView || activated);
   useEffect(() => {
+    if (android) return; // Android: no scroll preload — tap only
     const el = ref.current;
     if (!el) return;
-    if (activated) return; // already loaded, no need to observe
+    if (activated) return;
     const io = new IntersectionObserver(
       (entries) => {
         if (entries[0]?.isIntersecting) {
@@ -139,7 +146,7 @@ function LazyDetailsVideo({
     );
     io.observe(el);
     return () => io.disconnect();
-  }, [activated]);
+  }, [activated, android]);
   if (!shouldLoad) {
     return (
       <div
@@ -153,7 +160,7 @@ function LazyDetailsVideo({
       >
         {poster ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={poster} alt="" className="absolute inset-0 h-full w-full object-cover opacity-70" />
+          <img src={poster} alt="" className="absolute inset-0 h-full w-full object-cover opacity-70" loading="lazy" decoding="async" />
         ) : null}
         <div className="relative z-10 flex flex-col items-center gap-2 text-white/90">
           <span className="flex h-14 w-14 items-center justify-center rounded-full bg-white/15 backdrop-blur-md border border-white/20 shadow-lg">
@@ -165,7 +172,14 @@ function LazyDetailsVideo({
     );
   }
   if (android) {
-    return <AndroidLightVideo videoSrc={videoSrc} poster={poster} />;
+    // Rendered inside the aspect-video frame but with a lightweight wrapper
+    // that avoids the global `details-video-frame >* { position:absolute; inset:0; ... }`
+    // overrides which force extra compositor layers per video.
+    return (
+      <div className="absolute inset-0 flex items-center justify-center bg-black">
+        <AndroidLightVideo videoSrc={videoSrc} poster={poster} />
+      </div>
+    );
   }
   return (
     <Suspense fallback={<Preloader />}>
@@ -726,6 +740,25 @@ export default function WorkPage() {
         }
     }
   }, [isDialogOpen]);
+
+  // Android: the full-screen SiteBackground video (if enabled) keeps a hardware
+  // decoder alive underneath the project dialogs. On low-end Android that
+  // decoder competes with the details-embedded videos and makes them stutter.
+  // Pause the background video while any dialog is open and resume after.
+  useEffect(() => {
+    if (typeof document === 'undefined') return;
+    const bgVideo = document.querySelector('div.-z-10 video') as HTMLVideoElement | null;
+    if (!bgVideo) return;
+    if (!!selectedItem || isDetailsModalOpen || isContactFormOpen || !!fullscreenImageUrl) {
+      if (!bgVideo.paused) {
+        bgVideo.pause();
+        (bgVideo as any)._pausedByDialog = true;
+      }
+    } else if ((bgVideo as any)._pausedByDialog) {
+      delete (bgVideo as any)._pausedByDialog;
+      bgVideo.play().catch(() => {});
+    }
+  }, [selectedItem, isDetailsModalOpen, isContactFormOpen, fullscreenImageUrl]);
 
 
   const showMoreItems = () => {
