@@ -92,10 +92,19 @@ export default function CdnClapprPlayer({ source, poster, autoPlay = true, water
             settled = true;
             setIsLoading(false);
           };
+          const dismissIfReady = () => {
+            if (video.readyState >= 1) done();
+          };
+          video.addEventListener('loadedmetadata', dismissIfReady, { once: true });
+          video.addEventListener('canplay', dismissIfReady, { once: true });
           video.addEventListener('playing', done, { once: true });
           video.addEventListener('loadeddata', done, { once: true });
           video.addEventListener('error', done, { once: true });
-          const safety = setTimeout(done, 15000);
+          const pollId = setInterval(() => {
+            if (settled) { clearInterval(pollId); return; }
+            dismissIfReady();
+          }, 100);
+          const safety = setTimeout(() => { clearInterval(pollId); done(); }, 5000);
 
           video.src = source;
           container.appendChild(video);
