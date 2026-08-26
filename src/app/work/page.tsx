@@ -686,11 +686,11 @@ export default function WorkPage() {
     }
   }, [isDialogOpen]);
 
-  // SiteBackground's full-screen video keeps a decoder alive under dialogs.
-  // On Android that competes with details-embedded Plyr/Clappr decoders and
-  // the glass compositor, making video stutter. Pause (and hide from the
-  // compositor tree) while any work-page dialog is open.
+  // Android only: full-screen SiteBackground decoder competes with
+  // details Plyr/Clappr decoders + glass. iOS must not receive this
+  // (Android fix regresses iOS playback).
   useEffect(() => {
+    if (typeof navigator !== 'undefined' && !/Android/i.test(navigator.userAgent)) return;
     if (typeof document === 'undefined') return;
     const bgWrap = document.querySelector('div.-z-10') as HTMLElement | null;
     const bgVideo = bgWrap?.querySelector('video') as HTMLVideoElement | null;
@@ -1206,7 +1206,7 @@ export default function WorkPage() {
             {selectedItem && (
                 <>
                 <DialogHeader className="p-4 md:p-6 pb-0 min-w-0">
-                    <DialogTitle className="font-headline">{t('work.details.title').replace('{title}', selectedItem.title)}</DialogTitle>
+                    <DialogTitle className="font-headline text-base sm:text-lg md:text-xl break-words leading-tight hyphens-auto">{t('work.details.title').replace('{title}', selectedItem.title)}</DialogTitle>
                 </DialogHeader>
                 <ScrollArea className="flex-1 min-w-0 [&>div>div]:!block [&>div>div]:min-w-0 [&>div>div]:w-full">
                     <div className="project-details prose prose-sm sm:prose-base dark:prose-invert max-w-full w-full min-w-0 overflow-hidden break-words space-y-4 text-xs sm:text-sm text-foreground/80 p-3 sm:p-4 md:p-6 box-border prose-p:my-2 prose-p:leading-relaxed prose-headings:break-words prose-h1:text-lg sm:prose-h1:text-xl prose-h2:text-base sm:prose-h2:text-lg prose-h3:text-sm sm:prose-h3:text-base prose-li:text-xs sm:prose-li:text-sm prose-a:break-all">

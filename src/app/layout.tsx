@@ -61,6 +61,9 @@ export default function RootLayout({
             window.addEventListener('orientationchange',function(){setTimeout(setAppHeight,150)});
           })()`
         }} />
+        <script dangerouslySetInnerHTML={{
+          __html: `(function(){try{var ua=navigator.userAgent||'';if(/Android/i.test(ua))document.documentElement.classList.add('is-android');if(/iPad|iPhone|iPod/.test(ua)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1))document.documentElement.classList.add('is-ios');}catch(e){}})()`
+        }} />
       </head>
       <body className={cn('font-body antialiased text-center h-full')} style={{ background: '#000' }} suppressHydrationWarning>
         <AppShell>
