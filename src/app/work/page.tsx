@@ -60,12 +60,11 @@ const normalizeSelfClosingMedia = (md: string) =>
 const DETAILS_MEDIA_RE = /<\s*(video|audio|img|source)\b|!\[[^\]]*\]\([^)]+\)/i;
 const hasDetailsMedia = (details?: string) => !!details && DETAILS_MEDIA_RE.test(details);
 
-// Keep the configured player (Plyr/Clappr) on all devices — including
-// iOS Safari/Chrome — the stall is not the player itself but the
-// surrounding compositing/decoders. Each frame is mounted lazily so
-// off-screen videos don't allocate decoders, and the heavy work (script
-// fetch + Clappr init) is deferred until the dialog's enter animation
-// has finished, so it doesn't compete with framer-motion and glass paint.
+// Android only: the stall is the surrounding compositing/decoders.
+// Defer heavy work (script fetch + Clappr init) past the dialog's enter
+// animation so it doesn't compete with framer-motion and glass paint.
+// iOS/desktop keep the original immediate lazy behaviour — no Android
+// fixes are applied to them.
 function LazyDetailsVideo({
   videoSrc,
   poster,
@@ -78,12 +77,14 @@ function LazyDetailsVideo({
   const ref = useRef<HTMLDivElement>(null);
   const [inView, setInView] = useState(false);
   const [activated, setActivated] = useState(false);
+  const isAndroid = useMemo(() => typeof navigator !== 'undefined' && /Android/i.test(navigator.userAgent), []);
   const [ready, setReady] = useState(false);
   const shouldLoad = inView || activated;
   useEffect(() => {
+    if (!isAndroid) { setReady(true); return; }
     const t = setTimeout(() => setReady(true), 420);
     return () => clearTimeout(t);
-  }, []);
+  }, [isAndroid]);
   useEffect(() => {
     if (!ready) return;
     const el = ref.current;
