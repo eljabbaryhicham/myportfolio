@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import Lottie from 'lottie-react';
 const FALLBACK_GIF = 'https://res.cloudinary.com/dsq1lxrqi/image/upload/f_auto,q_auto/v1787348899/honey_badger_alive__gyx22e.gif';
 import { useDoc, useFirestore, useMemoFirebase } from '@/firebase';
 import { doc } from 'firebase/firestore';
@@ -15,6 +14,19 @@ interface PreloaderSettings {
 let cachedSettings: PreloaderSettings | null = null;
 let cacheTimestamp = 0;
 const CACHE_TTL = 30000;
+
+// Lazy-load lottie-react (~300 KB) only when a Lottie animation is actually
+// rendered, keeping the default GIF/preloader path lightweight.
+const LazyLottie = ({ animationData }: { animationData: any }) => {
+  const [LottieComp, setLottieComp] = useState<any>(null);
+  useEffect(() => {
+    let cancelled = false;
+    import('lottie-react').then((mod) => { if (!cancelled) setLottieComp(() => mod.default); });
+    return () => { cancelled = true; };
+  }, []);
+  if (!LottieComp) return null;
+  return <LottieComp animationData={animationData} loop={true} />;
+};
 
 const DefaultLottie = ({ url, size }: { url?: string; size?: number }) => {
   const [lottieData, setLottieData] = useState<any>(null);
@@ -39,7 +51,7 @@ const DefaultLottie = ({ url, size }: { url?: string; size?: number }) => {
     return (
       <div className="flex items-center justify-center w-full h-full">
         <div style={{ width: `${pct}%`, height: `${pct}%` }}>
-          <Lottie animationData={lottieData} loop={true} />
+          <LazyLottie animationData={lottieData} />
         </div>
       </div>
     );

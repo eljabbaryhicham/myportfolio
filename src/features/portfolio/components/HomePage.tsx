@@ -18,8 +18,6 @@ import TrustedBy from "./TrustedBy";
 import { useDoc, useFirestore, useMemoFirebase } from "@/firebase";
 import { doc } from "firebase/firestore";
 import { useTranslation } from "@/lib/i18n/useTranslation";
-import Hls from "hls.js";
-
 const HERO_VIDEO_URL = "https://res.cloudinary.com/dsq1lxrqi/video/upload/sp_auto/pg_5/v1778867307/Ovi_Motion_Design_v3kfy0.m3u8";
 const HERO_VIDEO_POSTER = "https://res.cloudinary.com/dsq1lxrqi/image/upload/so_0,f_auto,q_auto/v1778867307/Ovi_Motion_Design_v3kfy0.jpg";
 
@@ -215,18 +213,27 @@ export default function HomePageContent() {
     if (!video || !videoUrl || videoUrl === HERO_VIDEO_URL) return;
 
     if (videoUrl.includes('.m3u8')) {
-      if (Hls.isSupported()) {
-        const hls = new Hls({ startLevel: -1 });
+      let hls: any;
+      let cancelled = false;
+      (async () => {
+        // Lazy-load hls.js only when an adaptive-stream hero is configured, so
+        // the ~500 KB tracker stays out of the public bundle until needed.
+        const { default: Hls } = await import('hls.js');
+        if (cancelled || !Hls.isSupported()) {
+          if (!Hls.isSupported() && video.canPlayType('application/vnd.apple.mpegurl')) {
+            video.src = videoUrl;
+            video.play().catch(() => {});
+          }
+          return;
+        }
+        hls = new Hls({ startLevel: -1 });
         hls.loadSource(videoUrl);
         hls.attachMedia(video);
         hls.on(Hls.Events.MANIFEST_PARSED, () => {
           video.play().catch(() => {});
         });
-        return () => { hls.destroy(); };
-      } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-        video.src = videoUrl;
-        video.play().catch(() => {});
-      }
+      })();
+      return () => { cancelled = true; if (hls) hls.destroy(); };
     } else {
       video.src = videoUrl;
       video.play().catch(() => {});

@@ -25,14 +25,16 @@ import { Separator } from '@/components/ui/separator';
 import Preloader from '@/components/preloader';
 import { useIsExtraWide } from '@/hooks/use-is-extra-wide';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { PortfolioItemFormSheet } from '@/features/admin/components/PortfolioItemForm';
-import UnifiedMediaPicker from '@/features/admin/components/UnifiedMediaPicker';
 import { useToast } from '@/hooks/use-toast';
 import { motion, AnimatePresence, PanInfo, useDragControls } from 'framer-motion';
 import { useSearchParams, usePathname } from 'next/navigation';
 import type { AppUser } from '@/firebase/auth/use-user';
 import dynamic from 'next/dynamic';
 const CdnClapprPlayer = dynamic(() => import('@/components/CdnClapprPlayer'), { ssr: false });
+// Admin-only editors/media-picker: code-split out of the public route chunk so
+// visitors to /work don't download them. Rendered only when an admin is signed in.
+const PortfolioItemFormSheet = dynamic(() => import('@/features/admin/components/PortfolioItemForm').then((m) => m.PortfolioItemFormSheet), { ssr: false });
+const UnifiedMediaPicker = dynamic(() => import('@/features/admin/components/UnifiedMediaPicker'), { ssr: false });
 import { useTranslation } from '@/lib/i18n/useTranslation';
 import { SUPERADMIN_EMAIL } from '@/lib/constants';
 import ReactMarkdown from 'react-markdown';
