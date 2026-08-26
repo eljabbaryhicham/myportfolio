@@ -58,7 +58,7 @@ const CdnClapprPlayer = forwardRef(function CdnClapprPlayer({ source, poster, au
       setIsLoading(true);
 
       try {
-        await loadScript('https://cdn.jsdelivr.net/npm/@clappr/player@latest/dist/clappr.min.js', 'clappr-script');
+        await loadScript('https://cdn.jsdelivr.net/npm/@clappr/player@0.13.0/dist/clappr.min.js', 'clappr-script');
         
         if (!isMounted) return;
 
@@ -74,7 +74,7 @@ const CdnClapprPlayer = forwardRef(function CdnClapprPlayer({ source, poster, au
             loadScript('https://cdn.jsdelivr.net/gh/clappr/clappr-level-selector-plugin@latest/dist/level-selector.min.js', 'clappr-level-selector'),
         ];
         if (needHlsJs) {
-          extraScripts.push(loadScript('https://cdn.jsdelivr.net/npm/@clappr/hlsjs-playback@latest/dist/hlsjs-playback.min.js', 'clappr-hls-playback'));
+          extraScripts.push(loadScript('https://cdn.jsdelivr.net/npm/@clappr/hlsjs-playback@3.0.1/dist/hlsjs-playback.min.js', 'clappr-hls-playback'));
         }
         await Promise.all(extraScripts);
 
