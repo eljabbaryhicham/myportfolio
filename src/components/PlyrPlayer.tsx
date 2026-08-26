@@ -61,6 +61,7 @@ const PlyrPlayer = forwardRef(({ source, poster, autoPlay = true, thumbnailVttUr
             } else {
                 const video = document.createElement('video');
                 video.setAttribute('playsinline', '');
+                video.setAttribute('webkit-playsinline', '');
                 video.setAttribute('controls', '');
                 video.setAttribute('preload', 'metadata');
                 const isAndroid = typeof navigator !== 'undefined' && /Android/i.test(navigator.userAgent);
@@ -68,6 +69,8 @@ const PlyrPlayer = forwardRef(({ source, poster, autoPlay = true, thumbnailVttUr
                     video.setAttribute('webkit-playsinline', '');
                     video.setAttribute('crossorigin', 'anonymous');
                 }
+                // Mobile browsers only allow autoplay when muted.
+                if (autoPlay && isMobile) video.muted = true;
                 if (poster) video.setAttribute('poster', poster);
                 let settled = false;
                 const done = () => {

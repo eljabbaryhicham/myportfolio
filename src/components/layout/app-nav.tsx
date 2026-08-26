@@ -169,7 +169,7 @@ export function AppNav() {
           <nav className="flex h-full flex-1 items-center justify-between px-[4vw]">
             {accessibleNavItems.map(renderNavItem)}
           </nav>
-          <LanguageSwitcher className="px-2 min-h-[44px]" />
+          <LanguageSwitcher />
         </div>
       </motion.div>
     );

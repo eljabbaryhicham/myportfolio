@@ -67,7 +67,7 @@ export function LanguageSwitcher({ className }: { className?: string }) {
             onClick={() => setLang(opt)}
             aria-pressed={isActive}
             className={cn(
-              "relative z-10 px-1.5 py-0.5 text-[9px] font-semibold leading-none tracking-wider transition-colors duration-300 whitespace-nowrap",
+              "relative z-10 px-2.5 py-1.5 text-xs font-semibold leading-none tracking-wider transition-colors duration-300 whitespace-nowrap",
               isActive ? "text-white" : "text-white/50 hover:text-white/80"
             )}
             title={t('layout.toggleLang')}

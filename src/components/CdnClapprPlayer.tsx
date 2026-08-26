@@ -128,10 +128,20 @@ const CdnClapprPlayer = forwardRef(function CdnClapprPlayer({ source, poster, au
         const wireVideoElement = (): boolean => {
           const video = container.querySelector('video');
           if (!video) return false;
+          // iOS/Android require playsinline to autoplay inline (otherwise the
+          // browser blocks it). Set on ALL platforms — harmless on desktop.
+          video.setAttribute('playsinline', '');
+          video.setAttribute('webkit-playsinline', '');
           const isAndroid = typeof navigator !== 'undefined' && /Android/i.test(navigator.userAgent);
           if (isAndroid) {
             video.setAttribute('webkit-playsinline', '');
             video.setAttribute('playsinline', '');
+          }
+          // Mobile browsers only allow autoplay when the video is muted. When
+          // autoplaying, mute on touch devices so playback can start; the user
+          // can unmute with the control bar.
+          if (autoPlay && isMobile) {
+            video.muted = true;
           }
           // Wait for the video to actually start playing before hiding preloader
           video.addEventListener('playing', done, { once: true });
