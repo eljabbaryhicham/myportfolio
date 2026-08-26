@@ -101,8 +101,9 @@ function AdminPage() {
       setInnerMediaTab('vercel');
       setVercelActiveTab(resourceType === 'video' ? 'videos' : resourceType === 'raw' ? 'files' : 'images');
       setIsVercelLibraryOpen(true);
+      consumeCompletedUpload();
     }
-    consumeCompletedUpload();
+    // Cloudinary: don't consume here — MediaAdmin handles its own popup
     setTimeout(() => setNewlyUploadedId(null), 3000);
   }, [completedUpload, activeTab, consumeCompletedUpload, setActiveTab]);
 
@@ -212,17 +213,6 @@ function AdminPage() {
   const handleUploadComplete = async (docId: string, resourceType: 'image' | 'video' | 'raw', libraryId: 'primary' | 'extented') => {
     if (!docId) return;
     setNewlyUploadedId(docId);
-    
-    // Switch to media tab only if not already on it, to avoid unnecessary re-renders.
-    if(activeTab !== 'media') {
-      setActiveTab('media');
-    }
-    
-    setDialogActiveTab(resourceType === 'video' ? 'videos' : resourceType === 'raw' ? 'files' : 'images');
-    setDialogActiveLibrary(libraryId);
-    setIsLibraryOpen(true); // Open the library
-    
-    // Reset the animation highlight after a delay
     setTimeout(() => setNewlyUploadedId(null), 2500);
   };
 
