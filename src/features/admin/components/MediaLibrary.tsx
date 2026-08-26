@@ -416,8 +416,8 @@ export default forwardRef<MediaLibraryRef, MediaLibraryProps>(function MediaLibr
   const dialogProps = isDialog ? (props as DialogMediaLibraryProps) : null;
   const activeTab = isDialog ? dialogProps!.activeTab : 'images';
   const setActiveTabFn = isDialog ? dialogProps!.setActiveTab : () => {};
-  const activeLibrary = isDialog ? dialogProps!.activeLibrary : 'primary';
-  const setActiveLibraryFn = isDialog ? dialogProps!.setActiveLibrary : () => {};
+  const activeLibrary = isDialog ? dialogProps!.activeLibrary : fullLibraryActiveLibrary;
+  const setActiveLibraryFn = isDialog ? dialogProps!.setActiveLibrary : setFullLibraryActiveLibrary;
   const newlyUploadedId = isDialog ? dialogProps!.newlyUploadedId : localNewlyUploadedId;
   const showBulkSelect = canDelete && !(isDialog && dialogProps?.isSelectionMode);
 
