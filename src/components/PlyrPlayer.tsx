@@ -147,6 +147,9 @@ const PlyrPlayer = forwardRef(({ source, poster, autoPlay = true, thumbnailVttUr
             } else if (source.includes('.m3u8') && Hls.isSupported()) {
                 const hls = new Hls({
                   startLevel: isMobile ? 0 : -1, // Start with lower quality on mobile
+                  capLevelToPlayerSize: true,
+                  maxBufferLength: isMobile ? 12 : 30,
+                  maxMaxBufferLength: isMobile ? 15 : 60,
                 });
                 hls.loadSource(source);
 

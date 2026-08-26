@@ -372,8 +372,9 @@ html, body {
 }
 /* Coarse-pointer (Android) devices get a cheaper glass paint so the video
    texture doesn't have to composite over layered gradients + inset shadows
-   on every frame. While a work dialog is open the full-screen background
-   is hidden from the compositor entirely (complement to the JS pause). */
+   on every frame. Rounded clipping of a video texture to `overflow:hidden`
+   + `border-radius` forces a per-frame alpha mask on most Android GPUs —
+   removing it for details frames is the single biggest win for playback. */
 @media (pointer: coarse) {
   .glass-effect {
     background-image: none !important;
@@ -384,9 +385,29 @@ html, body {
   }
   .details-video-frame {
     will-change: auto;
+    border-radius: 0 !important;
+  }
+  /* The outer muted card around each details video also has rounded-lg +
+     overflow. Removing it avoids a second mask layer. */
+  .project-details .details-video-frame {
+    border-radius: 0 !important;
+  }
+  .project-details > div:has(> .details-video-frame),
+  .project-details .my-4:has(.details-video-frame) {
+    border-radius: 0 !important;
+  }
+  .project-details video,
+  .project-details .plyr,
+  .project-details .plyr__video-wrapper {
+    border-radius: 0 !important;
   }
 }
 .work-dialog-open div.-z-10 {
   visibility: hidden !important;
   pointer-events: none !important;
+}
+.work-dialog-open {
+  /* While a project is open there is no need to keep the page's
+     ScrollArea custom scrollbar layer alive behind the modal. */
+  scrollbar-width: none;
 }

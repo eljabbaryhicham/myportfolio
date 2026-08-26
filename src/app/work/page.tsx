@@ -796,7 +796,8 @@ export default function WorkPage() {
     setDirection('prev');
   }, [selectedItem, filteredItems, handleItemClick]);
 
-  const handleDialogMouseMove = () => {
+  const handleDialogMouseMove = useCallback(() => {
+    if (isMobile) return;
     if (inactivityTimer.current) {
       clearTimeout(inactivityTimer.current);
     }
@@ -804,18 +805,20 @@ export default function WorkPage() {
     inactivityTimer.current = setTimeout(() => {
       setIsCloseButtonVisible(false);
     }, 1000);
-  };
+  }, [isMobile]);
 
-  const handleDialogMouseEnter = () => {
+  const handleDialogMouseEnter = useCallback(() => {
+    if (isMobile) return;
     setIsCloseButtonVisible(true);
-  };
+  }, [isMobile]);
 
-  const handleDialogMouseLeave = () => {
+  const handleDialogMouseLeave = useCallback(() => {
+    if (isMobile) return;
     if (inactivityTimer.current) {
       clearTimeout(inactivityTimer.current);
     }
     setIsCloseButtonVisible(false);
-  };
+  }, [isMobile]);
 
   const handleEditItem = (item: PortfolioItem) => {
     setSelectedItemForEdit(item);
