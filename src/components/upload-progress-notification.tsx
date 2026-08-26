@@ -117,7 +117,7 @@ export default function UploadProgressNotification() {
                 variant="ghost"
                 size="sm"
                 className="h-8 w-8 p-0"
-                onClick={() => goToMediaTab(c.provider)}
+                onClick={() => { dismiss(c.id); goToMediaTab(c.provider); }}
                 title="Open in media library"
               >
                 <FontAwesomeIcon icon={faArrowUpRightFromSquare} className="h-4 w-4" />
