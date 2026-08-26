@@ -37,6 +37,7 @@ const PortfolioItemFormSheet = dynamic(() => import('@/features/admin/components
 const UnifiedMediaPicker = dynamic(() => import('@/features/admin/components/UnifiedMediaPicker'), { ssr: false });
 import { useTranslation } from '@/lib/i18n/useTranslation';
 import { SUPERADMIN_EMAIL } from '@/lib/constants';
+import { cleanVideoUrl } from '@/lib/video';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeRaw from 'rehype-raw';
@@ -151,9 +152,9 @@ function LazyDetailsVideo({
       )}
       <Suspense fallback={null}>
         {playerType === 'plyr' ? (
-          <MemoizedPlyrPlayer ref={playerRef} source={videoSrc} poster={poster} autoPlay={false} />
+          <MemoizedPlyrPlayer ref={playerRef} source={cleanVideoUrl(videoSrc) || videoSrc} poster={poster} autoPlay={false} />
         ) : (
-          <MemoizedCdnClapprPlayer ref={playerRef} source={videoSrc} poster={poster} autoPlay={false} />
+          <MemoizedCdnClapprPlayer ref={playerRef} source={cleanVideoUrl(videoSrc) || videoSrc} poster={poster} autoPlay={false} />
         )}
       </Suspense>
     </div>
@@ -361,6 +362,12 @@ const MemoizedPortfolioMedia = memo(({
       videoPoster = derived || item.thumbnailUrl;
     }
 
+    // Clean Cloudinary URLs (strip duplicated transforms, force .mp4) so the
+    // <video> element decodes deterministically on mobile — embeds untouched.
+    const playableSource = (isVimeo || isYoutube)
+      ? item.sourceUrl
+      : cleanVideoUrl(item.sourceUrl);
+
     return (
       <div ref={containerRef} className="relative aspect-video bg-black flex items-center justify-center w-full overflow-hidden">
         {item.sourceUrl && (
@@ -377,7 +384,7 @@ const MemoizedPortfolioMedia = memo(({
               <MemoizedPlyrPlayer
                   ref={plyrRef}
                   key={item.id}
-                  source={item.sourceUrl} 
+                  source={playableSource || item.sourceUrl}
                   poster={videoPoster}
                   autoPlay={autoPlay}
                   thumbnailVttUrl={item.thumbnailVttUrl}
@@ -385,7 +392,7 @@ const MemoizedPortfolioMedia = memo(({
           ) : (
               <MemoizedCdnClapprPlayer
                   key={item.id}
-                  source={item.sourceUrl} 
+                  source={playableSource || item.sourceUrl}
                   poster={videoPoster}
                   watermark={watermark}
                   autoPlay={autoPlay}

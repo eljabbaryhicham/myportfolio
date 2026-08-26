@@ -8,6 +8,7 @@ import { usePathname } from 'next/navigation';
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
 import type { HomePageSettings } from '@/lib/types';
+import { cleanVideoUrl } from '@/lib/video';
 
 interface MediaAsset {
     url: string;
@@ -67,7 +68,7 @@ export function SiteBackground() {
                 {backgroundType === 'video' && isVideoEnabled ? (
                     <video
                         key={mediaUrl}
-                        src={mediaUrl}
+                        src={cleanVideoUrl(mediaUrl)}
                         className="w-full h-full object-cover"
                         autoPlay
                         loop
