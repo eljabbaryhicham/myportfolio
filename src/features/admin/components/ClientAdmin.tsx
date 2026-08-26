@@ -35,7 +35,7 @@ import { Input } from '@/components/ui/input';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import MediaAdmin from './MediaAdmin';
+import MediaLibrary from './MediaLibrary';
 import type { AppUser } from '@/firebase/auth/use-user';
 import { Checkbox } from '@/components/ui/checkbox';
 import BulkActionBar from './BulkActionBar';
@@ -589,7 +589,8 @@ export default function ClientAdmin() {
         </AlertDialogContent>
       </AlertDialog>
       
-      <MediaAdmin
+      <MediaLibrary
+        provider="cloudinary"
           isDialog={true}
           isOpen={isLibraryOpen}
           onOpenChange={setIsLibraryOpen}

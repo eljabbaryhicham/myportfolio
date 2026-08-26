@@ -25,7 +25,7 @@ import { doc } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 import Preloader from '@/components/preloader';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import MediaAdmin from './MediaAdmin';
+import MediaLibrary from './MediaLibrary';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faImages, faPencilAlt } from '@fortawesome/free-solid-svg-icons';
 import ClientAdmin from './ClientAdmin';
@@ -280,7 +280,8 @@ export default function AboutAdmin() {
           </DialogContent>
         </Dialog>
       </div>
-      <MediaAdmin
+      <MediaLibrary
+        provider="cloudinary"
         isDialog={true}
         isOpen={isLibraryOpen}
         onOpenChange={setIsLibraryOpen}

@@ -40,7 +40,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useTranslation } from '@/lib/i18n/useTranslation';
 import { DEFAULT_EMAIL_TEMPLATE_HTML, DEFAULT_AUTOREPLY_TEMPLATE_HTML } from '@/lib/default-email-template';
-import MediaAdmin from './MediaAdmin';
+import MediaLibrary from './MediaLibrary';
 import { faImages, faEye, faRotateLeft } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { debounce } from '@/lib/utils';
@@ -1122,7 +1122,8 @@ export default function HomeAdmin() {
                 </div>
             </ScrollArea>
         </div>
-        <MediaAdmin
+        <MediaLibrary
+          provider="cloudinary"
             isDialog={true}
             isOpen={isLibraryOpen}
             onOpenChange={setIsLibraryOpen}

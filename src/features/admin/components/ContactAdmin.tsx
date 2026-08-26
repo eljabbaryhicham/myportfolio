@@ -25,7 +25,7 @@ import Preloader from '@/components/preloader';
 import type { AppUser } from '@/firebase/auth/use-user';
 import { useTranslation } from '@/lib/i18n/useTranslation';
 import { SUPERADMIN_EMAIL } from '@/lib/constants';
-import MediaAdmin from './MediaAdmin';
+import MediaLibrary from './MediaLibrary';
 import { faImages } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
@@ -443,7 +443,8 @@ export default function ContactAdmin() {
           </ScrollArea>
       </div>
       </div>
-      <MediaAdmin
+      <MediaLibrary
+        provider="cloudinary"
           isDialog={true}
           isOpen={isLibraryOpen}
           onOpenChange={setIsLibraryOpen}

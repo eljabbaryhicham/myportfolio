@@ -16,8 +16,7 @@ import { Separator } from '@/components/ui/separator';
 import Preloader from '@/components/preloader';
 const ProjectAdmin = dynamic(() => import('@/features/admin/components/ProjectAdmin'), { ssr: false, loading: () => <Preloader /> });
 const ContactAdmin = dynamic(() => import('@/features/admin/components/ContactAdmin'), { ssr: false, loading: () => <Preloader /> });
-const MediaAdmin = dynamic(() => import('@/features/admin/components/MediaAdmin'), { ssr: false, loading: () => <Preloader /> });
-const VercelBlobAdmin = dynamic(() => import('@/features/admin/components/VercelBlobAdmin'), { ssr: false, loading: () => <Preloader /> });
+const MediaAdmin = dynamic(() => import('@/features/admin/components/MediaLibrary'), { ssr: false, loading: () => <Preloader /> });
 const HomeAdmin = dynamic(() => import('@/features/admin/components/HomeAdmin'), { ssr: false, loading: () => <Preloader /> });
 import type { PortfolioItem } from '@/features/portfolio/data/portfolio-data';
 const PortfolioItemFormSheet = dynamic(() => import('@/features/admin/components/PortfolioItemForm').then(m => m.PortfolioItemFormSheet), { ssr: false, loading: () => <Preloader /> });
@@ -226,7 +225,7 @@ function AdminPage() {
     }
   };
 
-  const handleUploadComplete = async (docId: string, resourceType: 'image' | 'video' | 'raw', libraryId: 'primary' | 'extented') => {
+  const handleUploadComplete = async (docId: string, resourceType: string, libraryId?: string) => {
     if (!docId) return;
     setNewlyUploadedId(docId);
     safeTimeout(() => setNewlyUploadedId(null), 2500);
@@ -234,7 +233,7 @@ function AdminPage() {
 
   // Dedicated handler for Vercel Blob - identical semantics to handleUploadComplete above,
   // but targets the Vercel library dialog instead of Cloudinary's.
-  const handleVercelUploadComplete = (docId: string, resourceType: 'image' | 'video' | 'raw') => {
+  const handleVercelUploadComplete = (docId: string, resourceType: string) => {
     if (!docId) return;
     setNewlyUploadedId(docId);
     if (activeTab !== 'media') setActiveTab('media');
@@ -311,10 +310,10 @@ function AdminPage() {
                       <TabsTrigger value="vercel" className="glass-effect data-[state=active]:bg-destructive">Vercel Blob</TabsTrigger>
                     </TabsList>
                     <TabsContent value="cloudinary" forceMount className="data-[state=inactive]:hidden">
-                      <MediaAdmin onUploadComplete={handleUploadComplete} onMediaSelect={handleOpenPortfolioFormWithMedia} />
+                      <MediaAdmin provider="cloudinary" onUploadComplete={handleUploadComplete} onMediaSelect={handleOpenPortfolioFormWithMedia} />
                     </TabsContent>
                     <TabsContent value="vercel" forceMount className="data-[state=inactive]:hidden">
-                      <VercelBlobAdmin libraryOpen={isVercelLibraryOpen} onLibraryOpenChange={setIsVercelLibraryOpen} newlyUploadedId={newlyUploadedId} onUploadComplete={handleVercelUploadComplete} activeTab={vercelActiveTab} setActiveTab={setVercelActiveTab} />
+                      <MediaAdmin provider="vercel_blob" onUploadComplete={handleVercelUploadComplete} />
                     </TabsContent>
                   </Tabs>
               </TabsContent>
