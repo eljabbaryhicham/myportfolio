@@ -108,15 +108,17 @@ export default function CdnClapprPlayer({ source, poster, autoPlay = true, water
             plugins: plugins,
             shakaConfiguration: {
               streaming: {
-                rebufferingGoal: isMobile ? 6 : 15
+                rebufferingGoal: isMobile ? 10 : 15
               }
             },
-            hlsjsConfig: isMobile ? {
-              startLevel: 0,
+            hlsjsConfig: {
+              startLevel: -1,
               capLevelToPlayerSize: true,
-              maxBufferLength: 12,
-              maxMaxBufferLength: 15,
-            } : {},
+              maxBufferLength: isMobile ? 30 : 60,
+              maxMaxBufferLength: isMobile ? 60 : 120,
+              enableWorker: true,
+              lowLatencyMode: false,
+            },
             mediacontrol: {
               seekbar: "hsl(var(--destructive))",
               buttons: playerButtons,

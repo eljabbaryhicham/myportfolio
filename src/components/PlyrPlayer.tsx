@@ -69,17 +69,15 @@ const PlyrPlayer = forwardRef(({ source, poster, autoPlay = true, thumbnailVttUr
                 element.dataset.plyrEmbedId = source;
             } else {
                 const video = document.createElement('video');
-                const isAndroid = typeof navigator !== 'undefined' && /Android/i.test(navigator.userAgent);
                 video.setAttribute('playsinline', '');
                 video.setAttribute('controls', '');
                 video.setAttribute('preload', 'metadata');
+                const isAndroid = typeof navigator !== 'undefined' && /Android/i.test(navigator.userAgent);
                 if (isAndroid) {
                   video.setAttribute('webkit-playsinline', '');
                   video.setAttribute('crossorigin', 'anonymous');
                 }
                 if (poster) video.setAttribute('poster', poster);
-                // Hide the preloader only when a video frame is actually
-                // PRESENTED on screen — data events fire before paint.
                 let settled = false;
                 const done = () => {
                     if (settled || !isMounted) return;
@@ -87,30 +85,15 @@ const PlyrPlayer = forwardRef(({ source, poster, autoPlay = true, thumbnailVttUr
                     setIsLoading(false);
                 };
                 const rvfc = (video as any).requestVideoFrameCallback;
-                if (isAndroid) {
-                  if (rvfc && autoPlay) {
-                      rvfc.call(video, () => requestAnimationFrame(() => done()));
-                  } else if (!autoPlay) {
-                      ['loadedmetadata', 'loadeddata', 'canplay'].forEach((evt) =>
-                          video.addEventListener(evt, () => setTimeout(done, 200), { once: true } as any)
-                      );
-                  } else {
-                      ['playing', 'loadeddata'].forEach((evt) =>
-                          video.addEventListener(evt, done, { once: true })
-                      );
-                      video.addEventListener('canplay', () => setTimeout(done, 300), { once: true });
-                  }
+                if (rvfc) {
+                    rvfc.call(video, () => requestAnimationFrame(() => done()));
                 } else {
-                  if (rvfc) {
-                      rvfc.call(video, () => requestAnimationFrame(() => done()));
-                  } else {
-                      ['playing', 'loadeddata'].forEach((evt) =>
-                          video.addEventListener(evt, done, { once: true })
-                      );
-                  }
-                  video.addEventListener('canplay', () => setTimeout(done, 300), { once: true });
+                    ['playing', 'loadeddata'].forEach((evt) =>
+                        video.addEventListener(evt, done, { once: true })
+                    );
                 }
-                const safety = setTimeout(done, isAndroid ? (autoPlay ? 10000 : 3500) : 10000);
+                video.addEventListener('canplay', () => setTimeout(done, 300), { once: true });
+                const safety = setTimeout(done, 10000);
                 video.addEventListener('loadstart', () => {
                   if (isMounted && !settled) setIsLoading(true);
                 });
@@ -164,10 +147,12 @@ const PlyrPlayer = forwardRef(({ source, poster, autoPlay = true, thumbnailVttUr
                 if (isMounted) playerRef.current = player;
             } else if (source.includes('.m3u8') && Hls.isSupported()) {
                 const hls = new Hls({
-                  startLevel: isMobile ? 0 : -1, // Start with lower quality on mobile
+                  startLevel: -1,
                   capLevelToPlayerSize: true,
-                  maxBufferLength: isMobile ? 12 : 30,
-                  maxMaxBufferLength: isMobile ? 15 : 60,
+                  maxBufferLength: isMobile ? 30 : 60,
+                  maxMaxBufferLength: isMobile ? 60 : 120,
+                  enableWorker: true,
+                  lowLatencyMode: false,
                 });
                 hls.loadSource(source);
 
