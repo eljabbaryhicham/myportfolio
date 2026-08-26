@@ -80,7 +80,7 @@ const ProjectDetailsContent = memo(function ProjectDetailsContent({
       const { src, alt } = props;
       if (!src) return null;
       return (
-        <span className="my-4 flex justify-center" style={{ maxWidth: widthPercent, margin: '1rem auto' }}>
+        <div className="my-4 mx-auto rounded-lg border border-border/50 bg-muted/30 p-[5%]" style={{ maxWidth: widthPercent }}>
           <span className="relative inline-block group/img max-w-full">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={src} alt={alt || ''} className="block max-w-full h-auto rounded-md mx-auto" />
@@ -95,7 +95,7 @@ const ProjectDetailsContent = memo(function ProjectDetailsContent({
               </button>
             )}
           </span>
-        </span>
+        </div>
       );
     },
     video: (props: any) => {
@@ -114,17 +114,18 @@ const ProjectDetailsContent = memo(function ProjectDetailsContent({
       if (/^\d+(\.\d+)?$/.test(w)) frameWidth = `${w}%`;
       else if (/^\d+(\.\d+)?(px|%)$/.test(w)) frameWidth = w;
       return (
-        <div
-          className="details-video-frame relative my-4 mx-auto aspect-video overflow-hidden rounded-md bg-black [&>*]:absolute [&>*]:inset-0"
-          style={{ width: frameWidth }}
-        >
-          <Suspense fallback={<Preloader />}>
-            {playerType === 'plyr' ? (
-              <MemoizedPlyrPlayer source={videoSrc} poster={poster} autoPlay={false} />
-            ) : (
-              <MemoizedCdnClapprPlayer source={videoSrc} poster={poster} autoPlay={false} />
-            )}
-          </Suspense>
+        <div className="my-4 mx-auto rounded-lg border border-border/50 bg-muted/30 p-[5%]" style={{ maxWidth: widthPercent }}>
+          <div
+            className="details-video-frame relative aspect-video overflow-hidden rounded-md bg-black [&>*]:absolute [&>*]:inset-0"
+          >
+            <Suspense fallback={<Preloader />}>
+              {playerType === 'plyr' ? (
+                <MemoizedPlyrPlayer source={videoSrc} poster={poster} autoPlay={false} />
+              ) : (
+                <MemoizedCdnClapprPlayer source={videoSrc} poster={poster} autoPlay={false} />
+              )}
+            </Suspense>
+          </div>
         </div>
       );
     },
