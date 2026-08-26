@@ -760,7 +760,7 @@ export default function HomeAdmin() {
                                                     <div className="flex items-center gap-3">
                                                         <Slider
                                                             className="flex-1"
-                                                            min={10}
+                                                            min={5}
                                                             max={100}
                                                             step={5}
                                                             value={[field.value ?? 100]}
