@@ -63,9 +63,6 @@ export default function RootLayout({
         }} />
       </head>
       <body className={cn('font-body antialiased text-center h-full')} style={{ background: '#000' }} suppressHydrationWarning>
-        <div id="app-shell-skeleton" className="fixed inset-0 z-[9999] bg-black flex items-center justify-center">
-          <div className="w-12 h-12 rounded-full border-[3px] border-white/10 border-t-white/60 animate-spin" />
-        </div>
         <AppShell>
           {children}
         </AppShell>
