@@ -771,22 +771,22 @@ export default function MediaAdmin(props: MediaAdminProps) {
       </DialogHeader>
         <Tabs value={activeLibrary} onValueChange={(value) => setActiveLibrary(value as 'primary' | 'extented')} className='px-4 pt-4'>
             <TabsList>
-                <TabsTrigger value="primary" className="py-2 px-4 text-base glass-effect data-[state=active]:bg-destructive">{t('mediaAdmin.tab.libraryPrimary')}</TabsTrigger>
-                <TabsTrigger value="extented" className="py-2 px-4 text-base glass-effect data-[state=active]:bg-destructive">{t('mediaAdmin.tab.libraryExtented')}</TabsTrigger>
+                <TabsTrigger value="primary" className="py-2 px-4 text-base data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">{t('mediaAdmin.tab.libraryPrimary')}</TabsTrigger>
+                <TabsTrigger value="extented" className="py-2 px-4 text-base data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">{t('mediaAdmin.tab.libraryExtented')}</TabsTrigger>
             </TabsList>
         </Tabs>
       <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'images' | 'videos' | 'files')} className="flex-1 flex flex-col min-h-0">
           <div className='px-4 pt-4 flex items-center gap-2 flex-wrap'>
             <TabsList>
-                <TabsTrigger value="images" className="py-2 px-4 text-base glass-effect data-[state=active]:bg-destructive">
+                <TabsTrigger value="images" className="py-2 px-4 text-base data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
                     <FontAwesomeIcon icon={faFileImage} className="mr-2" />
                     {t('mediaAdmin.tab.images')}
                 </TabsTrigger>
-                <TabsTrigger value="videos" className="py-2 px-4 text-base glass-effect data-[state=active]:bg-destructive">
+                <TabsTrigger value="videos" className="py-2 px-4 text-base data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
                     <FontAwesomeIcon icon={faFilm} className="mr-2" />
                     {t('mediaAdmin.tab.videos')}
                 </TabsTrigger>
-                <TabsTrigger value="files" className="py-2 px-4 text-base glass-effect data-[state=active]:bg-destructive">
+                <TabsTrigger value="files" className="py-2 px-4 text-base data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
                     <FontAwesomeIcon icon={faFileLines} className="mr-2" />
                     {t('mediaAdmin.tab.files')}
                 </TabsTrigger>
