@@ -743,7 +743,8 @@ export default function WorkPage() {
     // Shallow URL update: keep the project link shareable WITHOUT triggering
     // an App Router navigation — router.push caused a full route transition
     // per click that blanked the details dialog on slow/mobile connections.
-    const url = `${pathname}?${params.toString()}`;
+    const qs = params.toString();
+    const url = qs ? `${pathname}?${qs}` : pathname;
     window.history.replaceState(window.history.state, '', url);
   }, [pathname, searchParams]);
 

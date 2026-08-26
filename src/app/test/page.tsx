@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlay, faSyncAlt } from '@fortawesome/free-solid-svg-icons';
 import { useUser, useFirestore, useDoc, useMemoFirebase, setDocumentNonBlocking } from '@/firebase';
-import { useRouter } from 'next/navigation';
+import { useRouter, notFound } from 'next/navigation';
 import Preloader from '@/components/preloader';
 import { doc } from 'firebase/firestore';
 import PlyrPlayer from '@/components/PlyrPlayer';
@@ -52,9 +52,9 @@ export default function TestPage() {
 
   useEffect(() => {
     if (homeSettings && homeSettings.isTestPageEnabled === false) {
-      router.push('/');
+      notFound();
     }
-  }, [homeSettings, router]);
+  }, [homeSettings]);
 
 
   const handleLoadClick = () => {
@@ -74,11 +74,7 @@ export default function TestPage() {
   };
 
   if (isUserLoading || !user || (homeSettings && homeSettings.isTestPageEnabled === false)) {
-    return (
-      <div className="flex h-full w-full items-center justify-center">
-        <Preloader />
-      </div>
-    );
+    return null;
   }
 
   return (
