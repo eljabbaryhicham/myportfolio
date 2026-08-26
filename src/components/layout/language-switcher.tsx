@@ -58,7 +58,7 @@ export function LanguageSwitcher({ className }: { className?: string }) {
       aria-label={t('layout.toggleLang')}
       title={t('layout.toggleLang')}
       className={cn(
-        "relative flex items-center h-8 w-16 rounded-full border border-white/10 bg-white/10 backdrop-blur-md shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] select-none",
+        "relative flex items-center h-8 w-12 rounded-full border border-white/10 bg-white/10 backdrop-blur-md shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] select-none",
         className
       )}
     >
@@ -66,7 +66,7 @@ export function LanguageSwitcher({ className }: { className?: string }) {
       <span
         className={cn(
           "absolute inset-y-0 flex items-center text-[10px] font-semibold leading-none tracking-wider transition-opacity duration-300",
-          isEn ? "left-2 text-white/40" : "right-2 text-white/40"
+          isEn ? "left-1.5 text-white/40" : "right-1.5 text-white/40"
         )}
       >
         {isEn ? 'FR' : 'EN'}
@@ -75,7 +75,7 @@ export function LanguageSwitcher({ className }: { className?: string }) {
       {/* Circular knob that slides and shows the active language inside it */}
       <motion.span
         className="absolute top-1 left-1 z-10 flex h-6 w-6 items-center justify-center rounded-full bg-destructive shadow-[0_0_12px_hsl(var(--primary)/0.6)]"
-        animate={{ x: isEn ? 0 : 30 }}
+        animate={{ x: isEn ? 0 : 20 }}
         transition={{ type: "spring", stiffness: 500, damping: 30 }}
       >
         <span className="text-[9px] font-bold leading-none text-white">
