@@ -143,14 +143,14 @@ const ProjectDetailsContent = memo(function ProjectDetailsContent({
             <p className="text-sm font-medium truncate">{filename}</p>
             <p className="text-xs text-muted-foreground">File attachment</p>
           </div>
-          <a
-            href={href}
-            download
-            className="shrink-0 inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/90 transition-colors no-underline"
+          <button
+            type="button"
+            onClick={() => window.open(href, '_blank', 'noopener,noreferrer')}
+            className="shrink-0 inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/90 transition-colors no-underline cursor-pointer"
           >
             <FontAwesomeIcon icon={faArrowDown} className="h-3 w-3" />
             Download
-          </a>
+          </button>
         </div>
       );
     },
