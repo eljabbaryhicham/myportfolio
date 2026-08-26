@@ -43,12 +43,19 @@ import { useTranslation } from '@/lib/i18n/useTranslation';
 
 
 // Pre-filled Details content for NEW projects (existing projects untouched).
-const DEFAULT_DETAILS_TEMPLATE = `Project Name : 
-Project Type : 
-Realisation Time : 
-Video Duration : 
-Tools Used : 
-Realisateur : MelliVision | Driven By Detail`;
+const DEFAULT_DETAILS_TEMPLATE = `Title
+
+Project Name : 
+
+Project Type : Motion Design
+
+Realization Time : Few Hours
+
+Video Duration : 30 seconds
+
+Tools Used : Premiere Pro - After Effects - Photoshop
+
+Direction : MelliVision | Driven By Detail`;
 
 const formSchema = z.object({
   title: z.string().min(2, {
