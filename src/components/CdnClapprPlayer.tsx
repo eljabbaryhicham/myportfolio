@@ -167,6 +167,11 @@ const CdnClapprPlayer = forwardRef(function CdnClapprPlayer({ source, poster, au
             video.setAttribute('webkit-playsinline', '');
             video.setAttribute('playsinline', '');
           }
+          // Start downloading immediately (poster shows while it loads) instead
+          // of waiting for a user gesture — 'metadata' made playback start slow
+          // on desktop/iOS for large progressive files.
+          video.setAttribute('preload', 'auto');
+          video.setAttribute('playsinline', '');
           // Wait for the video to actually start playing before hiding preloader
           video.addEventListener('playing', done, { once: true });
           spinnerSafetyRef.current = setTimeout(done, 10000);
