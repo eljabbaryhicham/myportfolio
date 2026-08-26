@@ -258,7 +258,7 @@ export default function CdnClapprPlayer({ source, poster, autoPlay = true, water
 
   return (
     <div className="w-full h-full relative bg-black">
-      {!poster && isLoading && (
+      {isLoading && (
           <div className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none">
               <Preloader />
           </div>
