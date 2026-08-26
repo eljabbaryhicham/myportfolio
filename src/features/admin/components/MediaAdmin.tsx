@@ -307,7 +307,7 @@ export default forwardRef<MediaAdminRef, MediaAdminProps>(function MediaAdmin(pr
   const { toast } = useToast();
   const firestore = useFirestore();
   const { user } = useUser();
-  const { startUpload: startGlobalUpload, updateProgress: updateGlobalProgress, finishUpload: finishGlobalUpload, isUploading: globalIsUploading, progress: globalProgress, fileName: globalFileName, provider: globalProvider, signalCompletedUpload } = useUploadProgress();
+  const { startUpload: startGlobalUpload, updateProgress: updateGlobalProgress, finishUpload: finishGlobalUpload, isUploading: globalIsUploading, progress: globalProgress, fileName: globalFileName, provider: globalProvider, signalCompletedUpload, completedUpload, consumeCompletedUpload } = useUploadProgress();
 
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
@@ -343,6 +343,17 @@ export default forwardRef<MediaAdminRef, MediaAdminProps>(function MediaAdmin(pr
       setIsFullLibraryOpen(true);
     },
   }));
+
+  // Auto-open full library after upload completes (standalone mode, Cloudinary only)
+  useEffect(() => {
+    if (props.isDialog || !completedUpload || completedUpload.libraryId === 'vercel_blob') return;
+    const { resourceType, libraryId } = completedUpload;
+    const tab = resourceType === 'video' ? 'videos' : resourceType === 'raw' ? 'files' : 'images';
+    setFullLibraryActiveTab(tab);
+    setFullLibraryActiveLibrary(libraryId);
+    setIsFullLibraryOpen(true);
+    consumeCompletedUpload();
+  }, [completedUpload, consumeCompletedUpload, props.isDialog]);
 
   const activeTab = props.isDialog ? props.activeTab : 'images';
   const setActiveTab = props.isDialog ? props.setActiveTab : () => {};

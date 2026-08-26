@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/firebase';
 import type { AppUser } from '@/firebase/auth/use-user';
@@ -17,7 +17,6 @@ import Preloader from '@/components/preloader';
 const ProjectAdmin = dynamic(() => import('@/features/admin/components/ProjectAdmin'), { ssr: false, loading: () => <Preloader /> });
 const ContactAdmin = dynamic(() => import('@/features/admin/components/ContactAdmin'), { ssr: false, loading: () => <Preloader /> });
 const MediaAdmin = dynamic(() => import('@/features/admin/components/MediaAdmin'), { ssr: false, loading: () => <Preloader /> });
-import type { MediaAdminRef } from '@/features/admin/components/MediaAdmin';
 const VercelBlobAdmin = dynamic(() => import('@/features/admin/components/VercelBlobAdmin'), { ssr: false, loading: () => <Preloader /> });
 const HomeAdmin = dynamic(() => import('@/features/admin/components/HomeAdmin'), { ssr: false, loading: () => <Preloader /> });
 import type { PortfolioItem } from '@/features/portfolio/data/portfolio-data';
@@ -54,7 +53,6 @@ function AdminPage() {
   const [dialogActiveLibrary, setDialogActiveLibrary] = useState<'primary' | 'extented'>('primary');
   const [innerMediaTab, setInnerMediaTab] = useState('cloudinary');
   const [isVercelLibraryOpen, setIsVercelLibraryOpen] = useState(false);
-  const mediaAdminRef = useRef<MediaAdminRef>(null);
   const [vercelActiveTab, setVercelActiveTab] = useState<'images' | 'videos' | 'files'>('images');
   const { setActiveMediaTab, completedUpload, consumeCompletedUpload } = useUploadProgress();
 
@@ -103,9 +101,6 @@ function AdminPage() {
       setInnerMediaTab('vercel');
       setVercelActiveTab(resourceType === 'video' ? 'videos' : resourceType === 'raw' ? 'files' : 'images');
       setIsVercelLibraryOpen(true);
-    } else {
-      const tab = resourceType === 'video' ? 'videos' : resourceType === 'raw' ? 'files' : 'images';
-      mediaAdminRef.current?.openFullLibrary(tab, libraryId);
     }
     consumeCompletedUpload();
     setTimeout(() => setNewlyUploadedId(null), 3000);
@@ -310,7 +305,7 @@ function AdminPage() {
                       <TabsTrigger value="vercel" className="glass-effect data-[state=active]:bg-destructive">Vercel Blob</TabsTrigger>
                     </TabsList>
                     <TabsContent value="cloudinary" forceMount className="data-[state=inactive]:hidden">
-                      <MediaAdmin ref={mediaAdminRef} onUploadComplete={handleUploadComplete} onMediaSelect={handleOpenPortfolioFormWithMedia} />
+                      <MediaAdmin onUploadComplete={handleUploadComplete} onMediaSelect={handleOpenPortfolioFormWithMedia} />
                     </TabsContent>
                     <TabsContent value="vercel" forceMount className="data-[state=inactive]:hidden">
                       <VercelBlobAdmin libraryOpen={isVercelLibraryOpen} onLibraryOpenChange={setIsVercelLibraryOpen} newlyUploadedId={newlyUploadedId} onUploadComplete={handleVercelUploadComplete} activeTab={vercelActiveTab} setActiveTab={setVercelActiveTab} />
