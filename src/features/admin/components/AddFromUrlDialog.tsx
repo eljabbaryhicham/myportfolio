@@ -70,10 +70,9 @@ export default function AddFromUrlDialog({ isOpen, onOpenChange, onUploadComplet
       setProgress(0); // Reset progress on new submission
       timer = setInterval(() => {
         setProgress(prev => {
-          if (prev >= 95) {
-            return prev; // Hold at 95% until upload completes
-          }
-          return prev + 5;
+          const next = prev >= 95 ? prev : prev + 5;
+          updateGlobalProgress(next, 'cloudinary');
+          return next;
         });
       }, 300);
     } else {
@@ -84,7 +83,7 @@ export default function AddFromUrlDialog({ isOpen, onOpenChange, onUploadComplet
         clearInterval(timer);
       }
     };
-  }, [isSubmitting]);
+  }, [isSubmitting, updateGlobalProgress]);
   
   const handleClose = (open: boolean) => {
     if (!open && !isSubmitting) {

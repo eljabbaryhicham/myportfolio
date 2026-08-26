@@ -658,7 +658,6 @@ export default forwardRef<MediaLibraryRef, MediaLibraryProps>(function MediaLibr
       const tab = ct.startsWith('image/') ? 'images' : ct.startsWith('video/') ? 'videos' : 'files';
       setActiveTabFn(tab);
       finishUpload('vercel');
-      toast({ title: 'Added from URL', description: data.url });
       setIsAddFromUrlOpen(false);
       setAddUrl('');
     } catch (e: any) {
