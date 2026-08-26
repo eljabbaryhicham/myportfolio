@@ -18,7 +18,7 @@ import Preloader from '@/components/preloader';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faTrash, faShieldHalved, faPlusCircle } from '@fortawesome/free-solid-svg-icons';
+import { faTrash, faShieldHalved, faPlusCircle, faRotate } from '@fortawesome/free-solid-svg-icons';
 import { useToast } from '@/hooks/use-toast';
 import { useMemo, useState } from 'react';
 import { deleteDocumentNonBlocking } from '@/firebase/non-blocking-updates';
@@ -27,6 +27,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import type { AppUser } from '@/firebase/auth/use-user';
+import { syncAuthUsersToFirestore } from '@/app/admin/actions';
 import NewAdminForm from './NewAdminForm';
 
 interface AdminUser {
@@ -117,6 +118,7 @@ export default function AdminManagement() {
   const [selectedUser, setSelectedUser] = useState<AdminUser | null>(null);
   const [isPermissionsDialogOpen, setIsPermissionsDialogOpen] = useState(false);
   const [isAddAdminDialogOpen, setIsAddAdminDialogOpen] = useState(false);
+  const [isSyncing, setIsSyncing] = useState(false);
 
 
   const displayedUsers = useMemo(() => {
@@ -150,6 +152,40 @@ export default function AdminManagement() {
     });
   };
 
+  const handleSyncAuth = async () => {
+    if (!isSuperAdmin) return;
+    setIsSyncing(true);
+    try {
+      const result = await syncAuthUsersToFirestore();
+      if (result.error) {
+        toast({
+          variant: 'destructive',
+          title: t('adminMgmt.toast.syncError.title'),
+          description: result.error,
+        });
+      } else if (result.synced === 0) {
+        toast({
+          title: t('adminMgmt.toast.syncNoNew.title'),
+          description: t('adminMgmt.toast.syncNoNew.description'),
+        });
+      } else {
+        toast({
+          title: t('adminMgmt.toast.syncSuccess.title').replace('{count}', String(result.synced)),
+          description: t('adminMgmt.toast.syncSuccess.description').replace('{users}', result.users.map(u => u.username).join(', ')),
+          duration: 10000,
+        });
+      }
+    } catch {
+      toast({
+        variant: 'destructive',
+        title: t('adminMgmt.toast.syncError.title'),
+        description: t('adminMgmt.toast.syncError.description'),
+      });
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
   return (
     <>
       <div className="flex-1 flex flex-col h-full min-h-0">
@@ -159,10 +195,16 @@ export default function AdminManagement() {
                 <p className="text-muted-foreground">{t('adminMgmt.description')}</p>
             </div>
              {isSuperAdmin && (
-                <Button onClick={() => setIsAddAdminDialogOpen(true)} size="sm">
-                    <FontAwesomeIcon icon={faPlusCircle} className="mr-2 h-4 w-4" />
-                    {t('adminMgmt.newAdmin')}
-                </Button>
+                <div className="flex items-center gap-2">
+                    <Button variant="outline" size="sm" onClick={handleSyncAuth} disabled={isSyncing}>
+                        <FontAwesomeIcon icon={faRotate} className={`mr-2 h-4 w-4 ${isSyncing ? 'animate-spin' : ''}`} />
+                        {t('adminMgmt.syncAuth')}
+                    </Button>
+                    <Button onClick={() => setIsAddAdminDialogOpen(true)} size="sm">
+                        <FontAwesomeIcon icon={faPlusCircle} className="mr-2 h-4 w-4" />
+                        {t('adminMgmt.newAdmin')}
+                    </Button>
+                </div>
             )}
         </div>
         

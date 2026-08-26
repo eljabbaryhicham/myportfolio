@@ -485,6 +485,13 @@ const en: Record<string, string> = {
   'adminMgmt.permission.editAbout': 'Edit About',
   'adminMgmt.permission.editContact': 'Edit Contact',
   'adminMgmt.permission.editHome': 'Edit Home',
+  'adminMgmt.syncAuth': 'Sync from Auth',
+  'adminMgmt.toast.syncSuccess.title': '{count} user(s) synced',
+  'adminMgmt.toast.syncSuccess.description': 'Synced from Firebase Auth: {users}',
+  'adminMgmt.toast.syncNoNew.title': 'Already up to date',
+  'adminMgmt.toast.syncNoNew.description': 'All Firebase Auth users already have Firestore records.',
+  'adminMgmt.toast.syncError.title': 'Sync failed',
+  'adminMgmt.toast.syncError.description': 'An error occurred while syncing users from Firebase Auth.',
 
   /* NewAdminForm */
   'newAdmin.username': 'Username',
@@ -1043,6 +1050,13 @@ const fr: Record<string, string> = {
   'adminMgmt.permission.editAbout': 'Modifier la page À propos',
   'adminMgmt.permission.editContact': 'Modifier le contact',
   'adminMgmt.permission.editHome': 'Modifier l\'accueil',
+  'adminMgmt.syncAuth': 'Synchroniser depuis Auth',
+  'adminMgmt.toast.syncSuccess.title': '{count} utilisateur(s) synchronisés',
+  'adminMgmt.toast.syncSuccess.description': 'Synchronisés depuis Firebase Auth : {users}',
+  'adminMgmt.toast.syncNoNew.title': 'Déjà à jour',
+  'adminMgmt.toast.syncNoNew.description': 'Tous les utilisateurs Firebase Auth ont déjà des enregistrements Firestore.',
+  'adminMgmt.toast.syncError.title': 'Échec de la synchronisation',
+  'adminMgmt.toast.syncError.description': 'Une erreur s\'est produite lors de la synchronisation des utilisateurs depuis Firebase Auth.',
 
   /* NewAdminForm */
   'newAdmin.username': 'Nom d\'utilisateur',
