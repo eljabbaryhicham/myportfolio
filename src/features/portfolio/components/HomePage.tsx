@@ -308,26 +308,26 @@ export default function HomePageContent() {
                 {homeSettings?.homePageSubtitle || t('home.hero.subtitle')}
               </p>
             </motion.div>
-            <motion.div variants={itemVariants} className="flex flex-wrap items-center justify-center gap-2 sm:gap-3 md:gap-4">
-              <Button asChild className="group transition-shadow duration-300 rounded-full min-h-[44px] h-11 md:h-8 px-3 sm:px-3 md:px-4 text-[11px] sm:text-[11px] md:text-sm gap-1.5 w-auto" style={{ boxShadow: "0 0 15px rgba(255,255,255,0.1)" }}>
+            <motion.div variants={itemVariants} className="flex items-center justify-center gap-1.5 sm:gap-2 md:gap-4">
+              <Button asChild className="group transition-shadow duration-300 rounded-full min-h-[36px] h-9 md:h-8 px-2.5 sm:px-3 md:px-4 text-[10px] sm:text-[11px] md:text-sm gap-1 shrink-0" style={{ boxShadow: "0 0 15px rgba(255,255,255,0.1)" }}>
                 <Link href="/about">
-                  <FontAwesomeIcon icon={faCircleInfo} className="h-3 w-3 md:h-3 md:w-3" />
+                  <FontAwesomeIcon icon={faCircleInfo} className="h-2.5 w-2.5 md:h-3 md:w-3" />
                   {t('nav.about')}
                 </Link>
               </Button>
-              <Button ref={ctaRef} asChild size="lg" className="group transition-shadow duration-300 min-h-[44px] md:h-12 md:px-8 md:text-lg text-white w-auto" style={{ backgroundColor: "hsl(var(--primary))", boxShadow: "0 0 20px hsl(var(--primary) / 0.3)" }}
+              <Button ref={ctaRef} asChild size="lg" className="group transition-shadow duration-300 min-h-[36px] md:h-12 px-3 sm:px-4 md:px-8 text-[11px] sm:text-xs md:text-lg text-white shrink min-w-0" style={{ backgroundColor: "hsl(var(--primary))", boxShadow: "0 0 20px hsl(var(--primary) / 0.3)" }}
                 onMouseEnter={(e) => e.currentTarget.style.boxShadow = "0 0 35px hsl(var(--primary) / 0.5)"}
                 onMouseLeave={(e) => e.currentTarget.style.boxShadow = "0 0 20px hsl(var(--primary) / 0.3)"}
               >
-                <Link href="/work">
+                <Link href="/work" className="truncate">
                   {t('home.hero.cta')}
-                  <FontAwesomeIcon icon={faArrowRight} className="ml-2 transition-transform group-hover:translate-x-1" />
+                  <FontAwesomeIcon icon={faArrowRight} className="ml-1.5 md:ml-2 transition-transform group-hover:translate-x-1" />
                 </Link>
               </Button>
-              <Button asChild className="group transition-shadow duration-300 rounded-full min-h-[44px] h-11 md:h-8 px-3 sm:px-3 md:px-4 text-[11px] sm:text-[11px] md:text-sm gap-1.5 w-auto" style={{ boxShadow: "0 0 15px rgba(255,255,255,0.1)" }}>
+              <Button asChild className="group transition-shadow duration-300 rounded-full min-h-[36px] h-9 md:h-8 px-2.5 sm:px-3 md:px-4 text-[10px] sm:text-[11px] md:text-sm gap-1 shrink-0" style={{ boxShadow: "0 0 15px rgba(255,255,255,0.1)" }}>
                 <Link href="/contact">
                   {t('nav.contact')}
-                  <FontAwesomeIcon icon={faEnvelope} className="h-3 w-3 md:h-3 md:w-3" />
+                  <FontAwesomeIcon icon={faEnvelope} className="h-2.5 w-2.5 md:h-3 md:w-3" />
                 </Link>
               </Button>
             </motion.div>
