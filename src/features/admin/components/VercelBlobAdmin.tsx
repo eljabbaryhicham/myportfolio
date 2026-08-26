@@ -275,7 +275,15 @@ export default function VercelBlobAdmin({ libraryOpen: externalLibraryOpen, onLi
       toast({ variant: 'destructive', title: 'Not authenticated' });
       return;
     }
+    const filename = addUrl.split('/').pop() || 'file';
     setIsAddingFromUrl(true);
+    startUpload(filename, 'vercel');
+    let prog = 5;
+    const interval = setInterval(() => {
+      prog = Math.min(95, prog + Math.random() * 1 + 0.2);
+      setUrlProgress(prog);
+      updateGlobalProgress(prog, 'vercel');
+    }, 600);
     try {
       const res = await fetch('/api/vercel-blob/add-from-url', {
         method: 'POST',
@@ -284,6 +292,9 @@ export default function VercelBlobAdmin({ libraryOpen: externalLibraryOpen, onLi
       });
       const data = await res.json();
       if (!res.ok || !data.success) throw new Error(data.message || 'Add from URL failed');
+      clearInterval(interval);
+      setUrlProgress(100);
+      updateGlobalProgress(100, 'vercel');
       // Fallback: ensure Firestore doc exists (server should have created it, but create client-side if missing)
       // Use data.contentType/size from server to ensure correct tab placement
       if (firestore) {
@@ -319,11 +330,13 @@ export default function VercelBlobAdmin({ libraryOpen: externalLibraryOpen, onLi
         else setActiveTab('files');
       }
       setIsLibraryOpen(true);
-      setUrlProgress(100);
+      finishUpload('vercel');
       toast({ title: 'Added from URL', description: data.url });
       setIsAddFromUrlOpen(false);
       setAddUrl('');
     } catch (e: any) {
+      clearInterval(interval);
+      finishUpload('vercel');
       toast({ variant: 'destructive', title: 'Add from URL failed', description: e?.message });
     } finally {
       setIsAddingFromUrl(false);
