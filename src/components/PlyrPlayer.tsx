@@ -87,15 +87,22 @@ const PlyrPlayer = forwardRef(({ source, poster, autoPlay = true, thumbnailVttUr
                     setIsLoading(false);
                 };
                 const rvfc = (video as any).requestVideoFrameCallback;
-                if (rvfc) {
+                // For autoplay:false (details) rvfc/playing will never fire until
+                // user hits play — rely on metadata events so the poster +
+                // controls are visible immediately on iOS.
+                if (rvfc && autoPlay) {
                     rvfc.call(video, () => requestAnimationFrame(() => done()));
+                } else if (!autoPlay) {
+                    ['loadedmetadata', 'loadeddata', 'canplay'].forEach((evt) =>
+                        video.addEventListener(evt, () => setTimeout(done, 200), { once: true } as any)
+                    );
                 } else {
                     ['playing', 'loadeddata'].forEach((evt) =>
                         video.addEventListener(evt, done, { once: true })
                     );
+                    video.addEventListener('canplay', () => setTimeout(done, 300), { once: true });
                 }
-                video.addEventListener('canplay', () => setTimeout(done, 300), { once: true });
-                const safety = setTimeout(done, 10000);
+                const safety = setTimeout(done, autoPlay ? 10000 : 3500);
                 video.addEventListener('loadstart', () => {
                   if (isMounted && !settled) setIsLoading(true);
                 });
@@ -289,11 +296,11 @@ const PlyrPlayer = forwardRef(({ source, poster, autoPlay = true, thumbnailVttUr
   return (
     <div className={cn("relative w-full h-full", "isolate")}>
       {isLoading && (
-          <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/20 pointer-events-none">
+          <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/40 pointer-events-none">
               <Preloader />
           </div>
       )}
-      <div ref={containerRef} className={cn("relative w-full h-full", isLoading ? 'opacity-0' : 'opacity-100')}>
+      <div ref={containerRef} className="relative w-full h-full opacity-100">
          {/* Plyr will be injected here */}
       </div>
     </div>

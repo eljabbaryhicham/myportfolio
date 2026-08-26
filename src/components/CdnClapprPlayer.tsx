@@ -163,18 +163,20 @@ export default function CdnClapprPlayer({ source, poster, autoPlay = true, water
         const wireVideoElement = (): boolean => {
           const video = container.querySelector('video');
           if (!video) return false;
+          video.setAttribute('webkit-playsinline', '');
+          video.setAttribute('playsinline', '');
           const rvfc = (video as any).requestVideoFrameCallback;
-          if (rvfc) {
-            // Fires when a decoded frame reaches the compositor; wait one
-            // more frame so the picture is on screen when the spinner drops.
+          if (rvfc && autoPlay) {
             rvfc.call(video, () => requestAnimationFrame(() => done()));
+          } else if (!autoPlay) {
+            ['loadedmetadata', 'loadeddata', 'canplay'].forEach((evt) =>
+              video.addEventListener(evt, () => setTimeout(done, 200), { once: true } as any)
+            );
           } else {
             video.addEventListener('playing', done, { once: true });
-            // Grace period after data is playable — covers paint delay.
             video.addEventListener('loadeddata', () => setTimeout(done, 300), { once: true });
           }
-          // Absolute safety: never keep the spinner up forever.
-          spinnerSafetyRef.current = setTimeout(done, 10000);
+          spinnerSafetyRef.current = setTimeout(done, autoPlay ? 10000 : 3500);
           return true;
         };
         if (!wireVideoElement() && isMounted) {
@@ -255,16 +257,16 @@ export default function CdnClapprPlayer({ source, poster, autoPlay = true, water
   }, [autoPlay, isLoading]); // Re-run when isLoading changes to ensure play is called after ready
 
   return (
-    <div className="w-full h-full relative bg-black">
+    <div className="w-full h-full relative bg-black isolate">
       {isLoading && (
-        <div className="absolute inset-0 z-10 flex items-center justify-center">
+        <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/40 pointer-events-none">
             <Preloader />
         </div>
       )}
       <div
         id={containerId}
         ref={playerContainerRef}
-        className={cn("w-full h-full", isLoading ? 'opacity-0' : 'opacity-100')}
+        className="w-full h-full opacity-100"
       />
     </div>
   );
