@@ -709,11 +709,11 @@ export default forwardRef<MediaLibraryRef, MediaLibraryProps>(function MediaLibr
           const progress = Math.round((event.loaded / event.total) * 100);
           setUploadProgress(progress);
           updateGlobalProgress(progress, 'cloudinary');
+          if (progress >= 100) finishGlobalUpload('cloudinary');
         }
       };
       xhr.onload = async () => {
         if (xhr.status === 200) {
-          finishGlobalUpload('cloudinary');
           const response = JSON.parse(xhr.responseText);
           let finalUrl = response.secure_url;
           if (response.resource_type === 'video' && uploadVideoFormat === 'm3u8') {
