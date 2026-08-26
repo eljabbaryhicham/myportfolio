@@ -288,7 +288,7 @@ export default function VercelBlobAdmin({ libraryOpen: externalLibraryOpen, onLi
       // Use data.contentType/size from server to ensure correct tab placement
       if (firestore) {
         try {
-          await addDocumentNonBlocking(collection(firestore, 'vercel_blobs'), {
+          const docRef = await addDocumentNonBlocking(collection(firestore, 'vercel_blobs'), {
             provider: 'vercel_blob',
             url: data.url,
             pathname: data.pathname || `vercel-blob/${Date.now()}-${addUrl.split('/').pop() || 'file'}`,
@@ -299,6 +299,11 @@ export default function VercelBlobAdmin({ libraryOpen: externalLibraryOpen, onLi
             uploadedBy: auth?.currentUser?.uid || null,
             sourceUrl: addUrl.trim(),
           } as any);
+          const newId = (docRef as any)?.id;
+          if (newId) {
+            setNewlyUploadedId(newId);
+            setTimeout(() => setNewlyUploadedId(null), 3000);
+          }
         } catch (e) {
           console.error('VercelBlobAdmin: Firestore add from URL failed', e);
         }
