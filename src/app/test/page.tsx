@@ -19,6 +19,7 @@ import { useTranslation } from '@/lib/i18n/useTranslation';
 
 interface HomePageSettings {
     workPagePlayer?: 'plyr' | 'clappr';
+    isTestPageEnabled?: boolean;
 }
 
 export default function TestPage() {
@@ -49,6 +50,12 @@ export default function TestPage() {
     }
   }, [user, isUserLoading, router]);
 
+  useEffect(() => {
+    if (homeSettings && homeSettings.isTestPageEnabled === false) {
+      router.push('/');
+    }
+  }, [homeSettings, router]);
+
 
   const handleLoadClick = () => {
     setSource(inputValue);
@@ -66,7 +73,7 @@ export default function TestPage() {
     });
   };
 
-  if (isUserLoading || !user) {
+  if (isUserLoading || !user || (homeSettings && homeSettings.isTestPageEnabled === false)) {
     return (
       <div className="flex h-full w-full items-center justify-center">
         <Preloader />
