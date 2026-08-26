@@ -2,6 +2,7 @@
 'use client';
 
 import { useTranslation } from '@/lib/i18n/useTranslation';
+import { SUPERADMIN_EMAIL } from '@/lib/constants';
 import { useCollection, useFirestore, useMemoFirebase, updateDocumentNonBlocking, useUser } from '@/firebase';
 import { collection, query, orderBy, doc } from 'firebase/firestore';
 import {
@@ -111,7 +112,7 @@ export default function AdminManagement() {
   const { data: users, isLoading } = useCollection<AdminUser>(usersQuery);
   
   const typedUser = currentUser as AppUser | null;
-  const isSuperAdmin = typedUser?.email === 'eljabbaryhicham@example.com';
+  const isSuperAdmin = typedUser?.email === SUPERADMIN_EMAIL;
   
   const [selectedUser, setSelectedUser] = useState<AdminUser | null>(null);
   const [isPermissionsDialogOpen, setIsPermissionsDialogOpen] = useState(false);
@@ -184,19 +185,19 @@ export default function AdminManagement() {
                                       <p className="font-bold">{user.username}</p>
                                       <p className="text-sm text-muted-foreground">{user.email}</p>
                                   </div>
-                                  <Badge variant={user.email === 'eljabbaryhicham@example.com' ? 'destructive' : 'secondary'} className="ml-2 whitespace-nowrap">
-                                      {user.email === 'eljabbaryhicham@example.com' ? t('adminMgmt.superAdmin') : t('adminMgmt.admin')}
+                                  <Badge variant={user.email === SUPERADMIN_EMAIL ? 'destructive' : 'secondary'} className="ml-2 whitespace-nowrap">
+                                      {user.email === SUPERADMIN_EMAIL ? t('adminMgmt.superAdmin') : t('adminMgmt.admin')}
                                   </Badge>
                               </div>
                               <Separator className="my-4 bg-white/10" />
                               <div className='flex justify-between items-center'>
-                                  {user.email !== 'eljabbaryhicham@example.com' ? (
+                                  {user.email !== SUPERADMIN_EMAIL ? (
                                       <Button variant="outline" size="sm" onClick={() => handleOpenPermissions(user)} disabled={!isSuperAdmin}>
                                           <FontAwesomeIcon icon={faShieldHalved} className="mr-2 h-4 w-4" />
                                           {t('adminMgmt.permissions')}
                                       </Button>
                                   ) : <div />}
-                                  {user.email !== 'eljabbaryhicham@example.com' && (
+                                  {user.email !== SUPERADMIN_EMAIL && (
                                       <Button variant="ghost" size="icon" onClick={() => handleDeleteUser(user.id, user.username)} disabled={!isSuperAdmin}>
                                           <FontAwesomeIcon icon={faTrash} className="h-4 w-4 text-destructive" />
                                       </Button>
@@ -227,12 +228,12 @@ export default function AdminManagement() {
                           <TableCell className="font-medium">{user.username}</TableCell>
                           <TableCell>{user.email}</TableCell>
                           <TableCell>
-                              <Badge variant={user.email === 'eljabbaryhicham@example.com' ? 'destructive' : 'secondary'}>
-                              {user.email === 'eljabbaryhicham@example.com' ? t('adminMgmt.superAdmin') : t('adminMgmt.admin')}
+                              <Badge variant={user.email === SUPERADMIN_EMAIL ? 'destructive' : 'secondary'}>
+                              {user.email === SUPERADMIN_EMAIL ? t('adminMgmt.superAdmin') : t('adminMgmt.admin')}
                               </Badge>
                           </TableCell>
                           <TableCell className="text-center">
-                              {user.email !== 'eljabbaryhicham@example.com' ? (
+                              {user.email !== SUPERADMIN_EMAIL ? (
                                 <Button variant="outline" size="sm" onClick={() => handleOpenPermissions(user)} disabled={!isSuperAdmin}>
                                   <FontAwesomeIcon icon={faShieldHalved} className="mr-2 h-4 w-4" />
                                   {t('adminMgmt.manage')}
@@ -242,7 +243,7 @@ export default function AdminManagement() {
                               )}
                           </TableCell>
                           <TableCell className="text-right">
-                              {user.email !== 'eljabbaryhicham@example.com' && (
+                              {user.email !== SUPERADMIN_EMAIL && (
                               <Button variant="ghost" size="icon" onClick={() => handleDeleteUser(user.id, user.username)} disabled={!isSuperAdmin}>
                                       <FontAwesomeIcon icon={faTrash} className="h-4 w-4 text-destructive" />
                               </Button>

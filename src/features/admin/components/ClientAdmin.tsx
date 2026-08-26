@@ -2,6 +2,7 @@
 'use client';
 
 import { useTranslation } from '@/lib/i18n/useTranslation';
+import { SUPERADMIN_EMAIL } from '@/lib/constants';
 import { useMemo, useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import {
@@ -151,7 +152,7 @@ export default function ClientAdmin() {
   const { toast } = useToast();
 
   const typedUser = user as AppUser | null;
-  const isSuperAdmin = typedUser?.email === 'eljabbaryhicham@example.com';
+  const isSuperAdmin = typedUser?.email === SUPERADMIN_EMAIL;
   const canEdit = isSuperAdmin || (typedUser?.permissions?.canEditAbout ?? true); 
 
   const clientsQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'clients'), orderBy('order')) : null, [firestore]);

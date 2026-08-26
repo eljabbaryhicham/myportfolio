@@ -26,6 +26,7 @@ import { deleteDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { collection, doc, writeBatch } from 'firebase/firestore';
 import { defaultPortfolioItems, type PortfolioItem } from '@/features/portfolio/data/portfolio-data';
 import { cn } from '@/lib/utils';
+import { SUPERADMIN_EMAIL } from '@/lib/constants';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlusCircle, faEllipsisH, faCloudUploadAlt, faGripVertical, faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
 import Preloader from '@/components/preloader';
@@ -48,7 +49,7 @@ function ProjectAdmin({ setSelectedItem, setIsSheetOpen }: ProjectAdminProps) {
   const { t } = useTranslation();
   
   const typedUser = user as AppUser | null;
-  const isSuperAdmin = typedUser?.email === 'eljabbaryhicham@example.com';
+  const isSuperAdmin = typedUser?.email === SUPERADMIN_EMAIL;
   const canEditProjects = isSuperAdmin || (typedUser?.permissions?.canEditProjects ?? true);
 
   const projectsCollection = useMemoFirebase(() => firestore ? collection(firestore, 'projects') : null, [firestore]);

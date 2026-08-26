@@ -2,6 +2,7 @@
 'use client';
 
 import { useTranslation } from '@/lib/i18n/useTranslation';
+import { SUPERADMIN_EMAIL } from '@/lib/constants';
 import React, { useCallback, useState, useEffect, useMemo, useRef, forwardRef, useImperativeHandle } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { Button } from '@/components/ui/button';
@@ -331,6 +332,14 @@ export default forwardRef<MediaAdminRef, MediaAdminProps>(function MediaAdmin(pr
   const [backgroundTarget, setBackgroundTarget] = useState<'home' | 'website'>('home');
   const [backgroundFile, setBackgroundFile] = useState<MediaAsset | null>(null);
 
+  const xhrRef = useRef<XMLHttpRequest[]>([]);
+
+  useEffect(() => {
+    return () => {
+      xhrRef.current.forEach(xhr => xhr.abort());
+    };
+  }, []);
+
   // Full library dialog state (standalone mode only)
   const [isFullLibraryOpen, setIsFullLibraryOpen] = useState(false);
   const [fullLibraryActiveTab, setFullLibraryActiveTab] = useState<'images' | 'videos' | 'files'>('images');
@@ -363,7 +372,7 @@ export default forwardRef<MediaAdminRef, MediaAdminProps>(function MediaAdmin(pr
   const newlyUploadedId = props.isDialog ? props.newlyUploadedId : completedUpload?.docId ?? null;
 
   const typedUser = user as AppUser | null;
-  const isSuperAdmin = typedUser?.email === 'eljabbaryhicham@example.com';
+  const isSuperAdmin = typedUser?.email === SUPERADMIN_EMAIL;
   const canUpload = isSuperAdmin || (typedUser?.permissions?.canUploadMedia ?? true);
   const canDelete = isSuperAdmin || (typedUser?.permissions?.canDeleteMedia ?? true);
   const canEditHome = isSuperAdmin || (typedUser?.permissions?.canEditHome ?? true);
@@ -457,6 +466,7 @@ export default forwardRef<MediaAdminRef, MediaAdminProps>(function MediaAdmin(pr
       formData.append('upload_preset', uploadPreset);
 
       const xhr = new XMLHttpRequest();
+      xhrRef.current.push(xhr);
       xhr.open('POST', `https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`, true);
 
       xhr.upload.onprogress = (event) => {
@@ -528,7 +538,10 @@ export default forwardRef<MediaAdminRef, MediaAdminProps>(function MediaAdmin(pr
       xhr.send(formData);
 
       await new Promise(resolve => {
-        xhr.onloadend = resolve;
+        xhr.onloadend = () => {
+          xhrRef.current = xhrRef.current.filter(h => h !== xhr);
+          resolve(undefined);
+        };
       });
     }
 

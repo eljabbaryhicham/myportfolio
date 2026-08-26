@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/firebase';
 import type { AppUser } from '@/firebase/auth/use-user';
@@ -30,6 +30,7 @@ const AboutAdmin = dynamic(() => import('@/features/admin/components/AboutAdmin'
 const UnifiedMediaPicker = dynamic(() => import('@/features/admin/components/UnifiedMediaPicker'), { ssr: false, loading: () => <Preloader /> });
 import { useTranslation } from '@/lib/i18n/useTranslation';
 import { useUploadProgress } from '@/components/upload-progress-context';
+import { SUPERADMIN_EMAIL } from '@/lib/constants';
 
 
 function AdminPage() {
@@ -56,8 +57,18 @@ function AdminPage() {
   const [vercelActiveTab, setVercelActiveTab] = useState<'images' | 'videos' | 'files'>('images');
   const { setActiveMediaTab, completedUpload, consumeCompletedUpload } = useUploadProgress();
 
+  const timeoutsRef = useRef<ReturnType<typeof setTimeout>[]>([]);
+  const safeTimeout = useCallback((fn: () => void, delay: number) => {
+    const id = setTimeout(() => {
+      timeoutsRef.current = timeoutsRef.current.filter(t => t !== id);
+      fn();
+    }, delay);
+    timeoutsRef.current.push(id);
+    return id;
+  }, []);
+
   const typedUser = user as AppUser | null;
-  const isSuperAdmin = typedUser?.email === 'eljabbaryhicham@example.com';
+  const isSuperAdmin = typedUser?.email === SUPERADMIN_EMAIL;
   
   const canEditProjects = isSuperAdmin || (typedUser?.permissions?.canEditProjects ?? true);
   
@@ -91,6 +102,12 @@ function AdminPage() {
   }, [isUserLoading, user, router]);
 
   useEffect(() => {
+    return () => {
+      timeoutsRef.current.forEach(clearTimeout);
+    };
+  }, []);
+
+  useEffect(() => {
     if (!completedUpload) return;
     const { docId, resourceType, libraryId } = completedUpload;
     setNewlyUploadedId(docId);
@@ -104,7 +121,7 @@ function AdminPage() {
       consumeCompletedUpload();
     }
     // Cloudinary: don't consume here — MediaAdmin handles its own popup
-    setTimeout(() => setNewlyUploadedId(null), 3000);
+    safeTimeout(() => setNewlyUploadedId(null), 3000);
   }, [completedUpload, activeTab, consumeCompletedUpload, setActiveTab]);
 
 
@@ -213,7 +230,7 @@ function AdminPage() {
   const handleUploadComplete = async (docId: string, resourceType: 'image' | 'video' | 'raw', libraryId: 'primary' | 'extented') => {
     if (!docId) return;
     setNewlyUploadedId(docId);
-    setTimeout(() => setNewlyUploadedId(null), 2500);
+    safeTimeout(() => setNewlyUploadedId(null), 2500);
   };
 
   // Dedicated handler for Vercel Blob - identical semantics to handleUploadComplete above,
@@ -225,7 +242,7 @@ function AdminPage() {
     setInnerMediaTab('vercel');
     setVercelActiveTab(resourceType === 'video' ? 'videos' : resourceType === 'raw' ? 'files' : 'images');
     setIsVercelLibraryOpen(true);
-    setTimeout(() => setNewlyUploadedId(null), 3000);
+    safeTimeout(() => setNewlyUploadedId(null), 3000);
   };
 
   if (isUserLoading || !user) {

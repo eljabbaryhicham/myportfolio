@@ -148,7 +148,9 @@ export default function VercelBlobAdmin({ libraryOpen: externalLibraryOpen, onLi
               setTimeout(() => setNewlyUploadedId(null), 3000);
             }
             if (newId) signalCompletedUpload(newId, resourceType, 'vercel_blob');
-          } catch {}
+          } catch (e) {
+            console.error('VercelBlobAdmin: Firestore add after upload failed', e);
+          }
         }
         // Fallback open when no direct callback is wired (e.g. standalone usage elsewhere);
         // when onUploadComplete is present the parent is responsible for opening.
@@ -198,13 +200,12 @@ export default function VercelBlobAdmin({ libraryOpen: externalLibraryOpen, onLi
       const data = await res.json();
       if (!res.ok || !data.success) throw new Error(data.message || 'Delete failed');
       if (firestore && id) {
-        try { await deleteDocumentNonBlocking(doc(firestore, 'vercel_blobs', id)); } catch {}
+        try { await deleteDocumentNonBlocking(doc(firestore, 'vercel_blobs', id)); } catch (e) {
+          console.error('VercelBlobAdmin: Firestore delete after Vercel delete failed', e);
+        }
       }
       toast({ title: 'Deleted' });
     } catch (e: any) {
-      if (firestore && id) {
-        try { await deleteDocumentNonBlocking(doc(firestore, 'vercel_blobs', id)); } catch {}
-      }
       toast({ variant: 'destructive', title: 'Delete failed', description: e?.message });
     }
   };
@@ -237,11 +238,14 @@ export default function VercelBlobAdmin({ libraryOpen: externalLibraryOpen, onLi
         });
         const data = await res.json();
         if (!res.ok || !data.success) throw new Error(data.message || 'Delete failed');
-        try { await deleteDocumentNonBlocking(doc(firestore!, 'vercel_blobs', b.id)); } catch {}
-      } catch {
+        try { await deleteDocumentNonBlocking(doc(firestore!, 'vercel_blobs', b.id)); } catch (e) {
+          console.error('VercelBlobAdmin: Firestore delete in bulk delete failed', e);
+        }
+      } catch (e) {
         failed++;
-        // Ensure Firestore doc is removed even if Vercel delete failed
-        try { await deleteDocumentNonBlocking(doc(firestore!, 'vercel_blobs', b.id)); } catch {}
+        try { await deleteDocumentNonBlocking(doc(firestore!, 'vercel_blobs', b.id)); } catch (e) {
+          console.error('VercelBlobAdmin: Firestore delete in bulk delete failed', e);
+        }
       }
     }
     if (failed > 0) toast({ variant: 'destructive', title: `Deleted ${ids.length - failed}/${ids.length}`, description: `${failed} failed` });
@@ -281,7 +285,9 @@ export default function VercelBlobAdmin({ libraryOpen: externalLibraryOpen, onLi
             uploadedBy: auth?.currentUser?.uid || null,
             sourceUrl: addUrl.trim(),
           } as any);
-        } catch {}
+        } catch (e) {
+          console.error('VercelBlobAdmin: Firestore add from URL failed', e);
+        }
       }
       // Switch to correct tab based on contentType (more reliable than URL extension for add-from-url)
       const ct = (data.contentType || '').toLowerCase();

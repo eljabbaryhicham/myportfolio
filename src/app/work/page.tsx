@@ -34,6 +34,7 @@ import type { AppUser } from '@/firebase/auth/use-user';
 import dynamic from 'next/dynamic';
 const CdnClapprPlayer = dynamic(() => import('@/components/CdnClapprPlayer'), { ssr: false });
 import { useTranslation } from '@/lib/i18n/useTranslation';
+import { SUPERADMIN_EMAIL } from '@/lib/constants';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeRaw from 'rehype-raw';
@@ -556,7 +557,7 @@ export default function WorkPage() {
   const { t } = useTranslation();
 
   const typedUser = user as AppUser | null;
-  const isSuperAdmin = typedUser?.email === 'eljabbaryhicham@example.com';
+  const isSuperAdmin = typedUser?.email === SUPERADMIN_EMAIL;
   const canEditProjects = isSuperAdmin || (typedUser?.permissions?.canEditProjects ?? true);
 
   // NOTE: no server-side orderBy — Firestore silently excludes documents that

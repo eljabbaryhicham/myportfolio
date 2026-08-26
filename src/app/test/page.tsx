@@ -16,6 +16,7 @@ import PlyrPlayer from '@/components/PlyrPlayer';
 import type { AppUser } from '@/firebase/auth/use-user';
 import { useToast } from '@/hooks/use-toast';
 import { useTranslation } from '@/lib/i18n/useTranslation';
+import { SUPERADMIN_EMAIL } from '@/lib/constants';
 
 interface HomePageSettings {
     workPagePlayer?: 'plyr' | 'clappr';
@@ -34,7 +35,7 @@ export default function TestPage() {
   const [inputValue, setInputValue] = useState(defaultUrl);
 
   const typedUser = user as AppUser | null;
-  const isSuperAdmin = typedUser?.email === 'eljabbaryhicham@example.com';
+  const isSuperAdmin = typedUser?.email === SUPERADMIN_EMAIL;
 
   const settingsDocRef = useMemoFirebase(
     () => (firestore ? doc(firestore, 'homepage', 'settings') : null),

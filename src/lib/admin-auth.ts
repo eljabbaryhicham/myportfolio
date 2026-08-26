@@ -2,7 +2,7 @@ import { NextRequest } from 'next/server';
 import { initializeServerApp } from '@/firebase/server-init';
 import admin from 'firebase-admin';
 
-const SUPERADMIN_EMAIL = 'eljabbaryhicham@example.com';
+import { SUPERADMIN_EMAIL } from '@/lib/constants';
 
 function decodeJwtPayload(token: string): any | null {
   try {
@@ -44,27 +44,24 @@ export async function verifyAdminRequest(req: NextRequest): Promise<{ uid: strin
       // No user doc => default allow (matches client `?? true`)
       return decoded as any;
     } catch (e) {
-      console.warn('verifyAdminRequest: Firestore permission check failed, allowing valid token', e);
-      return decoded as any;
+      console.warn('verifyAdminRequest: Firestore permission check failed, denying access', e);
+      return null;
     }
   } catch (e) {
-    console.warn('verifyAdminRequest: strict verification failed, trying fallback decode', e);
-    // 2. Fallback: decode without verification (for dev / ADC not configured)
-    // Still check expiry and superadmin/permissions via payload
+    console.warn('verifyAdminRequest: strict verification failed', e);
+    // 2. Fallback: decode without verification (DEV ONLY — never in production)
+    if (process.env.NODE_ENV === 'production') {
+      console.error('verifyAdminRequest: Admin SDK verification failed in production — denying access');
+      return null;
+    }
     const payload = decodeJwtPayload(token);
     if (!payload || !payload.sub) return null;
     const now = Math.floor(Date.now() / 1000);
     if (payload.exp && payload.exp < now) return null;
 
-    // Check superadmin via email in payload
     if (payload.email === SUPERADMIN_EMAIL) {
       return { uid: payload.sub, email: payload.email };
     }
-    // For non-superadmin, we can't verify permissions without Admin SDK,
-    // but we can allow if payload has authenticated flag.
-    // To keep protected, we only allow superadmin in fallback mode.
-    // If you want to allow any authenticated user in fallback, uncomment:
-    // return { uid: payload.sub, email: payload.email };
     return null;
   }
 }

@@ -24,6 +24,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import Preloader from '@/components/preloader';
 import type { AppUser } from '@/firebase/auth/use-user';
 import { useTranslation } from '@/lib/i18n/useTranslation';
+import { SUPERADMIN_EMAIL } from '@/lib/constants';
 import MediaAdmin from './MediaAdmin';
 import { faImages } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -86,7 +87,7 @@ export default function ContactAdmin() {
   const { user } = useUser();
 
   const typedUser = user as AppUser | null;
-  const isSuperAdmin = typedUser?.email === 'eljabbaryhicham@example.com';
+  const isSuperAdmin = typedUser?.email === SUPERADMIN_EMAIL;
   const canEditContact = isSuperAdmin || (typedUser?.permissions?.canEditContact ?? true);
 
   const contactDocRef = useMemoFirebase(
