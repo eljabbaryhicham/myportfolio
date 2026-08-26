@@ -60,11 +60,8 @@ const normalizeSelfClosingMedia = (md: string) =>
 const DETAILS_MEDIA_RE = /<\s*(video|audio|img|source)\b|!\[[^\]]*\]\([^)]+\)/i;
 const hasDetailsMedia = (details?: string) => !!details && DETAILS_MEDIA_RE.test(details);
 
-// Android only: the stall is the surrounding compositing/decoders.
-// Defer heavy work (script fetch + Clappr init) past the dialog's enter
-// animation so it doesn't compete with framer-motion and glass paint.
-// iOS/desktop keep the original immediate lazy behaviour — no Android
-// fixes are applied to them.
+// Android only: defer heavy Clappr/Plyr init past the dialog's enter
+// animation. iOS/desktop keep the original immediate behaviour.
 function LazyDetailsVideo({
   videoSrc,
   poster,
@@ -77,12 +74,14 @@ function LazyDetailsVideo({
   const ref = useRef<HTMLDivElement>(null);
   const [inView, setInView] = useState(false);
   const [activated, setActivated] = useState(false);
+  const isAndroid = useMemo(() => typeof navigator !== 'undefined' && /Android/i.test(navigator.userAgent), []);
   const [ready, setReady] = useState(false);
   const shouldLoad = inView || activated;
   useEffect(() => {
+    if (!isAndroid) { setReady(true); return; }
     const t = setTimeout(() => setReady(true), 420);
     return () => clearTimeout(t);
-  }, []);
+  }, [isAndroid]);
   useEffect(() => {
     if (!ready) return;
     const el = ref.current;
@@ -685,12 +684,11 @@ export default function WorkPage() {
     }
   }, [isDialogOpen]);
 
-  // Pause the fullscreen SiteBackground decoder while any dialog is
-  // open — it competes with the details Plyr/Clappr decoders. Hide the
-  // layer from the compositor only on Android (Android fix regresses iOS).
+  // Android only: background decoder competes with details decoders.
+  // iOS must stay exactly as before.
   useEffect(() => {
+    if (typeof navigator !== 'undefined' && !/Android/i.test(navigator.userAgent)) return;
     if (typeof document === 'undefined') return;
-    const isAndroid = typeof navigator !== 'undefined' && /Android/i.test(navigator.userAgent);
     const bgWrap = document.querySelector('div.-z-10') as HTMLElement | null;
     const bgVideo = bgWrap?.querySelector('video') as HTMLVideoElement | null;
     const anyOpen = !!selectedItem || isDetailsModalOpen || isContactFormOpen || !!fullscreenImageUrl;
@@ -699,10 +697,10 @@ export default function WorkPage() {
         bgVideo.pause();
         (bgWrap as any)._pausedByDialog = true;
       }
-      if (isAndroid && bgWrap) bgWrap.style.visibility = 'hidden';
+      if (bgWrap) bgWrap.style.visibility = 'hidden';
       document.documentElement.classList.add('work-dialog-open');
     } else {
-      if (isAndroid && bgWrap) bgWrap.style.visibility = '';
+      if (bgWrap) bgWrap.style.visibility = '';
       document.documentElement.classList.remove('work-dialog-open');
       if (bgWrap && (bgWrap as any)._pausedByDialog) {
         delete (bgWrap as any)._pausedByDialog;
@@ -710,7 +708,7 @@ export default function WorkPage() {
       }
     }
     return () => {
-      if (isAndroid && bgWrap) bgWrap.style.visibility = '';
+      if (bgWrap) bgWrap.style.visibility = '';
       document.documentElement.classList.remove('work-dialog-open');
     };
   }, [selectedItem, isDetailsModalOpen, isContactFormOpen, fullscreenImageUrl]);

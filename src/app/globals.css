@@ -334,22 +334,12 @@ html, body {
   border-radius: 0.5rem;
 }
 
-/* 16:9 frame for videos embedded in project details. */
+/* 16:9 frame for videos embedded in project details — Android only
+   gets the offscreen-skip optimisation. iOS stays exactly as before. */
 .is-android .details-video-frame {
-  /* Android only: rectangular scissor + content-visibility skips offscreen
-     decoders. iOS must not receive the Android rectangular fix. */
   contain: layout paint;
   content-visibility: auto;
   contain-intrinsic-size: 400px 225px;
-}
-@supports (-webkit-touch-callout: none) {
-  /* iOS Safari: keep original rounded clipping, but enable lightweight
-     offscreen skipping without layout-breaking contain. */
-  .details-video-frame {
-    contain: content;
-    content-visibility: auto;
-    contain-intrinsic-size: 400px 225px;
-  }
 }
 .details-video-frame .plyr,
 .details-video-frame .plyr__video-wrapper {
