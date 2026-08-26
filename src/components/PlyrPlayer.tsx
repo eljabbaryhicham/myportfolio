@@ -22,14 +22,15 @@ const PlyrPlayer = forwardRef(({ source, poster, autoPlay = true, thumbnailVttUr
   const containerRef = useRef<HTMLDivElement>(null);
   const playerRef = useRef<PlyrInstance | null>(null);
   const hlsRef = useRef<Hls | null>(null);
+  const nativeVideoRef = useRef<HTMLVideoElement | null>(null);
   const isMobile = useIsMobile();
   const [isLoading, setIsLoading] = useState(true);
   const playerReadyRef = useRef(false);
 
-  // Expose the player instance via the passed ref
   useImperativeHandle(ref, () => playerRef.current, []);
 
-  // Effect for setting up and tearing down the player
+  // iOS: skip Plyr + hls.js entirely — Safari's native HLS is faster.
+  // Desktop/Android: use Plyr with hls.js for HLS, native for mp4.
   useEffect(() => {
     let isMounted = true;
 
@@ -40,26 +41,63 @@ const PlyrPlayer = forwardRef(({ source, poster, autoPlay = true, thumbnailVttUr
 
         const isYoutube = source.includes('youtube.com') || source.includes('youtu.be');
         const isVimeo = source.includes('vimeo.com');
+        const isIOS = typeof navigator !== 'undefined' && /iPad|iPhone|iPod/.test(navigator.userAgent)
+          || (typeof navigator !== 'undefined' && navigator.platform === 'MacIntel' && (navigator as any).maxTouchPoints > 1);
 
         try {
-            const { default: Plyr } = await import('plyr');
-
-            // Clear previous player if any
+            // Cleanup previous
             if (playerRef.current) {
-                try {
-                    playerRef.current.destroy();
-                } catch (e) {
-                    console.error("Error destroying previous Plyr player:", e);
-                }
+                try { playerRef.current.destroy(); } catch {}
             }
-            if (hlsRef.current) {
-                hlsRef.current.destroy();
-            }
+            if (hlsRef.current) { hlsRef.current.destroy(); }
+            if (nativeVideoRef.current) { nativeVideoRef.current.pause(); nativeVideoRef.current.removeAttribute('src'); nativeVideoRef.current.load(); }
             container.innerHTML = '';
             playerRef.current = null;
             hlsRef.current = null;
+            nativeVideoRef.current = null;
             playerReadyRef.current = false;
+            if (!isMounted) return;
 
+            // ── iOS: native <video> with Safari HLS ──────────────────────
+            if (isIOS && !isYoutube && !isVimeo) {
+                const video = document.createElement('video');
+                video.setAttribute('controls', '');
+                video.setAttribute('playsinline', '');
+                // @ts-ignore
+                video.setAttribute('webkit-playsinline', 'true');
+                video.setAttribute('preload', 'metadata');
+                video.setAttribute('crossorigin', 'anonymous');
+                if (poster) video.setAttribute('poster', poster);
+
+                let settled = false;
+                const done = () => {
+                    if (settled || !isMounted) return;
+                    settled = true;
+                    setIsLoading(false);
+                };
+
+                const rvfc = (video as any).requestVideoFrameCallback;
+                if (rvfc) {
+                    rvfc.call(video, () => requestAnimationFrame(() => done()));
+                } else {
+                    video.addEventListener('playing', done, { once: true });
+                    video.addEventListener('loadeddata', done, { once: true });
+                }
+                video.addEventListener('canplay', () => setTimeout(done, 200), { once: true });
+                video.addEventListener('error', done, { once: true });
+                const safety = setTimeout(done, 8000);
+
+                video.src = source;
+                container.appendChild(video);
+                nativeVideoRef.current = video;
+                if (autoPlay) {
+                    video.play().catch(() => {});
+                }
+                return;
+            }
+
+            // ── Desktop/Android: Plyr + hls.js ──────────────────────────
+            const { default: Plyr } = await import('plyr');
             if (!isMounted) return;
 
             let element: HTMLVideoElement | HTMLDivElement;
@@ -74,8 +112,8 @@ const PlyrPlayer = forwardRef(({ source, poster, autoPlay = true, thumbnailVttUr
                 video.setAttribute('preload', 'metadata');
                 const isAndroid = typeof navigator !== 'undefined' && /Android/i.test(navigator.userAgent);
                 if (isAndroid) {
-                  video.setAttribute('webkit-playsinline', '');
-                  video.setAttribute('crossorigin', 'anonymous');
+                    video.setAttribute('webkit-playsinline', '');
+                    video.setAttribute('crossorigin', 'anonymous');
                 }
                 if (poster) video.setAttribute('poster', poster);
                 let settled = false;
@@ -95,7 +133,7 @@ const PlyrPlayer = forwardRef(({ source, poster, autoPlay = true, thumbnailVttUr
                 video.addEventListener('canplay', () => setTimeout(done, 300), { once: true });
                 const safety = setTimeout(done, 10000);
                 video.addEventListener('loadstart', () => {
-                  if (isMounted && !settled) setIsLoading(true);
+                    if (isMounted && !settled) setIsLoading(true);
                 });
                 element = video;
             }
@@ -106,8 +144,6 @@ const PlyrPlayer = forwardRef(({ source, poster, autoPlay = true, thumbnailVttUr
 
             const onPlayerReady = () => {
                 playerReadyRef.current = true;
-                // For YouTube/Vimeo embeds there is no <video> element to
-                // observe, so Plyr's ready is the best available signal.
                 if ((isYoutube || isVimeo) && isMounted) setIsLoading(false);
             };
             const onPlayerError = () => {
@@ -135,10 +171,7 @@ const PlyrPlayer = forwardRef(({ source, poster, autoPlay = true, thumbnailVttUr
             };
 
             if (thumbnailVttUrl) {
-                playerConfig.previewThumbnails = {
-                    enabled: true,
-                    src: thumbnailVttUrl,
-                };
+                playerConfig.previewThumbnails = { enabled: true, src: thumbnailVttUrl };
             }
 
             if (isYoutube || isVimeo) {
@@ -147,12 +180,12 @@ const PlyrPlayer = forwardRef(({ source, poster, autoPlay = true, thumbnailVttUr
                 if (isMounted) playerRef.current = player;
             } else if (source.includes('.m3u8') && Hls.isSupported()) {
                 const hls = new Hls({
-                  startLevel: -1,
-                  capLevelToPlayerSize: true,
-                  maxBufferLength: isMobile ? 30 : 60,
-                  maxMaxBufferLength: isMobile ? 60 : 120,
-                  enableWorker: true,
-                  lowLatencyMode: false,
+                    startLevel: -1,
+                    capLevelToPlayerSize: true,
+                    maxBufferLength: isMobile ? 30 : 60,
+                    maxMaxBufferLength: isMobile ? 60 : 120,
+                    enableWorker: true,
+                    lowLatencyMode: false,
                 });
                 hls.loadSource(source);
 
@@ -160,7 +193,7 @@ const PlyrPlayer = forwardRef(({ source, poster, autoPlay = true, thumbnailVttUr
                     if (!isMounted) return;
 
                     const availableQualities = hls.levels.map((l) => l.height);
-                    availableQualities.unshift(0); // 0 will represent Auto
+                    availableQualities.unshift(0);
 
                     player = new Plyr(element, {
                         ...playerConfig,
@@ -170,15 +203,11 @@ const PlyrPlayer = forwardRef(({ source, poster, autoPlay = true, thumbnailVttUr
                             forced: true,
                             onChange: (quality: number) => {
                                 if (hls) {
-                                  hls.currentLevel = quality === 0 ? -1 : hls.levels.findIndex((level) => level.height === quality);
+                                    hls.currentLevel = quality === 0 ? -1 : hls.levels.findIndex((level) => level.height === quality);
                                 }
                             },
                         },
-                        i18n: {
-                            qualityLabel: {
-                                0: 'Auto',
-                            },
-                        },
+                        i18n: { qualityLabel: { 0: 'Auto' } },
                     });
 
                     wireEvents(player);
@@ -204,35 +233,42 @@ const PlyrPlayer = forwardRef(({ source, poster, autoPlay = true, thumbnailVttUr
 
     return () => {
         isMounted = false;
-        const hls = hlsRef.current;
-        if (hls) {
-            hls.destroy();
-            hlsRef.current = null;
+        if (hlsRef.current) { hlsRef.current.destroy(); hlsRef.current = null; }
+        if (nativeVideoRef.current) {
+            nativeVideoRef.current.pause();
+            nativeVideoRef.current.removeAttribute('src');
+            nativeVideoRef.current.load();
+            nativeVideoRef.current = null;
         }
-
         const player = playerRef.current;
         if (player) {
-            try {
-                player.stop();
-                player.destroy();
-            } catch (e) {
-                console.error("Error destroying Plyr player:", e);
-            }
+            try { player.stop(); player.destroy(); } catch {}
         }
         playerRef.current = null;
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [source, poster, isMobile]); // Re-run if source, poster, or isMobile changes
+  }, [source, poster, isMobile]);
 
-  // Effect for controlling playback based on autoPlay prop
+  // Playback control: autoplay / pause
   useEffect(() => {
     let isMounted = true;
+
+    // iOS native video
+    const nativeVid = nativeVideoRef.current;
+    if (nativeVid) {
+        if (autoPlay) {
+            nativeVid.play().catch(() => {});
+        } else {
+            nativeVid.pause();
+        }
+        return () => { isMounted = false; };
+    }
+
+    // Plyr instance
     const player = playerRef.current;
     if (player) {
         const handleReady = () => {
             if (isMounted && autoPlay && !player.playing) {
-                // Autoplay can transiently fail (browser policy timing).
-                // Retry a few times — still unmuted.
                 let attempts = 0;
                 const tryPlay = () => {
                     attempts++;
@@ -240,45 +276,27 @@ const PlyrPlayer = forwardRef(({ source, poster, autoPlay = true, thumbnailVttUr
                         const playPromise = player.play();
                         if (playPromise !== undefined && typeof playPromise.catch === 'function') {
                             playPromise.catch(() => {
-                                if (attempts < 4) {
-                                    setTimeout(tryPlay, 600);
-                                } else if (isMounted) {
-                                    setIsLoading(false);
-                                }
+                                if (attempts < 4) setTimeout(tryPlay, 600);
+                                else if (isMounted) setIsLoading(false);
                             });
                         }
-                    } catch (e) {
-                        if (attempts < 4) {
-                            setTimeout(tryPlay, 600);
-                        } else if (isMounted) {
-                            setIsLoading(false);
-                        }
+                    } catch {
+                        if (attempts < 4) setTimeout(tryPlay, 600);
+                        else if (isMounted) setIsLoading(false);
                     }
                 };
                 tryPlay();
             } else if (!autoPlay && player.playing) {
-                 try {
-                   player.pause();
-                } catch(e) {/* ignore */}
+                try { player.pause(); } catch {}
             }
         };
-
-        if (playerReadyRef.current) {
-             handleReady();
-        } else {
-            player.once('ready', handleReady);
-        }
+        if (playerReadyRef.current) handleReady();
+        else player.once('ready', handleReady);
 
         return () => {
             isMounted = false;
             player.off('ready', handleReady);
-            if (player && player.playing) {
-                try {
-                    player.pause();
-                } catch(e) {
-                    // It might already be destroyed
-                }
-            }
+            if (player.playing) try { player.pause(); } catch {}
         };
     } else {
         setIsLoading(false);
