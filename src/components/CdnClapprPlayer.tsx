@@ -166,12 +166,14 @@ const CdnClapprPlayer = forwardRef(function CdnClapprPlayer({ source, poster, au
           if (isAndroid) {
             video.setAttribute('webkit-playsinline', '');
             video.setAttribute('playsinline', '');
+          } else {
+            // Desktop/iOS only: start downloading immediately (poster shows while
+            // it loads) instead of waiting on 'metadata' — this made large
+            // progressive files slow to start. Android is left untouched (its
+            // current config already works well).
+            video.setAttribute('preload', 'auto');
+            video.setAttribute('playsinline', '');
           }
-          // Start downloading immediately (poster shows while it loads) instead
-          // of waiting for a user gesture — 'metadata' made playback start slow
-          // on desktop/iOS for large progressive files.
-          video.setAttribute('preload', 'auto');
-          video.setAttribute('playsinline', '');
           // Wait for the video to actually start playing before hiding preloader
           video.addEventListener('playing', done, { once: true });
           spinnerSafetyRef.current = setTimeout(done, 10000);
