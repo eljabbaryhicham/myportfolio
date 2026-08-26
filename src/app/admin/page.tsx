@@ -95,6 +95,7 @@ function AdminPage() {
     }
     if (libraryId === 'vercel_blob') {
       setInnerMediaTab('vercel');
+      setIsVercelLibraryOpen(true);
     } else {
       setDialogActiveTab(resourceType === 'video' ? 'videos' : resourceType === 'raw' ? 'files' : 'images');
       setDialogActiveLibrary(libraryId);
@@ -246,15 +247,15 @@ function AdminPage() {
           <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col min-h-0 mt-8">
             <div className="w-full flex flex-wrap justify-center items-center gap-4 md:gap-0">
               <TabsList className="flex-wrap h-auto justify-center">
-                <TabsTrigger value="home" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">{t('admin.tabs.home')}</TabsTrigger>
-                <TabsTrigger value="projects" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">{t('admin.tabs.projects')}</TabsTrigger>
-                <TabsTrigger value="about" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">{t('admin.tabs.about')}</TabsTrigger>
-                <TabsTrigger value="contact" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">{t('admin.tabs.contact')}</TabsTrigger>
+                <TabsTrigger value="home" className="glass-effect data-[state=active]:bg-destructive">{t('admin.tabs.home')}</TabsTrigger>
+                <TabsTrigger value="projects" className="glass-effect data-[state=active]:bg-destructive">{t('admin.tabs.projects')}</TabsTrigger>
+                <TabsTrigger value="about" className="glass-effect data-[state=active]:bg-destructive">{t('admin.tabs.about')}</TabsTrigger>
+                <TabsTrigger value="contact" className="glass-effect data-[state=active]:bg-destructive">{t('admin.tabs.contact')}</TabsTrigger>
               </TabsList>
               <div className="md:ml-auto">
                 <TabsList className="flex-wrap h-auto justify-center">
-                  <TabsTrigger value="media" className="text-white data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:animate-glow px-4 py-2">{t('admin.tabs.media')}</TabsTrigger>
-                  {isSuperAdmin && <TabsTrigger value="admins" className="text-white data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:animate-glow px-4 py-2">{t('admin.tabs.admins')}</TabsTrigger>}
+                  <TabsTrigger value="media" className="glass-effect text-white data-[state=active]:bg-destructive data-[state=active]:animate-glow px-4 py-2">{t('admin.tabs.media')}</TabsTrigger>
+                  {isSuperAdmin && <TabsTrigger value="admins" className="glass-effect text-white data-[state=active]:bg-destructive data-[state=active]:animate-glow px-4 py-2">{t('admin.tabs.admins')}</TabsTrigger>}
                 </TabsList>
               </div>
             </div>
@@ -277,8 +278,8 @@ function AdminPage() {
               <TabsContent value="media" className="flex-1 overflow-auto mt-4 data-[state=inactive]:hidden" forceMount>
                   <Tabs value={innerMediaTab} onValueChange={setInnerMediaTab} className="w-full">
                     <TabsList className="mb-4">
-                      <TabsTrigger value="cloudinary" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Cloudinary</TabsTrigger>
-                      <TabsTrigger value="vercel" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Vercel Blob</TabsTrigger>
+                      <TabsTrigger value="cloudinary" className="glass-effect data-[state=active]:bg-destructive">Cloudinary</TabsTrigger>
+                      <TabsTrigger value="vercel" className="glass-effect data-[state=active]:bg-destructive">Vercel Blob</TabsTrigger>
                     </TabsList>
                     <TabsContent value="cloudinary" forceMount className="data-[state=inactive]:hidden">
                       <MediaAdmin onUploadComplete={handleUploadComplete} onLibraryOpenRequest={() => setIsLibraryOpen(true)} onMediaSelect={handleOpenPortfolioFormWithMedia} />

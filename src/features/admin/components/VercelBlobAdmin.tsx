@@ -427,15 +427,15 @@ export default function VercelBlobAdmin({ libraryOpen: externalLibraryOpen, onLi
         <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)} className="flex-1 flex flex-col min-h-0">
           <div className="px-4 pt-4 flex items-center gap-2 flex-wrap">
             <TabsList>
-              <TabsTrigger value="images" className="py-2 px-4 text-base data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+              <TabsTrigger value="images" className="py-2 px-4 text-base glass-effect data-[state=active]:bg-destructive">
                 <FontAwesomeIcon icon={faFileImage} className="mr-2" />
                 {t('mediaAdmin.tab.images')}
               </TabsTrigger>
-              <TabsTrigger value="videos" className="py-2 px-4 text-base data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+              <TabsTrigger value="videos" className="py-2 px-4 text-base glass-effect data-[state=active]:bg-destructive">
                 <FontAwesomeIcon icon={faFilm} className="mr-2" />
                 {t('mediaAdmin.tab.videos')}
               </TabsTrigger>
-              <TabsTrigger value="files" className="py-2 px-4 text-base data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+              <TabsTrigger value="files" className="py-2 px-4 text-base glass-effect data-[state=active]:bg-destructive">
                 <FontAwesomeIcon icon={faFileLines} className="mr-2" />
                 {t('mediaAdmin.tab.files')}
               </TabsTrigger>

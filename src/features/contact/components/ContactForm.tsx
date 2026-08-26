@@ -196,7 +196,7 @@ export default function ContactForm({ onSuccess, defaultMessage = '' }: ContactF
                 </FormItem>
             )}
             />
-            <Button type="submit" size="lg" className="w-full bg-primary text-primary-foreground" disabled={isSubmitting}>
+            <Button type="submit" size="lg" className="w-full glass-effect" disabled={isSubmitting}>
             {isSubmitting ? t('contactForm.submit.sending') : t('contactForm.submit.send')}
             </Button>
         </form>
