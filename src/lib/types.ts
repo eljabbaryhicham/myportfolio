@@ -26,4 +26,5 @@ export interface HomePageSettings {
     mediaWidth?: number;
     showMediaTitles?: boolean;
     glassColor?: string;
+    isTestPageEnabled?: boolean;
 }

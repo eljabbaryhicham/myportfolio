@@ -9,7 +9,7 @@ import { motion } from "framer-motion";
 import React from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faHouse, faImage, faCircleInfo, faEnvelope, faShieldHalved } from "@fortawesome/free-solid-svg-icons";
+import { faHouse, faImage, faCircleInfo, faEnvelope, faShieldHalved, faFlask } from "@fortawesome/free-solid-svg-icons";
 import Logo from "../logo";
 import { doc } from "firebase/firestore";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -21,6 +21,7 @@ const navItems = [
   { href: "/work", key: "nav.work", icon: faImage, public: true },
   { href: "/about", key: "nav.about", icon: faCircleInfo, public: true },
   { href: "/contact", key: "nav.contact", icon: faEnvelope, public: true },
+  { href: "/test", key: "nav.test", icon: faFlask, public: false, requiresSetting: 'isTestPageEnabled' as const },
   { href: "/admin", key: "nav.admin", icon: faShieldHalved, public: false, adminOnly: true },
 ];
 
@@ -80,8 +81,8 @@ export function AppNav() {
   const logoUrl = homeSettings?.menubarLogoUrl || homeSettings?.homePageLogoUrl || contactInfo?.logoUrl || cachedLogoUrl;
 
   const accessibleNavItems = navItems.filter(item => {
-    if (item.href === '/test') {
-        return homeSettings?.isTestPageEnabled && user;
+    if (item.requiresSetting) {
+        return (homeSettings as any)?.[item.requiresSetting] && user;
     }
     if(item.adminOnly) {
         return user;
