@@ -518,7 +518,18 @@ export default function MediaAdmin(props: MediaAdminProps) {
   }, [filesToUpload, toast, firestore, props, uploadVideoFormat, t, startGlobalUpload, updateGlobalProgress, finishGlobalUpload]);
 
 
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+  const { getRootProps: getRootPropsMain, getInputProps: getInputPropsMain, isDragActive: isDragActiveMain } = useDropzone({
+    onDrop,
+    accept: { 
+      'image/*': ['.jpeg', '.jpg', '.png', '.gif', '.webp', '.svg'],
+      'video/*': ['.mp4', '.mov', '.webm'],
+      'text/vtt': ['.vtt'],
+      'application/json': ['.json'],
+    },
+    disabled: !canUpload || effectiveIsUploading,
+  });
+
+  const { getRootProps: getRootPropsDialog, getInputProps: getInputPropsDialog, isDragActive: isDragActiveDialog } = useDropzone({
     onDrop,
     accept: { 
       'image/*': ['.jpeg', '.jpg', '.png', '.gif', '.webp', '.svg'],
@@ -807,14 +818,14 @@ export default function MediaAdmin(props: MediaAdminProps) {
           <div className="px-4 pt-3">
             <div className="flex flex-col sm:flex-row gap-2">
               <div
-                {...getRootProps()}
+                {...getRootPropsDialog()}
                 className={cn(
                   'flex-1 border border-dashed rounded-md px-3 py-2 flex items-center justify-center gap-2 cursor-pointer transition-colors text-muted-foreground min-w-0',
-                  isDragActive && canUpload ? 'border-primary bg-primary/10' : 'border-border hover:border-primary/50',
+                  isDragActiveDialog && canUpload ? 'border-primary bg-primary/10' : 'border-border hover:border-primary/50',
                   (!canUpload || effectiveIsUploading) && 'opacity-50 cursor-not-allowed'
                 )}
               >
-                <input {...getInputProps()} disabled={!canUpload || effectiveIsUploading} />
+                <input {...getInputPropsDialog()} disabled={!canUpload || effectiveIsUploading} />
                 <FontAwesomeIcon icon={faCloudUploadAlt} className="h-4 w-4 shrink-0" />
                 <span className="text-xs md:text-sm truncate text-center">
                   {effectiveIsUploading ? t('mediaAdmin.uploading') : !canUpload ? t('mediaAdmin.noPermission') : t('mediaAdmin.dragAndDrop')}
@@ -1046,15 +1057,15 @@ export default function MediaAdmin(props: MediaAdminProps) {
         </div>
         <Separator className="bg-white/10" />
         <div className="border rounded-lg p-6 glass-effect flex flex-col gap-4">
-            <div 
-                {...getRootProps()} 
+              <div
+                {...getRootPropsMain()}
                 className={cn(
-                    'flex-1 border-2 border-dashed rounded-lg p-6 text-center transition-colors relative cursor-pointer', 
-                    isDragActive && canUpload ? 'border-primary bg-primary/10' : 'border-border hover:border-primary/50', 
-                    (!canUpload || effectiveIsUploading) && 'opacity-50 cursor-not-allowed'
+                  'flex-1 border-2 border-dashed rounded-lg p-6 text-center transition-colors relative cursor-pointer', 
+                  isDragActiveMain && canUpload ? 'border-primary bg-primary/10' : 'border-border hover:border-primary/50', 
+                  (!canUpload || effectiveIsUploading) && 'opacity-50 cursor-not-allowed'
                 )}
-            >
-                <input {...getInputProps()} disabled={!canUpload || effectiveIsUploading} />
+              >
+                <input {...getInputPropsMain()} disabled={!canUpload || effectiveIsUploading} />
                 <div className="flex flex-col items-center justify-center gap-2 text-muted-foreground">
                     <FontAwesomeIcon icon={faCloudUploadAlt} className="h-8 w-8" />
                     {isUploading ? (
@@ -1148,14 +1159,14 @@ export default function MediaAdmin(props: MediaAdminProps) {
                   <div className="px-4 pt-3">
                       <div className="flex flex-col sm:flex-row gap-2">
                           <div
-                              {...getRootProps()}
+                              {...getRootPropsDialog()}
                               className={cn(
                                   'flex-1 border border-dashed rounded-md px-3 py-2 flex items-center justify-center gap-2 cursor-pointer transition-colors text-muted-foreground min-w-0',
-                                  isDragActive && canUpload ? 'border-primary bg-primary/10' : 'border-border hover:border-primary/50',
+                                  isDragActiveDialog && canUpload ? 'border-primary bg-primary/10' : 'border-border hover:border-primary/50',
                                   (!canUpload || effectiveIsUploading) && 'opacity-50 cursor-not-allowed'
                               )}
                           >
-                              <input {...getInputProps()} disabled={!canUpload || effectiveIsUploading} />
+                              <input {...getInputPropsDialog()} disabled={!canUpload || effectiveIsUploading} />
                               <FontAwesomeIcon icon={faCloudUploadAlt} className="h-4 w-4 shrink-0" />
                               <span className="text-xs md:text-sm truncate text-center">
                                   {effectiveIsUploading ? t('mediaAdmin.uploading') : !canUpload ? t('mediaAdmin.noPermission') : t('mediaAdmin.dragAndDrop')}
