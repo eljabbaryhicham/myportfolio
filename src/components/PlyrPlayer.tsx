@@ -304,7 +304,7 @@ const PlyrPlayer = forwardRef(({ source, poster, autoPlay = true, thumbnailVttUr
 
   const isAndroidRender = typeof navigator !== 'undefined' && /Android/i.test(navigator.userAgent);
   return (
-    <div className={cn("relative w-full h-full", isAndroidRender ? "isolate" : "force-gpu")}>
+    <div className="relative w-full h-full">
       {isLoading && (
           <div className={cn("absolute inset-0 z-20 flex items-center justify-center pointer-events-none", isAndroidRender ? "bg-black/40" : "bg-black/20")}>
               <Preloader />

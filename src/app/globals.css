@@ -392,3 +392,15 @@ html, body {
 .work-dialog-open.is-android {
   scrollbar-width: none;
 }
+/* iOS: prevent the scrollable details container from intercepting native
+   video control touches. Also ensure the video itself accepts direct
+   touch input without gesture conflicts from parent overflow layers. */
+.is-ios .details-video-frame,
+.is-ios .details-video-frame video {
+  touch-action: manipulation;
+  -webkit-touch-callout: none;
+}
+.is-ios .details-video-frame video {
+  -webkit-user-select: none;
+  user-select: none;
+}
