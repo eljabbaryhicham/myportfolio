@@ -21,13 +21,12 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrash, faShieldHalved, faPlusCircle, faRotate } from '@fortawesome/free-solid-svg-icons';
 import { useToast } from '@/hooks/use-toast';
 import { useMemo, useState } from 'react';
-import { deleteDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { Separator } from '@/components/ui/separator';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import type { AppUser } from '@/firebase/auth/use-user';
-import { syncAuthUsersToFirestore } from '@/app/admin/actions';
+import { syncAuthUsersToFirestore, deleteAdminUser } from '@/app/admin/actions';
 import NewAdminForm from './NewAdminForm';
 
 interface AdminUser {
@@ -125,16 +124,24 @@ export default function AdminManagement() {
     return users || [];
   }, [users]);
 
-  const handleDeleteUser = (userId: string, username: string) => {
-    if (!firestore || !isSuperAdmin) return;
+  const handleDeleteUser = async (userId: string, username: string) => {
+    if (!isSuperAdmin) return;
     
-    deleteDocumentNonBlocking(doc(firestore, 'users', userId));
+    const result = await deleteAdminUser(userId);
 
-    toast({
-        title: t('adminMgmt.toast.adminRemoved.title').replace('{username}', username),
-        description: t('adminMgmt.toast.adminRemoved.description'),
-        duration: 8000,
-    });
+    if (result.success) {
+      toast({
+          title: t('adminMgmt.toast.adminRemoved.title').replace('{username}', username),
+          description: t('adminMgmt.toast.adminRemoved.description'),
+          duration: 8000,
+      });
+    } else {
+      toast({
+          variant: 'destructive',
+          title: t('adminMgmt.toast.deleteFailed.title'),
+          description: result.error || t('adminMgmt.toast.deleteFailed.description'),
+      });
+    }
   }
   
   const handleOpenPermissions = (user: AdminUser) => {

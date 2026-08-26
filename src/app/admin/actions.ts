@@ -77,3 +77,22 @@ export async function syncAuthUsersToFirestore(): Promise<{
     return { synced: 0, users: [], error: error.message || 'Unknown error' };
   }
 }
+
+export async function deleteAdminUser(uid: string): Promise<{ success: boolean; error?: string }> {
+  try {
+    const app = await initializeServerApp();
+    const auth = admin.auth(app);
+    const db = admin.firestore(app);
+
+    // Delete from Firebase Auth
+    await auth.deleteUser(uid);
+
+    // Delete from Firestore
+    await db.collection('users').doc(uid).delete();
+
+    return { success: true };
+  } catch (error: any) {
+    console.error('Delete admin user failed:', error);
+    return { success: false, error: error.message || 'Unknown error' };
+  }
+}
