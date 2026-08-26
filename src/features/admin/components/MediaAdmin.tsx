@@ -304,7 +304,7 @@ export default function MediaAdmin(props: MediaAdminProps) {
   const { toast } = useToast();
   const firestore = useFirestore();
   const { user } = useUser();
-  const { startUpload: startGlobalUpload, updateProgress: updateGlobalProgress, finishUpload: finishGlobalUpload, isUploading: globalIsUploading, progress: globalProgress, fileName: globalFileName, provider: globalProvider } = useUploadProgress();
+  const { startUpload: startGlobalUpload, updateProgress: updateGlobalProgress, finishUpload: finishGlobalUpload, isUploading: globalIsUploading, progress: globalProgress, fileName: globalFileName, provider: globalProvider, signalCompletedUpload } = useUploadProgress();
 
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
@@ -471,6 +471,9 @@ export default function MediaAdmin(props: MediaAdminProps) {
               if (docRef && !props.isDialog && props.onUploadComplete) {
                   props.onUploadComplete(docRef.id, response.resource_type, libraryId);
               }
+              if (docRef) {
+                  signalCompletedUpload(docRef.id, response.resource_type, libraryId);
+              }
           }
 
           toast({
@@ -622,6 +625,7 @@ export default function MediaAdmin(props: MediaAdminProps) {
     if (!props.isDialog && props.onUploadComplete) {
       props.onUploadComplete(mediaId, resourceType, libraryId);
     }
+    signalCompletedUpload(mediaId, resourceType, libraryId);
   };
 
   const handleOpenSetBackgroundDialog = (file: MediaAsset) => {

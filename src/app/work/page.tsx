@@ -82,6 +82,9 @@ const ProjectDetailsContent = memo(function ProjectDetailsContent({
       const filename = alt && alt !== 'media' ? alt : null;
       return (
         <div className="my-4 mx-auto rounded-lg border border-border/50 bg-muted/30 p-[2%]" style={{ maxWidth: widthPercent }}>
+          {filename && (
+            <p className="mb-2 text-center text-xs text-muted-foreground truncate">{filename}</p>
+          )}
           <span className="relative inline-block group/img max-w-full">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={src} alt={alt || ''} className="block max-w-full h-auto rounded-md mx-auto" />
@@ -96,9 +99,6 @@ const ProjectDetailsContent = memo(function ProjectDetailsContent({
               </button>
             )}
           </span>
-          {filename && (
-            <p className="mt-2 text-center text-xs text-muted-foreground truncate">{filename}</p>
-          )}
         </div>
       );
     },
@@ -120,6 +120,9 @@ const ProjectDetailsContent = memo(function ProjectDetailsContent({
       else if (/^\d+(\.\d+)?(px|%)$/.test(w)) frameWidth = w;
       return (
         <div className="my-4 mx-auto rounded-lg border border-border/50 bg-muted/30 p-[2%]" style={{ maxWidth: widthPercent }}>
+          {filename && (
+            <p className="mb-2 text-center text-xs text-muted-foreground truncate">{filename}</p>
+          )}
           <div
             className="details-video-frame relative aspect-video overflow-hidden rounded-md bg-black [&>*]:absolute [&>*]:inset-0"
           >
@@ -131,9 +134,6 @@ const ProjectDetailsContent = memo(function ProjectDetailsContent({
               )}
             </Suspense>
           </div>
-          {filename && (
-            <p className="mt-2 text-center text-xs text-muted-foreground truncate">{filename}</p>
-          )}
         </div>
       );
     },
@@ -188,10 +188,10 @@ const detailsSanitizeSchema = {
   tagNames: [...(defaultSchema.tagNames || []), 'video', 'audio', 'source', 'a'],
   attributes: {
     ...defaultSchema.attributes,
-    video: [...(defaultSchema.attributes?.video || []), 'src', 'controls', 'autoplay', 'loop', 'muted', 'playsinline', 'poster', 'preload', 'width', 'height', 'data-filename'],
+    video: [...(defaultSchema.attributes?.video || []), 'src', 'controls', 'autoplay', 'loop', 'muted', 'playsinline', 'poster', 'preload', 'width', 'height', 'data-*'],
     audio: ['src', 'controls', 'loop', 'muted', 'preload'],
     source: ['src', 'type'],
-    a: [...(defaultSchema.attributes?.a || []), 'href', 'download', 'data-filename', 'target', 'rel'],
+    a: [...(defaultSchema.attributes?.a || []), 'href', 'download', 'target', 'rel', 'data-*'],
   },
 };
 

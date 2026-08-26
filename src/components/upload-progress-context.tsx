@@ -15,12 +15,21 @@ type UploadProgressState = {
   provider: 'vercel' | 'cloudinary' | null;
 };
 
+type CompletedUpload = {
+  docId: string;
+  resourceType: 'image' | 'video' | 'raw';
+  libraryId: 'primary' | 'extented';
+} | null;
+
 type UploadProgressContextType = UploadProgressState & {
   setUploadProgress: (state: Partial<UploadProgressState>) => void;
   startUpload: (fileName: string, provider: 'vercel' | 'cloudinary') => void;
   updateProgress: (progress: number, provider?: 'vercel' | 'cloudinary') => void;
   finishUpload: (provider?: 'vercel' | 'cloudinary') => void;
   setActiveMediaTab: (tab: string | null) => void;
+  completedUpload: CompletedUpload;
+  signalCompletedUpload: (docId: string, resourceType: 'image' | 'video' | 'raw', libraryId: 'primary' | 'extented') => void;
+  consumeCompletedUpload: () => void;
 };
 
 const UploadProgressContext = createContext<UploadProgressContextType | null>(null);
@@ -35,6 +44,8 @@ export function UploadProgressProvider({ children }: { children: React.ReactNode
     fileName: '',
     provider: null,
   });
+
+  const [completedUpload, setCompletedUpload] = useState<CompletedUpload>(null);
 
   const setUploadProgress = useCallback((partial: Partial<UploadProgressState>) => {
     setState((prev) => ({ ...prev, ...partial }));
@@ -96,8 +107,16 @@ export function UploadProgressProvider({ children }: { children: React.ReactNode
     setState((prev) => ({ ...prev, activeMediaTab: tab }));
   }, []);
 
+  const signalCompletedUpload = useCallback((docId: string, resourceType: 'image' | 'video' | 'raw', libraryId: 'primary' | 'extented') => {
+    setCompletedUpload({ docId, resourceType, libraryId });
+  }, []);
+
+  const consumeCompletedUpload = useCallback(() => {
+    setCompletedUpload(null);
+  }, []);
+
   return (
-    <UploadProgressContext.Provider value={{ ...state, setUploadProgress, startUpload, updateProgress, finishUpload, setActiveMediaTab }}>
+    <UploadProgressContext.Provider value={{ ...state, setUploadProgress, startUpload, updateProgress, finishUpload, setActiveMediaTab, completedUpload, signalCompletedUpload, consumeCompletedUpload }}>
       {children}
     </UploadProgressContext.Provider>
   );

@@ -49,7 +49,7 @@ function AdminPage() {
   const [dialogActiveTab, setDialogActiveTab] = useState<'images' | 'videos' | 'files'>('images');
   const [dialogActiveLibrary, setDialogActiveLibrary] = useState<'primary' | 'extented'>('primary');
   const [innerMediaTab, setInnerMediaTab] = useState('cloudinary');
-  const { setActiveMediaTab } = useUploadProgress();
+  const { setActiveMediaTab, completedUpload, consumeCompletedUpload } = useUploadProgress();
 
   const typedUser = user as AppUser | null;
   const isSuperAdmin = typedUser?.email === 'eljabbaryhicham@example.com';
@@ -84,6 +84,20 @@ function AdminPage() {
       return;
     }
   }, [isUserLoading, user, router]);
+
+  useEffect(() => {
+    if (!completedUpload) return;
+    const { docId, resourceType, libraryId } = completedUpload;
+    setNewlyUploadedId(docId);
+    if (activeTab !== 'media') {
+      setActiveTab('media');
+    }
+    setDialogActiveTab(resourceType === 'video' ? 'videos' : resourceType === 'raw' ? 'files' : 'images');
+    setDialogActiveLibrary(libraryId);
+    setIsLibraryOpen(true);
+    consumeCompletedUpload();
+    setTimeout(() => setNewlyUploadedId(null), 2000);
+  }, [completedUpload, activeTab, consumeCompletedUpload, setActiveTab]);
 
 
   const handleLogout = async (isUnauthorized = false) => {
