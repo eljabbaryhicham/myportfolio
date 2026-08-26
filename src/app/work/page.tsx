@@ -79,6 +79,7 @@ const ProjectDetailsContent = memo(function ProjectDetailsContent({
     img: (props: any) => {
       const { src, alt } = props;
       if (!src) return null;
+      const filename = alt && alt !== 'media' ? alt : null;
       return (
         <div className="my-4 mx-auto rounded-lg border border-border/50 bg-muted/30 p-[2%]" style={{ maxWidth: widthPercent }}>
           <span className="relative inline-block group/img max-w-full">
@@ -95,6 +96,9 @@ const ProjectDetailsContent = memo(function ProjectDetailsContent({
               </button>
             )}
           </span>
+          {filename && (
+            <p className="mt-2 text-center text-xs text-muted-foreground truncate">{filename}</p>
+          )}
         </div>
       );
     },
@@ -109,6 +113,7 @@ const ProjectDetailsContent = memo(function ProjectDetailsContent({
         if (sourceChild) videoSrc = sourceChild.props.src;
       }
       if (!videoSrc) return <video {...rest}>{children}</video>;
+      const filename = rest['data-filename'] || null;
       let frameWidth = widthPercent;
       const w = typeof width === 'string' ? width.trim() : '';
       if (/^\d+(\.\d+)?$/.test(w)) frameWidth = `${w}%`;
@@ -126,6 +131,9 @@ const ProjectDetailsContent = memo(function ProjectDetailsContent({
               )}
             </Suspense>
           </div>
+          {filename && (
+            <p className="mt-2 text-center text-xs text-muted-foreground truncate">{filename}</p>
+          )}
         </div>
       );
     },
