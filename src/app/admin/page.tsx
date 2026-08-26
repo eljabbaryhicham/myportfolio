@@ -45,6 +45,7 @@ function AdminPage() {
   const [isPortfolioSheetOpen, setIsPortfolioSheetOpen] = useState(false);
   const [isLibraryOpen, setIsLibraryOpen] = useState(false);
   const [librarySelectionConfig, setLibrarySelectionConfig] = useState<{ onSelect: (url: string, type: 'image' | 'video' | 'raw', filename: string) => void } | null>(null);
+  const [libraryForceProvider, setLibraryForceProvider] = useState<'cloudinary' | 'vercel' | undefined>(undefined);
   const [activeTab, setActiveTab] = useState('home');
   const [fromMediaLibrary, setFromMediaLibrary] = useState(false);
   const [newlyUploadedId, setNewlyUploadedId] = useState<string | null>(null);
@@ -308,7 +309,7 @@ function AdminPage() {
                       <TabsTrigger value="vercel" className="glass-effect data-[state=active]:bg-destructive">Vercel Blob</TabsTrigger>
                     </TabsList>
                     <TabsContent value="cloudinary" forceMount className="data-[state=inactive]:hidden">
-                      <MediaAdmin onUploadComplete={handleUploadComplete} onLibraryOpenRequest={() => setIsLibraryOpen(true)} onMediaSelect={handleOpenPortfolioFormWithMedia} />
+                      <MediaAdmin onUploadComplete={handleUploadComplete} onLibraryOpenRequest={() => { setLibraryForceProvider('cloudinary'); setIsLibraryOpen(true); }} onMediaSelect={handleOpenPortfolioFormWithMedia} />
                     </TabsContent>
                     <TabsContent value="vercel" forceMount className="data-[state=inactive]:hidden">
                       <VercelBlobAdmin libraryOpen={isVercelLibraryOpen} onLibraryOpenChange={setIsVercelLibraryOpen} newlyUploadedId={newlyUploadedId} onUploadComplete={handleVercelUploadComplete} activeTab={vercelActiveTab} setActiveTab={setVercelActiveTab} />
@@ -336,7 +337,10 @@ function AdminPage() {
         isOpen={isLibraryOpen}
         onOpenChange={(isOpen) => {
             setIsLibraryOpen(isOpen);
-            if (!isOpen) setLibrarySelectionConfig(null);
+            if (!isOpen) {
+              setLibrarySelectionConfig(null);
+              setLibraryForceProvider(undefined);
+            }
         }}
         onMediaSelect={(url, type, filename) => {
             const handler = librarySelectionConfig ? librarySelectionConfig.onSelect : handleOpenPortfolioFormWithMedia;
@@ -344,8 +348,10 @@ function AdminPage() {
             if (librarySelectionConfig) {
               setIsLibraryOpen(false);
               setLibrarySelectionConfig(null);
+              setLibraryForceProvider(undefined);
             }
         }}
+        forceProvider={libraryForceProvider}
       />
     </>
   );

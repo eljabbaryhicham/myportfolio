@@ -38,13 +38,14 @@ interface UnifiedMediaPickerProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
   onMediaSelect: (url: string, type: 'image' | 'video' | 'raw', filename: string) => void;
+  forceProvider?: 'cloudinary' | 'vercel';
 }
 
-export default function UnifiedMediaPicker({ isOpen, onOpenChange, onMediaSelect }: UnifiedMediaPickerProps) {
+export default function UnifiedMediaPicker({ isOpen, onOpenChange, onMediaSelect, forceProvider }: UnifiedMediaPickerProps) {
   const { t } = useTranslation();
   const firestore = useFirestore();
 
-  const [provider, setProvider] = useState<'cloudinary' | 'vercel'>('cloudinary');
+  const [provider, setProvider] = useState<'cloudinary' | 'vercel'>(forceProvider || 'cloudinary');
   const [activeTab, setActiveTab] = useState<'images' | 'videos' | 'files'>('images');
   const [activeLibrary, setActiveLibrary] = useState<'primary' | 'extented'>('primary');
   const [searchQuery, setSearchQuery] = useState('');
@@ -173,12 +174,14 @@ export default function UnifiedMediaPicker({ isOpen, onOpenChange, onMediaSelect
           <p className="text-sm text-muted-foreground">Select from Cloudinary or Vercel Blob libraries</p>
         </DialogHeader>
 
-        <Tabs value={provider} onValueChange={v => setProvider(v as any)} className="px-4 pt-3">
-          <TabsList>
-            <TabsTrigger value="cloudinary" className="glass-effect data-[state=active]:bg-destructive">Cloudinary</TabsTrigger>
-            <TabsTrigger value="vercel" className="glass-effect data-[state=active]:bg-destructive">Vercel Blob</TabsTrigger>
-          </TabsList>
-        </Tabs>
+        {!forceProvider && (
+          <Tabs value={provider} onValueChange={v => setProvider(v as any)} className="px-4 pt-3">
+            <TabsList>
+              <TabsTrigger value="cloudinary" className="glass-effect data-[state=active]:bg-destructive">Cloudinary</TabsTrigger>
+              <TabsTrigger value="vercel" className="glass-effect data-[state=active]:bg-destructive">Vercel Blob</TabsTrigger>
+            </TabsList>
+          </Tabs>
+        )}
 
         {provider === 'cloudinary' && (
           <Tabs value={activeLibrary} onValueChange={v => setActiveLibrary(v as any)} className="px-4 pt-2">
