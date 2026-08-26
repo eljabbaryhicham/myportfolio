@@ -121,7 +121,7 @@ const settingsSchema = z.object({
   arrowLottieUrl: z.string().optional(),
   faviconUrl: z.string().optional(),
   glassOpacity: z.number().min(0).max(100).optional(),
-  glassTransparency: z.number().min(0).max(100).optional(),
+  glassTransparency: z.number().min(25).max(100).optional(),
   mediaWidth: z.number().min(10).max(100).optional(),
 });
 
@@ -733,7 +733,7 @@ export default function HomeAdmin() {
                                                     <div className="flex items-center gap-3">
                                                         <Slider
                                                             className="flex-1"
-                                                            min={0}
+                                                            min={25}
                                                             max={100}
                                                             step={1}
                                                             value={[field.value ?? 100]}
