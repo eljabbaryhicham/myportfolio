@@ -17,6 +17,7 @@ import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useCollection, useFirestore, useMemoFirebase, useUser, setDocumentNonBlocking, addDocumentNonBlocking, useDoc, useFirebase } from '@/firebase';
 import { collection, doc } from 'firebase/firestore';
+import { deleteDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import type { PortfolioItem } from '@/features/portfolio/data/portfolio-data';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUpDown, faXmark, faExpand, faPalette, faFilm, faArrowLeft, faArrowRight, faPencilAlt, faArrowDown, faSyncAlt, faCircleExclamation } from '@fortawesome/free-solid-svg-icons';
@@ -821,6 +822,15 @@ export default function WorkPage() {
     setIsFormSheetOpen(true);
   };
 
+  const handleDeleteItem = (id: string) => {
+    if (!firestore || !canEditProjects || !id) return;
+    deleteDocumentNonBlocking(doc(firestore, 'projects', id));
+    toast({ title: t('projectAdmin.toast.deleted.title'), description: t('projectAdmin.toast.deleted.description') });
+    setIsFormSheetOpen(false);
+    setSelectedItemForEdit(null);
+    if (selectedItem?.id === id) { setSelectedItem(null); updateUrl(null); }
+  };
+
   const handlePortfolioFormSubmit = (values: PortfolioItem) => {
     if (!firestore) return;
     if(!canEditProjects) {
@@ -1282,6 +1292,7 @@ export default function WorkPage() {
             onSubmit={handlePortfolioFormSubmit}
             onChooseFromLibrary={handleOpenLibraryForSelection}
             canEdit={canEditProjects}
+            onDelete={handleDeleteItem}
           />
           <MediaAdmin 
             isDialog={true}

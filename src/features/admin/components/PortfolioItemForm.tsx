@@ -31,6 +31,7 @@ import {
   DialogDescription,
   DialogClose,
 } from '@/components/ui/dialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import type { PortfolioItem } from '@/features/portfolio/data/portfolio-data';
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -44,7 +45,7 @@ import MediaAdmin from './MediaAdmin';
 
 
 // Pre-filled Details content for NEW projects (existing projects untouched).
-const DEFAULT_DETAILS_TEMPLATE = `Title
+export const DEFAULT_DETAILS_TEMPLATE = `Title
 
 Project Name : 
 
@@ -87,9 +88,11 @@ interface PortfolioItemFormProps {
   setIsOpen: (isOpen: boolean) => void;
   onChooseFromLibrary: (onSelect: (url: string, type: 'image' | 'video' | 'raw', filename: string) => void) => void;
   canEdit: boolean;
+  onDelete?: (id: string) => void;
 }
 
-export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onChooseFromLibrary, canEdit}: PortfolioItemFormProps) {
+export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onChooseFromLibrary, canEdit, onDelete}: PortfolioItemFormProps) {
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const { t } = useTranslation();
     const { toast } = useToast();
 
@@ -572,10 +575,31 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onCho
                                     </FormItem>
                                 )}
                             />
-                          <div className="flex justify-end space-x-4 pt-4">
-                              <Button type="button" variant="outline" onClick={() => setIsOpen(false)}>{t('portfolioForm.cancel')}</Button>
-                              <Button type="submit">{t('portfolioForm.save')}</Button>
+                          <div className="flex justify-between items-center pt-4">
+                              {item?.id && onDelete ? (
+                                <Button type="button" variant="destructive" onClick={() => setShowDeleteConfirm(true)} disabled={!canEdit}>
+                                  {t('projectAdmin.delete') || 'Delete'}
+                                </Button>
+                              ) : <span />}
+                              <div className="flex space-x-4">
+                                <Button type="button" variant="outline" onClick={() => setIsOpen(false)}>{t('portfolioForm.cancel')}</Button>
+                                <Button type="submit" disabled={!canEdit}>{t('portfolioForm.save')}</Button>
+                              </div>
                           </div>
+                          <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
+                            <AlertDialogContent className="glass-effect">
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>{t('projectAdmin.confirmDelete') || 'Delete project?'}</AlertDialogTitle>
+                                <AlertDialogDescription>{t('projectAdmin.confirmDeleteDescription') || 'This will permanently delete this project. This cannot be undone.'}</AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>{t('portfolioForm.cancel') || 'Cancel'}</AlertDialogCancel>
+                                <AlertDialogAction onClick={() => { if (item?.id) onDelete!(item.id); setShowDeleteConfirm(false); }} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                                  {t('projectAdmin.delete') || 'Delete'}
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
                         </fieldset>
                       </form>
                       </Form>

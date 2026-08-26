@@ -21,8 +21,9 @@ const VercelBlobAdmin = dynamic(() => import('@/features/admin/components/Vercel
 const HomeAdmin = dynamic(() => import('@/features/admin/components/HomeAdmin'), { ssr: false, loading: () => <Preloader /> });
 import type { PortfolioItem } from '@/features/portfolio/data/portfolio-data';
 const PortfolioItemFormSheet = dynamic(() => import('@/features/admin/components/PortfolioItemForm').then(m => m.PortfolioItemFormSheet), { ssr: false, loading: () => <Preloader /> });
-import { addDocumentNonBlocking, setDocumentNonBlocking } from '@/firebase/non-blocking-updates';
+import { addDocumentNonBlocking, setDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { collection, doc, getDocs, query, orderBy, limit } from 'firebase/firestore';
+import { DEFAULT_DETAILS_TEMPLATE } from '@/features/admin/components/PortfolioItemForm';
 import { useFirestore, useUser } from '@/firebase';
 const AdminManagement = dynamic(() => import('@/features/admin/components/AdminManagement'), { ssr: false, loading: () => <Preloader /> });
 const AboutAdmin = dynamic(() => import('@/features/admin/components/AboutAdmin'), { ssr: false, loading: () => <Preloader /> });
@@ -176,7 +177,8 @@ function AdminPage() {
       thumbnailUrl: type === 'video' ? '' : url, // For videos, thumbnail might be different
       sourceUrl: url,
       thumbnailHint: '',
-    });
+      details: DEFAULT_DETAILS_TEMPLATE,
+    } as PortfolioItem);
     setFromMediaLibrary(true);
     setIsLibraryOpen(false); // Close library
     setIsPortfolioSheetOpen(true); // Open form
@@ -187,6 +189,15 @@ function AdminPage() {
     setIsLibraryOpen(true);
   };
   
+  const handleDeletePortfolioItem = (id: string) => {
+    if (!firestore || !canEditProjects || !id) return;
+    deleteDocumentNonBlocking(doc(firestore, 'projects', id));
+    toast({ title: t('projectAdmin.toast.deleted.title'), description: t('projectAdmin.toast.deleted.description') });
+    setIsPortfolioSheetOpen(false);
+    setSelectedPortfolioItem(null);
+    if (fromMediaLibrary) setFromMediaLibrary(false);
+  };
+
   const handlePortfolioSheetOpenChange = (isOpen: boolean) => {
     setIsPortfolioSheetOpen(isOpen);
     if (!isOpen) {
@@ -318,6 +329,7 @@ function AdminPage() {
         onSubmit={(values) => handlePortfolioFormSubmit(values)}
         onChooseFromLibrary={handleOpenLibraryForSelection}
         canEdit={canEditProjects}
+        onDelete={handleDeletePortfolioItem}
       />
       <MediaAdmin 
         isDialog={true}
