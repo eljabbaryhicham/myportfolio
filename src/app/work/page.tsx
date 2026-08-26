@@ -73,11 +73,25 @@ function LazyDetailsVideo({
   playerType?: 'plyr' | 'clappr';
 }) {
   const ref = useRef<HTMLDivElement>(null);
+  const playerRef = useRef<any>(null);
   const [inView, setInView] = useState(false);
   const [activated, setActivated] = useState(false);
+  const [playerLoading, setPlayerLoading] = useState(true);
   const isAndroid = useMemo(() => typeof navigator !== 'undefined' && /Android/i.test(navigator.userAgent), []);
   const [ready, setReady] = useState(false);
   const shouldLoad = inView || activated;
+  useEffect(() => {
+    if (!shouldLoad) return;
+    const check = () => {
+      const data = playerRef.current;
+      if (data && typeof data === 'object' && 'isLoading' in data) {
+        setPlayerLoading(!!data.isLoading);
+      }
+    };
+    check();
+    const interval = setInterval(check, 200);
+    return () => clearInterval(interval);
+  }, [shouldLoad]);
   useEffect(() => {
     if (!isAndroid) { setReady(true); return; }
     const t = setTimeout(() => setReady(true), 420);
@@ -126,13 +140,20 @@ function LazyDetailsVideo({
     );
   }
   return (
-    <Suspense fallback={<Preloader />}>
-      {playerType === 'plyr' ? (
-        <MemoizedPlyrPlayer source={videoSrc} poster={poster} autoPlay={false} />
-      ) : (
-        <MemoizedCdnClapprPlayer source={videoSrc} poster={poster} autoPlay={false} />
+    <div className="relative w-full h-full">
+      {playerLoading && (
+        <div className="absolute inset-0 z-20 flex items-center justify-center bg-black">
+          <Preloader />
+        </div>
       )}
-    </Suspense>
+      <Suspense fallback={null}>
+        {playerType === 'plyr' ? (
+          <MemoizedPlyrPlayer ref={playerRef} source={videoSrc} poster={poster} autoPlay={false} />
+        ) : (
+          <MemoizedCdnClapprPlayer ref={playerRef} source={videoSrc} poster={poster} autoPlay={false} />
+        )}
+      </Suspense>
+    </div>
   );
 }
 

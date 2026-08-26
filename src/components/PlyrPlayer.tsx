@@ -26,7 +26,7 @@ const PlyrPlayer = forwardRef(({ source, poster, autoPlay = true, thumbnailVttUr
   const [isLoading, setIsLoading] = useState(true);
   const playerReadyRef = useRef(false);
 
-  useImperativeHandle(ref, () => playerRef.current, []);
+  useImperativeHandle(ref, () => ({ isLoading }), [isLoading]);
 
   useEffect(() => {
     let isMounted = true;
@@ -240,11 +240,6 @@ const PlyrPlayer = forwardRef(({ source, poster, autoPlay = true, thumbnailVttUr
 
   return (
     <div className="relative w-full h-full">
-      {isLoading && (
-          <div className="absolute inset-0 z-20 flex items-center justify-center bg-black pointer-events-none">
-              <Preloader />
-          </div>
-      )}
       <div ref={containerRef} className="relative w-full h-full">
          {/* Plyr will be injected here */}
       </div>

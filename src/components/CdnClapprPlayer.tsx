@@ -1,6 +1,6 @@
 
 'use client';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, forwardRef, useImperativeHandle } from 'react';
 import Preloader from './preloader';
 import { useToast } from '@/hooks/use-toast';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -38,7 +38,7 @@ const loadScript = (src: string, id: string): Promise<void> => {
     });
 };
 
-export default function CdnClapprPlayer({ source, poster, autoPlay = true, watermark }: CdnClapprPlayerProps) {
+const CdnClapprPlayer = forwardRef(function CdnClapprPlayer({ source, poster, autoPlay = true, watermark }: CdnClapprPlayerProps, ref) {
   const playerContainerRef = useRef<HTMLDivElement>(null);
   const playerRef = useRef<any>(null);
   const [containerId] = useState(() => `cdn-clappr-player-${Math.random().toString(36).substring(7)}`);
@@ -252,13 +252,10 @@ export default function CdnClapprPlayer({ source, poster, autoPlay = true, water
     }
   }, [autoPlay, isLoading]);
 
+  useImperativeHandle(ref, () => ({ isLoading }), [isLoading]);
+
   return (
     <div className="w-full h-full relative bg-black">
-      {isLoading && (
-          <div className="absolute inset-0 z-10 flex items-center justify-center bg-black pointer-events-none">
-              <Preloader />
-          </div>
-      )}
       <div
         id={containerId}
         ref={playerContainerRef}
@@ -266,4 +263,7 @@ export default function CdnClapprPlayer({ source, poster, autoPlay = true, water
       />
     </div>
   );
-}
+});
+
+CdnClapprPlayer.displayName = 'CdnClapprPlayer';
+export default CdnClapprPlayer;
