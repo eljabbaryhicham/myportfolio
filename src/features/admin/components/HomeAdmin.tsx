@@ -1095,7 +1095,7 @@ export default function HomeAdmin() {
             newlyUploadedId={null}
         />
         <Dialog open={isEmailPreviewOpen} onOpenChange={setIsEmailPreviewOpen}>
-            <DialogContent className="w-[90vw] max-w-3xl">
+            <DialogContent className="w-[90vw] max-w-3xl glass-effect">
                 <DialogHeader>
                     <DialogTitle>{t('homeAdmin.emailTemplate.previewTitle')}</DialogTitle>
                     <DialogDescription>{t('homeAdmin.emailTemplate.previewDescription')}</DialogDescription>

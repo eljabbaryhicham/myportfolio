@@ -572,7 +572,7 @@ export default function ClientAdmin() {
       />
 
       <AlertDialog open={isBulkDeleteOpen} onOpenChange={setIsBulkDeleteOpen}>
-        <AlertDialogContent className="w-[80vw]">
+        <AlertDialogContent className="w-[80vw] glass-effect">
           <AlertDialogHeader>
             <AlertDialogTitle>{t('clientAdmin.confirmBulkDelete') || 'Delete selected clients?'}</AlertDialogTitle>
             <AlertDialogDescription>

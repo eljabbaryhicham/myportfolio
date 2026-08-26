@@ -393,7 +393,7 @@ function ProjectAdmin({ setSelectedItem, setIsSheetOpen }: ProjectAdminProps) {
       />
 
       <AlertDialog open={isBulkDeleteOpen} onOpenChange={setIsBulkDeleteOpen}>
-        <AlertDialogContent className="w-[80vw]">
+        <AlertDialogContent className="w-[80vw] glass-effect">
           <AlertDialogHeader>
             <AlertDialogTitle>{t('projectAdmin.confirmBulkDelete') || 'Delete selected items?'}</AlertDialogTitle>
             <AlertDialogDescription>

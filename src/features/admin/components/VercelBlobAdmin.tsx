@@ -44,7 +44,7 @@ function formatBytes(bytes: number) {
   return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
 }
 
-export default function VercelBlobAdmin({ libraryOpen: externalLibraryOpen, onLibraryOpenChange: externalOnLibraryOpenChange }: { libraryOpen?: boolean; onLibraryOpenChange?: (open: boolean) => void } = {}) {
+export default function VercelBlobAdmin({ libraryOpen: externalLibraryOpen, onLibraryOpenChange: externalOnLibraryOpenChange, newlyUploadedId: externalNewlyUploadedId }: { libraryOpen?: boolean; onLibraryOpenChange?: (open: boolean) => void; newlyUploadedId?: string | null } = {}) {
   const { t } = useTranslation();
   const { toast } = useToast();
   const firestore = useFirestore();
@@ -322,10 +322,10 @@ export default function VercelBlobAdmin({ libraryOpen: externalLibraryOpen, onLi
         {assets.map((b) => {
           const isImage = b.contentType?.startsWith('image/');
           const isVideo = b.contentType?.startsWith('video/');
-          const isNew = b.id === newlyUploadedId || b.pathname === newlyUploadedId;
+          const isNew = b.id === (externalNewlyUploadedId ?? newlyUploadedId) || b.pathname === (externalNewlyUploadedId ?? newlyUploadedId);
           const isSelected = selectedIds.has(b.id);
           return (
-            <div key={b.id} className={cn("flex flex-col gap-2", isNew && "ring-2 ring-primary rounded-lg animate-pulse", isSelected && "ring-2 ring-primary rounded-lg")}>
+            <div key={b.id} className={cn("flex flex-col gap-2", isNew && "animate-shake", isSelected && "ring-2 ring-primary rounded-lg")}>
               <div className={cn("relative group aspect-square border rounded-lg overflow-hidden glass-effect p-1", isSelected && "ring-2 ring-primary")}>
                 <div className="absolute top-2 left-2 z-20" onClick={(e) => e.stopPropagation()}>
                   <Checkbox checked={isSelected} onCheckedChange={() => handleToggleSelect(b.id)} className="bg-background/80 backdrop-blur-sm border-white/30" />
@@ -357,7 +357,7 @@ export default function VercelBlobAdmin({ libraryOpen: externalLibraryOpen, onLi
                         <FontAwesomeIcon icon={faTrash} />
                       </Button>
                     </AlertDialogTrigger>
-                    <AlertDialogContent>
+                    <AlertDialogContent className="glass-effect">
                       <AlertDialogHeader>
                         <AlertDialogTitle>Delete file?</AlertDialogTitle>
                         <AlertDialogDescription>Delete {b.filename} from Vercel Blob? This cannot be undone.</AlertDialogDescription>
@@ -506,7 +506,7 @@ export default function VercelBlobAdmin({ libraryOpen: externalLibraryOpen, onLi
           <p className="text-muted-foreground mt-1 text-sm">Upload and manage your images and videos. (Images max 50MB, videos/other unlimited.)</p>
         </div>
         <div className="flex items-center gap-2">
-          <Button onClick={() => setIsLibraryOpen(true)} variant="outline" size="sm">
+          <Button onClick={() => { setIsLibraryOpen(true); externalOnLibraryOpenChange?.(true); }} variant="outline" size="sm">
             <FontAwesomeIcon icon={faFolderOpen} className="mr-2" />
             Browse Library
           </Button>
@@ -548,7 +548,7 @@ export default function VercelBlobAdmin({ libraryOpen: externalLibraryOpen, onLi
       </Dialog>
 
       <AlertDialog open={isBulkDeleteOpen} onOpenChange={setIsBulkDeleteOpen}>
-        <AlertDialogContent>
+        <AlertDialogContent className="glass-effect">
           <AlertDialogHeader>
             <AlertDialogTitle>Delete {selectedIds.size} files?</AlertDialogTitle>
             <AlertDialogDescription>This will delete the selected files from Vercel Blob and the library. This cannot be undone.</AlertDialogDescription>
@@ -561,7 +561,7 @@ export default function VercelBlobAdmin({ libraryOpen: externalLibraryOpen, onLi
       </AlertDialog>
 
       <Dialog open={isAddFromUrlOpen} onOpenChange={setIsAddFromUrlOpen}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md glass-effect">
           <DialogHeader>
             <DialogTitle>{t('mediaAdmin.addFromUrl')}</DialogTitle>
             <p className="text-sm text-muted-foreground">Paste a direct URL and it will be fetched and stored in Vercel Blob.</p>

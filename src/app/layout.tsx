@@ -21,7 +21,6 @@ if (typeof globalThis.localStorage === 'object' && typeof globalThis.localStorag
   } as Storage;
 }
 
-
 const AppShell = dynamic(
   () => import('@/components/layout/app-shell'),
   { ssr: false }
@@ -64,6 +63,10 @@ export default function RootLayout({
         }} />
       </head>
       <body className={cn('font-body antialiased text-center h-full')} style={{ background: '#000' }} suppressHydrationWarning>
+        <div id="app-shell-skeleton" style={{ position: 'fixed', inset: 0, zIndex: 9999, background: '#000' }}>
+          <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: 48, height: 48, border: '3px solid rgba(255,255,255,0.1)', borderTopColor: 'rgba(255,255,255,0.6)', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+        </div>
+        <style>{`@keyframes spin{to{transform:translate(-50%,-50%) rotate(360deg)}}`}</style>
         <AppShell>
           {children}
         </AppShell>

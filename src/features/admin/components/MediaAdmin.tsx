@@ -240,7 +240,7 @@ const MediaFileCard = ({
                         <FontAwesomeIcon icon={faTrash} />
                       </Button>
                     </AlertDialogTrigger>
-                    <AlertDialogContent className="w-[80vw]">
+                    <AlertDialogContent className="w-[80vw] glass-effect">
                       <AlertDialogHeader>
                         <AlertDialogTitle>{t('mediaAdmin.confirmDelete')}</AlertDialogTitle>
                         <AlertDialogDescription>
@@ -883,7 +883,7 @@ export default function MediaAdmin(props: MediaAdminProps) {
   
   const setBackgroundDialog = (
     <Dialog open={isSetBackgroundOpen} onOpenChange={setIsSetBackgroundOpen}>
-        <DialogContent className="w-[80vw]">
+        <DialogContent className="w-[80vw] glass-effect">
             <DialogHeader>
                 <DialogTitle>{t('mediaAdmin.setAsBackground')}</DialogTitle>
                 <DialogDescription>
@@ -915,7 +915,7 @@ export default function MediaAdmin(props: MediaAdminProps) {
   const uploadFlowDialogs = (
     <>
       <Dialog open={isChoosingVideoFormat} onOpenChange={setIsChoosingVideoFormat}>
-        <DialogContent className="w-[80vw]">
+        <DialogContent className="w-[80vw] glass-effect">
             <DialogHeader>
                 <DialogTitle>{t('mediaAdmin.chooseVideoFormat')}</DialogTitle>
                 <DialogDescription>{t('mediaAdmin.chooseVideoFormatDescription')}</DialogDescription>
@@ -941,7 +941,7 @@ export default function MediaAdmin(props: MediaAdminProps) {
         </DialogContent>
       </Dialog>
       <Dialog open={!!formatChoiceAsset} onOpenChange={(open) => { if (!open) setFormatChoiceAsset(null); }}>
-        <DialogContent className="w-[80vw] max-w-md">
+        <DialogContent className="w-[80vw] max-w-md glass-effect">
             <DialogHeader>
                 <DialogTitle>{t('mediaAdmin.pickFormat.title')}</DialogTitle>
                 <DialogDescription className="truncate">{formatChoiceAsset?.filename}</DialogDescription>
@@ -972,7 +972,7 @@ export default function MediaAdmin(props: MediaAdminProps) {
         </DialogContent>
       </Dialog>
       <Dialog open={isChoosingLibrary} onOpenChange={setIsChoosingLibrary}>
-        <DialogContent className="w-[80vw]">
+        <DialogContent className="w-[80vw] glass-effect">
             <DialogHeader>
                 <DialogTitle>{t('mediaAdmin.chooseLibrary')}</DialogTitle>
                 <DialogDescription>{t('mediaAdmin.chooseLibraryDescription')}</DialogDescription>
@@ -1006,7 +1006,7 @@ export default function MediaAdmin(props: MediaAdminProps) {
           {setBackgroundDialog}
           {uploadFlowDialogs}
           <AlertDialog open={isBulkDeleteOpen} onOpenChange={setIsBulkDeleteOpen}>
-            <AlertDialogContent className="w-[80vw]">
+            <AlertDialogContent className="w-[80vw] glass-effect">
               <AlertDialogHeader>
                 <AlertDialogTitle>{t('mediaAdmin.confirmDelete')}</AlertDialogTitle>
                 <AlertDialogDescription>
@@ -1090,7 +1090,7 @@ export default function MediaAdmin(props: MediaAdminProps) {
         onDelete={() => setIsBulkDeleteOpen(true)}
       />
       <AlertDialog open={isBulkDeleteOpen} onOpenChange={setIsBulkDeleteOpen}>
-        <AlertDialogContent className="w-[80vw]">
+        <AlertDialogContent className="w-[80vw] glass-effect">
           <AlertDialogHeader>
             <AlertDialogTitle>{t('mediaAdmin.confirmDelete')}</AlertDialogTitle>
             <AlertDialogDescription>

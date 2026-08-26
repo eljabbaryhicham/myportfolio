@@ -13,7 +13,7 @@ import { faLinkedin, faBehance, faInstagram, faFacebook, faTwitter, faWhatsapp }
 import { cn } from '@/lib/utils';
 import Preloader from '@/components/preloader';
 import { motion } from 'framer-motion';
-import { Card, CardContent } from '@/components/ui/card';
+
 import { Button } from '@/components/ui/button';
 import ContactForm from './ContactForm';
 import { ScrollIndicator } from '@/components/ScrollIndicator';
@@ -122,16 +122,13 @@ export default function ContactPage() {
                   animate="visible"
                 >
                   <motion.div className="w-full lg:w-1/2 lg:h-full flex justify-center" variants={itemVariants}>
-                    <Card className="glass-effect p-4 sm:p-6 md:p-[clamp(1.5rem,3vh,2rem)] h-full flex flex-col justify-center w-full max-w-md">
-                      <CardContent className="p-0 flex flex-col items-center">
+                    <div className="glass-effect rounded-lg p-4 sm:p-6 md:p-[clamp(1.5rem,3vh,2rem)] h-full flex flex-col justify-center w-full max-w-md">
                           <ContactForm />
-                      </CardContent>
-                    </Card>
+                    </div>
                   </motion.div>
                   <motion.div className="w-full lg:w-1/2 lg:h-full flex justify-center" variants={itemVariants}>
                     {contactInfo ? (
-                    <Card className="glass-effect p-4 sm:p-6 h-full w-full max-w-md">
-                      <CardContent className="flex flex-col items-center justify-center text-center p-0 h-full">
+                    <div className="glass-effect rounded-lg p-4 sm:p-6 h-full w-full max-w-md flex flex-col items-center justify-center text-center">
                         <Avatar className="border-2 border-white mb-[clamp(0.75rem,2vh,1.25rem)] w-[clamp(3.5rem,9vh,5rem)] h-[clamp(3.5rem,9vh,5rem)]">
                           <AvatarImage src={contactInfo.avatarUrl} alt={contactInfo.name} />
                           <AvatarFallback>{contactInfo.name?.substring(0, 2)}</AvatarFallback>
@@ -181,8 +178,7 @@ export default function ContactPage() {
                             </div>
                           </>
                         )}
-                      </CardContent>
-                    </Card>
+                    </div>
                     ) : (
                       <div className="text-center py-12 text-muted-foreground">
                           <p>{t('contact.notAvailable')}</p>
