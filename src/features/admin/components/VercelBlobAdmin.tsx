@@ -49,7 +49,7 @@ export default function VercelBlobAdmin({ libraryOpen: externalLibraryOpen, onLi
   const { toast } = useToast();
   const firestore = useFirestore();
   const auth = useAuth();
-  const { isUploading: globalIsUploading, progress: globalProgress, fileName: globalFileName, provider: globalProvider, startUpload, updateProgress: updateGlobalProgress, finishUpload, signalCompletedUpload } = useUploadProgress();
+  const { isUploading: globalIsUploading, progress: globalProgress, fileName: globalFileName, provider: globalProvider, startUpload, updateProgress: updateGlobalProgress, finishUpload, signalCompletedUpload, completedUpload, consumeCompletedUpload } = useUploadProgress();
 
   const [internalActiveTab, setInternalActiveTab] = useState<'images' | 'videos' | 'files'>('images');
   const activeTab = controlledActiveTab ?? internalActiveTab;
@@ -78,6 +78,18 @@ export default function VercelBlobAdmin({ libraryOpen: externalLibraryOpen, onLi
     }
     return () => { if (timer) clearInterval(timer); };
   }, [isAddingFromUrl]);
+
+  // Auto-open library after upload completes (for navigation recovery)
+  useEffect(() => {
+    if (!completedUpload || completedUpload.libraryId !== 'vercel_blob') return;
+    const { docId, resourceType } = completedUpload;
+    const tab = resourceType === 'video' ? 'videos' : resourceType === 'raw' ? 'files' : 'images';
+    setActiveTab(tab);
+    setNewlyUploadedId(docId);
+    setTimeout(() => setNewlyUploadedId(null), 3000);
+    setIsLibraryOpen(true);
+    consumeCompletedUpload();
+  }, [completedUpload, consumeCompletedUpload, setActiveTab]);
 
   // Only show global progress inline when it matches this provider (vercel)
   const effectiveIsUploading = isUploading || (globalIsUploading && globalProvider === 'vercel');
@@ -314,6 +326,8 @@ export default function VercelBlobAdmin({ libraryOpen: externalLibraryOpen, onLi
           if (newId) {
             setNewlyUploadedId(newId);
             setTimeout(() => setNewlyUploadedId(null), 3000);
+            const ct = (data.contentType || '').toLowerCase();
+            signalCompletedUpload(newId, ct.startsWith('image/') ? 'image' : ct.startsWith('video/') ? 'video' : 'raw', 'vercel_blob');
           }
         } catch (e) {
           console.error('VercelBlobAdmin: Firestore add from URL failed', e);

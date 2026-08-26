@@ -55,7 +55,7 @@ function AdminPage() {
   const [innerMediaTab, setInnerMediaTab] = useState('cloudinary');
   const [isVercelLibraryOpen, setIsVercelLibraryOpen] = useState(false);
   const [vercelActiveTab, setVercelActiveTab] = useState<'images' | 'videos' | 'files'>('images');
-  const { setActiveMediaTab, completedUpload, consumeCompletedUpload } = useUploadProgress();
+  const { setActiveMediaTab, completedUpload } = useUploadProgress();
 
   const timeoutsRef = useRef<ReturnType<typeof setTimeout>[]>([]);
   const safeTimeout = useCallback((fn: () => void, delay: number) => {
@@ -114,15 +114,9 @@ function AdminPage() {
     if (activeTab !== 'media') {
       setActiveTab('media');
     }
-    if (libraryId === 'vercel_blob') {
-      setInnerMediaTab('vercel');
-      setVercelActiveTab(resourceType === 'video' ? 'videos' : resourceType === 'raw' ? 'files' : 'images');
-      setIsVercelLibraryOpen(true);
-      consumeCompletedUpload();
-    }
-    // Cloudinary: don't consume here — MediaAdmin handles its own popup
+    // Both Vercel Blob and Cloudinary: don't consume here — components handle their own popups
     safeTimeout(() => setNewlyUploadedId(null), 3000);
-  }, [completedUpload, activeTab, consumeCompletedUpload, setActiveTab]);
+  }, [completedUpload, activeTab, setActiveTab]);
 
 
   const handleLogout = async (isUnauthorized = false) => {
