@@ -334,54 +334,59 @@ html, body {
   border-radius: 0.5rem;
 }
 
-/* 16:9 frame for videos embedded in project details. Clappr/Plyr inject
-   their own wrappers with inline pixel/% sizes computed at init time — if the
-   frame was hidden/animating then, those sizes are wrong and the video spills
-   out. Force every nested layer to fill the frame instead of trusting them. */
-.details-video-frame > * {
-  position: absolute;
-  inset: 0;
+/* 16:9 frame for videos embedded in project details. The frame owns the
+   aspect ratio; its direct child (LazyDetailsVideo) fills it. Plyr/Clappr's
+   own internal layers already size themselves to 100% — the previous blanket
+   `&>*:absolute` + `video: !important` forced every nested node into its own
+   compositor layer and thrashes on low-end Android GPUs. Keep the frame
+   lightweight: just aspect + overflow + contain. */
+.details-video-frame {
+  contain: layout paint style;
+  content-visibility: auto;
+  contain-intrinsic-size: 400px 225px;
 }
-.details-video-frame .player-wrapper,
-.details-video-frame [class*="player-wrapper"],
-.details-video-frame [data-container],
-.details-video-frame [data-core],
-.details-video-frame [data-playback],
-.details-video-frame video,
+.details-video-frame > div {
+  width: 100%;
+  height: 100%;
+}
+/* Only the Clappr/Plyr roots need to fill the frame; let their internals
+   lay out naturally. The `object-contain` video rule is kept but without
+   the forced absolute on every video/iframe which was promoting each video
+   element to a separate layer. */
 .details-video-frame .plyr,
 .details-video-frame .plyr__video-wrapper {
-  width: 100% !important;
-  height: 100% !important;
+  width: 100%;
+  height: 100%;
 }
 .details-video-frame video {
   object-fit: contain;
+  max-width: 100%;
+  max-height: 100%;
 }
-/* Plyr routes YouTube/Vimeo through an <iframe> instead of <video>. */
+/* Plyr routes YouTube/Vimeo through an <iframe>. */
 .details-video-frame iframe {
-  width: 100% !important;
-  height: 100% !important;
+  width: 100%;
+  height: 100%;
   display: block;
+  border: 0;
 }
-/* Mobile/iOS: browsers can fall back to the media's intrinsic size despite
-    percentage widths — pin the media to ALL four edges of its wrapper (and
-    zero its margins) so nothing can nudge it off-center inside the frame. */
-.details-video-frame video,
-.details-video-frame iframe {
-  position: absolute;
-  inset: 0 !important;
-  margin: 0 !important;
-}
-/* Android perf: project-details may contain several videos. Offscreen frames
-   must not keep decoders/layout alive. Browser skips rendering until scrolled
-   into view. Presentational cost of glass gradients is also reduced on
-   coarse pointers (covers most Android devices). */
-.details-video-frame {
-  content-visibility: auto;
-  contain-intrinsic-size: 400px 225px;
-  contain: layout paint style;
-}
+/* Coarse-pointer (Android) devices get a cheaper glass paint so the video
+   texture doesn't have to composite over layered gradients + inset shadows
+   on every frame. While a work dialog is open the full-screen background
+   is hidden from the compositor entirely (complement to the JS pause). */
 @media (pointer: coarse) {
+  .glass-effect {
+    background-image: none !important;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.35) !important;
+  }
+  .dark .glass-effect {
+    box-shadow: 0 4px 24px rgba(0,0,0,0.5) !important;
+  }
   .details-video-frame {
     will-change: auto;
   }
+}
+.work-dialog-open div.-z-10 {
+  visibility: hidden !important;
+  pointer-events: none !important;
 }

@@ -69,12 +69,11 @@ export function SiteBackground() {
                         key={mediaUrl}
                         src={mediaUrl}
                         className="w-full h-full object-cover"
-                        style={{ transform: 'translateZ(0)' }}
                         autoPlay
                         loop
                         muted
                         playsInline
-                        preload="auto"
+                        preload="metadata"
                     />
                 ) : backgroundType === 'image' ? (
                     <Image

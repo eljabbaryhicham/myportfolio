@@ -59,60 +59,12 @@ const normalizeSelfClosingMedia = (md: string) =>
 const DETAILS_MEDIA_RE = /<\s*(video|audio|img|source)\b|!\[[^\]]*\]\([^)]+\)/i;
 const hasDetailsMedia = (details?: string) => !!details && DETAILS_MEDIA_RE.test(details);
 
-function isAndroidDevice() {
-  if (typeof navigator === 'undefined') return false;
-  return /Android/i.test(navigator.userAgent || (navigator as any).userAgentData?.platform || '');
-}
-
-// Lightweight native video for Android: no Clappr/Plyr, no extra CDN scripts.
-// For .m3u8, attach hls.js directly to a <video> element (single dynamic import).
-function AndroidLightVideo({ videoSrc, poster }: { videoSrc: string; poster?: string }) {
-  const videoRef = useRef<HTMLVideoElement>(null);
-  useEffect(() => {
-    const video = videoRef.current;
-    if (!video) return;
-    const isHls = videoSrc.includes('.m3u8');
-    if (!isHls) return;
-    if (video.canPlayType('application/vnd.apple.mpegurl')) return;
-    let hls: any = null;
-    let cancelled = false;
-    import('hls.js').then(({ default: Hls }) => {
-      if (cancelled || !video || !Hls.isSupported()) return;
-      hls = new Hls({ startLevel: 0, capLevelToPlayerSize: true, maxBufferLength: 10 });
-      hls.loadSource(videoSrc);
-      hls.attachMedia(video);
-    });
-    return () => { cancelled = true; try { hls?.destroy(); } catch {} };
-  }, [videoSrc]);
-  const isHls = videoSrc.includes('.m3u8');
-  const canNativeHls = typeof document !== 'undefined' && (() => {
-    const v = document.createElement('video');
-    return !!v.canPlayType('application/vnd.apple.mpegurl');
-  })();
-  return (
-    // eslint-disable-next-line jsx-a11y/media-has-caption
-    <video
-      ref={videoRef}
-      src={!isHls || canNativeHls ? videoSrc : undefined}
-      poster={poster}
-      controls
-      playsInline
-      preload="none"
-      className="block w-full h-full object-contain bg-black"
-      controlsList="nodownload"
-      // Isolate this video from the main page's compositing — prevents the
-      // background blur/filter and glass panels from forcing a repaint of the
-      // decoder output on low-end Android GPUs.
-      style={{ contentVisibility: 'auto' as any, containIntrinsicSize: '400px 225px' } as any}
-    />
-  );
-}
-
-// Heavy players (Clappr/Plyr + hls.js) are expensive on mobile —
-// mounting 3+ at once in project details stalls Android. Render a cheap
-// poster + tap-to-load placeholder and only mount the real player when the
-// element is visible (IntersectionObserver) or the user taps play.
-// On Android the heavy players are bypassed entirely for a native <video>.
+// Keep the configured player (Plyr/Clappr) on all devices — the stall is not
+// the player itself but the surrounding compositing/decoders. Each frame is
+// mounted lazily so off-screen videos don't allocate decoders, and the
+// heavy work (script fetch + Clappr init) is deferred until the dialog's
+// enter animation has finished, so it doesn't compete with framer-motion
+// and glass paint on low-end Android.
 function LazyDetailsVideo({
   videoSrc,
   poster,
@@ -125,13 +77,14 @@ function LazyDetailsVideo({
   const ref = useRef<HTMLDivElement>(null);
   const [inView, setInView] = useState(false);
   const [activated, setActivated] = useState(false);
-  const android = useMemo(() => isAndroidDevice(), []);
-  // On Android, mounting several decoders at once (one per embedded video)
-  // overwhelms the hardware decoder. Only the explicitly tapped video mounts;
-  // the scroll-triggered preload stays desktop-only.
-  const shouldLoad = android ? activated : (inView || activated);
+  const [ready, setReady] = useState(false);
+  const shouldLoad = inView || activated;
   useEffect(() => {
-    if (android) return; // Android: no scroll preload — tap only
+    const t = setTimeout(() => setReady(true), 420);
+    return () => clearTimeout(t);
+  }, []);
+  useEffect(() => {
+    if (!ready) return;
     const el = ref.current;
     if (!el) return;
     if (activated) return;
@@ -142,11 +95,11 @@ function LazyDetailsVideo({
           io.disconnect();
         }
       },
-      { rootMargin: '200px', threshold: 0 }
+      { rootMargin: '240px', threshold: 0 }
     );
     io.observe(el);
     return () => io.disconnect();
-  }, [activated, android]);
+  }, [activated, ready]);
   if (!shouldLoad) {
     return (
       <div
@@ -168,16 +121,6 @@ function LazyDetailsVideo({
           </span>
           <span className="text-xs tracking-wide text-white/70">Tap to play</span>
         </div>
-      </div>
-    );
-  }
-  if (android) {
-    // Rendered inside the aspect-video frame but with a lightweight wrapper
-    // that avoids the global `details-video-frame >* { position:absolute; inset:0; ... }`
-    // overrides which force extra compositor layers per video.
-    return (
-      <div className="absolute inset-0 flex items-center justify-center bg-black">
-        <AndroidLightVideo videoSrc={videoSrc} poster={poster} />
       </div>
     );
   }
@@ -741,23 +684,34 @@ export default function WorkPage() {
     }
   }, [isDialogOpen]);
 
-  // Android: the full-screen SiteBackground video (if enabled) keeps a hardware
-  // decoder alive underneath the project dialogs. On low-end Android that
-  // decoder competes with the details-embedded videos and makes them stutter.
-  // Pause the background video while any dialog is open and resume after.
+  // SiteBackground's full-screen video keeps a decoder alive under dialogs.
+  // On Android that competes with details-embedded Plyr/Clappr decoders and
+  // the glass compositor, making video stutter. Pause (and hide from the
+  // compositor tree) while any work-page dialog is open.
   useEffect(() => {
     if (typeof document === 'undefined') return;
-    const bgVideo = document.querySelector('div.-z-10 video') as HTMLVideoElement | null;
-    if (!bgVideo) return;
-    if (!!selectedItem || isDetailsModalOpen || isContactFormOpen || !!fullscreenImageUrl) {
-      if (!bgVideo.paused) {
+    const bgWrap = document.querySelector('div.-z-10') as HTMLElement | null;
+    const bgVideo = bgWrap?.querySelector('video') as HTMLVideoElement | null;
+    const anyOpen = !!selectedItem || isDetailsModalOpen || isContactFormOpen || !!fullscreenImageUrl;
+    if (anyOpen) {
+      if (bgVideo && !bgVideo.paused) {
         bgVideo.pause();
-        (bgVideo as any)._pausedByDialog = true;
+        (bgWrap as any)._pausedByDialog = true;
       }
-    } else if ((bgVideo as any)._pausedByDialog) {
-      delete (bgVideo as any)._pausedByDialog;
-      bgVideo.play().catch(() => {});
+      if (bgWrap) bgWrap.style.visibility = 'hidden';
+      document.documentElement.classList.add('work-dialog-open');
+    } else {
+      if (bgWrap) bgWrap.style.visibility = '';
+      document.documentElement.classList.remove('work-dialog-open');
+      if (bgWrap && (bgWrap as any)._pausedByDialog) {
+        delete (bgWrap as any)._pausedByDialog;
+        bgVideo?.play().catch(() => {});
+      }
     }
+    return () => {
+      if (bgWrap) bgWrap.style.visibility = '';
+      document.documentElement.classList.remove('work-dialog-open');
+    };
   }, [selectedItem, isDetailsModalOpen, isContactFormOpen, fullscreenImageUrl]);
 
 

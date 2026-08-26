@@ -281,7 +281,7 @@ const PlyrPlayer = forwardRef(({ source, poster, autoPlay = true, thumbnailVttUr
 
 
   return (
-    <div className={cn("relative w-full h-full", "force-gpu")}>
+    <div className={cn("relative w-full h-full", "isolate")}>
       {isLoading && (
           <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/20 pointer-events-none">
               <Preloader />
