@@ -83,6 +83,7 @@ interface HomePageSettings {
     isArrowAnimationEnabled?: boolean;
     arrowLottieUrl?: string;
     faviconUrl?: string;
+    glassOpacity?: number;
 }
 
 const settingsSchema = z.object({
@@ -117,6 +118,7 @@ const settingsSchema = z.object({
   isArrowAnimationEnabled: z.boolean().optional(),
   arrowLottieUrl: z.string().optional(),
   faviconUrl: z.string().optional(),
+  glassOpacity: z.number().min(0).max(100).optional(),
 });
 
 type SettingsFormValues = z.infer<typeof settingsSchema>;
@@ -193,6 +195,7 @@ export default function HomeAdmin() {
       isArrowAnimationEnabled: true,
       arrowLottieUrl: '',
       faviconUrl: '',
+      glassOpacity: 25,
     },
   });
 
@@ -233,6 +236,7 @@ export default function HomeAdmin() {
         isArrowAnimationEnabled: homeSettings.isArrowAnimationEnabled ?? true,
         arrowLottieUrl: homeSettings.arrowLottieUrl || '',
         faviconUrl: homeSettings.faviconUrl || '',
+        glassOpacity: homeSettings.glassOpacity ?? 25,
       });
     }
   }, [homeSettings, form]);
@@ -683,6 +687,29 @@ export default function HomeAdmin() {
                                             </FormItem>
                                         )}
                                      />
+
+                                    <FormField
+                                        control={control}
+                                        name="glassOpacity"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>Glass Opacity (%)</FormLabel>
+                                                <FormControl>
+                                                    <Slider
+                                                        min={0}
+                                                        max={100}
+                                                        step={1}
+                                                        value={[field.value ?? 25]}
+                                                        onValueChange={(v) => field.onChange(v[0])}
+                                                    />
+                                                </FormControl>
+                                                <FormDescription>
+                                                    Controls the opacity of the dark background layer on glass panels (0% = invisible, 100% = fully black).
+                                                </FormDescription>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
 
                                     <Separator />
                                     

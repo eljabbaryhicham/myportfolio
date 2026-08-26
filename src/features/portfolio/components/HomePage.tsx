@@ -34,6 +34,7 @@ interface HomePageSettings {
     homePageTitle?: string;
     homePageSubtitle?: string;
     homePageTitleColor?: string;
+    glassOpacity?: number;
 }
 
 function Particles() {
@@ -201,6 +202,12 @@ export default function HomePageContent() {
     document.head.appendChild(link);
     return () => { try { document.head.removeChild(link); } catch {} };
   }, []);
+
+  useEffect(() => {
+    const opacity = (homeSettings?.glassOpacity ?? 25) / 100;
+    document.documentElement.style.setProperty('--glass-bg', `rgba(0,0,0,${opacity})`);
+    return () => { document.documentElement.style.removeProperty('--glass-bg'); };
+  }, [homeSettings?.glassOpacity]);
 
   useEffect(() => {
     const videoUrl = homeSettings?.heroVideoUrl;
