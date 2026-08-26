@@ -265,9 +265,9 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onCho
         const suffix = pos < currentValue.length ? '' : '\n';
         let insertion = '';
         if (type === 'video') {
-            insertion = `<video src="${url}" controls data-filename="${filename}" />\n`;
+            insertion = `<video src="${url}" controls title="${filename}" />\n`;
         } else if (type === 'raw') {
-            insertion = `<a href="${url}" download data-filename="${filename}">Download</a>\n`;
+            insertion = `<a href="${url}" download title="${filename}">Download</a>\n`;
         } else {
             insertion = `![${filename}](${url})\n`;
         }

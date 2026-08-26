@@ -114,7 +114,7 @@ const ProjectDetailsContent = memo(function ProjectDetailsContent({
         if (sourceChild) videoSrc = sourceChild.props.src;
       }
       if (!videoSrc) return <video {...rest}>{children}</video>;
-      const filename = rest['data-filename'] || null;
+      const filename = rest['title'] || null;
       let frameWidth = widthPercent;
       const w = typeof width === 'string' ? width.trim() : '';
       if (/^\d+(\.\d+)?$/.test(w)) frameWidth = `${w}%`;
@@ -140,7 +140,7 @@ const ProjectDetailsContent = memo(function ProjectDetailsContent({
     },
     a: (props: any) => {
       const { href, download, children, ...rest } = props;
-      const filename = props['data-filename'] || (typeof children === 'string' ? children : '') || 'Download';
+      const filename = rest['title'] || (typeof children === 'string' ? children : '') || 'Download';
       if (!download || !href) {
         if (href?.startsWith('/') && !href?.startsWith('//')) {
           return <Link href={href} {...rest}>{children}</Link>;

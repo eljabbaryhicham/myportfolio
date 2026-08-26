@@ -269,7 +269,7 @@ function AdminPage() {
               <TabsContent value="contact" className="flex-1 overflow-auto mt-4">
                   <ContactAdmin />
               </TabsContent>
-              <TabsContent value="media" className="flex-1 overflow-auto mt-4">
+              <TabsContent value="media" className="flex-1 overflow-auto mt-4 data-[state=inactive]:hidden" forceMount>
                   <Tabs value={innerMediaTab} onValueChange={setInnerMediaTab} className="w-full">
                     <TabsList className="mb-4">
                       <TabsTrigger value="cloudinary" className="glass-effect data-[state=active]:bg-destructive">Cloudinary</TabsTrigger>
