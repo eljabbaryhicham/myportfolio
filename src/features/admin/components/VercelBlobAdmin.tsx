@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useState, useMemo } from 'react';
+import { useCallback, useState, useMemo, useEffect } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
@@ -64,6 +64,20 @@ export default function VercelBlobAdmin({ libraryOpen: externalLibraryOpen, onLi
   const [isAddFromUrlOpen, setIsAddFromUrlOpen] = useState(false);
   const [addUrl, setAddUrl] = useState('');
   const [isAddingFromUrl, setIsAddingFromUrl] = useState(false);
+  const [urlProgress, setUrlProgress] = useState(0);
+
+  useEffect(() => {
+    let timer: ReturnType<typeof setInterval> | undefined;
+    if (isAddingFromUrl) {
+      setUrlProgress(0);
+      timer = setInterval(() => {
+        setUrlProgress(prev => (prev >= 95 ? prev : prev + 5));
+      }, 300);
+    } else {
+      setUrlProgress(0);
+    }
+    return () => { if (timer) clearInterval(timer); };
+  }, [isAddingFromUrl]);
 
   // Only show global progress inline when it matches this provider (vercel)
   const effectiveIsUploading = isUploading || (globalIsUploading && globalProvider === 'vercel');
@@ -300,6 +314,7 @@ export default function VercelBlobAdmin({ libraryOpen: externalLibraryOpen, onLi
         else setActiveTab('files');
       }
       setIsLibraryOpen(true);
+      setUrlProgress(100);
       toast({ title: 'Added from URL', description: data.url });
       setIsAddFromUrlOpen(false);
       setAddUrl('');
@@ -590,6 +605,13 @@ export default function VercelBlobAdmin({ libraryOpen: externalLibraryOpen, onLi
           </DialogHeader>
           <div className="flex flex-col gap-4 py-2">
             <Input placeholder="https://example.com/file.mp4" value={addUrl} onChange={(e) => setAddUrl(e.target.value)} disabled={isAddingFromUrl} />
+            {isAddingFromUrl && (
+              <div className="space-y-2 text-center">
+                <p className="text-sm text-muted-foreground">Adding from URL...</p>
+                <Progress value={urlProgress} />
+                <p className="text-xs text-muted-foreground">{Math.round(urlProgress)}%</p>
+              </div>
+            )}
             <div className="flex justify-end gap-2">
               <Button variant="outline" onClick={() => setIsAddFromUrlOpen(false)} disabled={isAddingFromUrl}>Cancel</Button>
               <Button onClick={handleAddFromUrl} disabled={!addUrl.trim() || isAddingFromUrl}>
