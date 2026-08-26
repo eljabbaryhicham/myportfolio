@@ -570,6 +570,22 @@ const PortfolioGridItem = ({ item, onClick, onEditClick, isAdmin, isSuperAdmin, 
 const slugify = (text: string) => text.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, '');
 
 export default function WorkPage() {
+  return (
+    <Suspense fallback={<WorkPageLoading />}>
+      <WorkPageContent />
+    </Suspense>
+  );
+}
+
+function WorkPageLoading() {
+  return (
+    <div className="flex-1 flex items-center justify-center min-h-[60vh]">
+      <Preloader />
+    </div>
+  );
+}
+
+function WorkPageContent() {
   const firestore = useFirestore();
   const { user } = useUser();
   // Auth-settle only: Firestore rules need the auth token, not the user
