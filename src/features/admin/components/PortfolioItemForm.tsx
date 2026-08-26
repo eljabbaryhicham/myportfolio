@@ -32,14 +32,15 @@ import {
   DialogClose,
 } from '@/components/ui/dialog';
 import type { PortfolioItem } from '@/features/portfolio/data/portfolio-data';
-import { useEffect } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faXmark, faImages } from '@fortawesome/free-solid-svg-icons';
+import { faXmark, faImages, faPaperclip } from '@fortawesome/free-solid-svg-icons';
 import { useToast } from '@/hooks/use-toast';
 import { Switch } from '@/components/ui/switch';
 import { useTranslation } from '@/lib/i18n/useTranslation';
+import MediaAdmin from './MediaAdmin';
 
 
 // Pre-filled Details content for NEW projects (existing projects untouched).
@@ -240,8 +241,49 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onCho
             form.setValue('thumbnailVttUrl', url, { shouldValidate: true });
         });
     };
+
+    const [mediaPickerField, setMediaPickerField] = useState<'description' | 'details' | null>(null);
+    const [isMediaPickerOpen, setIsMediaPickerOpen] = useState(false);
+    const [activeMediaTab, setActiveMediaTab] = useState<'images' | 'videos' | 'files'>('images');
+    const [activeMediaLibrary, setActiveMediaLibrary] = useState<'primary' | 'extented'>('primary');
+    const cursorPosRef = useRef<number>(0);
+    const textareaRefs = useRef<{ [key: string]: HTMLTextAreaElement }>({});
+
+    const handleInsertMedia = useCallback((fieldName: 'description' | 'details') => {
+        const textarea = textareaRefs.current[fieldName];
+        cursorPosRef.current = textarea?.selectionStart ?? (form.getValues(fieldName) || '').length;
+        setMediaPickerField(fieldName);
+        setIsMediaPickerOpen(true);
+    }, [form]);
+
+    const handleMediaInserted = useCallback((url: string, type: 'image' | 'video' | 'raw', _filename: string) => {
+        if (!mediaPickerField) return;
+        const currentValue = form.getValues(mediaPickerField) || '';
+        const pos = cursorPosRef.current;
+        const before = currentValue.slice(0, pos);
+        const after = currentValue.slice(pos);
+        const suffix = pos < currentValue.length ? '' : '\n';
+        let insertion = '';
+        if (type === 'video') {
+            insertion = `<video src="${url}" controls />\n`;
+        } else {
+            insertion = `![media](${url})\n`;
+        }
+        const newValue = before + insertion + suffix + after;
+        form.setValue(mediaPickerField, newValue, { shouldValidate: true });
+        setIsMediaPickerOpen(false);
+        setMediaPickerField(null);
+        setTimeout(() => {
+            const textarea = textareaRefs.current[mediaPickerField];
+            if (textarea) {
+                const newPos = pos + insertion.length + suffix.length;
+                textarea.focus();
+                textarea.setSelectionRange(newPos, newPos);
+            }
+        }, 50);
+    }, [mediaPickerField, form]);
     
-    return (
+    return (<>
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
             <DialogContent className="w-[80vw] h-[90vh] flex flex-col glass-effect p-0 rounded-lg">
                 <DialogHeader className="p-6 pb-0">
@@ -276,7 +318,24 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onCho
                               <FormItem>
                               <FormLabel>{t('portfolioForm.description')}</FormLabel>
                               <FormControl>
-                                  <Textarea placeholder={t('portfolioForm.descriptionPlaceholder')} {...field} />
+                                  <div className="relative">
+                                      <Textarea
+                                        placeholder={t('portfolioForm.descriptionPlaceholder')}
+                                        className="pr-10"
+                                        {...field}
+                                        ref={(el) => { textareaRefs.current.description = el!; field.ref(el); }}
+                                      />
+                                      <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="icon"
+                                        className="absolute right-1 top-1 h-8 w-8 text-muted-foreground hover:text-foreground"
+                                        onClick={() => handleInsertMedia('description')}
+                                        title="Insert media"
+                                      >
+                                        <FontAwesomeIcon icon={faPaperclip} className="h-4 w-4" />
+                                      </Button>
+                                  </div>
                               </FormControl>
                               <FormMessage />
                               </FormItem>
@@ -289,11 +348,24 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onCho
                               <FormItem>
                               <FormLabel>{t('portfolioForm.details')}</FormLabel>
                               <FormControl>
-                                  <Textarea
-                                  placeholder={t('portfolioForm.detailsPlaceholder')}
-                                  className="min-h-[150px]"
-                                  {...field}
-                                  />
+                                  <div className="relative">
+                                      <Textarea
+                                        placeholder={t('portfolioForm.detailsPlaceholder')}
+                                        className="min-h-[150px] pr-10"
+                                        {...field}
+                                        ref={(el) => { textareaRefs.current.details = el!; field.ref(el); }}
+                                      />
+                                      <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="icon"
+                                        className="absolute right-1 top-1 h-8 w-8 text-muted-foreground hover:text-foreground"
+                                        onClick={() => handleInsertMedia('details')}
+                                        title="Insert media"
+                                      >
+                                        <FontAwesomeIcon icon={faPaperclip} className="h-4 w-4" />
+                                      </Button>
+                                  </div>
                               </FormControl>
                               <FormDescription>
                                 {t('portfolioForm.detailsHelp')}
@@ -519,5 +591,24 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onCho
                 </DialogClose>
             </DialogContent>
         </Dialog>
-    )
+        <MediaAdmin
+            isDialog={true}
+            isOpen={isMediaPickerOpen}
+            onOpenChange={(open) => {
+                setIsMediaPickerOpen(open);
+                if (!open) setMediaPickerField(null);
+            }}
+            onMediaSelect={handleMediaInserted}
+            isSelectionMode={!!mediaPickerField}
+            onSelectionComplete={() => {
+                setIsMediaPickerOpen(false);
+                setMediaPickerField(null);
+            }}
+            activeTab={activeMediaTab}
+            setActiveTab={setActiveMediaTab}
+            activeLibrary={activeMediaLibrary}
+            setActiveLibrary={setActiveMediaLibrary}
+            newlyUploadedId={null}
+        />
+    </>)
 }
