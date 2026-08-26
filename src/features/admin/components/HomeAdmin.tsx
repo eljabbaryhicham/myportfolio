@@ -40,7 +40,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useTranslation } from '@/lib/i18n/useTranslation';
 import { DEFAULT_EMAIL_TEMPLATE_HTML, DEFAULT_AUTOREPLY_TEMPLATE_HTML } from '@/lib/default-email-template';
-import MediaLibrary from './MediaLibrary';
+import UnifiedMediaPicker from './UnifiedMediaPicker';
 import { faImages, faEye, faRotateLeft } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { debounce } from '@/lib/utils';
@@ -148,7 +148,6 @@ export default function HomeAdmin() {
   const firestore = useFirestore();
   const { user } = useUser();
   const [isMounted, setIsMounted] = useState(false);
-  const [provider, setProvider] = useState<'cloudinary' | 'vercel_blob'>('cloudinary');
 
   const typedUser = user as AppUser | null;
   const isSuperAdmin = typedUser?.email === SUPERADMIN_EMAIL;
@@ -559,7 +558,6 @@ export default function HomeAdmin() {
                                                     <RadioGroup
                                                         onValueChange={(value) => {
                                                             field.onChange(value);
-                                                            setProvider(value as 'cloudinary' | 'vercel_blob');
                                                         }}
                                                         value={field.value || 'cloudinary'}
                                                         className="flex items-center space-x-4"
@@ -1186,28 +1184,16 @@ export default function HomeAdmin() {
                 </div>
             </ScrollArea>
         </div>
-        <MediaLibrary
-          provider={provider}
-            isDialog={true}
-            isOpen={isLibraryOpen}
-            onOpenChange={setIsLibraryOpen}
-            onMediaSelect={(url, type) => {
-                if (libraryField) {
-                    setValue(libraryField as any, url);
-                }
-                setIsLibraryOpen(false);
-                setLibraryField(null);
-            }}
-            isSelectionMode={!!libraryField}
-            onSelectionComplete={() => {
-                setIsLibraryOpen(false);
-                setLibraryField(null);
-            }}
-            activeTab={libraryTab}
-            setActiveTab={setLibraryTab}
-            activeLibrary={libraryCollection}
-            setActiveLibrary={setLibraryCollection}
-            newlyUploadedId={null}
+        <UnifiedMediaPicker
+          isOpen={isLibraryOpen}
+          onOpenChange={setIsLibraryOpen}
+          onMediaSelect={(url, type) => {
+              if (libraryField) {
+                  setValue(libraryField as any, url);
+              }
+              setIsLibraryOpen(false);
+              setLibraryField(null);
+          }}
         />
         <Dialog open={isEmailPreviewOpen} onOpenChange={setIsEmailPreviewOpen}>
             <DialogContent className="w-[90vw] max-w-3xl glass-effect">

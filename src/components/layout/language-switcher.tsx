@@ -47,30 +47,33 @@ export function useLanguage() {
 export function LanguageSwitcher({ className }: { className?: string }) {
   const { lang, setLang } = useLanguage();
   const t = (key: string) => translations[lang]?.[key] ?? translations.en[key] ?? key;
+  const other: Lang = lang === 'en' ? 'fr' : 'en';
 
   return (
-    <div className={cn("flex items-center rounded-full border border-white/10 bg-white/5 backdrop-blur-sm overflow-hidden", className)}>
+    <div className={cn(
+      "group relative flex items-center overflow-hidden rounded-full border border-white/10 bg-white/5 backdrop-blur-sm transition-all duration-300",
+      className
+    )}>
+      {/* Active language (calls out to the right) */}
       <button
-        onClick={() => setLang('en')}
+        onClick={() => setLang(other)}
         className={cn(
-          "px-2 py-1 text-[10px] font-semibold tracking-wider transition-all duration-200 rounded-l-full",
+          "px-2 py-1 text-[10px] font-semibold tracking-wider transition-all duration-300 whitespace-nowrap",
           lang === 'en'
-            ? "bg-destructive text-white"
-            : "text-white/50 hover:text-white/80"
+            ? "bg-destructive text-white rounded-full"
+            : "text-white/60 hover:text-white rounded-full"
         )}
+        title={t('layout.toggleLang')}
       >
-        EN
+        {lang === 'en' ? 'EN' : 'FR'}
       </button>
+      {/* Inactive language (slides in on hover) */}
       <button
-        onClick={() => setLang('fr')}
-        className={cn(
-          "px-2 py-1 text-[10px] font-semibold tracking-wider transition-all duration-200 rounded-r-full",
-          lang === 'fr'
-            ? "bg-destructive text-white"
-            : "text-white/50 hover:text-white/80"
-        )}
+        onClick={() => setLang(other)}
+        className="px-2 py-1 text-[10px] font-semibold tracking-wider text-white/80 hover:text-white transition-all duration-300 opacity-0 max-w-0 group-hover:opacity-100 group-hover:max-w-10 group-hover:px-2 overflow-hidden whitespace-nowrap"
+        title={t('layout.toggleLang')}
       >
-        FR
+        {other === 'en' ? 'EN' : 'FR'}
       </button>
     </div>
   );

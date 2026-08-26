@@ -43,7 +43,28 @@ export async function initializeServerApp(): Promise<admin.app.App> {
     }
   }
 
-  // 2. Local service-account file (optional, for local development).
+  // 2. Build a service account from individual env vars.
+  const projectId = process.env.FIREBASE_PROJECT_ID;
+  const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
+  const privateKey = process.env.FIREBASE_PRIVATE_KEY;
+  if (projectId && clientEmail && privateKey) {
+    try {
+      const app = admin.initializeApp({
+        credential: admin.credential.cert({
+          projectId,
+          clientEmail,
+          privateKey: privateKey.replace(/\\n/g, '\n'),
+        }),
+      });
+      console.log('Firebase Admin SDK initialized from FIREBASE_PROJECT_ID/FIREBASE_CLIENT_EMAIL/FIREBASE_PRIVATE_KEY env vars.');
+      return app;
+    } catch (error) {
+      console.error('Failed to initialize Firebase Admin SDK from individual env vars.', error);
+      throw new Error('FIREBASE_PROJECT_ID/FIREBASE_CLIENT_EMAIL/FIREBASE_PRIVATE_KEY are set but invalid. Please fix the environment variables.');
+    }
+  }
+
+  // 3. Local service-account file (optional, for local development).
   const serviceAccountPath = path.resolve(process.cwd(), 'docs', 'service-account.json');
   try {
     const serviceAccountString = await fs.readFile(serviceAccountPath, 'utf-8');
@@ -61,7 +82,7 @@ export async function initializeServerApp(): Promise<admin.app.App> {
     }
   }
 
-  // 3. Application Default Credentials (Firebase App Hosting, Cloud Run, etc.).
+  // 4. Application Default Credentials (Firebase App Hosting, Cloud Run, etc.).
   try {
     const app = admin.initializeApp();
     console.log('Firebase Admin SDK initialized with Application Default Credentials.');

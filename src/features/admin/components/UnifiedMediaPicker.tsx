@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -13,6 +13,22 @@ import { collection, query, orderBy } from 'firebase/firestore';
 import { useTranslation } from '@/lib/i18n/useTranslation';
 import Preloader from '@/components/preloader';
 import Image from 'next/image';
+import { Button } from '@/components/ui/button';
+
+// Cloudinary URL helpers
+const CLOUDINARY_UPLOAD_RE = /\/(image|video|raw)\/upload\//;
+const withTransform = (url: string, transform: string): string =>
+  url.replace(CLOUDINARY_UPLOAD_RE, (m) => `${m}${transform}/`);
+const stripTransforms = (url: string): string =>
+  url.replace(/^(.*?\/upload\/)(?:[^/]+)?(\/v\d+\/)/, '$1$2');
+const formatVariant = (url: string, fmt: 'mp4' | 'webm' | 'webp' | 'avif' | 'jpg' | 'png'): string => {
+  const out = withTransform(stripTransforms(url), `f_${fmt},q_auto,fl_attachment`);
+  return out.replace(/\.(m3u8|webm|mp4|mov|jpeg|jpg|png|gif|webp|avif)$/i, `.${fmt}`);
+};
+const hlsVariant = (url: string): string => {
+  const stripped = stripTransforms(url).replace(/\.[a-z0-9]+$/i, '.m3u8');
+  return withTransform(stripped, 'sp_auto');
+};
 
 type MediaAsset = {
   id: string;
@@ -49,6 +65,7 @@ export default function UnifiedMediaPicker({ isOpen, onOpenChange, onMediaSelect
   const [activeTab, setActiveTab] = useState<'images' | 'videos' | 'files'>('images');
   const [activeLibrary, setActiveLibrary] = useState<'primary' | 'extented'>('primary');
   const [searchQuery, setSearchQuery] = useState('');
+  const [formatChoiceAsset, setFormatChoiceAsset] = useState<{ url: string; resourceType: 'image' | 'video' | 'raw'; filename: string } | null>(null);
 
   const mediaCollectionRef = useMemoFirebase(() => firestore ? query(collection(firestore, 'media'), orderBy('created_at', 'desc')) : null, [firestore]);
   const { data: mediaAssets, isLoading: isLoadingMedia } = useCollection<MediaAsset>(mediaCollectionRef);
@@ -59,6 +76,16 @@ export default function UnifiedMediaPicker({ isOpen, onOpenChange, onMediaSelect
   const handleSelect = (url: string, type: 'image' | 'video' | 'raw', filename: string) => {
     onMediaSelect(url, type, filename);
     onOpenChange(false);
+  };
+
+  // Cloudinary items route through a format-choice dialog (image/video formats);
+  // Vercel items select directly since their original format is delivered.
+  const handleItemClick = (item: { url: string; resourceType: 'image' | 'video' | 'raw'; filename: string }, itemProvider: 'cloudinary' | 'vercel') => {
+    if (itemProvider === 'cloudinary') {
+      setFormatChoiceAsset(item);
+    } else {
+      handleSelect(item.url, item.resourceType, item.filename);
+    }
   };
 
   const renderCloudinaryGrid = (type: 'image' | 'video' | 'raw') => {
@@ -81,7 +108,7 @@ export default function UnifiedMediaPicker({ isOpen, onOpenChange, onMediaSelect
     return (
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
         {filtered.map(file => (
-          <div key={file.id} className="flex flex-col gap-2 group cursor-pointer" onClick={() => handleSelect(file.url, file.resource_type, file.filename)}>
+          <div key={file.id} className="flex flex-col gap-2 group cursor-pointer" onClick={() => handleItemClick({ url: file.url, resourceType: file.resource_type, filename: file.filename }, 'cloudinary')}>
             <div className="relative aspect-square border rounded-lg overflow-hidden glass-effect p-1 group-hover:ring-2 group-hover:ring-primary transition-all">
               <div className="relative w-full h-full rounded-md overflow-hidden">
                 {file.resource_type === 'image' ? (
@@ -135,7 +162,7 @@ export default function UnifiedMediaPicker({ isOpen, onOpenChange, onMediaSelect
           const isImage = b.contentType?.startsWith('image/');
           const mappedType: 'image' | 'video' | 'raw' = isImage ? 'image' : b.contentType?.startsWith('video/') ? 'video' : 'raw';
           return (
-            <div key={b.id} className="flex flex-col gap-2 group cursor-pointer" onClick={() => handleSelect(b.url, mappedType, b.filename)}>
+            <div key={b.id} className="flex flex-col gap-2 group cursor-pointer" onClick={() => handleItemClick({ url: b.url, resourceType: mappedType, filename: b.filename }, 'vercel')}>
               <div className="relative aspect-square border rounded-lg overflow-hidden glass-effect p-1 group-hover:ring-2 group-hover:ring-primary transition-all">
                 <div className="relative w-full h-full rounded-md overflow-hidden bg-black/50 flex items-center justify-center">
                   {isImage ? (
@@ -167,6 +194,7 @@ export default function UnifiedMediaPicker({ isOpen, onOpenChange, onMediaSelect
   };
 
   return (
+    <>
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="w-[90vw] max-w-6xl h-[85vh] glass-effect p-0 flex flex-col">
         <DialogHeader className="p-4 border-b text-center">
@@ -229,5 +257,59 @@ export default function UnifiedMediaPicker({ isOpen, onOpenChange, onMediaSelect
         </DialogClose>
       </DialogContent>
     </Dialog>
+
+    {/* Format choice dialog (Cloudinary only) */}
+    <Dialog open={!!formatChoiceAsset} onOpenChange={(open) => { if (!open) setFormatChoiceAsset(null); }}>
+      <DialogContent className="w-[80vw] glass-effect">
+        <DialogHeader>
+          <DialogTitle>{t('mediaAdmin.chooseFormat') || 'Choose Format'}</DialogTitle>
+          <DialogDescription>{t('mediaAdmin.chooseFormatDescription') || 'Select the format you want to use for this media.'}</DialogDescription>
+        </DialogHeader>
+        <div className="py-4 space-y-3">
+          {formatChoiceAsset?.resourceType === 'video' ? (
+            <div className="flex flex-col gap-2">
+              <Button onClick={() => { if (formatChoiceAsset) { handleSelect(formatVariant(formatChoiceAsset.url, 'mp4'), 'video', formatChoiceAsset.filename); } }} variant="outline" className="justify-start">
+                <FontAwesomeIcon icon={faFilm} className="mr-2 h-4 w-4" /> MP4
+              </Button>
+              <Button onClick={() => { if (formatChoiceAsset) { handleSelect(formatVariant(formatChoiceAsset.url, 'webm'), 'video', formatChoiceAsset.filename); } }} variant="outline" className="justify-start">
+                <FontAwesomeIcon icon={faFilm} className="mr-2 h-4 w-4" /> WebM
+              </Button>
+              <Button onClick={() => { if (formatChoiceAsset) { handleSelect(hlsVariant(formatChoiceAsset.url), 'video', formatChoiceAsset.filename); } }} variant="outline" className="justify-start">
+                <FontAwesomeIcon icon={faFilm} className="mr-2 h-4 w-4" /> HLS (m3u8)
+              </Button>
+              <Button onClick={() => { if (formatChoiceAsset) { handleSelect(formatChoiceAsset.url, 'video', formatChoiceAsset.filename); } }} variant="ghost" className="justify-start text-muted-foreground">
+                {t('mediaAdmin.copy.default') || 'Original'}
+              </Button>
+            </div>
+          ) : formatChoiceAsset?.resourceType === 'image' ? (
+            <div className="flex flex-col gap-2">
+              <Button onClick={() => { if (formatChoiceAsset) { handleSelect(formatVariant(formatChoiceAsset.url, 'webp'), 'image', formatChoiceAsset.filename); } }} variant="outline" className="justify-start">
+                <FontAwesomeIcon icon={faFileImage} className="mr-2 h-4 w-4" /> WebP
+              </Button>
+              <Button onClick={() => { if (formatChoiceAsset) { handleSelect(formatVariant(formatChoiceAsset.url, 'avif'), 'image', formatChoiceAsset.filename); } }} variant="outline" className="justify-start">
+                <FontAwesomeIcon icon={faFileImage} className="mr-2 h-4 w-4" /> AVIF
+              </Button>
+              <Button onClick={() => { if (formatChoiceAsset) { handleSelect(formatVariant(formatChoiceAsset.url, 'jpg'), 'image', formatChoiceAsset.filename); } }} variant="outline" className="justify-start">
+                <FontAwesomeIcon icon={faFileImage} className="mr-2 h-4 w-4" /> JPG
+              </Button>
+              <Button onClick={() => { if (formatChoiceAsset) { handleSelect(formatVariant(formatChoiceAsset.url, 'png'), 'image', formatChoiceAsset.filename); } }} variant="outline" className="justify-start">
+                <FontAwesomeIcon icon={faFileImage} className="mr-2 h-4 w-4" /> PNG
+              </Button>
+              <Button onClick={() => { if (formatChoiceAsset) { handleSelect(formatChoiceAsset.url, 'image', formatChoiceAsset.filename); } }} variant="ghost" className="justify-start text-muted-foreground">
+                {t('mediaAdmin.copy.default') || 'Original'}
+              </Button>
+            </div>
+          ) : (
+            <Button onClick={() => { if (formatChoiceAsset) { handleSelect(formatChoiceAsset.url, formatChoiceAsset.resourceType, formatChoiceAsset.filename); } }} className="w-full">
+              <FontAwesomeIcon icon={faFileImage} className="mr-2 h-4 w-4" /> {t('mediaAdmin.select') || 'Select'}
+            </Button>
+          )}
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => setFormatChoiceAsset(null)}>{t('adminMgmt.cancel') || 'Cancel'}</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+    </>
   );
 }
