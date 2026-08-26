@@ -113,6 +113,7 @@ export default function AddFromUrlDialog({ isOpen, onOpenChange, onUploadComplet
         }
         setProgress(100);
         updateGlobalProgress(100, 'cloudinary');
+        finishUpload('cloudinary');
         const docRef = await addDocumentNonBlocking(collection(firestore, 'media'), { ...result.media }) as DocumentReference | undefined;
         if (docRef) {
           onUploadComplete(docRef.id, result.media.resource_type as 'image' | 'video', values.libraryId);
@@ -127,7 +128,6 @@ export default function AddFromUrlDialog({ isOpen, onOpenChange, onUploadComplet
         setTimeout(() => {
           onOpenChange(false);
           setIsSubmitting(false);
-          finishUpload('cloudinary');
         }, 500);
       } else {
         toast({
