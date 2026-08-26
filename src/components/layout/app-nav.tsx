@@ -208,6 +208,8 @@ export function AppNav() {
         >
            {accessibleNavItems.map(renderNavItem)}
         </nav>
+        {/* Bottom spacer balances the logo slot so nav stays vertically centered */}
+        <div aria-hidden="true" className="hidden md:block h-8 w-8" />
       </div>
     </motion.aside>
   );
