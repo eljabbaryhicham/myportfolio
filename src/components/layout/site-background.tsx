@@ -142,7 +142,6 @@ export function DynamicThemeStyles() {    const firestore = useFirestore();
     const themeColor = homeSettings?.themeColor;
     const primaryHsl = themeColor ? hexToHsl(themeColor) : null;
     const glassOpacity = (homeSettings?.glassOpacity ?? 25) / 100;
-    const glassTransparency = Math.max((homeSettings?.glassTransparency ?? 100) / 100, 0.25);
 
     useEffect(() => {
       if (primaryHsl) {
@@ -159,16 +158,14 @@ export function DynamicThemeStyles() {    const firestore = useFirestore();
             --accent: ${primaryHsl};
             --destructive: ${primaryHsl};
             --ring: ${primaryHsl};
-            --glass-bg: rgba(0,0,0,${glassOpacity});
-            --glass-transparency: ${glassTransparency};
+            --glass-bg: rgba(15, 25, 40, ${glassOpacity});
         }
         .dark {
             --primary: ${primaryHsl};
             --accent: ${primaryHsl};
             --destructive: ${primaryHsl};
             --ring: ${primaryHsl};
-            --glass-bg: rgba(0,0,0,${glassOpacity});
-            --glass-transparency: ${glassTransparency};
+            --glass-bg: rgba(15, 25, 40, ${glassOpacity});
         }
       `}</style>
     );

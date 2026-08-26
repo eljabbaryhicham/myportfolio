@@ -84,7 +84,6 @@ interface HomePageSettings {
     arrowLottieUrl?: string;
     faviconUrl?: string;
     glassOpacity?: number;
-    glassTransparency?: number;
     mediaWidth?: number;
 }
 
@@ -121,7 +120,6 @@ const settingsSchema = z.object({
   arrowLottieUrl: z.string().optional(),
   faviconUrl: z.string().optional(),
   glassOpacity: z.number().min(0).max(100).optional(),
-  glassTransparency: z.number().min(25).max(100).optional(),
   mediaWidth: z.number().min(10).max(100).optional(),
 });
 
@@ -200,7 +198,6 @@ export default function HomeAdmin() {
       arrowLottieUrl: '',
       faviconUrl: '',
       glassOpacity: 25,
-      glassTransparency: 100,
       mediaWidth: 100,
     },
   });
@@ -243,7 +240,6 @@ export default function HomeAdmin() {
         arrowLottieUrl: homeSettings.arrowLottieUrl || '',
         faviconUrl: homeSettings.faviconUrl || '',
         glassOpacity: homeSettings.glassOpacity ?? 25,
-        glassTransparency: homeSettings.glassTransparency ?? 100,
         mediaWidth: homeSettings.mediaWidth ?? 100,
       });
     }
@@ -717,33 +713,6 @@ export default function HomeAdmin() {
                                                 </FormControl>
                                                 <FormDescription>
                                                     Controls the opacity of the dark background layer on glass panels (0% = invisible, 100% = fully black).
-                                                </FormDescription>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
-
-                                    <FormField
-                                        control={control}
-                                        name="glassTransparency"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>Liquid Glass Transparency (%)</FormLabel>
-                                                <FormControl>
-                                                    <div className="flex items-center gap-3">
-                                                        <Slider
-                                                            className="flex-1"
-                                                            min={25}
-                                                            max={100}
-                                                            step={1}
-                                                            value={[field.value ?? 100]}
-                                                            onValueChange={(v) => field.onChange(v[0])}
-                                                        />
-                                                        <span className="w-12 text-center text-sm font-mono">{field.value ?? 100}%</span>
-                                                    </div>
-                                                </FormControl>
-                                                <FormDescription>
-                                                    Controls overall transparency of glass panels (0% = fully transparent, 100% = fully opaque).
                                                 </FormDescription>
                                                 <FormMessage />
                                             </FormItem>
