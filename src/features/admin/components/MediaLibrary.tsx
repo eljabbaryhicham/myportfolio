@@ -454,11 +454,11 @@ export default forwardRef<MediaLibraryRef, MediaLibraryProps>(function MediaLibr
     if (provider === 'cloudinary') {
       setFullLibraryActiveTab(tab);
       setFullLibraryActiveLibrary((libraryId === 'primary' || libraryId === 'extented') ? libraryId : 'primary');
-      setIsFullLibraryOpen(true);
     } else {
-      setActiveTabFn(tab);
+      setFullLibraryActiveTab(tab);
     }
     setLocalNewlyUploadedId(docId);
+    setIsFullLibraryOpen(true);
     consumeCompletedUpload();
     const timer = setTimeout(() => setLocalNewlyUploadedId(null), 3000);
     return () => clearTimeout(timer);

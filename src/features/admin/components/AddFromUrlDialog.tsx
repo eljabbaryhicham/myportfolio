@@ -15,7 +15,7 @@ import { uploadMediaFromUrl } from '@/ai/flows/upload-media-from-url';
 import { useFirestore, addDocumentNonBlocking } from '@/firebase';
 import { collection, DocumentReference } from 'firebase/firestore';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSpinner, faXmark } from '@fortawesome/free-solid-svg-icons';
+import { faSpinner, faXmark, faMinus } from '@fortawesome/free-solid-svg-icons';
 import { cn } from '@/lib/utils';
 import { Progress } from '@/components/ui/progress';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -86,7 +86,6 @@ export default function AddFromUrlDialog({ isOpen, onOpenChange, onUploadComplet
   
   const handleClose = (open: boolean) => {
     if (!open) {
-        if (isSubmitting) return;
         form.reset();
         setProgress(0);
     }
@@ -248,7 +247,9 @@ export default function AddFromUrlDialog({ isOpen, onOpenChange, onUploadComplet
             )}
 
             <DialogFooter className="pt-4">
-               <Button type="button" variant="outline" onClick={() => handleClose(false)} disabled={isSubmitting}>{t('addFromUrl.cancel')}</Button>
+               <Button type="button" variant="outline" onClick={() => handleClose(false)}>
+                 {isSubmitting ? 'Minimize' : t('addFromUrl.cancel')}
+               </Button>
                <Button type="submit" disabled={isSubmitting}>
                 {isSubmitting && <FontAwesomeIcon icon={faSpinner} className="mr-2 h-4 w-4 animate-spin" />}
                 {isSubmitting ? t('addFromUrl.addingButton') : t('addFromUrl.addToLibrary')}
@@ -256,7 +257,20 @@ export default function AddFromUrlDialog({ isOpen, onOpenChange, onUploadComplet
             </DialogFooter>
           </form>
         </Form>
-        {!isSubmitting && (
+        {isSubmitting ? (
+            <button
+                onClick={() => handleClose(false)}
+                className={cn(
+                    "absolute right-4 top-4 h-8 w-8",
+                    "flex items-center justify-center rounded-full transition-opacity",
+                    "bg-primary text-primary-foreground opacity-70 hover:opacity-100",
+                    "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                )}
+            >
+                <FontAwesomeIcon icon={faMinus} className="h-4 w-4" />
+                <span className="sr-only">Minimize</span>
+            </button>
+        ) : (
             <DialogClose asChild>
                 <button className={cn(
                     "absolute right-4 top-4 h-8 w-8",
