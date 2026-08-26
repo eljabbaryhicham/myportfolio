@@ -386,21 +386,16 @@ html, body {
   .details-video-frame {
     will-change: auto;
     border-radius: 0 !important;
-  }
-  /* The outer muted card around each details video also has rounded-lg +
-     overflow. Removing it avoids a second mask layer. */
-  .project-details .details-video-frame {
-    border-radius: 0 !important;
-  }
-  .project-details > div:has(> .details-video-frame),
-  .project-details .my-4:has(.details-video-frame) {
-    border-radius: 0 !important;
+    overflow: hidden; /* rectangular scissor, no alpha mask */
   }
   .project-details video,
   .project-details .plyr,
   .project-details .plyr__video-wrapper {
     border-radius: 0 !important;
   }
+  /* Outer muted card (my-4 rounded-lg) keeps its rounded corners: it has
+     p-[2%] padding so the rectangular video inside does not touch the
+     radius, therefore no video-texture mask is needed — cheap. */
 }
 .work-dialog-open div.-z-10 {
   visibility: hidden !important;
