@@ -607,7 +607,7 @@ export default function VercelBlobAdmin({ libraryOpen: externalLibraryOpen, onLi
             <Input placeholder="https://example.com/file.mp4" value={addUrl} onChange={(e) => setAddUrl(e.target.value)} disabled={isAddingFromUrl} />
             {isAddingFromUrl && (
               <div className="space-y-2 text-center">
-                <p className="text-sm text-muted-foreground">Adding from URL...</p>
+                <p className="text-sm text-muted-foreground">Please wait, adding to library...</p>
                 <Progress value={urlProgress} />
                 <p className="text-xs text-muted-foreground">{Math.round(urlProgress)}%</p>
               </div>
