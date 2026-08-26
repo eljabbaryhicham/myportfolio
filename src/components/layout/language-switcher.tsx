@@ -49,28 +49,28 @@ export function LanguageSwitcher({ className }: { className?: string }) {
   const t = (key: string) => translations[lang]?.[key] ?? translations.en[key] ?? key;
 
   return (
-    <div className={cn("flex items-center rounded-md border border-white/10 bg-white/5 backdrop-blur-sm overflow-hidden", className)}>
+    <div className={cn("flex items-center rounded-full border border-white/10 bg-white/5 backdrop-blur-sm overflow-hidden", className)}>
       <button
         onClick={() => setLang('en')}
         className={cn(
-          "px-3 py-1.5 text-xs font-semibold tracking-wider transition-all duration-200",
+          "px-2 py-1 text-[10px] font-semibold tracking-wider transition-all duration-200 rounded-l-full",
           lang === 'en'
             ? "bg-destructive text-white"
             : "text-white/50 hover:text-white/80"
         )}
       >
-        {t('layout.eng')}
+        EN
       </button>
       <button
         onClick={() => setLang('fr')}
         className={cn(
-          "px-3 py-1.5 text-xs font-semibold tracking-wider transition-all duration-200",
+          "px-2 py-1 text-[10px] font-semibold tracking-wider transition-all duration-200 rounded-r-full",
           lang === 'fr'
             ? "bg-destructive text-white"
             : "text-white/50 hover:text-white/80"
         )}
       >
-        {t('layout.fr')}
+        FR
       </button>
     </div>
   );

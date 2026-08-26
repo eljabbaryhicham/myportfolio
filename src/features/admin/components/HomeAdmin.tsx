@@ -89,6 +89,7 @@ interface HomePageSettings {
     showMediaTitles?: boolean;
     glassColor?: string;
     navButtonSize?: number;
+    provider?: 'cloudinary' | 'vercel_blob';
 }
 
 const settingsSchema = z.object({
@@ -128,6 +129,7 @@ const settingsSchema = z.object({
   showMediaTitles: z.boolean().optional(),
   glassColor: z.string().optional(),
   navButtonSize: z.number().min(28).max(64).optional(),
+  provider: z.enum(['cloudinary', 'vercel_blob']).optional(),
 });
 
 type SettingsFormValues = z.infer<typeof settingsSchema>;
@@ -146,6 +148,7 @@ export default function HomeAdmin() {
   const firestore = useFirestore();
   const { user } = useUser();
   const [isMounted, setIsMounted] = useState(false);
+  const [provider, setProvider] = useState<'cloudinary' | 'vercel_blob'>('cloudinary');
 
   const typedUser = user as AppUser | null;
   const isSuperAdmin = typedUser?.email === SUPERADMIN_EMAIL;
@@ -209,6 +212,7 @@ export default function HomeAdmin() {
       showMediaTitles: true,
       glassColor: '#000000',
       navButtonSize: 40,
+      provider: 'cloudinary',
     },
   });
 
@@ -253,6 +257,8 @@ export default function HomeAdmin() {
         mediaWidth: homeSettings.mediaWidth ?? 100,
         showMediaTitles: homeSettings.showMediaTitles ?? true,
         glassColor: homeSettings.glassColor || '#000000',
+        navButtonSize: homeSettings.navButtonSize || 40,
+        provider: homeSettings.provider || 'cloudinary',
       });
     }
   }, [homeSettings, form]);
@@ -542,6 +548,38 @@ export default function HomeAdmin() {
                                              </FormItem>
                                          )}
                                      />
+
+                                    <FormField
+                                        control={control}
+                                        name="provider"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>{t('homeAdmin.provider') || 'Media Provider'}</FormLabel>
+                                                <FormControl>
+                                                    <RadioGroup
+                                                        onValueChange={(value) => {
+                                                            field.onChange(value);
+                                                            setProvider(value as 'cloudinary' | 'vercel_blob');
+                                                        }}
+                                                        value={field.value || 'cloudinary'}
+                                                        className="flex items-center space-x-4"
+                                                    >
+                                                        <FormItem className="flex items-center space-x-2 space-y-0">
+                                                            <FormControl><RadioGroupItem value="cloudinary" /></FormControl>
+                                                            <FormLabel className="font-normal">Cloudinary</FormLabel>
+                                                        </FormItem>
+                                                        <FormItem className="flex items-center space-x-2 space-y-0">
+                                                            <FormControl><RadioGroupItem value="vercel_blob" /></FormControl>
+                                                            <FormLabel className="font-normal">Vercel Blob</FormLabel>
+                                                        </FormItem>
+                                                    </RadioGroup>
+                                                </FormControl>
+                                                <FormDescription>
+                                                    {t('homeAdmin.providerDescription') || 'Choose which library the media picker opens by default'}
+                                                </FormDescription>
+                                            </FormItem>
+                                        )}
+                                    />
 
                                     <FormField
                                         control={control}
@@ -1149,7 +1187,7 @@ export default function HomeAdmin() {
             </ScrollArea>
         </div>
         <MediaLibrary
-          provider="cloudinary"
+          provider={provider}
             isDialog={true}
             isOpen={isLibraryOpen}
             onOpenChange={setIsLibraryOpen}

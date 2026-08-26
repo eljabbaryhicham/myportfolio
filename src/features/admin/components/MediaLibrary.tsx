@@ -1269,6 +1269,24 @@ export default forwardRef<MediaLibraryRef, MediaLibraryProps>(function MediaLibr
                     {t('mediaAdmin.copy.default')}
                   </Button>
                 </div>
+              ) : formatChoiceAsset?.resourceType === 'image' && provider === 'cloudinary' ? (
+                <div className="flex flex-col gap-2">
+                  <Button onClick={() => { if (formatChoiceAsset) { handleConfirmFormatPick(formatVariant(formatChoiceAsset.url, 'webp')); } }} variant="outline" className="justify-start">
+                    <FontAwesomeIcon icon={faFileImage} className="mr-2 h-4 w-4" /> WebP
+                  </Button>
+                  <Button onClick={() => { if (formatChoiceAsset) { handleConfirmFormatPick(formatVariant(formatChoiceAsset.url, 'avif')); } }} variant="outline" className="justify-start">
+                    <FontAwesomeIcon icon={faFileImage} className="mr-2 h-4 w-4" /> AVIF
+                  </Button>
+                  <Button onClick={() => { if (formatChoiceAsset) { handleConfirmFormatPick(formatVariant(formatChoiceAsset.url, 'jpg')); } }} variant="outline" className="justify-start">
+                    <FontAwesomeIcon icon={faFileImage} className="mr-2 h-4 w-4" /> JPG
+                  </Button>
+                  <Button onClick={() => { if (formatChoiceAsset) { handleConfirmFormatPick(formatVariant(formatChoiceAsset.url, 'png')); } }} variant="outline" className="justify-start">
+                    <FontAwesomeIcon icon={faFileImage} className="mr-2 h-4 w-4" /> PNG
+                  </Button>
+                  <Button onClick={() => { if (formatChoiceAsset) { handleConfirmFormatPick(formatChoiceAsset.url); } }} variant="ghost" className="justify-start text-muted-foreground">
+                    {t('mediaAdmin.copy.default')}
+                  </Button>
+                </div>
               ) : (
                 <Button onClick={() => { if (formatChoiceAsset) { handleConfirmFormatPick(formatChoiceAsset.url); } }} className="w-full">
                   <FontAwesomeIcon icon={faFileImage} className="mr-2 h-4 w-4" /> {t('mediaAdmin.select')}

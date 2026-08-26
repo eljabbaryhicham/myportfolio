@@ -4,6 +4,14 @@ import admin from 'firebase-admin';
 import { initializeServerApp } from '@/firebase/server-init';
 import { SUPERADMIN_EMAIL } from '@/lib/constants';
 
+function friendlyError(error: any): string {
+  const msg = error?.message || 'Unknown error';
+  if (msg.includes('ENOTFOUND') || msg.includes('metadata.google.internal')) {
+    return 'Firebase Admin SDK is not authenticated. Add your service account JSON to docs/service-account.json, or set the FIREBASE_SERVICE_ACCOUNT_KEY env var (see docs/backend.json). This works automatically on Vercel.';
+  }
+  return msg;
+}
+
 const DEFAULT_PERMISSIONS = {
   canUploadMedia: true,
   canDeleteMedia: false,
@@ -74,7 +82,7 @@ export async function syncAuthUsersToFirestore(): Promise<{
     return { synced: missing.length, users: syncedUsers };
   } catch (error: any) {
     console.error('Sync Auth users failed:', error);
-    return { synced: 0, users: [], error: error.message || 'Unknown error' };
+    return { synced: 0, users: [], error: friendlyError(error) };
   }
 }
 
@@ -93,6 +101,6 @@ export async function deleteAdminUser(uid: string): Promise<{ success: boolean; 
     return { success: true };
   } catch (error: any) {
     console.error('Delete admin user failed:', error);
-    return { success: false, error: error.message || 'Unknown error' };
+    return { success: false, error: friendlyError(error) };
   }
 }

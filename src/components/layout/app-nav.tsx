@@ -102,8 +102,8 @@ export function AppNav() {
         <Link
           href={item.href}
           className={cn(
-            "group relative flex items-center justify-center rounded-full transition-all duration-300 aspect-square",
-            isMobile ? 'h-[clamp(2.5rem,10vw,3rem)] w-[clamp(2.5rem,10vw,3rem)]' : "",
+            "group relative flex items-center justify-center rounded-full transition-all duration-300",
+            isMobile ? 'h-[clamp(2.5rem,10vw,3rem)] w-[clamp(2.5rem,10vw,3rem)] aspect-square' : "",
             "text-white",
             isActive ? "" : (isSpecialButton ? "bg-cyan-500/80" : "glass-effect"),
           )}
