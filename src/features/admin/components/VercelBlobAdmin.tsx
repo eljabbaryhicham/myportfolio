@@ -49,7 +49,7 @@ export default function VercelBlobAdmin() {
   const { toast } = useToast();
   const firestore = useFirestore();
   const auth = useAuth();
-  const { isUploading: globalIsUploading, progress: globalProgress, fileName: globalFileName, provider: globalProvider, startUpload, updateProgress: updateGlobalProgress, finishUpload } = useUploadProgress();
+  const { isUploading: globalIsUploading, progress: globalProgress, fileName: globalFileName, provider: globalProvider, startUpload, updateProgress: updateGlobalProgress, finishUpload, signalCompletedUpload } = useUploadProgress();
 
   const [activeTab, setActiveTab] = useState<'images' | 'videos' | 'files'>('images');
   const [searchQuery, setSearchQuery] = useState('');
@@ -133,6 +133,8 @@ export default function VercelBlobAdmin() {
             const newId = (docRef as any)?.id || blob.pathname;
             setNewlyUploadedId(newId);
             setTimeout(() => setNewlyUploadedId(null), 2000);
+            const resourceType = file.type.startsWith('video/') ? 'video' : file.type.startsWith('image/') ? 'image' : 'raw';
+            signalCompletedUpload(newId, resourceType, 'vercel_blob');
           } catch {}
         }
         const lowerType = file.type.toLowerCase();

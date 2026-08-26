@@ -92,9 +92,13 @@ function AdminPage() {
     if (activeTab !== 'media') {
       setActiveTab('media');
     }
-    setDialogActiveTab(resourceType === 'video' ? 'videos' : resourceType === 'raw' ? 'files' : 'images');
-    setDialogActiveLibrary(libraryId);
-    setIsLibraryOpen(true);
+    if (libraryId === 'vercel_blob') {
+      setInnerMediaTab('vercel');
+    } else {
+      setDialogActiveTab(resourceType === 'video' ? 'videos' : resourceType === 'raw' ? 'files' : 'images');
+      setDialogActiveLibrary(libraryId);
+      setIsLibraryOpen(true);
+    }
     consumeCompletedUpload();
     setTimeout(() => setNewlyUploadedId(null), 2000);
   }, [completedUpload, activeTab, consumeCompletedUpload, setActiveTab]);
