@@ -65,7 +65,7 @@ export function LanguageSwitcher({ className }: { className?: string }) {
       {/* Circular knob that slides and shows the active language inside it */}
       <motion.span
         className="absolute top-1 left-1 z-10 flex h-6 w-6 items-center justify-center rounded-full bg-destructive shadow-[0_0_12px_hsl(var(--primary)/0.6)]"
-        animate={{ x: isEn ? 0 : 20 }}
+        animate={{ x: isEn ? 0 : 16 }}
         transition={{ type: "spring", stiffness: 500, damping: 30 }}
       >
         <span className="text-[9px] font-bold leading-none text-white">
