@@ -71,7 +71,10 @@ const PlyrPlayer = forwardRef(({ source, poster, autoPlay = true, thumbnailVttUr
             } else {
                 const video = document.createElement('video');
                 video.setAttribute('playsinline', '');
+                video.setAttribute('webkit-playsinline', '');
                 video.setAttribute('controls', '');
+                video.setAttribute('preload', 'metadata');
+                video.setAttribute('crossorigin', 'anonymous');
                 if (poster) {
                     video.setAttribute('poster', poster);
                 }

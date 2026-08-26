@@ -60,45 +60,12 @@ const normalizeSelfClosingMedia = (md: string) =>
 const DETAILS_MEDIA_RE = /<\s*(video|audio|img|source)\b|!\[[^\]]*\]\([^)]+\)/i;
 const hasDetailsMedia = (details?: string) => !!details && DETAILS_MEDIA_RE.test(details);
 
-function isIOSDevice() {
-  if (typeof navigator === 'undefined') return false;
-  const ua = navigator.userAgent || '';
-  return /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && (navigator as any).maxTouchPoints > 1);
-}
-
-// Native video for iOS: Safari has strict inline + HLS requirements and
-// Plyr/Clappr's custom controls + hls.js often fail inside a transformed
-// dialog. A plain <video> with native controls is the most reliable.
-function IOSNativeVideo({ videoSrc, poster }: { videoSrc: string; poster?: string }) {
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const isHls = videoSrc.includes('.m3u8');
-  // iOS Safari can play HLS natively; no hls.js needed.
-  return (
-    // eslint-disable-next-line jsx-a11y/media-has-caption
-    <video
-      ref={videoRef}
-      src={videoSrc}
-      poster={poster}
-      controls
-      playsInline
-      // @ts-ignore - webkit-playsinline is required for older iOS
-      webkit-playsinline="true"
-      preload="metadata"
-      crossOrigin="anonymous"
-      className="absolute inset-0 h-full w-full object-contain bg-black"
-      controlsList="nodownload"
-      style={{ WebkitOverflowScrolling: 'touch' } as any}
-    />
-  );
-}
-
-// Keep the configured player (Plyr/Clappr) on desktop — the stall is not
-// the player itself but the surrounding compositing/decoders. Each frame is
-// mounted lazily so off-screen videos don't allocate decoders, and the
-// heavy work (script fetch + Clappr init) is deferred until the dialog's
-// enter animation has finished, so it doesn't compete with framer-motion
-// and glass paint. On iOS we bypass Plyr/Clappr entirely for a native
-// <video> which is the only reliably working path in Mobile Safari.
+// Keep the configured player (Plyr/Clappr) on all devices — including
+// iOS Safari/Chrome — the stall is not the player itself but the
+// surrounding compositing/decoders. Each frame is mounted lazily so
+// off-screen videos don't allocate decoders, and the heavy work (script
+// fetch + Clappr init) is deferred until the dialog's enter animation
+// has finished, so it doesn't compete with framer-motion and glass paint.
 function LazyDetailsVideo({
   videoSrc,
   poster,
@@ -112,7 +79,6 @@ function LazyDetailsVideo({
   const [inView, setInView] = useState(false);
   const [activated, setActivated] = useState(false);
   const [ready, setReady] = useState(false);
-  const ios = useMemo(() => isIOSDevice(), []);
   const shouldLoad = inView || activated;
   useEffect(() => {
     const t = setTimeout(() => setReady(true), 420);
@@ -159,9 +125,6 @@ function LazyDetailsVideo({
         </div>
       </div>
     );
-  }
-  if (ios) {
-    return <IOSNativeVideo videoSrc={videoSrc} poster={poster} />;
   }
   return (
     <Suspense fallback={<Preloader />}>

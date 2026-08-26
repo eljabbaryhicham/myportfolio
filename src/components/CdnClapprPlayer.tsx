@@ -65,18 +65,28 @@ export default function CdnClapprPlayer({ source, poster, autoPlay = true, water
         
         if (!isMounted) return;
 
-        await Promise.all([
+        const canNativeHls = (() => {
+          const v = document.createElement('video');
+          return !!v.canPlayType('application/vnd.apple.mpegurl');
+        })();
+        const isHlsSource = source.includes('.m3u8');
+        const needHlsJs = isHlsSource && !canNativeHls;
+
+        const extraScripts: Promise<void>[] = [
             loadScript('https://cdn.jsdelivr.net/gh/clappr/dash-shaka-playback@latest/dist/dash-shaka-playback.js', 'clappr-shaka-playback'),
             loadScript('https://cdn.jsdelivr.net/gh/clappr/clappr-level-selector-plugin@latest/dist/level-selector.min.js', 'clappr-level-selector'),
-            loadScript('https://cdn.jsdelivr.net/npm/@clappr/hlsjs-playback@latest/dist/hlsjs-playback.min.js', 'clappr-hls-playback'),
-        ]);
+        ];
+        if (needHlsJs) {
+          extraScripts.push(loadScript('https://cdn.jsdelivr.net/npm/@clappr/hlsjs-playback@latest/dist/hlsjs-playback.min.js', 'clappr-hls-playback'));
+        }
+        await Promise.all(extraScripts);
 
         if (!isMounted || !container) return;
         
         const plugins = [];
         if (window.DashShakaPlayback) plugins.push(window.DashShakaPlayback);
         if (window.LevelSelector) plugins.push(window.LevelSelector);
-        if (window.HlsJsPlayback) plugins.push(window.HlsJsPlayback);
+        if (needHlsJs && window.HlsJsPlayback) plugins.push(window.HlsJsPlayback);
 
         const playerButtons = isMobile
           ? ['play', 'pip', 'fullscreen']
