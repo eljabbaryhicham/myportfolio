@@ -43,8 +43,9 @@ import type { HomePageSettings } from '@/lib/types';
 
 const MemoizedImage = memo(Image);
 // Lazy: keeps hls.js + plyr CSS out of the /work route chunk until a video
-// dialog actually opens. ContactForm (zod + react-hook-form + lottie) likewise.
-const MemoizedPlyrPlayer = memo(lazy(() => import('@/components/PlyrPlayer')));
+// dialog actually opens. NOT wrapped in memo() — React.memo wrapping React.lazy
+// breaks ref forwarding, so useImperativeHandle never reaches the parent.
+const MemoizedPlyrPlayer = lazy(() => import('@/components/PlyrPlayer'));
 const MemoizedCdnClapprPlayer = memo(CdnClapprPlayer);
 const LazyContactForm = lazy(() => import('@/features/contact/components/ContactForm'));
 
