@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, useCallback } from 'react';
+import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 
 type ProviderState = { isUploading: boolean; progress: number; fileName: string };
 
@@ -20,6 +20,8 @@ type CompletedUpload = {
   resourceType: 'image' | 'video' | 'raw';
   libraryId: 'primary' | 'extented';
 } | null;
+
+const COMPLETED_UPLOAD_KEY = 'mv_completed_upload';
 
 type UploadProgressContextType = UploadProgressState & {
   setUploadProgress: (state: Partial<UploadProgressState>) => void;
@@ -45,7 +47,13 @@ export function UploadProgressProvider({ children }: { children: React.ReactNode
     provider: null,
   });
 
-  const [completedUpload, setCompletedUpload] = useState<CompletedUpload>(null);
+  const [completedUpload, setCompletedUpload] = useState<CompletedUpload>(() => {
+    if (typeof window === 'undefined') return null;
+    try {
+      const stored = localStorage.getItem(COMPLETED_UPLOAD_KEY);
+      return stored ? JSON.parse(stored) : null;
+    } catch { return null; }
+  });
 
   const setUploadProgress = useCallback((partial: Partial<UploadProgressState>) => {
     setState((prev) => ({ ...prev, ...partial }));
@@ -82,7 +90,6 @@ export function UploadProgressProvider({ children }: { children: React.ReactNode
         ...prev,
         [target]: { isUploading: false, progress: 0, fileName: '' },
       };
-      // Clear legacy single-upload view if it was for this provider
       if (prev.provider === target) {
         next.isUploading = next.vercel.isUploading || next.cloudinary.isUploading;
         if (!next.isUploading) {
@@ -90,7 +97,6 @@ export function UploadProgressProvider({ children }: { children: React.ReactNode
           next.fileName = '';
           next.provider = null;
         } else {
-          // Keep the other provider's info in legacy view
           const other = target === 'vercel' ? 'cloudinary' : 'vercel';
           if (next[other].isUploading) {
             next.progress = next[other].progress;
@@ -108,11 +114,14 @@ export function UploadProgressProvider({ children }: { children: React.ReactNode
   }, []);
 
   const signalCompletedUpload = useCallback((docId: string, resourceType: 'image' | 'video' | 'raw', libraryId: 'primary' | 'extented') => {
-    setCompletedUpload({ docId, resourceType, libraryId });
+    const data = { docId, resourceType, libraryId };
+    setCompletedUpload(data);
+    try { localStorage.setItem(COMPLETED_UPLOAD_KEY, JSON.stringify(data)); } catch {}
   }, []);
 
   const consumeCompletedUpload = useCallback(() => {
     setCompletedUpload(null);
+    try { localStorage.removeItem(COMPLETED_UPLOAD_KEY); } catch {}
   }, []);
 
   return (
