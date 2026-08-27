@@ -2,15 +2,12 @@ import { NextRequest, NextResponse } from 'next/server';
 import { del } from '@vercel/blob';
 import { initializeServerApp } from '@/firebase/server-init';
 import admin from 'firebase-admin';
-import { verifyAdminRequest } from '@/lib/admin-auth';
+import { requireUploadAuth } from '@/lib/upload-auth-middleware';
 
 export async function POST(req: NextRequest) {
-  const decoded = await verifyAdminRequest(req);
-  if (!decoded) {
-    return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 });
-  }
-  if (!process.env.BLOB_READ_WRITE_TOKEN) {
-    return NextResponse.json({ success: false, message: 'Vercel Blob not configured' }, { status: 503 });
+  const auth = await requireUploadAuth(req, 'canDeleteMedia');
+  if (!auth.success && auth.response) {
+    return auth.response;
   }
 
   let body: any;

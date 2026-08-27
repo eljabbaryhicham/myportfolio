@@ -11,17 +11,28 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Input } from '@/components/ui/input';
 import Image from 'next/image';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCloudUploadAlt, faCopy, faTrash, faFilm, faFileImage, faFileLines, faXmark, faPlus, faEye, faFolderOpen, faLink, faUniversity, faStar, faPhotoFilm, faSpinner, faMinus } from '@fortawesome/free-solid-svg-icons';
+import { faCloudUploadAlt, faCopy, faTrash, faFilm, faFileImage, faFileLines, faXmark, faPlus, faEye, faFolderOpen, faLink, faUniversity, faStar, faPhotoFilm, faSpinner, faMinus, faShare } from '@fortawesome/free-solid-svg-icons';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
 import Preloader from '@/components/preloader';
 import { useCollection, useFirestore, useMemoFirebase, addDocumentNonBlocking, deleteDocumentNonBlocking, useUser, useAuth, setDocumentNonBlocking } from '@/firebase';
+import {
+  saveUploadProgress,
+  loadUploadProgress,
+  clearUploadProgress,
+  getInterruptedUploads,
+  hasInterruptedUploads,
+  markUploadCompleted,
+  markUploadFailed,
+} from '@/lib/upload-progress-service';
+import { withRetry, shouldRetry, calculateRetryDelay, DEFAULT_RETRY_CONFIG } from '@/lib/upload-retry';
 import { collection, doc, query, orderBy, DocumentReference, where, getDocs, writeBatch, serverTimestamp } from 'firebase/firestore';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from '@/components/ui/separator';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import AddFromUrlDialog from './AddFromUrlDialog';
+import ShareLinkDialog from './ShareLinkDialog';
 import { deleteMediaAsset } from '@/ai/flows/delete-media';
 import type { AppUser } from '@/firebase/auth/use-user';
 import CdnClapprPlayer from '@/components/CdnClapprPlayer';
@@ -154,6 +165,7 @@ const FileCard = ({
   provider,
   onDelete,
   onCopy,
+  onShareLink,
   onPreview,
   onSetLogo,
   onSetBackground,
@@ -172,6 +184,7 @@ const FileCard = ({
   provider: MediaLibraryProvider;
   onDelete: (file: UnifiedFile) => void;
   onCopy: (url: string) => void;
+  onShareLink: (url: string, filename: string) => void;
   onPreview: (file: UnifiedFile) => void;
   onSetLogo: (url: string) => void;
   onSetBackground: (file: UnifiedFile) => void;
@@ -309,9 +322,14 @@ const FileCard = ({
                   </DropdownMenuContent>
                 </DropdownMenu>
               ) : (
-                <Button size="icon" variant="ghost" onClick={() => onCopy(file.url)} title="Copy URL" className="h-8 w-8 md:h-10 md:w-10 text-white glass-effect">
-                  <FontAwesomeIcon icon={faCopy} />
-                </Button>
+                <div className="flex gap-1">
+                  <Button size="icon" variant="ghost" onClick={() => onCopy(file.url)} title="Copy URL" className="h-8 w-8 md:h-10 md:w-10 text-white glass-effect">
+                    <FontAwesomeIcon icon={faCopy} />
+                  </Button>
+                  <Button size="icon" variant="ghost" onClick={() => onShareLink(file.url, file.filename)} title="Share Link" className="h-8 w-8 md:h-10 md:w-10 text-white glass-effect">
+                    <FontAwesomeIcon icon={faShare} />
+                  </Button>
+                </div>
               )}
               {canDelete && (
                 <AlertDialog>
@@ -395,6 +413,23 @@ export default forwardRef<MediaLibraryRef, MediaLibraryProps>(function MediaLibr
   const [isAddingFromUrl, setIsAddingFromUrl] = useState(false);
   const [urlProgress, setUrlProgress] = useState(0);
 
+  // Upload cancellation state
+  const [activeXhr, setActiveXhr] = useState<XMLHttpRequest | null>(null);
+  const [isCancelling, setIsCancelling] = useState(false);
+
+  // HandleVercelUpload ref for retry logic (avoids circular dependency)
+  const handleVercelUploadRef = useRef<((files: File[]) => Promise<void>) | null>(null);
+
+  // Failed uploads for retry
+  const [failedUploads, setFailedUploads] = useState<Array<{ file: File; error: Error; retryCount: number }>>([]);
+
+  // Share link dialog state
+  const [shareDialogState, setShareDialogState] = useState<{ isOpen: boolean; url: string; filename: string }>({
+    isOpen: false,
+    url: '',
+    filename: '',
+  });
+
   // Full library dialog (standalone mode)
   const [isFullLibraryOpen, setIsFullLibraryOpen] = useState(false);
   const [fullLibraryActiveTab, setFullLibraryActiveTab] = useState<'images' | 'videos' | 'files'>('images');
@@ -461,6 +496,25 @@ export default forwardRef<MediaLibraryRef, MediaLibraryProps>(function MediaLibr
     const t2 = setTimeout(() => setLocalNewlyUploadedId(null), 3000);
     return () => { clearTimeout(t1); clearTimeout(t2); };
   }, [completedUpload, consumeCompletedUpload, provider]);
+
+  // ---- Upload Resumption: Check for interrupted uploads on mount ----
+  useEffect(() => {
+    const checkInterruptedUploads = () => {
+      const providerType = provider === 'cloudinary' ? 'cloudinary' : 'vercel';
+      const interrupted = getInterruptedUploads(providerType);
+      if (interrupted.length > 0) {
+        console.log(`Found ${interrupted.length} interrupted uploads for ${providerType}`);
+        interrupted.forEach((snap) => {
+          toast({
+            title: 'Interrupted upload detected',
+            description: `"${snap.fileName}" was at ${snap.progress}%. Click to resume.`,
+            variant: 'default',
+          });
+        });
+      }
+    };
+    checkInterruptedUploads();
+  }, [provider, toast]);
 
   // ---- Listen for maximize button navigation from notification ----
   useEffect(() => {
@@ -547,6 +601,47 @@ export default forwardRef<MediaLibraryRef, MediaLibraryProps>(function MediaLibr
     try { return await currentUser.getIdToken(); } catch { return null; }
   }, [auth]);
 
+  // ---- Upload Cancellation ----
+  const cancelUpload = useCallback(() => {
+    if (activeXhr) {
+      setIsCancelling(true);
+      activeXhr.abort();
+      setActiveXhr(null);
+      setIsUploading(false);
+      setUploadProgress(0);
+      setUploadingFileName('');
+      finishUpload('vercel');
+      toast({ title: 'Upload cancelled', variant: 'default' });
+      setTimeout(() => setIsCancelling(false), 500);
+    }
+  }, [activeXhr, finishUpload, toast]);
+
+  const cancelAllUploads = useCallback(() => {
+    cancelUpload();
+  }, [cancelUpload]);
+
+  // ---- Upload Retry with Exponential Backoff ----
+  const retryUpload = useCallback(async (failedItem: { file: File; error: Error; retryCount: number }) => {
+    const { file, retryCount } = failedItem;
+    if (!shouldRetry(retryCount, failedItem.error, DEFAULT_RETRY_CONFIG)) {
+      toast({ variant: 'destructive', title: 'Max retries exceeded', description: 'Please try uploading again manually.' });
+      return;
+    }
+
+    const delay = calculateRetryDelay(retryCount, DEFAULT_RETRY_CONFIG);
+    toast({ title: `Retrying in ${Math.round(delay / 1000)}s...`, description: `Attempt ${retryCount + 1} of ${DEFAULT_RETRY_CONFIG.maxRetries}` });
+
+    await new Promise(resolve => setTimeout(resolve, delay));
+
+    // Remove from failed uploads and re-attempt
+    setFailedUploads(prev => prev.filter(f => f !== failedItem));
+    handleVercelUploadRef.current?.([file]);
+  }, [toast]);
+
+  const retryAllFailed = useCallback(() => {
+    failedUploads.forEach(item => retryUpload(item));
+  }, [failedUploads, retryUpload]);
+
   // ---- Upload: Vercel Blob file upload ----
   const handleVercelUpload = useCallback(async (files: File[]) => {
     if (files.length === 0) return;
@@ -565,59 +660,72 @@ export default forwardRef<MediaLibraryRef, MediaLibraryProps>(function MediaLibr
       toast({ variant: 'destructive', title: 'Cannot reach upload endpoint', description: 'Check your connection and try again.' });
       return;
     }
-    for (const file of files) {
-      if (file.type.startsWith('image/') && file.size > 50 * 1024 * 1024) {
-        toast({ variant: 'destructive', title: 'Image exceeds 50MB limit', description: file.name });
-        continue;
-      }
-      setIsUploading(true);
-      setUploadProgress(0);
-      setUploadingFileName(file.name);
-      startGlobalUpload(file.name, 'vercel');
-      try {
-        // Upload via a server-side route using @vercel/blob `put()` — the same
-        // mechanism the working "upload using URL" path uses. The browser's
-        // client `upload()` (direct PUT to blob storage) hangs at 0% for some
-        // environments, so we proxy through the API route and stream progress
-        // via XMLHttpRequest, which is reliable.
-        const data = await new Promise<{ url: string; pathname: string; size: number; contentType: string }>((resolve, reject) => {
-          const form = new FormData();
-          form.append('file', file);
-          const xhr = new XMLHttpRequest();
-          xhr.open('POST', '/api/vercel-blob/upload');
-          xhr.setRequestHeader('Authorization', `Bearer ${token}`);
-          xhr.timeout = 120_000;
-          if (xhr.upload) {
-            xhr.upload.onprogress = (e) => {
-              if (e.lengthComputable) {
-                const p = Math.round((e.loaded / e.total) * 100);
-                setUploadProgress(p);
-                updateGlobalProgress(p, 'vercel');
+for (const file of files) {
+        if (file.type.startsWith('image/') && file.size > 50 * 1024 * 1024) {
+          toast({ variant: 'destructive', title: 'Image exceeds 50MB limit', description: file.name });
+          continue;
+        }
+        setIsUploading(true);
+        setUploadProgress(0);
+        setUploadingFileName(file.name);
+        startGlobalUpload(file.name, 'vercel');
+        // Initialize progress tracking in sessionStorage
+        saveUploadProgress(file, 'pending', 0, 0, file.size, 'vercel');
+        try {
+          // Upload via a server-side route using @vercel/blob `put()` — the same
+          // mechanism the working "upload using URL" path uses. The browser's
+          // client `upload()` (direct PUT to blob storage) hangs at 0% for some
+          // environments, so we proxy through the API route and stream progress
+          // via XMLHttpRequest, which is reliable.
+          const data = await new Promise<{ url: string; pathname: string; size: number; contentType: string }>((resolve, reject) => {
+            const form = new FormData();
+            form.append('file', file);
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', '/api/vercel-blob/upload');
+            xhr.setRequestHeader('Authorization', `Bearer ${token}`);
+            xhr.timeout = 120_000;
+            setActiveXhr(xhr);
+            if (xhr.upload) {
+              xhr.upload.onprogress = (e) => {
+                if (e.lengthComputable) {
+                  const p = Math.round((e.loaded / e.total) * 100);
+                  setUploadProgress(p);
+                  updateGlobalProgress(p, 'vercel');
+                  saveUploadProgress(file, 'uploading', p, e.loaded, e.total, 'vercel');
+                }
+              };
+            }
+            xhr.onload = () => {
+              setActiveXhr(null);
+              try {
+                const parsed = JSON.parse(xhr.responseText);
+                if (xhr.status >= 200 && xhr.status < 300 && parsed.success) {
+                  resolve(parsed);
+                } else {
+                  reject(new Error(parsed?.message || `Upload failed (${xhr.status})`));
+                }
+              } catch {
+                reject(new Error('Invalid server response'));
               }
             };
-          }
-          xhr.onload = () => {
-            try {
-              const parsed = JSON.parse(xhr.responseText);
-              if (xhr.status >= 200 && xhr.status < 300 && parsed.success) {
-                resolve(parsed);
-              } else {
-                reject(new Error(parsed?.message || `Upload failed (${xhr.status})`));
-              }
-            } catch {
-              reject(new Error('Invalid server response'));
-            }
-          };
-          xhr.onerror = () => reject(new Error('Network error during upload'));
-          xhr.ontimeout = () => reject(new Error('Upload timed out. The server may be unreachable.'));
-          xhr.send(form);
-        });
-        setUploadProgress(100);
-        updateGlobalProgress(100, 'vercel');
-        finishUpload('vercel');
-        const lowerType = file.type.toLowerCase();
-        const tab = lowerType.startsWith('image/') ? 'images' : lowerType.startsWith('video/') ? 'videos' : 'files';
-        setActiveTabFn(tab);
+            xhr.onerror = () => {
+              setActiveXhr(null);
+              reject(new Error('Network error during upload'));
+            };
+            xhr.ontimeout = () => {
+              setActiveXhr(null);
+              reject(new Error('Upload timed out. The server may be unreachable.'));
+            };
+            xhr.send(form);
+          });
+          setUploadProgress(100);
+          updateGlobalProgress(100, 'vercel');
+          finishUpload('vercel');
+          saveUploadProgress(file, 'completed', 100, file.size, file.size, 'vercel');
+          markUploadCompleted(file, 'vercel');
+          const lowerType = file.type.toLowerCase();
+          const tab = lowerType.startsWith('image/') ? 'images' : lowerType.startsWith('video/') ? 'videos' : 'files';
+          setActiveTabFn(tab);
         if (firestore) {
           try {
             const docRef = await addDocumentNonBlocking(collection(firestore, 'vercel_blobs'), {
@@ -633,16 +741,30 @@ export default forwardRef<MediaLibraryRef, MediaLibraryProps>(function MediaLibr
           } catch (e) { console.error('MediaLibrary: Firestore add after Vercel upload failed', e); }
         }
       } catch (e: any) {
+        // Don't track cancellation as a failure
+        if (e?.name === 'AbortError' || e?.name === 'CancellationError' || isCancelling) {
+          setIsCancelling(false);
+          return;
+        }
         finishUpload('vercel');
+        // Track failure for retry logic
+        const existingProgress = loadUploadProgress(file, 'vercel');
+        const retryCount = (existingProgress?.retryCount || 0) + 1;
+        markUploadFailed(file, 'vercel', retryCount);
+        setFailedUploads(prev => [...prev, { file, error: e, retryCount }]);
         toast({ variant: 'destructive', title: 'Upload failed', description: e?.message || String(e) });
       } finally {
+        setActiveXhr(null);
         setIsUploading(false);
         setUploadProgress(0);
         setUploadingFileName('');
         setTimeout(() => finishUpload(), 1000);
       }
     }
-  }, [getToken, toast, firestore, auth, finishUpload, startGlobalUpload, updateGlobalProgress, props.onUploadComplete, setActiveTabFn, signalCompletedUpload]);
+  }, [getToken, toast, firestore, auth, finishUpload, startGlobalUpload, updateGlobalProgress, props.onUploadComplete, setActiveTabFn, signalCompletedUpload, isCancelling]);
+
+  // Update ref for retry logic
+  handleVercelUploadRef.current = handleVercelUpload;
 
   // ---- Upload: Vercel Blob add-from-url ----
   const handleVercelAddFromUrl = async () => {
@@ -848,6 +970,11 @@ export default forwardRef<MediaLibraryRef, MediaLibraryProps>(function MediaLibr
     toast({ title: t('mediaAdmin.toast.copied.title'), description: t('mediaAdmin.toast.copied.description') });
   };
 
+  // ---- Share Upload Link ----
+  const handleShareLink = (url: string, filename: string) => {
+    setShareDialogState({ isOpen: true, url, filename });
+  };
+
   // ---- Set Background ----
   const handleOpenSetBackgroundDialog = (file: UnifiedFile) => {
     if (!canEditHome) return;
@@ -993,7 +1120,7 @@ export default forwardRef<MediaLibraryRef, MediaLibraryProps>(function MediaLibr
         {assets.map(file => (
           <FileCard
             key={file.id} file={file} provider={provider}
-            onDelete={handleDelete} onCopy={handleCopy} onPreview={setPreviewFile}
+            onDelete={handleDelete} onCopy={handleCopy} onShareLink={handleShareLink} onPreview={setPreviewFile}
             onSetLogo={handleSetLogo} onSetBackground={handleOpenSetBackgroundDialog}
             isNewlyUploaded={file.id === newlyUploadedId}
             onMediaSelect={handleMediaSelect}
@@ -1109,10 +1236,56 @@ export default forwardRef<MediaLibraryRef, MediaLibraryProps>(function MediaLibr
       </Button>
       {effectiveIsUploading && (
         <div className="mt-4">
-          <Progress value={effectiveProgress} className="w-full" />
+          <div className="flex items-center gap-2">
+            <Progress value={effectiveProgress} className="flex-1" />
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={cancelUpload}
+              disabled={isCancelling}
+              title={t('mediaAdmin.cancelUpload') || 'Cancel upload'}
+              className="text-destructive hover:bg-destructive/10"
+            >
+              <FontAwesomeIcon icon={faXmark} className="h-4 w-4" />
+            </Button>
+          </div>
           <p className="text-sm text-center mt-2 text-muted-foreground">
             {t('mediaAdmin.uploadProgress').replace('{name}', effectiveFileName).replace('{progress}', String(Math.round(effectiveProgress)))}
           </p>
+        </div>
+      )}
+      {/* Failed uploads with retry buttons */}
+      {failedUploads.length > 0 && (
+        <div className="mt-4 space-y-2 p-3 bg-destructive/10 border border-destructive/20 rounded-lg">
+          <p className="text-sm font-medium text-destructive">
+            {failedUploads.length} upload{failedUploads.length > 1 ? 's' : ''} failed
+          </p>
+          <div className="space-y-2">
+            {failedUploads.map((item, idx) => (
+              <div key={idx} className="flex items-center justify-between gap-2 text-sm">
+                <span className="truncate flex-1">{item.file.name}</span>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-muted-foreground">
+                    Attempt {item.retryCount}/{DEFAULT_RETRY_CONFIG.maxRetries}
+                  </span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => retryUpload(item)}
+                    disabled={!shouldRetry(item.retryCount, item.error, DEFAULT_RETRY_CONFIG)}
+                    className="h-8 px-3"
+                  >
+                    <FontAwesomeIcon icon={faSpinner} className="mr-1 h-3 w-3" /> Retry
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
+          {failedUploads.length > 1 && (
+            <Button variant="outline" size="sm" onClick={retryAllFailed} className="w-full mt-2">
+              Retry All
+            </Button>
+          )}
         </div>
       )}
     </div>
@@ -1147,6 +1320,16 @@ export default forwardRef<MediaLibraryRef, MediaLibraryProps>(function MediaLibr
           <span className="text-xs text-muted-foreground truncate max-w-[45%]">
             {t('mediaAdmin.uploadProgress').replace('{name}', effectiveFileName).replace('{progress}', String(Math.round(effectiveProgress)))}
           </span>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={cancelUpload}
+            disabled={isCancelling}
+            title={t('mediaAdmin.cancelUpload') || 'Cancel upload'}
+            className="text-destructive hover:bg-destructive/10 shrink-0"
+          >
+            <FontAwesomeIcon icon={faXmark} className="h-4 w-4" />
+          </Button>
         </div>
       )}
     </div>
@@ -1446,6 +1629,12 @@ export default forwardRef<MediaLibraryRef, MediaLibraryProps>(function MediaLibr
       {cloudinaryUploadFlowDialogs}
       {bulkDeleteDialog}
       <BulkActionBar selectedCount={selectedIds.size} onClearSelection={() => setSelectedIds(new Set())} onDelete={() => setIsBulkDeleteOpen(true)} />
+      <ShareLinkDialog
+        isOpen={shareDialogState.isOpen}
+        onClose={() => setShareDialogState({ isOpen: false, url: '', filename: '' })}
+        url={shareDialogState.url}
+        filename={shareDialogState.filename}
+      />
     </>
   );
 });
