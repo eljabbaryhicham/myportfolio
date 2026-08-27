@@ -86,7 +86,9 @@ export function SiteBackground() {
                         ref={bgVideoRef}
                         src={cleanVideoUrl(mediaUrl)}
                         className="w-full h-full object-cover"
+                        autoPlay
                         loop
+                        muted
                         playsInline
                         preload="metadata"
                     />

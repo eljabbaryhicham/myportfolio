@@ -17,7 +17,7 @@ const CSP =
   `img-src 'self' data: https:; ` +
   `media-src 'self' https://res.cloudinary.com https://*.public.blob.vercel-storage.com blob:; ` +
   `frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com https://player.vimeo.com; ` +
-  `connect-src 'self' https://firestore.googleapis.com https://studio-8316917408-a299a.firebaseapp.com https://identitytoolkit.googleapis.com https://api.cloudinary.com https://*.public.blob.vercel-storage.com https://va.vercel-scripts.com https://static.cloudflareinsights.com; ` +
+  `connect-src 'self' https://firestore.googleapis.com https://studio-8316917408-a299a.firebaseapp.com https://identitytoolkit.googleapis.com https://res.cloudinary.com https://api.cloudinary.com https://*.public.blob.vercel-storage.com https://cdn.plyr.io https://va.vercel-scripts.com https://static.cloudflareinsights.com; ` +
   `worker-src 'self' blob:`;
 
 export function proxy(request: NextRequest) {
