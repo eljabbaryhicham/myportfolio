@@ -18,6 +18,7 @@ import TrustedBy from "./TrustedBy";
 import { useDoc, useFirestore, useMemoFirebase } from "@/firebase";
 import { doc } from "firebase/firestore";
 import { useTranslation } from "@/lib/i18n/useTranslation";
+import { cleanVideoUrl } from "@/lib/video";
 const HERO_VIDEO_URL = "https://res.cloudinary.com/dsq1lxrqi/video/upload/sp_auto/pg_5/v1778867307/Ovi_Motion_Design_v3kfy0.m3u8";
 const HERO_VIDEO_POSTER = "https://res.cloudinary.com/dsq1lxrqi/image/upload/so_0,f_auto,q_auto/v1778867307/Ovi_Motion_Design_v3kfy0.jpg";
 
@@ -212,7 +213,11 @@ export default function HomePageContent() {
     const video = videoRef.current;
     if (!video || !videoUrl || videoUrl === HERO_VIDEO_URL) return;
 
-    if (videoUrl.includes('.m3u8')) {
+    // Strip f_auto/duplicate transforms so mobile <video> gets a clean mp4
+    // (f_auto content-negotiation can deliver WebM/GIF that iOS can't decode).
+    const cleanUrl = cleanVideoUrl(videoUrl) || videoUrl;
+
+    if (cleanUrl.includes('.m3u8')) {
       let hls: any;
       let cancelled = false;
       (async () => {
@@ -221,13 +226,13 @@ export default function HomePageContent() {
         const { default: Hls } = await import('hls.js');
         if (cancelled || !Hls.isSupported()) {
           if (!Hls.isSupported() && video.canPlayType('application/vnd.apple.mpegurl')) {
-            video.src = videoUrl;
+            video.src = cleanUrl;
             video.play().catch(() => {});
           }
           return;
         }
         hls = new Hls({ startLevel: -1 });
-        hls.loadSource(videoUrl);
+        hls.loadSource(cleanUrl);
         hls.attachMedia(video);
         hls.on(Hls.Events.MANIFEST_PARSED, () => {
           video.play().catch(() => {});
@@ -235,7 +240,7 @@ export default function HomePageContent() {
       })();
       return () => { cancelled = true; if (hls) hls.destroy(); };
     } else {
-      video.src = videoUrl;
+      video.src = cleanUrl;
       video.play().catch(() => {});
     }
   }, [homeSettings?.heroVideoUrl]);
