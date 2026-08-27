@@ -30,8 +30,6 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useUploadProgress } from '@/components/upload-progress-context';
 import BulkActionBar from './BulkActionBar';
-import { upload } from '@vercel/blob/client';
-
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
@@ -577,19 +575,43 @@ export default forwardRef<MediaLibraryRef, MediaLibraryProps>(function MediaLibr
       setUploadingFileName(file.name);
       startGlobalUpload(file.name, 'vercel');
       try {
-        const UPLOAD_TIMEOUT_MS = 60_000;
-        const blob: any = await Promise.race([
-          upload(file.name, file, {
-            access: 'public', handleUploadUrl: '/api/vercel-blob/handle-upload',
-            headers: { Authorization: `Bearer ${token}` },
-            onUploadProgress: ({ loaded, total }: { loaded: number; total: number }) => {
-              const progress = Math.round((loaded / total) * 100);
-              setUploadProgress(progress);
-              updateGlobalProgress(progress, 'vercel');
-            },
-          } as any),
-          new Promise((_, reject) => setTimeout(() => reject(new Error('Upload timed out. The server may be unreachable.')), UPLOAD_TIMEOUT_MS)),
-        ]);
+        // Upload via a server-side route using @vercel/blob `put()` — the same
+        // mechanism the working "upload using URL" path uses. The browser's
+        // client `upload()` (direct PUT to blob storage) hangs at 0% for some
+        // environments, so we proxy through the API route and stream progress
+        // via XMLHttpRequest, which is reliable.
+        const data = await new Promise<{ url: string; pathname: string; size: number; contentType: string }>((resolve, reject) => {
+          const form = new FormData();
+          form.append('file', file);
+          const xhr = new XMLHttpRequest();
+          xhr.open('POST', '/api/vercel-blob/upload');
+          xhr.setRequestHeader('Authorization', `Bearer ${token}`);
+          xhr.timeout = 120_000;
+          if (xhr.upload) {
+            xhr.upload.onprogress = (e) => {
+              if (e.lengthComputable) {
+                const p = Math.round((e.loaded / e.total) * 100);
+                setUploadProgress(p);
+                updateGlobalProgress(p, 'vercel');
+              }
+            };
+          }
+          xhr.onload = () => {
+            try {
+              const parsed = JSON.parse(xhr.responseText);
+              if (xhr.status >= 200 && xhr.status < 300 && parsed.success) {
+                resolve(parsed);
+              } else {
+                reject(new Error(parsed?.message || `Upload failed (${xhr.status})`));
+              }
+            } catch {
+              reject(new Error('Invalid server response'));
+            }
+          };
+          xhr.onerror = () => reject(new Error('Network error during upload'));
+          xhr.ontimeout = () => reject(new Error('Upload timed out. The server may be unreachable.'));
+          xhr.send(form);
+        });
         setUploadProgress(100);
         updateGlobalProgress(100, 'vercel');
         finishUpload('vercel');
@@ -599,11 +621,11 @@ export default forwardRef<MediaLibraryRef, MediaLibraryProps>(function MediaLibr
         if (firestore) {
           try {
             const docRef = await addDocumentNonBlocking(collection(firestore, 'vercel_blobs'), {
-              provider: 'vercel_blob', url: blob.url, pathname: blob.pathname,
-              size: blob.size ?? file.size, contentType: blob.contentType || file.type || 'application/octet-stream',
+              provider: 'vercel_blob', url: data.url, pathname: data.pathname,
+              size: data.size ?? file.size, contentType: data.contentType || file.type || 'application/octet-stream',
               filename: file.name, uploadedAt: serverTimestamp(), uploadedBy: auth?.currentUser?.uid || null,
             } as any);
-            const newId = (docRef as any)?.id || blob.pathname;
+            const newId = (docRef as any)?.id || data.pathname;
             const resourceType = file.type.startsWith('video/') ? 'video' : file.type.startsWith('image/') ? 'image' : 'raw';
             if (newId && props.onUploadComplete) props.onUploadComplete(newId, resourceType);
             if (newId) { setLocalNewlyUploadedId(newId); setTimeout(() => setLocalNewlyUploadedId(null), 3000); }
