@@ -165,12 +165,12 @@ export function AppNav() {
         transition={{ type: 'spring', stiffness: 80, damping: 15 }}
       >
         <div className={cn(
-          "flex h-[7vh] min-h-[60px] flex-row items-center justify-between rounded-lg border border-border/50 glass-effect"
+          "flex h-[7vh] min-h-[60px] flex-row items-center justify-between rounded-lg border border-border/50 glass-effect px-2"
           )}>
           <nav className="flex h-full flex-1 items-center justify-evenly px-2">
             {accessibleNavItems.map(renderNavItem)}
           </nav>
-          <LanguageSwitcher className="px-2 mr-1" />
+          <LanguageSwitcher />
         </div>
       </motion.div>
     );
