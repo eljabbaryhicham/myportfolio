@@ -10,6 +10,11 @@
 //   3. retries on loadedmetadata/canplay/loadeddata and then on a short
 //      interval, because mobile blocks the first attempt until the source
 //      is buffered.
+//
+// To get SOUND on mobile, callers pass an onPlaying callback: playback must
+// begin muted (autoplay policy), and once it's actually running the caller
+// un-mutes through its player's own API (the raw <video>.muted is overridden
+// by player mute state, e.g. Clappr/plyr).
 
 export function forceAutoplay(
   video: HTMLVideoElement | null | undefined,
@@ -21,9 +26,9 @@ export function forceAutoplay(
 ): () => void {
   if (!video) return () => {};
 
-  // Mobile browsers only autoplay a muted video; desktop allows sound. Only
-  // force mute on touch/mobile devices (or when explicitly requested) so we
-  // don't regress desktop autoplay-with-sound.
+  // Mobile browsers only autoplay a muted video; desktop allows sound. Mute on
+  // touch/mobile devices (or when explicitly requested). Decorative autoplay
+  // videos (background, hero, card previews) are muted in their JSX regardless.
   let isMobile = forceMuted;
   if (isMobile === undefined && typeof navigator !== 'undefined') {
     const ua = navigator.userAgent;
@@ -41,7 +46,18 @@ export function forceAutoplay(
 
   let stopped = false;
   let attempts = 0;
+  let started = false;
   let interval: ReturnType<typeof setInterval> | null = null;
+
+  // Fire onPlaying exactly once, as soon as playback is actually running. Both
+  // the 'playing' event and the paused-detection paths converge here so the
+  // callback isn't dropped when play() resolves before the event queues.
+  const markStarted = () => {
+    if (started || stopped) return;
+    started = true;
+    onPlaying?.();
+    cleanup();
+  };
 
   const playAttempt = () => {
     if (stopped) return;
@@ -51,7 +67,7 @@ export function forceAutoplay(
       if (p && typeof p.then === 'function') {
         p.then(() => {}).catch(() => {});
       }
-      if (!video.paused) cleanup();
+      if (!video.paused) markStarted();
     } catch {
       // sync throw (metadata not ready yet) — keep retrying
     }
@@ -66,10 +82,7 @@ export function forceAutoplay(
     video.removeEventListener('loadeddata', playAttempt);
   };
 
-  const playingHandler = () => {
-    if (!stopped) onPlaying?.();
-    cleanup();
-  };
+  const playingHandler = () => markStarted();
 
   video.addEventListener('playing', playingHandler);
   video.addEventListener('loadedmetadata', playAttempt);
@@ -79,7 +92,8 @@ export function forceAutoplay(
   interval = setInterval(() => {
     if (stopped) return;
     if (attempts >= maxAttempts || video.paused === false) {
-      cleanup();
+      if (video.paused === false) markStarted();
+      else cleanup();
       return;
     }
     playAttempt();

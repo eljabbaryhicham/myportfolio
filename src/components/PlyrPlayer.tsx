@@ -211,7 +211,15 @@ const PlyrPlayer = forwardRef(({ source, poster, autoPlay = true, thumbnailVttUr
                 const video = container?.querySelector('video') as HTMLVideoElement | null;
                 if (video) {
                     autoplayDisposer.current = forceAutoplay(video, {
-                        onPlaying: () => { if (isMounted) setIsLoading(false); },
+                        onPlaying: () => {
+                            if (isMounted) {
+                                setIsLoading(false);
+                                // Autoplay begins muted (mobile policy); once running,
+                                // un-mute via Plyr's API so videos play WITH sound.
+                                // Plyr's mute state overrides the raw <video>.muted.
+                                try { player.muted = false; } catch {}
+                            }
+                        },
                         maxAttempts: 4,
                     });
                 } else {

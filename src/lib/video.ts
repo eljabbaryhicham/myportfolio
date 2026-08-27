@@ -2,8 +2,10 @@
 //
 // Some background/project URLs were stored with a duplicated transform
 // (/f_auto,q_auto/f_auto,q_auto/...) or rely on f_auto content negotiation
-// that misbehaves on mobile <video> elements. This produces a clean, always-mp4
-// URL so playback is deterministic across Android/iOS/desktop.
+// that misbehaves on mobile <video> elements. This produces a clean URL so
+// playback is deterministic across Android/iOS/desktop. Progressive formats
+// (.webm/.mov) are normalized to .mp4 (universally decodable), but HLS
+// manifests (.m3u8) are left untouched — they must stream, not be rewritten.
 export function cleanVideoUrl(input?: string | null): string | undefined {
   if (!input) return undefined;
 
@@ -23,6 +25,7 @@ export function cleanVideoUrl(input?: string | null): string | undefined {
 
   const cleanPath = '/' + resourceType + '/upload/' + segments.slice(start).join('/');
 
-  // Force a deterministic, universally decodable extension for <video>.
-  return (base + cleanPath).replace(/\.(m3u8|webm|mov)$/i, '.mp4');
+  // Force a deterministic, universally decodable extension for the <video>, but
+  // keep HLS (.m3u8) manifests as-is so they can be streamed.
+  return (base + cleanPath).replace(/\.(webm|mov)$/i, '.mp4');
 }

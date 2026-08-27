@@ -126,6 +126,11 @@ const CdnClapprPlayer = forwardRef(function CdnClapprPlayer({ source, poster, au
           if (settled || !isMounted) return;
           settled = true;
           settleSpinner();
+          // Autoplay must begin muted (mobile policy); once playback is running,
+          // un-mute via Clappr's API so the video plays WITH sound on mobile.
+          // Clappr's mute state overrides the raw <video>.muted, so the player
+          // API is required.
+          try { newPlayer.unmute(); } catch (e) { /* ignore */ }
         };
         const wireVideoElement = (): boolean => {
           const video = container.querySelector('video');
