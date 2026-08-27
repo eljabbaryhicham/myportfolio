@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation';
 import { AppNav } from './app-nav';
 import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { AboutPrefetch } from '@/components/about-prefetch';
 
 export function ConditionalLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -97,7 +98,9 @@ export function ConditionalLayout({ children }: { children: React.ReactNode }) {
   }, [isHomePage]);
 
   return (
-    <div className={cn("w-full force-gpu", isHomePage ? "flex flex-col p-2 homepage-shell-fix" : "flex h-full flex-col md:flex-row md:p-2")}>
+    <>
+      <AboutPrefetch />
+      <div className={cn("w-full force-gpu", isHomePage ? "flex flex-col p-2 homepage-shell-fix" : "flex h-full flex-col md:flex-row md:p-2")}>
       <main className={cn("flex-1 min-h-0 flex flex-col", isHomePage ? "w-full" : "w-full px-2 pt-2 pb-0 md:p-2")}>
         <div className={cn("w-full min-h-0 flex flex-col overflow-hidden", isHomePage ? "h-full glass-effect rounded-lg border border-border/50" : "flex-1 glass-effect rounded-lg border border-border/50")}>
           {isHomePage ? (
@@ -113,5 +116,6 @@ export function ConditionalLayout({ children }: { children: React.ReactNode }) {
       </main>
       {!isHomePage && <AppNav />}
     </div>
+    </>
   );
 }
