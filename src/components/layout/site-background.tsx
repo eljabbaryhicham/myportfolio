@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useDoc, useFirestore, useMemoFirebase } from '@/firebase';
 import { doc } from 'firebase/firestore';
 import type { PortfolioItem } from '@/features/portfolio/data/portfolio-data';
@@ -9,6 +9,7 @@ import Image from 'next/image';
 import { cn } from '@/lib/utils';
 import type { HomePageSettings } from '@/lib/types';
 import { cleanVideoUrl } from '@/lib/video';
+import { forceAutoplay } from '@/lib/video-autoplay';
 
 interface MediaAsset {
     url: string;
@@ -59,20 +60,33 @@ export function SiteBackground() {
       ? backgroundProject?.sourceUrl
       : backgroundMedia?.url);
 
+    const isVideoShown = backgroundType === 'video' && isVideoEnabled;
+
+    const bgVideoRef = useRef<HTMLVideoElement | null>(null);
+
+    // Drive autoplay via JS (muted+playsinline+retry) so mobile browsers start it.
+    useEffect(() => {
+      if (!isVideoShown) return;
+      const video = bgVideoRef.current;
+      if (!video) return;
+      return forceAutoplay(video, {
+        onPlaying: () => { video.style.opacity = '1'; },
+      });
+    }, [isVideoShown, mediaUrl]);
+
     // NOTE: no backgroundMediaId requirement — the library-picker flow stores a direct URL.
     if (!homeSettings || !backgroundType || !mediaUrl) return null;
 
     return (
         <div className="absolute inset-0 -z-10 w-full h-full">
                 <div className="relative w-full h-full bg-black">
-                {backgroundType === 'video' && isVideoEnabled ? (
+                {isVideoShown ? (
                     <video
                         key={mediaUrl}
+                        ref={bgVideoRef}
                         src={cleanVideoUrl(mediaUrl)}
                         className="w-full h-full object-cover"
-                        autoPlay
                         loop
-                        muted
                         playsInline
                         preload="metadata"
                     />

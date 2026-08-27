@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, forwardRef, useImperativeHandle } from 're
 import Preloader from './preloader';
 import { useToast } from '@/hooks/use-toast';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { forceAutoplay } from '@/lib/video-autoplay';
 
 // Make Clappr available on the window object for type safety
 declare global {
@@ -22,6 +23,7 @@ interface CdnClapprPlayerProps {
 const CdnClapprPlayer = forwardRef(function CdnClapprPlayer({ source, poster, autoPlay = true, watermark }: CdnClapprPlayerProps, ref) {
   const playerContainerRef = useRef<HTMLDivElement>(null);
   const playerRef = useRef<any>(null);
+  const autoplayDisposer = useRef<(() => void) | null>(null);
   const [containerId] = useState(() => `cdn-clappr-player-${Math.random().toString(36).substring(7)}`);
   
   const [isLoading, setIsLoading] = useState(true);
@@ -132,16 +134,13 @@ const CdnClapprPlayer = forwardRef(function CdnClapprPlayer({ source, poster, au
           // browser blocks it). Set on ALL platforms — harmless on desktop.
           video.setAttribute('playsinline', '');
           video.setAttribute('webkit-playsinline', '');
-          const isAndroid = typeof navigator !== 'undefined' && /Android/i.test(navigator.userAgent);
-          if (isAndroid) {
-            video.setAttribute('webkit-playsinline', '');
-            video.setAttribute('playsinline', '');
-          }
-          // Mobile browsers only allow autoplay when the video is muted. When
-          // autoplaying, mute on touch devices so playback can start; the user
-          // can unmute with the control bar.
-          if (autoPlay && isMobile) {
-            video.muted = true;
+          // If autoplaying, drive it via forceAutoplay (sets muted property +
+          // playsinline + retries until the source is ready) so mobile browsers
+          // actually start playback. Store the disposer for cleanup.
+          if (autoPlay && isMounted) {
+            autoplayDisposer.current = forceAutoplay(video, {
+              onPlaying: done,
+            });
           }
           // Wait for the video to actually start playing before hiding preloader
           video.addEventListener('playing', done, { once: true });
@@ -176,6 +175,10 @@ const CdnClapprPlayer = forwardRef(function CdnClapprPlayer({ source, poster, au
 
     return () => {
       isMounted = false;
+      if (autoplayDisposer.current) {
+        autoplayDisposer.current();
+        autoplayDisposer.current = null;
+      }
       if (spinnerPollRef.current) {
         clearInterval(spinnerPollRef.current);
         spinnerPollRef.current = null;

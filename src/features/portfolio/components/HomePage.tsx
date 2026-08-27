@@ -19,6 +19,7 @@ import { useDoc, useFirestore, useMemoFirebase } from "@/firebase";
 import { doc } from "firebase/firestore";
 import { useTranslation } from "@/lib/i18n/useTranslation";
 import { cleanVideoUrl } from "@/lib/video";
+import { forceAutoplay } from "@/lib/video-autoplay";
 const HERO_VIDEO_URL = "https://res.cloudinary.com/dsq1lxrqi/video/upload/sp_auto/pg_5/v1778867307/Ovi_Motion_Design_v3kfy0.m3u8";
 const HERO_VIDEO_POSTER = "https://res.cloudinary.com/dsq1lxrqi/image/upload/so_0,f_auto,q_auto/v1778867307/Ovi_Motion_Design_v3kfy0.jpg";
 
@@ -227,7 +228,7 @@ export default function HomePageContent() {
         if (cancelled || !Hls.isSupported()) {
           if (!Hls.isSupported() && video.canPlayType('application/vnd.apple.mpegurl')) {
             video.src = cleanUrl;
-            video.play().catch(() => {});
+            forceAutoplay(video);
           }
           return;
         }
@@ -235,13 +236,13 @@ export default function HomePageContent() {
         hls.loadSource(cleanUrl);
         hls.attachMedia(video);
         hls.on(Hls.Events.MANIFEST_PARSED, () => {
-          video.play().catch(() => {});
+          if (!cancelled) forceAutoplay(video);
         });
       })();
       return () => { cancelled = true; if (hls) hls.destroy(); };
     } else {
       video.src = cleanUrl;
-      video.play().catch(() => {});
+      forceAutoplay(video);
     }
   }, [homeSettings?.heroVideoUrl]);
 

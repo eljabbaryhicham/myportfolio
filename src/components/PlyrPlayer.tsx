@@ -6,6 +6,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import Preloader from './preloader';
 import 'plyr/dist/plyr.css';
 import Hls from 'hls.js';
+import { forceAutoplay } from '@/lib/video-autoplay';
 
 type PlyrCtor = typeof import('plyr')['default'];
 type PlyrInstance = InstanceType<PlyrCtor>;
@@ -22,6 +23,7 @@ const PlyrPlayer = forwardRef(({ source, poster, autoPlay = true, thumbnailVttUr
   const containerRef = useRef<HTMLDivElement>(null);
   const playerRef = useRef<PlyrInstance | null>(null);
   const hlsRef = useRef<Hls | null>(null);
+  const autoplayDisposer = useRef<(() => void) | null>(null);
   const isMobile = useIsMobile();
   const [isLoading, setIsLoading] = useState(true);
   const playerReadyRef = useRef(false);
@@ -185,6 +187,7 @@ const PlyrPlayer = forwardRef(({ source, poster, autoPlay = true, thumbnailVttUr
 
     return () => {
         isMounted = false;
+        if (autoplayDisposer.current) { autoplayDisposer.current(); autoplayDisposer.current = null; }
         if (hlsRef.current) { hlsRef.current.destroy(); hlsRef.current = null; }
         const player = playerRef.current;
         if (player) {
@@ -199,26 +202,24 @@ const PlyrPlayer = forwardRef(({ source, poster, autoPlay = true, thumbnailVttUr
   useEffect(() => {
     let isMounted = true;
     const player = playerRef.current;
+    const container = containerRef.current;
     if (player) {
         const handleReady = () => {
             if (isMounted && autoPlay && !player.playing) {
-                let attempts = 0;
-                const tryPlay = () => {
-                    attempts++;
-                    try {
-                        const playPromise = player.play();
-                        if (playPromise !== undefined && typeof playPromise.catch === 'function') {
-                            playPromise.catch(() => {
-                                if (attempts < 4) setTimeout(tryPlay, 600);
-                                else if (isMounted) setIsLoading(false);
-                            });
-                        }
-                    } catch {
-                        if (attempts < 4) setTimeout(tryPlay, 600);
-                        else if (isMounted) setIsLoading(false);
+                // Drive autoplay on the underlying <video> (muted+playsinline+
+                // retry) — more reliable on mobile than Plymouth's own autoplay.
+                const video = container?.querySelector('video') as HTMLVideoElement | null;
+                if (video) {
+                    autoplayDisposer.current = forceAutoplay(video, {
+                        onPlaying: () => { if (isMounted) setIsLoading(false); },
+                        maxAttempts: 4,
+                    });
+                } else {
+                    const p = player.play() as unknown;
+                    if (p && typeof (p as Promise<void>).catch === 'function') {
+                        (p as Promise<void>).catch(() => {});
                     }
-                };
-                tryPlay();
+                }
             } else if (!autoPlay && player.playing) {
                 try { player.pause(); } catch {}
             }
@@ -228,6 +229,10 @@ const PlyrPlayer = forwardRef(({ source, poster, autoPlay = true, thumbnailVttUr
 
         return () => {
             isMounted = false;
+            if (autoplayDisposer.current) {
+                autoplayDisposer.current();
+                autoplayDisposer.current = null;
+            }
             player.off('ready', handleReady);
             if (player.playing) try { player.pause(); } catch {}
         };
