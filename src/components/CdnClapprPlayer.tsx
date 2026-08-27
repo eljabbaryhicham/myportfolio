@@ -63,10 +63,9 @@ const CdnClapprPlayer = forwardRef(function CdnClapprPlayer({ source, poster, au
             poster,
             width: '100%',
             height: '100%',
-            // Autoplay is driven by forceAutoplay() in wireVideoElement, which
-            // handles the mobile muted+playsinline+retry requirement. Disable
-            // Clappr's built-in autoplay so there's a single, conflict-free
-            // autoplay driver.
+            // Autoplay is driven by forceAutoplay() in wireVideoElement (handles
+            // mobile muted+playsinline+retry). Disable Clappr's built-in
+            // autoplay so there's a single, conflict-free autoplay driver.
             autoPlay: false,
             volume: 10,
             watermark: watermark || '',
@@ -76,34 +75,8 @@ const CdnClapprPlayer = forwardRef(function CdnClapprPlayer({ source, poster, au
               playInline: true,
             },
             plugins: plugins,
-            shakaConfiguration: {
-              streaming: {
-                rebufferingGoal: isMobile ? 10 : 15
-              }
-            },
-            hlsjsConfig: {
-              startLevel: -1,
-              capLevelToPlayerSize: true,
-              maxBufferLength: isMobile ? 30 : 60,
-              maxMaxBufferLength: isMobile ? 60 : 120,
-              enableWorker: true,
-              lowLatencyMode: false,
-            },
             mediacontrol: {
-              seekbar: "hsl(var(--destructive))",
               buttons: playerButtons,
-            },
-            levelSelectorConfig: {
-              title: 'Quality',
-              labels: {
-                  2: 'High', // e.g., 1080p
-                  1: 'Med', // e.g., 720p
-                  0: 'Low', // e.g., 360p
-              },
-            },
-            playbackRateConfig: {
-                defaultRate: 1.0,
-                rates: [0.5, 1.0, 1.5, 2.0]
             },
             events: {
               onError: (e: any) => {
@@ -220,11 +193,16 @@ const CdnClapprPlayer = forwardRef(function CdnClapprPlayer({ source, poster, au
   useImperativeHandle(ref, () => ({ isLoading }), [isLoading]);
 
   return (
-    <div className="w-full h-full relative bg-black">
+    // Deterministic box (16:9) instead of h-full: h-full could resolve to the
+    // page height while Clappr measures at init (dialog not yet laid out),
+    // which stretched the <video> to fill the whole page — the "black screen".
+    // aspect-ratio gives a real pixel box regardless of parent layout timing,
+    // and the outer div is always clamped by the media's aspect-video wrapper.
+    <div className="w-full relative bg-black">
       <div
         id={containerId}
         ref={playerContainerRef}
-        className="w-full h-full"
+        className="absolute inset-0"
       />
     </div>
   );
