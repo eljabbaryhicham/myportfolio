@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
+import React, { createContext, useContext, useState, useCallback, useEffect, useMemo, useRef } from 'react';
 
 type ProviderState = { isUploading: boolean; progress: number; fileName: string };
 
@@ -56,6 +56,49 @@ export function UploadProgressProvider({ children }: { children: React.ReactNode
     } catch { return null; }
   });
 
+  // Throttle progress updates so a fast onUploadProgress callback (fires on
+  // every network chunk) doesn't re-render the whole app shell dozens of times
+  // per second — that's what made page navigation feel laggy during an upload.
+  const lastProgressUpdate = useRef(0);
+  const pendingProgress = useRef<{ progress: number; provider?: 'vercel' | 'cloudinary' } | null>(null);
+  const trailingTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const applyProgress = useCallback((progress: number, provider?: 'vercel' | 'cloudinary') => {
+    setState((prev) => {
+      const target = provider || prev.provider;
+      if (!target) return { ...prev, progress };
+      return {
+        ...prev,
+        [target]: { ...prev[target], progress },
+        ...(prev.provider === target ? { progress } : {}),
+      };
+    });
+  }, []);
+
+  const updateProgress = useCallback((progress: number, provider?: 'vercel' | 'cloudinary') => {
+    const now = Date.now();
+    const THROTTLE_MS = 250;
+    pendingProgress.current = { progress, provider };
+    if (now - lastProgressUpdate.current >= THROTTLE_MS) {
+      lastProgressUpdate.current = now;
+      const { progress: p, provider: prov } = pendingProgress.current;
+      pendingProgress.current = null;
+      applyProgress(p, prov);
+    }
+    // Ensure the trailing value (e.g. reaching 100%) is always applied even if
+    // the throttle window hadn't elapsed when it was set.
+    if (trailingTimer.current) clearTimeout(trailingTimer.current);
+    trailingTimer.current = setTimeout(() => {
+      if (pendingProgress.current) {
+        const { progress: p, provider: prov } = pendingProgress.current;
+        pendingProgress.current = null;
+        applyProgress(p, prov);
+      }
+    }, THROTTLE_MS);
+  }, [applyProgress]);
+
+  useEffect(() => () => { if (trailingTimer.current) clearTimeout(trailingTimer.current); }, []);
+
   const setUploadProgress = useCallback((partial: Partial<UploadProgressState>) => {
     setState((prev) => ({ ...prev, ...partial }));
   }, []);
@@ -69,18 +112,6 @@ export function UploadProgressProvider({ children }: { children: React.ReactNode
       fileName,
       provider,
     }));
-  }, []);
-
-  const updateProgress = useCallback((progress: number, provider?: 'vercel' | 'cloudinary') => {
-    setState((prev) => {
-      const target = provider || prev.provider;
-      if (!target) return { ...prev, progress };
-      return {
-        ...prev,
-        [target]: { ...prev[target], progress },
-        ...(prev.provider === target ? { progress } : {}),
-      };
-    });
   }, []);
 
   const finishUpload = useCallback((provider?: 'vercel' | 'cloudinary') => {
@@ -133,8 +164,21 @@ export function UploadProgressProvider({ children }: { children: React.ReactNode
     try { localStorage.removeItem(COMPLETED_UPLOAD_KEY); } catch {}
   }, []);
 
+  const value = useMemo(() => ({
+    ...state,
+    setUploadProgress,
+    startUpload,
+    updateProgress,
+    finishUpload,
+    clearFileName,
+    setActiveMediaTab,
+    completedUpload,
+    signalCompletedUpload,
+    consumeCompletedUpload,
+  }), [state, setUploadProgress, startUpload, updateProgress, finishUpload, clearFileName, setActiveMediaTab, completedUpload, signalCompletedUpload, consumeCompletedUpload]);
+
   return (
-    <UploadProgressContext.Provider value={{ ...state, setUploadProgress, startUpload, updateProgress, finishUpload, clearFileName, setActiveMediaTab, completedUpload, signalCompletedUpload, consumeCompletedUpload }}>
+    <UploadProgressContext.Provider value={value}>
       {children}
     </UploadProgressContext.Provider>
   );
