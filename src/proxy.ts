@@ -5,11 +5,18 @@ import { NextResponse, type NextRequest } from 'next/server';
 // <script> tags (theme/lang, app-height, mobile detection). This keeps routes
 // statically prerendered (fast navigation) instead of forcing per-request
 // nonces which made the app dynamic. All other directives stay strict.
+// NOTE media-src/frame-src are NOT covered by default-src (which is 'self').
+// Video/audio playback would be silently blocked on external hosts (Cloudinary,
+// Vercel Blob, YouTube, Vimeo) — the poster/thumbnail still renders via
+// img-src https:, which is exactly the "shows thumbnail but video never plays"
+// symptom. Media and embeds must be explicitly allowlisted.
 const CSP =
   `default-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; object-src 'none'; ` +
   `script-src 'self' 'unsafe-inline' https://va.vercel-scripts.com https://cdn.jsdelivr.net; ` +
   `style-src 'self' 'unsafe-inline'; font-src 'self' data:; ` +
   `img-src 'self' data: https:; ` +
+  `media-src 'self' https://res.cloudinary.com https://*.public.blob.vercel-storage.com blob:; ` +
+  `frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com https://player.vimeo.com; ` +
   `connect-src 'self' https://firestore.googleapis.com https://studio-8316917408-a299a.firebaseapp.com https://identitytoolkit.googleapis.com https://api.cloudinary.com https://*.public.blob.vercel-storage.com https://va.vercel-scripts.com https://static.cloudflareinsights.com; ` +
   `worker-src 'self' blob:`;
 
