@@ -71,10 +71,12 @@ function LazyDetailsVideo({
   videoSrc,
   poster,
   playerType,
+  watermark,
 }: {
   videoSrc: string;
   poster?: string;
   playerType?: 'plyr' | 'clappr';
+  watermark?: string;
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const playerRef = useRef<any>(null);
@@ -152,9 +154,9 @@ function LazyDetailsVideo({
       )}
       <Suspense fallback={null}>
         {playerType === 'plyr' ? (
-          <MemoizedPlyrPlayer ref={playerRef} source={cleanVideoUrl(videoSrc) || videoSrc} poster={poster} autoPlay={false} />
+          <MemoizedPlyrPlayer ref={playerRef} source={cleanVideoUrl(videoSrc) || videoSrc} poster={poster} autoPlay={true} watermark={watermark} />
         ) : (
-          <MemoizedCdnClapprPlayer ref={playerRef} source={cleanVideoUrl(videoSrc) || videoSrc} poster={poster} autoPlay={false} />
+          <MemoizedCdnClapprPlayer ref={playerRef} source={cleanVideoUrl(videoSrc) || videoSrc} poster={poster} autoPlay={true} watermark={watermark} />
         )}
       </Suspense>
     </div>
@@ -170,12 +172,14 @@ const ProjectDetailsContent = memo(function ProjectDetailsContent({
   onImageFullscreen,
   mediaWidth,
   showMediaTitles = true,
+  watermark,
 }: {
   details: string;
   playerType?: 'plyr' | 'clappr';
   onImageFullscreen?: (url: string) => void;
   mediaWidth?: number;
   showMediaTitles?: boolean;
+  watermark?: string;
 }) {
   const normalizedDetails = useMemo(() => normalizeSelfClosingMedia(details), [details]);
   const widthPercent = mediaWidth && mediaWidth < 100 ? `${mediaWidth}%` : '100%';
@@ -231,7 +235,7 @@ const ProjectDetailsContent = memo(function ProjectDetailsContent({
           <div
             className="details-video-frame relative aspect-video overflow-hidden rounded-md bg-black [&>*]:absolute [&>*]:inset-0"
           >
-            <LazyDetailsVideo videoSrc={videoSrc} poster={poster} playerType={playerType} />
+            <LazyDetailsVideo videoSrc={videoSrc} poster={poster} playerType={playerType} watermark={watermark} />
           </div>
         </div>
       );
@@ -381,6 +385,7 @@ const MemoizedPortfolioMedia = memo(({
                 poster={videoPoster}
                 autoPlay={autoPlay}
                 thumbnailVttUrl={item.thumbnailVttUrl}
+                watermark={watermark}
             />
           ) : playerType === 'plyr' ? (
               <MemoizedPlyrPlayer
@@ -390,6 +395,7 @@ const MemoizedPortfolioMedia = memo(({
                   poster={videoPoster}
                   autoPlay={autoPlay}
                   thumbnailVttUrl={item.thumbnailVttUrl}
+                  watermark={watermark}
               />
           ) : (
               <MemoizedCdnClapprPlayer
@@ -1270,7 +1276,7 @@ function WorkPageContent() {
                 </DialogHeader>
                 <ScrollArea className="flex-1 min-w-0 [&>div>div]:!block [&>div>div]:min-w-0 [&>div>div]:w-full">
                     <div className="project-details prose prose-sm sm:prose-base dark:prose-invert max-w-full w-full min-w-0 overflow-hidden break-words space-y-4 text-xs sm:text-sm text-foreground/80 p-3 sm:p-4 md:p-6 box-border prose-p:my-2 prose-p:leading-relaxed prose-headings:break-words prose-h1:text-lg sm:prose-h1:text-xl prose-h2:text-base sm:prose-h2:text-lg prose-h3:text-sm sm:prose-h3:text-base prose-li:text-xs sm:prose-li:text-sm prose-a:break-all">
-                        <ProjectDetailsContent details={selectedItem.details || ''} playerType={workPagePlayer} onImageFullscreen={setFullscreenImageUrl} mediaWidth={homeSettings?.mediaWidth} showMediaTitles={homeSettings?.showMediaTitles ?? true} />
+                        <ProjectDetailsContent details={selectedItem.details || ''} playerType={workPagePlayer} onImageFullscreen={setFullscreenImageUrl} mediaWidth={homeSettings?.mediaWidth} showMediaTitles={homeSettings?.showMediaTitles ?? true} watermark={logoUrl} />
                     </div>
                 </ScrollArea>
                  <DialogClose className={cn(

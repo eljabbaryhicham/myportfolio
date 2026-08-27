@@ -16,9 +16,10 @@ interface PlyrPlayerProps {
   poster?: string;
   autoPlay?: boolean;
   thumbnailVttUrl?: string;
+  watermark?: string;
 }
 
-const PlyrPlayer = forwardRef(({ source, poster, autoPlay = true, thumbnailVttUrl }: PlyrPlayerProps, ref) => {
+const PlyrPlayer = forwardRef(({ source, poster, autoPlay = true, thumbnailVttUrl, watermark }: PlyrPlayerProps, ref) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const playerRef = useRef<PlyrInstance | null>(null);
   const hlsRef = useRef<Hls | null>(null);
@@ -99,8 +100,19 @@ const PlyrPlayer = forwardRef(({ source, poster, autoPlay = true, thumbnailVttUr
             const wireEvents = (p: PlyrInstance) => {
                 p.on('ready', onPlayerReady);
                 p.on('error', onPlayerError);
-                // Hide preloader only when video actually starts playing
-                p.on('playing', () => { if (isMounted) setIsLoading(false); });
+                // Hide preloader and unmute for autoplay-with-sound (start muted for policy, then sound)
+                p.on('playing', () => { 
+                  if (isMounted) {
+                    setIsLoading(false);
+                    if (autoPlay) {
+                      try { p.muted = false; } catch {}
+                      try { 
+                        const v = container.querySelector('video') as HTMLVideoElement | null;
+                        if (v) { v.muted = false; v.removeAttribute('muted'); }
+                      } catch {}
+                    }
+                  }
+                });
             };
 
             const mobileControls = ['play-large', 'play', 'current-time', 'progress', 'settings', 'pip', 'fullscreen'];
@@ -216,6 +228,11 @@ const PlyrPlayer = forwardRef(({ source, poster, autoPlay = true, thumbnailVttUr
       <div ref={containerRef} className="w-full h-full">
          {/* Plyr will be injected here */}
       </div>
+      {watermark && (
+        <div className="absolute top-2 right-2 w-12 h-12 md:w-16 md:h-16 pointer-events-none opacity-60 z-20">
+          <img src={watermark} alt="watermark" className="w-full h-full object-contain drop-shadow-md" loading="lazy" />
+        </div>
+      )}
       {isLoading && (
         <div className="absolute inset-0 flex items-center justify-center bg-black pointer-events-none z-10">
           <Preloader />
