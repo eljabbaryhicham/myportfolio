@@ -59,6 +59,7 @@ const CdnClapprPlayer = forwardRef(function CdnClapprPlayer({ source, poster, au
               playInline: true,
             },
             mediacontrol: {
+              seekbar: "hsl(var(--primary))",
               buttons: ['play', 'volume', 'fullscreen'],
             },
             events: {
