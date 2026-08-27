@@ -47,6 +47,14 @@ function getWatermarkPositionStyle(position: string) {
     default: return { bottom: '10px', right: '42px' } as const;
   }
 }
+let playersPreloaded = false;
+function preloadPlayers() {
+  if (playersPreloaded) return;
+  playersPreloaded = true;
+  import('@/components/CdnClapprPlayer');
+  import('@/components/PlyrPlayer');
+  import('hls.js').catch(() => {});
+}
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeRaw from 'rehype-raw';
@@ -513,7 +521,7 @@ const PortfolioGridItem = ({ item, onClick, onEditClick, isAdmin, isSuperAdmin, 
   const canHover = () =>
     typeof window !== 'undefined' && !window.matchMedia('(hover: none)').matches;
 
-  const handleMouseEnter = () => { if (canHover()) setIsHovering(true); };
+  const handleMouseEnter = () => { if (canHover()) { setIsHovering(true); preloadPlayers(); } };
   const handleMouseLeave = () => { setIsHovering(false); };
 
   // Native <video> preview only for progressively-streamable sources —

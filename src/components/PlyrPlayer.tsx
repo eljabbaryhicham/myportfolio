@@ -6,6 +6,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import Preloader from './preloader';
 import 'plyr/dist/plyr.css';
 import Hls from 'hls.js';
+import { forceAutoplay } from '@/lib/video-autoplay';
 
 type PlyrCtor = typeof import('plyr')['default'];
 type PlyrInstance = InstanceType<PlyrCtor>;
@@ -181,6 +182,23 @@ const PlyrPlayer = forwardRef(({ source, poster, autoPlay = true, thumbnailVttUr
                 (element as HTMLVideoElement).src = source;
                 wireEvents(player);
                 if (isMounted) playerRef.current = player;
+                // Speedup: ensure autoplay starts fast via forceAutoplay (muted+retry) then unmute for sound
+                if (autoPlay && isMounted) {
+                  const v = element as HTMLVideoElement;
+                  v.setAttribute('playsinline', '');
+                  v.setAttribute('webkit-playsinline', '');
+                  try { forceAutoplay(v, { onPlaying: () => { try { player && (player.muted = false); } catch {} } }); } catch {}
+                }
+            }
+
+            // Also handle HLS case where player created async - forceAutoplay via container query
+            if (autoPlay && isMounted) {
+              const v = container.querySelector('video') as HTMLVideoElement | null;
+              if (v) {
+                v.setAttribute('playsinline', '');
+                v.setAttribute('webkit-playsinline', '');
+                try { forceAutoplay(v, { onPlaying: () => { try { playerRef.current && (playerRef.current.muted = false); } catch {} } }); } catch {}
+              }
             }
 
         } catch (error) {

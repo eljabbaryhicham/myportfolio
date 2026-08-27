@@ -2,6 +2,7 @@
 import { useEffect, useRef, useState, forwardRef, useImperativeHandle } from 'react';
 import Preloader from './preloader';
 import { useToast } from '@/hooks/use-toast';
+import { forceAutoplay } from '@/lib/video-autoplay';
 
 // Make Clappr available on the window object for type safety
 declare global {
@@ -93,13 +94,35 @@ const CdnClapprPlayer = forwardRef(function CdnClapprPlayer({ source, poster, au
             } catch {}
           }
         };
+        // Ensure reliable autoplay on mobile via forceAutoplay (muted+playsinline+retry)
+        const videoEl = container.querySelector('video') as HTMLVideoElement | null;
+        if (videoEl) {
+          videoEl.setAttribute('playsinline', '');
+          videoEl.setAttribute('webkit-playsinline', '');
+          if (autoPlay) {
+            try { forceAutoplay(videoEl, { onPlaying: hideOnPlay }); } catch {}
+          }
+          videoEl.addEventListener('playing', hideOnPlay, { once: true });
+        } else if (autoPlay) {
+          // Clappr may inject video async — poll briefly
+          let attempts = 0;
+          const poll = setInterval(() => {
+            attempts++;
+            const v = container.querySelector('video') as HTMLVideoElement | null;
+            if (v) {
+              clearInterval(poll);
+              v.setAttribute('playsinline', '');
+              v.setAttribute('webkit-playsinline', '');
+              try { forceAutoplay(v, { onPlaying: hideOnPlay }); } catch {}
+              v.addEventListener('playing', hideOnPlay, { once: true });
+            }
+            if (attempts > 10) clearInterval(poll);
+          }, 200);
+        }
         try {
           newPlayer.on(Clappr.Events.PLAYER_PLAY, hideOnPlay);
           // Fallback for HTML5 playback where PLAYER_PLAY may not fire before first frame
           newPlayer.on(Clappr.Events.PLAYBACK_PLAY, hideOnPlay);
-          // Direct video element fallback — most reliable for autoplay-with-sound
-          const videoEl = container.querySelector('video') as HTMLVideoElement | null;
-          if (videoEl) videoEl.addEventListener('playing', hideOnPlay, { once: true });
         } catch {}
         // Safety fallback if playing never fires (autoplay blocked or error)
         setTimeout(() => { if (isMounted) setIsLoading(false); }, 8000);
