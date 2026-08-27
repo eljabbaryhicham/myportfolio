@@ -52,7 +52,7 @@ const CdnClapprPlayer = forwardRef(function CdnClapprPlayer({ source, poster, au
             autoPlay: autoPlay,
             mute: autoPlay,
             volume: 100,
-            watermark: watermark || '',
+            watermark: '',
             watermarkLink: undefined,
             clickToToggle: true,
             playback: {

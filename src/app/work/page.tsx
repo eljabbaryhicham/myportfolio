@@ -154,11 +154,16 @@ function LazyDetailsVideo({
       )}
       <Suspense fallback={null}>
         {playerType === 'plyr' ? (
-          <MemoizedPlyrPlayer ref={playerRef} source={cleanVideoUrl(videoSrc) || videoSrc} poster={poster} autoPlay={true} watermark={watermark} />
+          <MemoizedPlyrPlayer ref={playerRef} source={cleanVideoUrl(videoSrc) || videoSrc} poster={poster} autoPlay={true} />
         ) : (
-          <MemoizedCdnClapprPlayer ref={playerRef} source={cleanVideoUrl(videoSrc) || videoSrc} poster={poster} autoPlay={true} watermark={watermark} />
+          <MemoizedCdnClapprPlayer ref={playerRef} source={cleanVideoUrl(videoSrc) || videoSrc} poster={poster} autoPlay={true} />
         )}
       </Suspense>
+      {watermark && (
+        <div className="absolute pointer-events-none z-20" style={{ bottom: '10px', right: '42px', width: '12%', minWidth: '70px', maxWidth: '200px', textAlign: 'center' }}>
+          <img src={watermark} alt="watermark" style={{ maxWidth: '100%' }} loading="lazy" />
+        </div>
+      )}
     </div>
   );
 }
@@ -385,7 +390,6 @@ const MemoizedPortfolioMedia = memo(({
                 poster={videoPoster}
                 autoPlay={autoPlay}
                 thumbnailVttUrl={item.thumbnailVttUrl}
-                watermark={watermark}
             />
           ) : playerType === 'plyr' ? (
               <MemoizedPlyrPlayer
@@ -395,7 +399,6 @@ const MemoizedPortfolioMedia = memo(({
                   poster={videoPoster}
                   autoPlay={autoPlay}
                   thumbnailVttUrl={item.thumbnailVttUrl}
-                  watermark={watermark}
               />
           ) : (
               <MemoizedCdnClapprPlayer
@@ -403,10 +406,14 @@ const MemoizedPortfolioMedia = memo(({
                   key={item.id}
                   source={playableSource || item.sourceUrl}
                   poster={videoPoster}
-                  watermark={watermark}
                   autoPlay={autoPlay}
               />
           )
+        )}
+        {watermark && (
+          <div className="absolute pointer-events-none z-20" style={{ bottom: '10px', right: '42px', width: '12%', minWidth: '70px', maxWidth: '200px', textAlign: 'center' }}>
+            <img src={watermark} alt="watermark" style={{ maxWidth: '100%' }} loading="lazy" />
+          </div>
         )}
       </div>
     );

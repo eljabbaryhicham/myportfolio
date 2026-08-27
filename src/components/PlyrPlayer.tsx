@@ -16,10 +16,9 @@ interface PlyrPlayerProps {
   poster?: string;
   autoPlay?: boolean;
   thumbnailVttUrl?: string;
-  watermark?: string;
 }
 
-const PlyrPlayer = forwardRef(({ source, poster, autoPlay = true, thumbnailVttUrl, watermark }: PlyrPlayerProps, ref) => {
+const PlyrPlayer = forwardRef(({ source, poster, autoPlay = true, thumbnailVttUrl }: PlyrPlayerProps, ref) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const playerRef = useRef<PlyrInstance | null>(null);
   const hlsRef = useRef<Hls | null>(null);
@@ -228,11 +227,6 @@ const PlyrPlayer = forwardRef(({ source, poster, autoPlay = true, thumbnailVttUr
       <div ref={containerRef} className="w-full h-full">
          {/* Plyr will be injected here */}
       </div>
-      {watermark && (
-        <div className="absolute pointer-events-none z-20" style={{ bottom: '10px', right: '42px', width: '12%', minWidth: '70px', maxWidth: '200px', textAlign: 'center' }}>
-          <img src={watermark} alt="watermark" style={{ maxWidth: '100%' }} loading="lazy" />
-        </div>
-      )}
       {isLoading && (
         <div className="absolute inset-0 flex items-center justify-center bg-black pointer-events-none z-10">
           <Preloader />
