@@ -174,7 +174,7 @@ function LazyDetailsVideo({
           <MemoizedCdnClapprPlayer ref={playerRef} source={cleanVideoUrl(videoSrc) || videoSrc} poster={poster} autoPlay={true} />
         )}
       </Suspense>
-      {watermark && (
+      {watermark && !playerLoading && (
         <div className="absolute pointer-events-none z-20" style={{ ...getWatermarkPositionStyle(watermarkPosition || 'bottom-right'), width: `${watermarkSize ?? 12}%`, minWidth: '50px', maxWidth: '250px', textAlign: 'center', opacity: (watermarkOpacity ?? 70) / 100 }}>
           <img src={watermark} alt="watermark" style={{ maxWidth: '100%' }} loading="lazy" />
         </div>
@@ -356,6 +356,7 @@ const MemoizedPortfolioMedia = memo(({
   // Images own their preloader here — same principle as the video players:
   // hide it only when the bitmap is actually loaded and painted.
   const [isImageLoading, setIsImageLoading] = useState(true);
+  const [isVideoLoading, setIsVideoLoading] = useState(item.type === 'video');
 
   useEffect(() => {
     if (item.type === 'video') return;
@@ -382,6 +383,30 @@ const MemoizedPortfolioMedia = memo(({
     safety = setTimeout(finish, 8000);
     return () => { if (safety) clearTimeout(safety); };
   }, [item.id, item.type, item.sourceUrl, item.thumbnailUrl]);
+
+  useEffect(() => {
+    if (item.type !== 'video') {
+      setIsVideoLoading(false);
+      return;
+    }
+    setIsVideoLoading(true);
+    const check = () => {
+      const p = (plyrRef as any)?.current;
+      const c = (clapprRef as any)?.current;
+      const pv = p && typeof p.isLoading === 'boolean' ? p.isLoading : null;
+      const cv = c && typeof c.isLoading === 'boolean' ? c.isLoading : null;
+      if (pv !== null || cv !== null) {
+        const loading = (pv ?? cv ?? true) as boolean;
+        setIsVideoLoading(loading);
+        return !loading;
+      }
+      return false;
+    };
+    if (check()) return;
+    const id = setInterval(() => { if (check()) clearInterval(id); }, 200);
+    const safety = setTimeout(() => setIsVideoLoading(false), 8000);
+    return () => { clearInterval(id); clearTimeout(safety); };
+  }, [item.id, item.type, playerType, autoPlay]);
 
   if (item.type === 'video') {
     const isVimeo = item.sourceUrl?.includes('vimeo.com');
@@ -437,7 +462,7 @@ const MemoizedPortfolioMedia = memo(({
               />
           )
         )}
-        {watermark && (
+        {watermark && !isVideoLoading && (
           <div className="absolute pointer-events-none z-20" style={{ ...getWatermarkPositionStyle(watermarkPosition || 'bottom-right'), width: `${watermarkSize ?? 12}%`, minWidth: '50px', maxWidth: '250px', textAlign: 'center', opacity: (watermarkOpacity ?? 70) / 100 }}>
             <img src={watermark} alt="watermark" style={{ maxWidth: '100%' }} loading="lazy" />
           </div>
