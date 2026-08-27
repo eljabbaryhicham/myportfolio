@@ -669,27 +669,14 @@ export default forwardRef<MediaLibraryRef, MediaLibraryProps>(function MediaLibr
       clearInterval(interval);
       setUrlProgress(100);
       updateGlobalProgress(100, 'vercel');
-      if (firestore) {
-        try {
-          const docRef = await addDocumentNonBlocking(collection(firestore, 'vercel_blobs'), {
-            provider: 'vercel_blob', url: data.url,
-            pathname: data.pathname || `vercel-blob/${Date.now()}-${addUrl.split('/').pop() || 'file'}`,
-            size: data.size ?? 0, contentType: data.contentType || 'application/octet-stream',
-            filename: data.filename || data.url.split('/').pop() || addUrl.split('/').pop() || 'file',
-            uploadedAt: serverTimestamp(), uploadedBy: auth?.currentUser?.uid || null,
-            sourceUrl: addUrl.trim(),
-          } as any);
-          const newId = (docRef as any)?.id;
-          if (newId) {
-            setLocalNewlyUploadedId(newId);
-            setTimeout(() => setLocalNewlyUploadedId(null), 3000);
-            const ct = (data.contentType || '').toLowerCase();
-            signalCompletedUpload(newId, ct.startsWith('image/') ? 'image' : ct.startsWith('video/') ? 'video' : 'raw', 'vercel_blob');
-          }
-        } catch (e) { console.error('MediaLibrary: Firestore add from URL failed', e); }
+      const newId = data.pathname;
+      if (newId) {
+        setLocalNewlyUploadedId(newId);
+        setTimeout(() => setLocalNewlyUploadedId(null), 3000);
+        const ct = (data.contentType || '').toLowerCase();
+        signalCompletedUpload(newId, ct.startsWith('image/') ? 'image' : ct.startsWith('video/') ? 'video' : 'raw', 'vercel_blob');
       }
-      const ct = (data.contentType || '').toLowerCase();
-      const tab = ct.startsWith('image/') ? 'images' : ct.startsWith('video/') ? 'videos' : 'files';
+      const tab = (data.contentType || '').toLowerCase().startsWith('image/') ? 'images' : (data.contentType || '').toLowerCase().startsWith('video/') ? 'videos' : 'files';
       setActiveTabFn(tab);
       finishUpload('vercel');
       setIsAddFromUrlOpen(false);
