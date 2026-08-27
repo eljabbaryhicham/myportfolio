@@ -118,6 +118,12 @@ function AdminPage() {
     if (activeTab !== 'media') {
       setActiveTab('media');
     }
+    // Switch inner media tab to match the provider that just completed
+    if (libraryId === 'vercel_blob') {
+      setInnerMediaTab('vercel');
+    } else {
+      setInnerMediaTab('cloudinary');
+    }
     // Both Vercel Blob and Cloudinary: don't consume here — components handle their own popups
     safeTimeout(() => setNewlyUploadedId(null), 3000);
   }, [completedUpload, activeTab, setActiveTab]);
@@ -275,10 +281,10 @@ function AdminPage() {
           <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col min-h-0 mt-8">
             <div className="w-full flex flex-wrap justify-center items-center gap-4 md:gap-0">
               <TabsList className="flex-wrap h-auto justify-center">
-                <TabsTrigger value="home" className="glass-effect data-[state=active]:bg-destructive">{t('admin.tabs.home')}</TabsTrigger>
-                <TabsTrigger value="projects" className="glass-effect data-[state=active]:bg-destructive">{t('admin.tabs.projects')}</TabsTrigger>
-                <TabsTrigger value="about" className="glass-effect data-[state=active]:bg-destructive">{t('admin.tabs.about')}</TabsTrigger>
-                <TabsTrigger value="contact" className="glass-effect data-[state=active]:bg-destructive">{t('admin.tabs.contact')}</TabsTrigger>
+                <TabsTrigger value="home" className="data-[state=active]:bg-destructive">{t('admin.tabs.home')}</TabsTrigger>
+                <TabsTrigger value="projects" className="data-[state=active]:bg-destructive">{t('admin.tabs.projects')}</TabsTrigger>
+                <TabsTrigger value="about" className="data-[state=active]:bg-destructive">{t('admin.tabs.about')}</TabsTrigger>
+                <TabsTrigger value="contact" className="data-[state=active]:bg-destructive">{t('admin.tabs.contact')}</TabsTrigger>
               </TabsList>
               <div className="md:ml-auto">
                 <TabsList className="flex-wrap h-auto justify-center">
@@ -306,8 +312,8 @@ function AdminPage() {
               <TabsContent value="media" className="flex-1 overflow-auto mt-4 data-[state=inactive]:hidden" forceMount>
                   <Tabs value={innerMediaTab} onValueChange={setInnerMediaTab} className="w-full">
                     <TabsList className="mb-4">
-                      <TabsTrigger value="cloudinary" className="glass-effect data-[state=active]:bg-destructive">Cloudinary</TabsTrigger>
-                      <TabsTrigger value="vercel" className="glass-effect data-[state=active]:bg-destructive">Vercel Blob</TabsTrigger>
+                      <TabsTrigger value="cloudinary" className="data-[state=active]:bg-destructive">Cloudinary</TabsTrigger>
+                      <TabsTrigger value="vercel" className="data-[state=active]:bg-destructive">Vercel Blob</TabsTrigger>
                     </TabsList>
                     <TabsContent value="cloudinary" forceMount className="data-[state=inactive]:hidden">
                       <MediaAdmin provider="cloudinary" onUploadComplete={handleUploadComplete} onMediaSelect={handleOpenPortfolioFormWithMedia} />

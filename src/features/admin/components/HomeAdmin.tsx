@@ -354,12 +354,12 @@ export default function HomeAdmin() {
             </p>
         </div>
         <Tabs value={homeTab} onValueChange={(v) => setHomeTab(v as any)} className="flex-1 flex flex-col min-h-0">
-            <TabsList className="flex flex-wrap glass-effect mb-4">
-                                    <TabsTrigger value="appearance" className="px-3 py-1.5 text-sm glass-effect data-[state=active]:bg-destructive">{t('homeAdmin.tab.appearance') || 'Appearance'}</TabsTrigger>
-                                    <TabsTrigger value="backgrounds" className="px-3 py-1.5 text-sm glass-effect data-[state=active]:bg-destructive">{t('homeAdmin.tab.backgrounds') || 'Backgrounds'}</TabsTrigger>
-                                    <TabsTrigger value="player" className="px-3 py-1.5 text-sm glass-effect data-[state=active]:bg-destructive">{t('homeAdmin.tab.player') || 'Player & Global'}</TabsTrigger>
-                                    <TabsTrigger value="preloader" className="px-3 py-1.5 text-sm glass-effect data-[state=active]:bg-destructive">{t('homeAdmin.tab.preloader') || 'Preloader'}</TabsTrigger>
-                                    <TabsTrigger value="email" className="px-3 py-1.5 text-sm glass-effect data-[state=active]:bg-destructive">{t('homeAdmin.tab.email') || 'Email'}</TabsTrigger>
+            <TabsList className="flex flex-wrap mb-4">
+                                    <TabsTrigger value="appearance" className="px-3 py-1.5 text-sm data-[state=active]:bg-destructive">{t('homeAdmin.tab.appearance') || 'Appearance'}</TabsTrigger>
+                                    <TabsTrigger value="backgrounds" className="px-3 py-1.5 text-sm data-[state=active]:bg-destructive">{t('homeAdmin.tab.backgrounds') || 'Backgrounds'}</TabsTrigger>
+                                    <TabsTrigger value="player" className="px-3 py-1.5 text-sm data-[state=active]:bg-destructive">{t('homeAdmin.tab.player') || 'Player & Global'}</TabsTrigger>
+                                    <TabsTrigger value="preloader" className="px-3 py-1.5 text-sm data-[state=active]:bg-destructive">{t('homeAdmin.tab.preloader') || 'Preloader'}</TabsTrigger>
+                                    <TabsTrigger value="email" className="px-3 py-1.5 text-sm data-[state=active]:bg-destructive">{t('homeAdmin.tab.email') || 'Email'}</TabsTrigger>
                                 </TabsList>
                                 <div className="flex-1 border rounded-lg overflow-hidden glass-effect">
                                     <ScrollArea className="h-full">
@@ -369,7 +369,7 @@ export default function HomeAdmin() {
                                                     <div className="space-y-8 max-w-2xl mx-auto">
                                 <TabsContent value="appearance" className="m-0 space-y-4">
                                 {/* Homepage Appearance */}
-                                <div className="space-y-4 p-4 rounded-lg border glass-effect">
+                                <div className="space-y-4 p-4 rounded-lg border">
                                     <h3 className="font-headline text-lg">{t('homeAdmin.homepageHeading')}</h3>
                                     
                                     <FormField
@@ -649,7 +649,7 @@ export default function HomeAdmin() {
                                 </TabsContent>
                                 <TabsContent value="backgrounds" className="m-0 space-y-4">
                                 {/* Backgrounds */}
-                                <div className="space-y-4 p-4 rounded-lg border glass-effect">
+                                <div className="space-y-4 p-4 rounded-lg border">
                                     <h3 className="font-headline text-lg">{t('homeAdmin.backgroundsHeading')}</h3>
 
                                      {/* Homepage background */}
@@ -790,7 +790,7 @@ export default function HomeAdmin() {
                                 </TabsContent>
                                 <TabsContent value="player" className="m-0 space-y-4">
                                 {/* Player & Global Settings */}
-                                <div className="space-y-4 p-4 rounded-lg border glass-effect">
+                                <div className="space-y-4 p-4 rounded-lg border">
                                      <h3 className="font-headline text-lg">{t('homeAdmin.globalSettings')}</h3>
 
                                      <FormField
@@ -1034,7 +1034,7 @@ export default function HomeAdmin() {
                                 </TabsContent>
                                 <TabsContent value="preloader" className="m-0 space-y-4">
                                 {/* Preloader & Animations */}
-                                <div className="space-y-4 p-4 rounded-lg border glass-effect">
+                                <div className="space-y-4 p-4 rounded-lg border">
                                 <h3 className="font-headline text-lg">{t('homeAdmin.preloaderTabHeading') || 'Preloader & Animations'}</h3>
                                     <FormField
                                         control={control}
@@ -1241,7 +1241,7 @@ export default function HomeAdmin() {
                                 </TabsContent>
                                 <TabsContent value="email" className="m-0 space-y-4">
                                 {/* Email Templates */}
-                                <div className="space-y-4 p-4 rounded-lg border glass-effect">
+                                <div className="space-y-4 p-4 rounded-lg border">
                                     <h3 className="font-headline text-lg">{t('homeAdmin.emailTemplatesHeading')}</h3>
                                     <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{t('homeAdmin.emailTemplate.heading')}</h4>
                                     <FormField

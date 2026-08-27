@@ -553,7 +553,15 @@ export default forwardRef<MediaLibraryRef, MediaLibraryProps>(function MediaLibr
   const handleVercelUpload = useCallback(async (files: File[]) => {
     if (files.length === 0) return;
     const token = await getToken();
-    if (!token) { toast({ variant: 'destructive', title: 'Not authenticated' }); return; }
+    if (!token) { toast({ variant: 'destructive', title: 'Not authenticated', description: 'Please sign in again to upload.' }); return; }
+    // Pre-flight: check server has BLOB_READ_WRITE_TOKEN before starting upload
+    try {
+      const probe = await fetch('/api/vercel-blob/handle-upload', { method: 'HEAD' });
+      if (probe.status === 503) {
+        toast({ variant: 'destructive', title: 'Vercel Blob not configured', description: 'BLOB_READ_WRITE_TOKEN is missing on the server.' });
+        return;
+      }
+    } catch {}
     for (const file of files) {
       if (file.type.startsWith('image/') && file.size > 50 * 1024 * 1024) {
         toast({ variant: 'destructive', title: 'Image exceeds 50MB limit', description: file.name });
@@ -564,15 +572,19 @@ export default forwardRef<MediaLibraryRef, MediaLibraryProps>(function MediaLibr
       setUploadingFileName(file.name);
       startGlobalUpload(file.name, 'vercel');
       try {
-        const blob: any = await upload(file.name, file, {
-          access: 'public', handleUploadUrl: '/api/vercel-blob/handle-upload',
-          headers: { Authorization: `Bearer ${token}` },
-          onUploadProgress: ({ loaded, total }: { loaded: number; total: number }) => {
-            const progress = Math.round((loaded / total) * 100);
-            setUploadProgress(progress);
-            updateGlobalProgress(progress, 'vercel');
-          },
-        } as any);
+        const UPLOAD_TIMEOUT_MS = 60_000;
+        const blob: any = await Promise.race([
+          upload(file.name, file, {
+            access: 'public', handleUploadUrl: '/api/vercel-blob/handle-upload',
+            headers: { Authorization: `Bearer ${token}` },
+            onUploadProgress: ({ loaded, total }: { loaded: number; total: number }) => {
+              const progress = Math.round((loaded / total) * 100);
+              setUploadProgress(progress);
+              updateGlobalProgress(progress, 'vercel');
+            },
+          } as any),
+          new Promise((_, reject) => setTimeout(() => reject(new Error('Upload timed out. The server may be unreachable.')), UPLOAD_TIMEOUT_MS)),
+        ]);
         setUploadProgress(100);
         updateGlobalProgress(100, 'vercel');
         finishUpload('vercel');
