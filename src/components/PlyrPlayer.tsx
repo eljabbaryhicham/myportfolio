@@ -89,7 +89,9 @@ const PlyrPlayer = forwardRef(({ source, poster, autoPlay = true, thumbnailVttUr
 
             const onPlayerReady = () => {
                 playerReadyRef.current = true;
-                // For YouTube/Vimeo, wait for 'playing' event instead of hiding immediately
+                // For click-to-play (autoPlay false) hide preloader once ready so poster + play button show.
+                // For autoplay keep preloader until playing to avoid controls + preloader overlap.
+                if (!autoPlay && isMounted) setIsLoading(false);
             };
             const onPlayerError = () => {
                 if (isMounted) setIsLoading(false);
@@ -196,7 +198,7 @@ const PlyrPlayer = forwardRef(({ source, poster, autoPlay = true, thumbnailVttUr
          {/* Plyr will be injected here */}
       </div>
       {isLoading && (
-        <div className="absolute inset-0 flex items-center justify-center bg-black/40 pointer-events-none">
+        <div className="absolute inset-0 flex items-center justify-center bg-black pointer-events-none z-10">
           <Preloader />
         </div>
       )}

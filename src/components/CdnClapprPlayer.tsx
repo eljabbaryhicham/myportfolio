@@ -58,7 +58,10 @@ const CdnClapprPlayer = forwardRef(function CdnClapprPlayer({ source, poster, au
             },
             events: {
               onReady: () => {
-                if (isMounted) setIsLoading(false);
+                // For click-to-play (autoPlay false) hide preloader once ready so poster shows.
+                // For autoplay, keep preloader until video actually starts playing to avoid
+                // showing controls over black frame — preloader and controls overlapping.
+                if (isMounted && !autoPlay) setIsLoading(false);
               },
               onError: (e: any) => {
                 if (isMounted) {
@@ -71,13 +74,16 @@ const CdnClapprPlayer = forwardRef(function CdnClapprPlayer({ source, poster, au
         
         playerRef.current = newPlayer;
 
-        // Hide preloader when video actually starts playing (frame presented)
-        // Fallback: ready event already hides it
+        // Hide preloader only when video frame is presented (playing), not onReady.
+        // This prevents preloader + controls appearing together over black screen.
+        const hideOnPlay = () => { if (isMounted) setIsLoading(false); };
         try {
-          newPlayer.on(window.Clappr.Events.PLAYER_PLAY, () => {
-            if (isMounted) setIsLoading(false);
-          });
+          newPlayer.on(window.Clappr.Events.PLAYER_PLAY, hideOnPlay);
+          // Fallback for HTML5 playback where PLAYER_PLAY may not fire before first frame
+          newPlayer.on(window.Clappr.Events.PLAYBACK_PLAY, hideOnPlay);
         } catch {}
+        // Safety fallback if playing never fires (autoplay blocked or error)
+        setTimeout(() => { if (isMounted) setIsLoading(false); }, 8000);
 
       } catch (error: any) {
         console.error(error);
@@ -121,7 +127,7 @@ const CdnClapprPlayer = forwardRef(function CdnClapprPlayer({ source, poster, au
         className="w-full h-full"
       />
       {isLoading && (
-        <div className="absolute inset-0 flex items-center justify-center bg-black/40 pointer-events-none">
+        <div className="absolute inset-0 flex items-center justify-center bg-black pointer-events-none z-10">
           <Preloader />
         </div>
       )}
