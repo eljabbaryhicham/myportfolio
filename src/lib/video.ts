@@ -15,15 +15,18 @@ export function cleanVideoUrl(input?: string | null): string | undefined {
 
   const [, base, resourceType, rest] = m;
 
-  // Split into path segments; discard every leading transform segment until we
-  // reach the /v<version>/ piece (this also drops any duplicated transforms).
-  const segments = rest.split('/');
-  let start = 0;
-  while (start < segments.length - 1 && !/^v\d+$/.test(segments[start])) {
-    start += 1;
-  }
+    // Fix duplicated transforms like /f_auto,q_auto/f_auto,q_auto/ which break
+  // Cloudinary delivery and <video> decoding on mobile. Only deduplicate
+  // *repeated* leading transform segments — preserve legitimate optimizations
+  // like q_auto, w_720, etc. so we keep Cloudinary's optimized delivery
+  // and don't force the original huge file (which makes loading slow).
+  let cleanRest = rest;
+  // Collapse "/<transform>/<same transform>/" into "/<transform>/"
+  cleanRest = cleanRest.replace(/^([^/]+)\/\1\//, '$1/');
+  // Also handle the specific known duplication: f_auto,q_auto repeated
+  cleanRest = cleanRest.replace(/^(f_auto[^/]*\/)\1/, '$1');
 
-  const cleanPath = '/' + resourceType + '/upload/' + segments.slice(start).join('/');
+  const cleanPath = '/' + resourceType + '/upload/' + cleanRest;
 
   // Force a deterministic, universally decodable extension for the <video>, but
   // keep HLS (.m3u8) manifests as-is so they can be streamed.

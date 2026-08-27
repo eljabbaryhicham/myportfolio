@@ -6,7 +6,6 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import Preloader from './preloader';
 import 'plyr/dist/plyr.css';
 import Hls from 'hls.js';
-import { forceAutoplay } from '@/lib/video-autoplay';
 
 type PlyrCtor = typeof import('plyr')['default'];
 type PlyrInstance = InstanceType<PlyrCtor>;
@@ -23,7 +22,6 @@ const PlyrPlayer = forwardRef(({ source, poster, autoPlay = true, thumbnailVttUr
   const containerRef = useRef<HTMLDivElement>(null);
   const playerRef = useRef<PlyrInstance | null>(null);
   const hlsRef = useRef<Hls | null>(null);
-  const autoplayDisposer = useRef<(() => void) | null>(null);
   const isMobile = useIsMobile();
   const [isLoading, setIsLoading] = useState(true);
   const playerReadyRef = useRef(false);
@@ -65,14 +63,9 @@ const PlyrPlayer = forwardRef(({ source, poster, autoPlay = true, thumbnailVttUr
                 video.setAttribute('playsinline', '');
                 video.setAttribute('webkit-playsinline', '');
                 video.setAttribute('controls', '');
-                video.setAttribute('preload', 'metadata');
-                const isAndroid = typeof navigator !== 'undefined' && /Android/i.test(navigator.userAgent);
-                if (isAndroid) {
-                    video.setAttribute('webkit-playsinline', '');
-                    video.setAttribute('crossorigin', 'anonymous');
-                }
+                video.setAttribute('preload', 'auto');
                 // Mobile browsers only allow autoplay when muted.
-                if (autoPlay && isMobile) video.muted = true;
+                if (autoPlay) video.muted = true;
                 if (poster) video.setAttribute('poster', poster);
                 let settled = false;
                 const done = () => {
@@ -83,7 +76,7 @@ const PlyrPlayer = forwardRef(({ source, poster, autoPlay = true, thumbnailVttUr
                 // Wait for the video to actually start playing before hiding preloader
                 video.addEventListener('playing', done, { once: true });
                 // Safety: if playing never fires (e.g. autoplay blocked), fallback after delay
-                const safety = setTimeout(done, 10000);
+                const safety = setTimeout(done, 4000);
                 video.addEventListener('loadstart', () => {
                     if (isMounted && !settled) setIsLoading(true);
                 });
@@ -187,7 +180,6 @@ const PlyrPlayer = forwardRef(({ source, poster, autoPlay = true, thumbnailVttUr
 
     return () => {
         isMounted = false;
-        if (autoplayDisposer.current) { autoplayDisposer.current(); autoplayDisposer.current = null; }
         if (hlsRef.current) { hlsRef.current.destroy(); hlsRef.current = null; }
         const player = playerRef.current;
         if (player) {
@@ -198,63 +190,16 @@ const PlyrPlayer = forwardRef(({ source, poster, autoPlay = true, thumbnailVttUr
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [source, poster, isMobile]);
 
-  // Playback control: autoplay / pause
-  useEffect(() => {
-    let isMounted = true;
-    const player = playerRef.current;
-    const container = containerRef.current;
-    if (player) {
-        const handleReady = () => {
-            if (isMounted && autoPlay && !player.playing) {
-                // Drive autoplay on the underlying <video> (muted+playsinline+
-                // retry) — more reliable on mobile than Plymouth's own autoplay.
-                const video = container?.querySelector('video') as HTMLVideoElement | null;
-                if (video) {
-                    autoplayDisposer.current = forceAutoplay(video, {
-                        onPlaying: () => {
-                            if (isMounted) {
-                                setIsLoading(false);
-                                // Autoplay begins muted (mobile policy); once running,
-                                // un-mute via Plyr's API so videos play WITH sound.
-                                // Plyr's mute state overrides the raw <video>.muted.
-                                try { player.muted = false; } catch {}
-                            }
-                        },
-                        maxAttempts: 4,
-                    });
-                } else {
-                    const p = player.play() as unknown;
-                    if (p && typeof (p as Promise<void>).catch === 'function') {
-                        (p as Promise<void>).catch(() => {});
-                    }
-                }
-            } else if (!autoPlay && player.playing) {
-                try { player.pause(); } catch {}
-            }
-        };
-        if (playerReadyRef.current) handleReady();
-        else player.once('ready', handleReady);
-
-        return () => {
-            isMounted = false;
-            if (autoplayDisposer.current) {
-                autoplayDisposer.current();
-                autoplayDisposer.current = null;
-            }
-            player.off('ready', handleReady);
-            if (player.playing) try { player.pause(); } catch {}
-        };
-    } else {
-        setIsLoading(false);
-    }
-  }, [autoPlay, isLoading]);
-
-
   return (
-    <div className="relative w-full h-full">
-      <div ref={containerRef} className="relative w-full h-full">
+    <div className="absolute inset-0 bg-black">
+      <div ref={containerRef} className="w-full h-full">
          {/* Plyr will be injected here */}
       </div>
+      {isLoading && (
+        <div className="absolute inset-0 flex items-center justify-center bg-black/40 pointer-events-none">
+          <Preloader />
+        </div>
+      )}
     </div>
   );
 });

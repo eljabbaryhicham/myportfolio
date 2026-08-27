@@ -1,10 +1,7 @@
-
 'use client';
 import { useEffect, useRef, useState, forwardRef, useImperativeHandle } from 'react';
 import Preloader from './preloader';
 import { useToast } from '@/hooks/use-toast';
-import { useIsMobile } from '@/hooks/use-mobile';
-import { forceAutoplay } from '@/lib/video-autoplay';
 
 // Make Clappr available on the window object for type safety
 declare global {
@@ -23,14 +20,10 @@ interface CdnClapprPlayerProps {
 const CdnClapprPlayer = forwardRef(function CdnClapprPlayer({ source, poster, autoPlay = true, watermark }: CdnClapprPlayerProps, ref) {
   const playerContainerRef = useRef<HTMLDivElement>(null);
   const playerRef = useRef<any>(null);
-  const autoplayDisposer = useRef<(() => void) | null>(null);
   const [containerId] = useState(() => `cdn-clappr-player-${Math.random().toString(36).substring(7)}`);
   
   const [isLoading, setIsLoading] = useState(true);
-  const spinnerPollRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const spinnerSafetyRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const { toast } = useToast();
-  const isMobile = useIsMobile();
 
   useEffect(() => {
     let isMounted = true;
@@ -41,21 +34,9 @@ const CdnClapprPlayer = forwardRef(function CdnClapprPlayer({ source, poster, au
       setIsLoading(true);
 
       try {
-        // Clappr core is a UMD bundle: importing it registers window.Clappr.
-        // Progressive mp4/webm uses Clappr's built-in HTML5 playback, so no
-        // external plugins are required (avoids cross-core-version breakage).
         await import('@clappr/player');
         if (!isMounted || !window.Clappr) return;
-
-        const isHlsSource = source.includes('.m3u8');
-
         if (!isMounted || !container) return;
-
-        const plugins: any[] = [];
-
-        const playerButtons = isMobile
-          ? ['play', 'pip', 'fullscreen']
-          : ['play', 'volume', 'pip', 'fullscreen'];
 
         const newPlayer = new window.Clappr.Player({
             parentId: `#${container.id}`,
@@ -63,22 +44,22 @@ const CdnClapprPlayer = forwardRef(function CdnClapprPlayer({ source, poster, au
             poster,
             width: '100%',
             height: '100%',
-            // Autoplay is driven by forceAutoplay() in wireVideoElement (handles
-            // mobile muted+playsinline+retry). Disable Clappr's built-in
-            // autoplay so there's a single, conflict-free autoplay driver.
-            autoPlay: false,
-            volume: 10,
+            autoPlay: autoPlay,
+            mute: autoPlay,
+            volume: 100,
             watermark: watermark || '',
             watermarkLink: undefined,
             clickToToggle: true,
             playback: {
               playInline: true,
             },
-            plugins: plugins,
             mediacontrol: {
-              buttons: playerButtons,
+              buttons: ['play', 'volume', 'fullscreen'],
             },
             events: {
+              onReady: () => {
+                if (isMounted) setIsLoading(false);
+              },
               onError: (e: any) => {
                 if (isMounted) {
                   setIsLoading(false);
@@ -90,55 +71,13 @@ const CdnClapprPlayer = forwardRef(function CdnClapprPlayer({ source, poster, au
         
         playerRef.current = newPlayer;
 
-        // Hide the preloader only when a video frame is actually PRESENTED on
-        // screen. Data events (loadeddata/canplay) fire before the frame is
-        // painted, which left a black gap between spinner and picture.
-        const settleSpinner = () => {
-          if (spinnerPollRef.current) { clearInterval(spinnerPollRef.current); spinnerPollRef.current = null; }
-          if (spinnerSafetyRef.current) { clearTimeout(spinnerSafetyRef.current); spinnerSafetyRef.current = null; }
-          if (isMounted) setIsLoading(false);
-        };
-        let settled = false;
-        const done = () => {
-          if (settled || !isMounted) return;
-          settled = true;
-          settleSpinner();
-          // Autoplay must begin muted (mobile policy); once playback is running,
-          // un-mute so the video plays WITH sound on mobile. NB: player.unmute()
-          // is a no-op in the installed Clappr build, and mute is driven by the
-          // volume control (volume > 0 sets el.muted = false), so we set volume
-          // to give sound reliably (and it survives any media-control re-mute).
-          try { newPlayer.setVolume(100); } catch (e) { /* ignore */ }
-        };
-        const wireVideoElement = (): boolean => {
-          const video = container.querySelector('video');
-          if (!video) return false;
-          // iOS/Android require playsinline to autoplay inline (otherwise the
-          // browser blocks it). Set on ALL platforms — harmless on desktop.
-          video.setAttribute('playsinline', '');
-          video.setAttribute('webkit-playsinline', '');
-          // If autoplaying, drive it via forceAutoplay (sets muted property +
-          // playsinline + retries until the source is ready) so mobile browsers
-          // actually start playback. Store the disposer for cleanup.
-          if (autoPlay && isMounted) {
-            autoplayDisposer.current = forceAutoplay(video, {
-              onPlaying: done,
-            });
-          }
-          // Wait for the video to actually start playing before hiding preloader
-          video.addEventListener('playing', done, { once: true });
-          spinnerSafetyRef.current = setTimeout(done, 10000);
-          return true;
-        };
-        if (!wireVideoElement() && isMounted) {
-          // Clappr injects the <video> tag asynchronously — poll briefly.
-          spinnerPollRef.current = setInterval(() => {
-            if (wireVideoElement() || !isMounted) {
-              if (spinnerPollRef.current) clearInterval(spinnerPollRef.current);
-              spinnerPollRef.current = null;
-            }
-          }, 200);
-        }
+        // Hide preloader when video actually starts playing (frame presented)
+        // Fallback: ready event already hides it
+        try {
+          newPlayer.on(window.Clappr.Events.PLAYER_PLAY, () => {
+            if (isMounted) setIsLoading(false);
+          });
+        } catch {}
 
       } catch (error: any) {
         console.error(error);
@@ -158,18 +97,6 @@ const CdnClapprPlayer = forwardRef(function CdnClapprPlayer({ source, poster, au
 
     return () => {
       isMounted = false;
-      if (autoplayDisposer.current) {
-        autoplayDisposer.current();
-        autoplayDisposer.current = null;
-      }
-      if (spinnerPollRef.current) {
-        clearInterval(spinnerPollRef.current);
-        spinnerPollRef.current = null;
-      }
-      if (spinnerSafetyRef.current) {
-        clearTimeout(spinnerSafetyRef.current);
-        spinnerSafetyRef.current = null;
-      }
       const player = playerRef.current;
       if (player) {
         try {
@@ -184,26 +111,20 @@ const CdnClapprPlayer = forwardRef(function CdnClapprPlayer({ source, poster, au
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [source]); 
 
-  // Effect to control playback based on autoPlay prop
-  // NOTE: autoplay is driven by forceAutoplay() inside wireVideoElement above
-  // (it handles mobile muted+playsinline+retry). A previous separate effect
-  // here re-ran player.play() on every isLoading change, fighting both Clappr's
-  // own autoPlay and forceAutoplay — that redundant conflicting loop was removed.
-
   useImperativeHandle(ref, () => ({ isLoading }), [isLoading]);
 
   return (
-    // Deterministic box (16:9) instead of h-full: h-full could resolve to the
-    // page height while Clappr measures at init (dialog not yet laid out),
-    // which stretched the <video> to fill the whole page — the "black screen".
-    // aspect-ratio gives a real pixel box regardless of parent layout timing,
-    // and the outer div is always clamped by the media's aspect-video wrapper.
-    <div className="w-full relative bg-black">
+    <div className="absolute inset-0 bg-black">
       <div
         id={containerId}
         ref={playerContainerRef}
-        className="absolute inset-0"
+        className="w-full h-full"
       />
+      {isLoading && (
+        <div className="absolute inset-0 flex items-center justify-center bg-black/40 pointer-events-none">
+          <Preloader />
+        </div>
+      )}
     </div>
   );
 });
