@@ -12,7 +12,7 @@ import { NextResponse, type NextRequest } from 'next/server';
 // symptom. Media and embeds must be explicitly allowlisted.
 const CSP =
   `default-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; object-src 'none'; ` +
-  `script-src 'self' 'unsafe-inline' https://va.vercel-scripts.com https://cdn.jsdelivr.net; ` +
+  `script-src 'self' 'unsafe-inline' 'unsafe-eval' https://va.vercel-scripts.com https://cdn.jsdelivr.net; ` +
   `style-src 'self' 'unsafe-inline'; font-src 'self' data:; ` +
   `img-src 'self' data: https:; ` +
   `media-src 'self' https://res.cloudinary.com https://*.public.blob.vercel-storage.com https://*.vercel-storage.com https://i.imgur.com https://picsum.photos https://files.catbox.moe https://portfolio-hicham-ten.vercel.app blob:; ` +
