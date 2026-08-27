@@ -229,8 +229,8 @@ const PlyrPlayer = forwardRef(({ source, poster, autoPlay = true, thumbnailVttUr
          {/* Plyr will be injected here */}
       </div>
       {watermark && (
-        <div className="absolute top-2 right-2 w-12 h-12 md:w-16 md:h-16 pointer-events-none opacity-60 z-20">
-          <img src={watermark} alt="watermark" className="w-full h-full object-contain drop-shadow-md" loading="lazy" />
+        <div className="absolute pointer-events-none z-20" style={{ bottom: '10px', right: '42px', width: '12%', minWidth: '70px', maxWidth: '200px', textAlign: 'center' }}>
+          <img src={watermark} alt="watermark" style={{ maxWidth: '100%' }} loading="lazy" />
         </div>
       )}
       {isLoading && (
