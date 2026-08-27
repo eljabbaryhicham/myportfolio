@@ -353,20 +353,20 @@ export default function HomeAdmin() {
                 {t('homeAdmin.description')}
             </p>
         </div>
-        <div className="flex-1 border rounded-lg overflow-hidden glass-effect">
-            <ScrollArea className="h-full">
-                <div className="p-6">
-                    <Form {...form}>
-                        <div className="space-y-8 max-w-2xl mx-auto">
-                            <fieldset disabled={!canEditHome} className="group">
-                                <Tabs value={homeTab} onValueChange={(v) => setHomeTab(v as any)} className="space-y-4">
-                                <TabsList className="flex flex-wrap sticky top-0 z-10 glass-effect">
+        <Tabs value={homeTab} onValueChange={(v) => setHomeTab(v as any)} className="flex-1 flex flex-col min-h-0">
+            <TabsList className="flex flex-wrap glass-effect mb-4">
                                     <TabsTrigger value="appearance" className="px-3 py-1.5 text-sm glass-effect data-[state=active]:bg-destructive">{t('homeAdmin.tab.appearance') || 'Appearance'}</TabsTrigger>
                                     <TabsTrigger value="backgrounds" className="px-3 py-1.5 text-sm glass-effect data-[state=active]:bg-destructive">{t('homeAdmin.tab.backgrounds') || 'Backgrounds'}</TabsTrigger>
                                     <TabsTrigger value="player" className="px-3 py-1.5 text-sm glass-effect data-[state=active]:bg-destructive">{t('homeAdmin.tab.player') || 'Player & Global'}</TabsTrigger>
                                     <TabsTrigger value="preloader" className="px-3 py-1.5 text-sm glass-effect data-[state=active]:bg-destructive">{t('homeAdmin.tab.preloader') || 'Preloader'}</TabsTrigger>
                                     <TabsTrigger value="email" className="px-3 py-1.5 text-sm glass-effect data-[state=active]:bg-destructive">{t('homeAdmin.tab.email') || 'Email'}</TabsTrigger>
                                 </TabsList>
+                                <div className="flex-1 border rounded-lg overflow-hidden glass-effect">
+                                    <ScrollArea className="h-full">
+                                        <div className="p-6">
+                                            <Form {...form}>
+                                                <fieldset disabled={!canEditHome} className="group">
+                                                    <div className="space-y-8 max-w-2xl mx-auto">
                                 <TabsContent value="appearance" className="m-0 space-y-4">
                                 {/* Homepage Appearance */}
                                 <div className="space-y-4 p-4 rounded-lg border glass-effect">
@@ -1307,13 +1307,13 @@ export default function HomeAdmin() {
                                     </div>
                                 </div>
                                 </TabsContent>
-                                </Tabs>
-                            </fieldset>
+                                    </div>
+                                </fieldset>
+                            </Form>
                         </div>
-                    </Form>
+                    </ScrollArea>
                 </div>
-            </ScrollArea>
-        </div>
+                </Tabs>
         <UnifiedMediaPicker
           isOpen={isLibraryOpen}
           onOpenChange={setIsLibraryOpen}
