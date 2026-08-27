@@ -38,6 +38,15 @@ const UnifiedMediaPicker = dynamic(() => import('@/features/admin/components/Uni
 import { useTranslation } from '@/lib/i18n/useTranslation';
 import { SUPERADMIN_EMAIL } from '@/lib/constants';
 import { cleanVideoUrl } from '@/lib/video';
+function getWatermarkPositionStyle(position: string) {
+  switch(position) {
+    case 'top-left': return { top: '10px', left: '10px' } as const;
+    case 'top-right': return { top: '10px', right: '10px' } as const;
+    case 'bottom-left': return { bottom: '10px', left: '10px' } as const;
+    case 'bottom-right':
+    default: return { bottom: '10px', right: '42px' } as const;
+  }
+}
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeRaw from 'rehype-raw';
@@ -72,11 +81,17 @@ function LazyDetailsVideo({
   poster,
   playerType,
   watermark,
+  watermarkSize,
+  watermarkOpacity,
+  watermarkPosition,
 }: {
   videoSrc: string;
   poster?: string;
   playerType?: 'plyr' | 'clappr';
   watermark?: string;
+  watermarkSize?: number;
+  watermarkOpacity?: number;
+  watermarkPosition?: string;
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const playerRef = useRef<any>(null);
@@ -160,7 +175,7 @@ function LazyDetailsVideo({
         )}
       </Suspense>
       {watermark && (
-        <div className="absolute pointer-events-none z-20" style={{ bottom: '10px', right: '42px', width: '12%', minWidth: '70px', maxWidth: '200px', textAlign: 'center' }}>
+        <div className="absolute pointer-events-none z-20" style={{ ...getWatermarkPositionStyle(watermarkPosition || 'bottom-right'), width: `${watermarkSize ?? 12}%`, minWidth: '50px', maxWidth: '250px', textAlign: 'center', opacity: (watermarkOpacity ?? 70) / 100 }}>
           <img src={watermark} alt="watermark" style={{ maxWidth: '100%' }} loading="lazy" />
         </div>
       )}
@@ -178,6 +193,9 @@ const ProjectDetailsContent = memo(function ProjectDetailsContent({
   mediaWidth,
   showMediaTitles = true,
   watermark,
+  watermarkSize,
+  watermarkOpacity,
+  watermarkPosition,
 }: {
   details: string;
   playerType?: 'plyr' | 'clappr';
@@ -185,6 +203,9 @@ const ProjectDetailsContent = memo(function ProjectDetailsContent({
   mediaWidth?: number;
   showMediaTitles?: boolean;
   watermark?: string;
+  watermarkSize?: number;
+  watermarkOpacity?: number;
+  watermarkPosition?: string;
 }) {
   const normalizedDetails = useMemo(() => normalizeSelfClosingMedia(details), [details]);
   const widthPercent = mediaWidth && mediaWidth < 100 ? `${mediaWidth}%` : '100%';
@@ -240,7 +261,7 @@ const ProjectDetailsContent = memo(function ProjectDetailsContent({
           <div
             className="details-video-frame relative aspect-video overflow-hidden rounded-md bg-black [&>*]:absolute [&>*]:inset-0"
           >
-            <LazyDetailsVideo videoSrc={videoSrc} poster={poster} playerType={playerType} watermark={watermark} />
+            <LazyDetailsVideo videoSrc={videoSrc} poster={poster} playerType={playerType} watermark={watermark} watermarkSize={watermarkSize} watermarkOpacity={watermarkOpacity} watermarkPosition={watermarkPosition} />
           </div>
         </div>
       );
@@ -311,6 +332,9 @@ const MemoizedPortfolioMedia = memo(({
   item,
   onFullscreenClick,
   watermark,
+  watermarkSize,
+  watermarkOpacity,
+  watermarkPosition,
   playerType,
   autoPlay,
   plyrRef,
@@ -319,6 +343,9 @@ const MemoizedPortfolioMedia = memo(({
   item: PortfolioItem;
   onFullscreenClick: (url: string) => void;
   watermark?: string;
+  watermarkSize?: number;
+  watermarkOpacity?: number;
+  watermarkPosition?: string;
   playerType?: 'plyr' | 'clappr';
   autoPlay: boolean;
   plyrRef: React.Ref<any>;
@@ -411,7 +438,7 @@ const MemoizedPortfolioMedia = memo(({
           )
         )}
         {watermark && (
-          <div className="absolute pointer-events-none z-20" style={{ bottom: '10px', right: '42px', width: '12%', minWidth: '70px', maxWidth: '200px', textAlign: 'center' }}>
+          <div className="absolute pointer-events-none z-20" style={{ ...getWatermarkPositionStyle(watermarkPosition || 'bottom-right'), width: `${watermarkSize ?? 12}%`, minWidth: '50px', maxWidth: '250px', textAlign: 'center', opacity: (watermarkOpacity ?? 70) / 100 }}>
             <img src={watermark} alt="watermark" style={{ maxWidth: '100%' }} loading="lazy" />
           </div>
         )}
@@ -1037,6 +1064,10 @@ function WorkPageContent() {
 
   const logoUrl = homeSettings?.homePageLogoUrl || contactInfo?.logoUrl;
   const workPagePlayer = homeSettings?.workPagePlayer || 'clappr';
+  const watermarkLogoUrl = homeSettings?.watermarkLogoUrl || homeSettings?.homePageLogoUrl || contactInfo?.logoUrl || '';
+  const watermarkSize = homeSettings?.watermarkSize ?? 12;
+  const watermarkOpacity = homeSettings?.watermarkOpacity ?? 70;
+  const watermarkPosition = homeSettings?.watermarkPosition || 'bottom-right';
 
   return (
     <>
@@ -1214,7 +1245,10 @@ function WorkPageContent() {
                                 <MemoizedPortfolioMedia
                                    item={selectedItem}
                                    onFullscreenClick={setFullscreenImageUrl}
-                                   watermark={logoUrl}
+                                   watermark={watermarkLogoUrl}
+                                   watermarkSize={watermarkSize}
+                                   watermarkOpacity={watermarkOpacity}
+                                   watermarkPosition={watermarkPosition}
                                    playerType={workPagePlayer}
                                    autoPlay={!isDialogOpen}
                                    plyrRef={plyrRef}
@@ -1283,7 +1317,7 @@ function WorkPageContent() {
                 </DialogHeader>
                 <ScrollArea className="flex-1 min-w-0 [&>div>div]:!block [&>div>div]:min-w-0 [&>div>div]:w-full">
                     <div className="project-details prose prose-sm sm:prose-base dark:prose-invert max-w-full w-full min-w-0 overflow-hidden break-words space-y-4 text-xs sm:text-sm text-foreground/80 p-3 sm:p-4 md:p-6 box-border prose-p:my-2 prose-p:leading-relaxed prose-headings:break-words prose-h1:text-lg sm:prose-h1:text-xl prose-h2:text-base sm:prose-h2:text-lg prose-h3:text-sm sm:prose-h3:text-base prose-li:text-xs sm:prose-li:text-sm prose-a:break-all">
-                        <ProjectDetailsContent details={selectedItem.details || ''} playerType={workPagePlayer} onImageFullscreen={setFullscreenImageUrl} mediaWidth={homeSettings?.mediaWidth} showMediaTitles={homeSettings?.showMediaTitles ?? true} watermark={logoUrl} />
+                        <ProjectDetailsContent details={selectedItem.details || ''} playerType={workPagePlayer} onImageFullscreen={setFullscreenImageUrl} mediaWidth={homeSettings?.mediaWidth} showMediaTitles={homeSettings?.showMediaTitles ?? true} watermark={watermarkLogoUrl} watermarkSize={watermarkSize} watermarkOpacity={watermarkOpacity} watermarkPosition={watermarkPosition} />
                     </div>
                 </ScrollArea>
                  <DialogClose className={cn(

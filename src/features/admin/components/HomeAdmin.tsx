@@ -91,6 +91,10 @@ interface HomePageSettings {
     glassColor?: string;
     navButtonSize?: number;
     provider?: 'cloudinary' | 'vercel_blob';
+    watermarkLogoUrl?: string;
+    watermarkSize?: number;
+    watermarkOpacity?: number;
+    watermarkPosition?: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
 }
 
 const settingsSchema = z.object({
@@ -131,6 +135,10 @@ const settingsSchema = z.object({
   glassColor: z.string().optional(),
   navButtonSize: z.number().min(28).max(64).optional(),
   provider: z.enum(['cloudinary', 'vercel_blob']).optional(),
+  watermarkLogoUrl: z.string().optional(),
+  watermarkSize: z.number().min(5).max(30).optional(),
+  watermarkOpacity: z.number().min(0).max(100).optional(),
+  watermarkPosition: z.enum(['top-left', 'top-right', 'bottom-left', 'bottom-right']).optional(),
 });
 
 type SettingsFormValues = z.infer<typeof settingsSchema>;
@@ -167,7 +175,7 @@ export default function HomeAdmin() {
   const { data: mediaAssets, isLoading: isLoadingMedia } = useCollection<MediaAsset>(mediaCollection);
 
   const [isLibraryOpen, setIsLibraryOpen] = useState(false);
-  const [libraryField, setLibraryField] = useState<'homePageLogoUrl' | 'menubarLogoUrl' | 'heroVideoUrl' | 'preloaderUrl' | 'cursorLottieUrl' | 'tickLottieUrl' | 'arrowLottieUrl' | 'faviconUrl' | 'homePageBackgroundUrl' | 'websiteBackgroundUrl' | null>(null);
+  const [libraryField, setLibraryField] = useState<'homePageLogoUrl' | 'menubarLogoUrl' | 'heroVideoUrl' | 'preloaderUrl' | 'cursorLottieUrl' | 'tickLottieUrl' | 'arrowLottieUrl' | 'faviconUrl' | 'homePageBackgroundUrl' | 'websiteBackgroundUrl' | 'watermarkLogoUrl' | null>(null);
   const [libraryTab, setLibraryTab] = useState<'images' | 'videos' | 'files'>('images');
   const [libraryCollection, setLibraryCollection] = useState<'primary' | 'extented'>('primary');
   const [isEmailPreviewOpen, setIsEmailPreviewOpen] = useState(false);
@@ -214,6 +222,10 @@ export default function HomeAdmin() {
       glassColor: '#000000',
       navButtonSize: 40,
       provider: 'cloudinary',
+      watermarkLogoUrl: '',
+      watermarkSize: 12,
+      watermarkOpacity: 70,
+      watermarkPosition: 'bottom-right' as const,
     },
   });
 
@@ -260,6 +272,10 @@ export default function HomeAdmin() {
         glassColor: homeSettings.glassColor || '#000000',
         navButtonSize: homeSettings.navButtonSize || 40,
         provider: homeSettings.provider || 'cloudinary',
+        watermarkLogoUrl: homeSettings.watermarkLogoUrl || '',
+        watermarkSize: homeSettings.watermarkSize ?? 12,
+        watermarkOpacity: homeSettings.watermarkOpacity ?? 70,
+        watermarkPosition: homeSettings.watermarkPosition || 'bottom-right',
       });
     }
   }, [homeSettings, form]);
@@ -901,6 +917,99 @@ export default function HomeAdmin() {
                                         </FormItem>
                                       )}
                                     />
+                                    <Separator />
+                                    <div className="space-y-4 p-3 rounded-lg border bg-muted/20">
+                                        <h4 className="font-medium text-sm">Video Watermark</h4>
+                                        <FormField
+                                            control={control}
+                                            name="watermarkLogoUrl"
+                                            render={({ field }) => (
+                                                <FormItem>
+                                                    <FormLabel>Watermark Logo</FormLabel>
+                                                    <div className="flex items-center gap-2">
+                                                        <FormControl>
+                                                            <Input placeholder="https://example.com/watermark.png or pick from library" {...field} className="flex-1" />
+                                                        </FormControl>
+                                                        <Button type="button" variant="outline" size="icon" onClick={() => { setLibraryField('watermarkLogoUrl'); setLibraryTab('images'); setIsLibraryOpen(true); }}>
+                                                            <FontAwesomeIcon icon={faImages} />
+                                                        </Button>
+                                                    </div>
+                                                    <FormDescription>Logo shown on all videos (Plyr & Clappr unified). Leave empty to hide.</FormDescription>
+                                                    <FormMessage />
+                                                </FormItem>
+                                            )}
+                                        />
+                                        <FormField
+                                            control={control}
+                                            name="watermarkSize"
+                                            render={({ field }) => (
+                                                <FormItem>
+                                                    <FormLabel>Watermark Size — {field.value ?? 12}%</FormLabel>
+                                                    <FormControl>
+                                                        <div className="flex items-center gap-3">
+                                                            <Slider
+                                                                className="flex-1"
+                                                                min={5}
+                                                                max={30}
+                                                                step={1}
+                                                                value={[field.value ?? 12]}
+                                                                onValueChange={(v) => field.onChange(v[0])}
+                                                            />
+                                                            <span className="w-12 text-center text-sm font-mono">{field.value ?? 12}%</span>
+                                                        </div>
+                                                    </FormControl>
+                                                    <FormDescription>Width as % of video (12% = default, 5% small, 30% large).</FormDescription>
+                                                    <FormMessage />
+                                                </FormItem>
+                                            )}
+                                        />
+                                        <FormField
+                                            control={control}
+                                            name="watermarkOpacity"
+                                            render={({ field }) => (
+                                                <FormItem>
+                                                    <FormLabel>Watermark Opacity — {field.value ?? 70}%</FormLabel>
+                                                    <FormControl>
+                                                        <div className="flex items-center gap-3">
+                                                            <Slider
+                                                                className="flex-1"
+                                                                min={10}
+                                                                max={100}
+                                                                step={5}
+                                                                value={[field.value ?? 70]}
+                                                                onValueChange={(v) => field.onChange(v[0])}
+                                                            />
+                                                            <span className="w-12 text-center text-sm font-mono">{field.value ?? 70}%</span>
+                                                        </div>
+                                                    </FormControl>
+                                                    <FormMessage />
+                                                </FormItem>
+                                            )}
+                                        />
+                                        <FormField
+                                            control={control}
+                                            name="watermarkPosition"
+                                            render={({ field }) => (
+                                                <FormItem>
+                                                    <FormLabel>Watermark Position</FormLabel>
+                                                    <Select onValueChange={field.onChange} value={field.value || 'bottom-right'}>
+                                                        <FormControl>
+                                                            <SelectTrigger>
+                                                                <SelectValue placeholder="Select position" />
+                                                            </SelectTrigger>
+                                                        </FormControl>
+                                                        <SelectContent>
+                                                            <SelectItem value="top-left">Top Left</SelectItem>
+                                                            <SelectItem value="top-right">Top Right</SelectItem>
+                                                            <SelectItem value="bottom-left">Bottom Left</SelectItem>
+                                                            <SelectItem value="bottom-right">Bottom Right</SelectItem>
+                                                        </SelectContent>
+                                                    </Select>
+                                                    <FormMessage />
+                                                </FormItem>
+                                            )}
+                                        />
+                                    </div>
                                     <Separator />
                                      <FormField
                                         control={control}

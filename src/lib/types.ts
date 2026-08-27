@@ -27,4 +27,8 @@ export interface HomePageSettings {
     showMediaTitles?: boolean;
     glassColor?: string;
     isTestPageEnabled?: boolean;
+    watermarkLogoUrl?: string;
+    watermarkSize?: number;
+    watermarkOpacity?: number;
+    watermarkPosition?: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
 }
