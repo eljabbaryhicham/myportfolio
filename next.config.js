@@ -34,28 +34,11 @@ const nextConfig = {
       },
     ],
   },
-  async headers() {
-    return [
-      {
-        source: '/_next/static/(.*)',
-        headers: [
-          {
-            key: 'Cache-Control',
-            value: 'public, max-age=31536000, immutable',
-          },
-        ],
-      },
-      {
-        source: '/api/(.*)',
-        headers: [
-          {
-            key: 'Cache-Control',
-            value: 'no-store',
-          },
-        ],
-      },
-    ];
-  },
+  // NOTE: Vercel will warn if routes set their own Cache-Control, because it
+  // overrides Vercel's managed caching for static/ISR content. We intentionally
+  // do NOT set Cache-Control here:
+  //   - /_next/static already gets immutable caching by default.
+  //   - All API routes are POST (mutating) and Vercel never caches POST.
   env: {
     NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME_1: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME_1,
     NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET_1: process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET_1,
