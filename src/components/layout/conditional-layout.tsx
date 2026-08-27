@@ -100,8 +100,9 @@ export function ConditionalLayout({ children }: { children: React.ReactNode }) {
   return (
     <>
       <AboutPrefetch />
+      <a href="#main-content" className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[100] focus:px-4 focus:py-2 focus:bg-primary focus:text-primary-foreground focus:rounded-md">Skip to content</a>
       <div className={cn("w-full force-gpu", isHomePage ? "flex flex-col p-2 homepage-shell-fix" : "flex h-full flex-col md:flex-row md:p-2")}>
-      <main className={cn("flex-1 min-h-0 flex flex-col", isHomePage ? "w-full" : "w-full px-2 pt-2 pb-0 md:p-2")}>
+      <main id="main-content" className={cn("flex-1 min-h-0 flex flex-col", isHomePage ? "w-full" : "w-full px-2 pt-2 pb-0 md:p-2")}>
         <div className={cn("w-full min-h-0 flex flex-col overflow-hidden", isHomePage ? "h-full glass-effect rounded-lg border border-border/50" : "flex-1 glass-effect rounded-lg border border-border/50")}>
           {isHomePage ? (
             <div ref={homeScrollRef} className="h-full w-full overflow-auto">

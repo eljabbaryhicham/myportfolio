@@ -3,6 +3,8 @@ const nextConfig = {
   /* config options here */
 
   images: {
+    formats: ['image/avif', 'image/webp'],
+    minimumCacheTTL: 31536000,
     remotePatterns: [
       {
         protocol: 'https',
@@ -33,6 +35,9 @@ const nextConfig = {
         hostname: '*.vercel-storage.com',
       },
     ],
+  },
+  experimental: {
+    optimizePackageImports: ['lucide-react', 'recharts', '@radix-ui/react-dialog', '@radix-ui/react-tabs', '@radix-ui/react-select', 'framer-motion', 'embla-carousel-react'],
   },
   // NOTE: Vercel will warn if routes set their own Cache-Control, because it
   // overrides Vercel's managed caching for static/ISR content. We intentionally

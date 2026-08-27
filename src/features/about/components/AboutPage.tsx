@@ -49,15 +49,23 @@ const services = [
 
 const MemoizedImage = memo(Image);
 
+function cloudinaryOptimized(url: string) {
+  if (!url || !url.includes('res.cloudinary.com')) return url;
+  if (url.includes('f_auto')) return url;
+  return url.replace('/upload/', '/upload/f_auto,q_auto/');
+}
+
 const ClientLogo = ({ client }: { client: Client }) => (
     <div 
       className="relative mx-8 flex-shrink-0 basis-1/5 group"
     >
         <MemoizedImage
-            src={client.logoUrl}
+            src={cloudinaryOptimized(client.logoUrl)}
             alt={client.name}
             width={128}
             height={40}
+            sizes="128px"
+            loading="lazy"
             className="object-contain h-10 w-32 grayscale brightness-0 invert transition-all duration-300 group-hover:grayscale-0 group-hover:brightness-100 group-hover:invert-0"
         />
     </div>

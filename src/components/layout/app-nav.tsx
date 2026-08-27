@@ -102,8 +102,10 @@ export function AppNav() {
       <div className="relative">
         <Link
           href={item.href}
+          aria-label={label}
+          aria-current={isActive ? "page" : undefined}
           className={cn(
-            "group relative flex items-center justify-center rounded-full transition-all duration-300",
+            "group relative flex items-center justify-center rounded-full transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
             isMobile ? 'h-[clamp(2.5rem,10vw,3rem)] w-[clamp(2.5rem,10vw,3rem)] aspect-square' : "",
             "text-white",
             isActive ? "" : (isSpecialButton ? "bg-cyan-500/80" : "glass-effect"),
@@ -167,7 +169,7 @@ export function AppNav() {
         <div className={cn(
           "flex h-[7vh] min-h-[60px] flex-row items-center justify-between rounded-lg border border-border/50 glass-effect px-2"
           )}>
-          <nav className="flex h-full flex-1 items-center justify-evenly px-2">
+          <nav aria-label="Primary" className="flex h-full flex-1 items-center justify-evenly px-2">
             {accessibleNavItems.map(renderNavItem)}
           </nav>
           <LanguageSwitcher />

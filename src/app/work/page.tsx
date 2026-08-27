@@ -535,11 +535,15 @@ const PortfolioGridItem = ({ item, onClick, onEditClick, isAdmin, isSuperAdmin, 
   return (
     <div className="p-[2px] rounded-lg glass-effect">
       <div
+        role="button"
+        tabIndex={0}
+        aria-label={`Open ${item.title}`}
         className={cn(
-          'group relative cursor-pointer overflow-hidden rounded-md transition-all duration-300 md:hover:scale-[1.02] aspect-square',
+          'group relative cursor-pointer overflow-hidden rounded-md transition-all duration-300 md:hover:scale-[1.02] aspect-square focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary',
           'bg-black/20'
         )}
         onClick={onClick}
+        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick(); } }}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
       >
@@ -1106,14 +1110,14 @@ function WorkPageContent() {
               </p>
             </div>
             <div className="flex flex-wrap justify-center gap-2 mb-4">
-              <Button variant={filter === 'all' ? 'destructive' : 'outline'} onClick={() => setFilter('all')}>
+              <Button aria-pressed={filter === 'all'} variant={filter === 'all' ? 'destructive' : 'outline'} onClick={() => setFilter('all')}>
                 {t('work.filter.all')}
               </Button>
-              <Button variant={filter === 'image' ? 'destructive' : 'outline'} onClick={() => setFilter('image')}>
+              <Button aria-pressed={filter === 'image'} variant={filter === 'image' ? 'destructive' : 'outline'} onClick={() => setFilter('image')}>
                 <FontAwesomeIcon icon={faPalette} className="mr-2 h-4 w-4" />
                 {t('work.filter.graphics')}
               </Button>
-              <Button variant={filter === 'video' ? 'destructive' : 'outline'} onClick={() => setFilter('video')}>
+              <Button aria-pressed={filter === 'video'} variant={filter === 'video' ? 'destructive' : 'outline'} onClick={() => setFilter('video')}>
                 <FontAwesomeIcon icon={faFilm} className="mr-2 h-4 w-4" />
                 {t('work.filter.animation')}
               </Button>
@@ -1320,7 +1324,7 @@ function WorkPageContent() {
             </motion.div>
             <DialogClose className={cn(
                 "absolute right-4 top-4 z-30 h-10 w-10 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center ring-offset-background transition-opacity focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 md:hover:opacity-100",
-                isMobile ? "opacity-70" : (isCloseButtonVisible ? "opacity-70" : "opacity-0")
+                isMobile ? "opacity-70" : (isCloseButtonVisible ? "opacity-70" : "opacity-0 focus:opacity-100 focus-visible:opacity-100")
             )}>
               <FontAwesomeIcon icon={faXmark} className="h-4 w-4" />
               <span className="sr-only">{t('work.details.close')}</span>
@@ -1347,7 +1351,7 @@ function WorkPageContent() {
                 </ScrollArea>
                  <DialogClose className={cn(
                     "absolute top-4 right-4 z-[101] h-10 w-10 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center md:hover:!opacity-100 ring-offset-background transition-opacity focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
-                    isMobile ? "opacity-70" : (isCloseButtonVisible ? "opacity-70" : "opacity-0")
+                    isMobile ? "opacity-70" : (isCloseButtonVisible ? "opacity-70" : "opacity-0 focus:opacity-100 focus-visible:opacity-100")
                   )}>
                     <FontAwesomeIcon icon={faXmark} className="h-5 w-5" />
                     <span className="sr-only">{t('work.details.close')}</span>
