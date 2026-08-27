@@ -74,6 +74,7 @@ export default function UnifiedMediaPicker({ isOpen, onOpenChange, onMediaSelect
   const { data: vercelBlobs, isLoading: isLoadingVercel } = useCollection<VercelBlobDoc>(vercelColRef as any);
 
   const handleSelect = (url: string, type: 'image' | 'video' | 'raw', filename: string) => {
+    setFormatChoiceAsset(null);
     onMediaSelect(url, type, filename);
     onOpenChange(false);
   };
