@@ -15,9 +15,9 @@ const CSP =
   `script-src 'self' 'unsafe-inline' https://va.vercel-scripts.com https://cdn.jsdelivr.net; ` +
   `style-src 'self' 'unsafe-inline'; font-src 'self' data:; ` +
   `img-src 'self' data: https:; ` +
-  `media-src 'self' https://res.cloudinary.com https://*.public.blob.vercel-storage.com blob:; ` +
+  `media-src 'self' https://res.cloudinary.com https://*.public.blob.vercel-storage.com https://*.vercel-storage.com https://i.imgur.com https://picsum.photos https://files.catbox.moe https://portfolio-hicham-ten.vercel.app blob:; ` +
   `frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com https://player.vimeo.com; ` +
-  `connect-src 'self' https://firestore.googleapis.com https://studio-8316917408-a299a.firebaseapp.com https://identitytoolkit.googleapis.com https://res.cloudinary.com https://api.cloudinary.com https://*.public.blob.vercel-storage.com https://cdn.plyr.io https://va.vercel-scripts.com https://static.cloudflareinsights.com; ` +
+  `connect-src 'self' https://firestore.googleapis.com https://studio-8316917408-a299a.firebaseapp.com https://identitytoolkit.googleapis.com https://res.cloudinary.com https://api.cloudinary.com https://*.public.blob.vercel-storage.com https://*.vercel-storage.com https://i.imgur.com https://picsum.photos https://files.catbox.moe https://portfolio-hicham-ten.vercel.app https://cdn.plyr.io https://va.vercel-scripts.com https://static.cloudflareinsights.com; ` +
   `worker-src 'self' blob:`;
 
 export function proxy(request: NextRequest) {

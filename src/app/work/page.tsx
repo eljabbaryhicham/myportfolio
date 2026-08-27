@@ -305,6 +305,7 @@ const MemoizedPortfolioMedia = memo(({
   playerType,
   autoPlay,
   plyrRef,
+  clapprRef,
 }: {
   item: PortfolioItem;
   onFullscreenClick: (url: string) => void;
@@ -312,6 +313,7 @@ const MemoizedPortfolioMedia = memo(({
   playerType?: 'plyr' | 'clappr';
   autoPlay: boolean;
   plyrRef: React.Ref<any>;
+  clapprRef?: React.Ref<any>;
 }) => {
   const { t } = useTranslation();
   const containerRef = useRef<HTMLDivElement>(null);
@@ -391,6 +393,7 @@ const MemoizedPortfolioMedia = memo(({
               />
           ) : (
               <MemoizedCdnClapprPlayer
+                  ref={clapprRef as any}
                   key={item.id}
                   source={playableSource || item.sourceUrl}
                   poster={videoPoster}
@@ -652,6 +655,7 @@ function WorkPageContent() {
   const isMobile = useIsMobile();
   const gridRef = useRef<HTMLDivElement>(null);
   const plyrRef = useRef<any>(null);
+  const clapprRef = useRef<any>(null);
   
   const [isLibraryOpen, setIsLibraryOpen] = useState(false);
   const [librarySelectionConfig, setLibrarySelectionConfig] = useState<{ onSelect: (url: string, type: 'image' | 'video' | 'raw', filename: string) => void } | null>(null);
@@ -724,11 +728,20 @@ function WorkPageContent() {
   }, [filter, itemsPerLoad]);
 
   useEffect(() => {
-    const player = plyrRef.current?.plyr;
-    if (player) {
-        if (isDialogOpen) {
-            player.pause();
-        }
+    const plyrPlayer = plyrRef.current?.plyr || plyrRef.current;
+    if (plyrPlayer) {
+        try { if (isDialogOpen && plyrPlayer.pause) plyrPlayer.pause(); } catch {}
+        try { if (isDialogOpen && plyrPlayer.plyr?.pause) plyrPlayer.plyr.pause(); } catch {}
+    }
+    const clapprPlayer = clapprRef.current;
+    if (clapprPlayer) {
+        try { 
+          if (isDialogOpen) {
+            if (typeof clapprPlayer.pause === 'function') clapprPlayer.pause();
+            else if (clapprPlayer.playerRef?.current?.pause) clapprPlayer.playerRef.current.pause();
+            else if (typeof clapprPlayer.isPlaying === 'function' && clapprPlayer.isPlaying()) clapprPlayer.pause();
+          }
+        } catch {}
     }
   }, [isDialogOpen]);
 
@@ -1186,13 +1199,14 @@ function WorkPageContent() {
                             {isClient && (
                               <Suspense fallback={null}>
                                 <MemoizedPortfolioMedia
-                                  item={selectedItem}
-                                  onFullscreenClick={setFullscreenImageUrl}
-                                  watermark={logoUrl}
-                                  playerType={workPagePlayer}
-                                  autoPlay={!isDialogOpen}
-                                  plyrRef={plyrRef}
-                                />
+                                   item={selectedItem}
+                                   onFullscreenClick={setFullscreenImageUrl}
+                                   watermark={logoUrl}
+                                   playerType={workPagePlayer}
+                                   autoPlay={!isDialogOpen}
+                                   plyrRef={plyrRef}
+                                   clapprRef={clapprRef}
+                                 />
                               </Suspense>
                             )}
                           </div>

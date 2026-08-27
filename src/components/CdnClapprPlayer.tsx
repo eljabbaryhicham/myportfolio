@@ -34,11 +34,16 @@ const CdnClapprPlayer = forwardRef(function CdnClapprPlayer({ source, poster, au
       setIsLoading(true);
 
       try {
-        await import('@clappr/player');
-        if (!isMounted || !window.Clappr) return;
+        const mod: any = await import('@clappr/player');
+        const Clappr = mod?.default || mod?.Clappr || (window as any).Clappr;
+        if (!isMounted || !Clappr) {
+          console.error('Clappr failed to load: module did not expose Clappr');
+          if (isMounted) setIsLoading(false);
+          return;
+        }
         if (!isMounted || !container) return;
 
-        const newPlayer = new window.Clappr.Player({
+        const newPlayer = new Clappr.Player({
             parentId: `#${container.id}`,
             source,
             poster,
@@ -78,9 +83,9 @@ const CdnClapprPlayer = forwardRef(function CdnClapprPlayer({ source, poster, au
         // This prevents preloader + controls appearing together over black screen.
         const hideOnPlay = () => { if (isMounted) setIsLoading(false); };
         try {
-          newPlayer.on(window.Clappr.Events.PLAYER_PLAY, hideOnPlay);
+          newPlayer.on(Clappr.Events.PLAYER_PLAY, hideOnPlay);
           // Fallback for HTML5 playback where PLAYER_PLAY may not fire before first frame
-          newPlayer.on(window.Clappr.Events.PLAYBACK_PLAY, hideOnPlay);
+          newPlayer.on(Clappr.Events.PLAYBACK_PLAY, hideOnPlay);
         } catch {}
         // Safety fallback if playing never fires (autoplay blocked or error)
         setTimeout(() => { if (isMounted) setIsLoading(false); }, 8000);
@@ -114,8 +119,20 @@ const CdnClapprPlayer = forwardRef(function CdnClapprPlayer({ source, poster, au
       }
       playerRef.current = null;
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [source]); 
+  }, [source]);
+
+  useEffect(() => {
+    const player = playerRef.current;
+    if (!player) return;
+    try {
+      if (autoPlay) {
+        // Try to play if autoPlay became true (e.g., dialog closed)
+        if (typeof player.play === 'function' && !player.isPlaying?.()) player.play();
+      } else {
+        if (typeof player.pause === 'function') player.pause();
+      }
+    } catch {}
+  }, [autoPlay]);
 
   useImperativeHandle(ref, () => ({ isLoading }), [isLoading]);
 
