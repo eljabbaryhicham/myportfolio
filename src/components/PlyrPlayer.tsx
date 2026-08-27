@@ -192,6 +192,25 @@ const PlyrPlayer = forwardRef(({ source, poster, autoPlay = true, thumbnailVttUr
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [source, poster, isMobile]);
 
+  // Pause/resume when detail/contact dialog opens/closes — restores the
+  // "pause video when open detail or contact" option that was lost during
+  // the hard reset. The outer work/page.tsx also toggles autoPlay prop,
+  // but this internal handler guarantees pause even if ref wiring is stale.
+  useEffect(() => {
+    const player = playerRef.current;
+    if (!player) return;
+    try {
+      if (autoPlay) {
+        if (!player.playing) {
+          const p = (player.play() as unknown) as Promise<void> | void;
+          if (p && typeof (p as Promise<void>).catch === 'function') (p as Promise<void>).catch(() => {});
+        }
+      } else {
+        if (player.playing) player.pause();
+      }
+    } catch {}
+  }, [autoPlay]);
+
   return (
     <div className="absolute inset-0 bg-black">
       <div ref={containerRef} className="w-full h-full">
