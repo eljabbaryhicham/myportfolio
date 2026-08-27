@@ -4,7 +4,6 @@
 import { useEffect, useRef } from 'react';
 import { usePathname } from 'next/navigation';
 import { AppNav } from './app-nav';
-import { LanguageSwitcher } from './language-switcher';
 import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
 
@@ -113,8 +112,6 @@ export function ConditionalLayout({ children }: { children: React.ReactNode }) {
         </div>
       </main>
       {!isHomePage && <AppNav />}
-      {/* Floating language switch — fixed corner pill, beside the menu */}
-      <LanguageSwitcher className="fixed z-50 bottom-4 left-4" />
     </div>
   );
 }

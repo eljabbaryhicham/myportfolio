@@ -14,6 +14,7 @@ import Logo from "../logo";
 import { doc } from "firebase/firestore";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useLanguage } from "@/components/layout/language-switcher";
+import { LanguageSwitcher } from "@/components/layout/language-switcher";
 import translations from "@/lib/i18n/translations";
 
 const navItems = [
@@ -166,9 +167,10 @@ export function AppNav() {
         <div className={cn(
           "flex h-[7vh] min-h-[60px] flex-row items-center justify-between rounded-lg border border-border/50 glass-effect"
           )}>
-          <nav className="flex h-full flex-1 items-center justify-evenly px-[4vw]">
+          <nav className="flex h-full flex-1 items-center justify-evenly px-2">
             {accessibleNavItems.map(renderNavItem)}
           </nav>
+          <LanguageSwitcher className="px-2 mr-1" />
         </div>
       </motion.div>
     );
@@ -208,8 +210,10 @@ export function AppNav() {
         >
            {accessibleNavItems.map(renderNavItem)}
         </nav>
-        {/* Bottom spacer balances the logo slot so nav stays vertically centered */}
-        <div aria-hidden="true" className="hidden md:block h-8 w-8" />
+        {/* Language switch balances the logo slot on desktop */}
+        <div className="flex flex-col items-center gap-2">
+          <LanguageSwitcher />
+        </div>
       </div>
     </motion.aside>
   );
