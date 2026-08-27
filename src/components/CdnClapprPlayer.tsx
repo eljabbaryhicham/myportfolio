@@ -82,11 +82,24 @@ const CdnClapprPlayer = forwardRef(function CdnClapprPlayer({ source, poster, au
 
         // Hide preloader only when video frame is presented (playing), not onReady.
         // This prevents preloader + controls appearing together over black screen.
-        const hideOnPlay = () => { if (isMounted) setIsLoading(false); };
+        // Autoplay must start muted (browser policy) then unmute for sound.
+        const hideOnPlay = () => { 
+          if (isMounted) setIsLoading(false);
+          if (autoPlay) {
+            try { newPlayer.setVolume(100); } catch {}
+            try { 
+              const v = container.querySelector('video') as HTMLVideoElement | null;
+              if (v) { v.muted = false; v.removeAttribute('muted'); }
+            } catch {}
+          }
+        };
         try {
           newPlayer.on(Clappr.Events.PLAYER_PLAY, hideOnPlay);
           // Fallback for HTML5 playback where PLAYER_PLAY may not fire before first frame
           newPlayer.on(Clappr.Events.PLAYBACK_PLAY, hideOnPlay);
+          // Direct video element fallback — most reliable for autoplay-with-sound
+          const videoEl = container.querySelector('video') as HTMLVideoElement | null;
+          if (videoEl) videoEl.addEventListener('playing', hideOnPlay, { once: true });
         } catch {}
         // Safety fallback if playing never fires (autoplay blocked or error)
         setTimeout(() => { if (isMounted) setIsLoading(false); }, 8000);
