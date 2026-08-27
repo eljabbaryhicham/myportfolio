@@ -63,7 +63,11 @@ const CdnClapprPlayer = forwardRef(function CdnClapprPlayer({ source, poster, au
             poster,
             width: '100%',
             height: '100%',
-            autoPlay: autoPlay,
+            // Autoplay is driven by forceAutoplay() in wireVideoElement, which
+            // handles the mobile muted+playsinline+retry requirement. Disable
+            // Clappr's built-in autoplay so there's a single, conflict-free
+            // autoplay driver.
+            autoPlay: false,
             volume: 10,
             watermark: watermark || '',
             watermarkLink: undefined,
@@ -127,10 +131,11 @@ const CdnClapprPlayer = forwardRef(function CdnClapprPlayer({ source, poster, au
           settled = true;
           settleSpinner();
           // Autoplay must begin muted (mobile policy); once playback is running,
-          // un-mute via Clappr's API so the video plays WITH sound on mobile.
-          // Clappr's mute state overrides the raw <video>.muted, so the player
-          // API is required.
-          try { newPlayer.unmute(); } catch (e) { /* ignore */ }
+          // un-mute so the video plays WITH sound on mobile. NB: player.unmute()
+          // is a no-op in the installed Clappr build, and mute is driven by the
+          // volume control (volume > 0 sets el.muted = false), so we set volume
+          // to give sound reliably (and it survives any media-control re-mute).
+          try { newPlayer.setVolume(100); } catch (e) { /* ignore */ }
         };
         const wireVideoElement = (): boolean => {
           const video = container.querySelector('video');
@@ -207,29 +212,10 @@ const CdnClapprPlayer = forwardRef(function CdnClapprPlayer({ source, poster, au
   }, [source]); 
 
   // Effect to control playback based on autoPlay prop
-  useEffect(() => {
-    const player = playerRef.current;
-    if (player && player.core) {
-      if (autoPlay) {
-        let attempts = 0;
-        try { player.play(); } catch (e) { /* ignore */ }
-        const retryId = setInterval(() => {
-          attempts++;
-          try {
-            if (player.isPlaying()) {
-              clearInterval(retryId);
-              return;
-            }
-            player.play();
-          } catch (e) { /* ignore */ }
-          if (attempts >= 4) clearInterval(retryId);
-        }, 600);
-        return () => clearInterval(retryId);
-      } else {
-        player.pause();
-      }
-    }
-  }, [autoPlay, isLoading]);
+  // NOTE: autoplay is driven by forceAutoplay() inside wireVideoElement above
+  // (it handles mobile muted+playsinline+retry). A previous separate effect
+  // here re-ran player.play() on every isLoading change, fighting both Clappr's
+  // own autoPlay and forceAutoplay — that redundant conflicting loop was removed.
 
   useImperativeHandle(ref, () => ({ isLoading }), [isLoading]);
 
