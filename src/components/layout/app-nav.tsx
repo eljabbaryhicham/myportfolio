@@ -134,7 +134,7 @@ export function AppNav() {
 
     if (isMobile) {
       return (
-        <div key={item.href} className="h-full flex flex-shrink-0 basis-auto items-center justify-center">
+        <div key={item.href} className="h-full flex flex-1 items-center justify-center">
             {navButtonContent}
         </div>
       );
