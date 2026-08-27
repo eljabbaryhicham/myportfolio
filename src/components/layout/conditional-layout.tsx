@@ -114,7 +114,7 @@ export function ConditionalLayout({ children }: { children: React.ReactNode }) {
       </main>
       {!isHomePage && <AppNav />}
       {/* Floating language switch — fixed corner pill, beside the menu */}
-      <LanguageSwitcher className="fixed z-50 bottom-4 right-4 md:bottom-auto md:top-4 md:right-4" />
+      <LanguageSwitcher className="fixed z-50 bottom-4 left-4" />
     </div>
   );
 }
