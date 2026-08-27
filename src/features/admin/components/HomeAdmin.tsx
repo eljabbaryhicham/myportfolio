@@ -355,11 +355,11 @@ export default function HomeAdmin() {
         </div>
         <Tabs value={homeTab} onValueChange={(v) => setHomeTab(v as any)} className="flex-1 flex flex-col min-h-0">
             <TabsList className="flex flex-wrap mb-4">
-                                    <TabsTrigger value="appearance" className="px-3 py-1.5 text-sm data-[state=active]:bg-destructive">{t('homeAdmin.tab.appearance') || 'Appearance'}</TabsTrigger>
-                                    <TabsTrigger value="backgrounds" className="px-3 py-1.5 text-sm data-[state=active]:bg-destructive">{t('homeAdmin.tab.backgrounds') || 'Backgrounds'}</TabsTrigger>
-                                    <TabsTrigger value="player" className="px-3 py-1.5 text-sm data-[state=active]:bg-destructive">{t('homeAdmin.tab.player') || 'Player & Global'}</TabsTrigger>
-                                    <TabsTrigger value="preloader" className="px-3 py-1.5 text-sm data-[state=active]:bg-destructive">{t('homeAdmin.tab.preloader') || 'Preloader'}</TabsTrigger>
-                                    <TabsTrigger value="email" className="px-3 py-1.5 text-sm data-[state=active]:bg-destructive">{t('homeAdmin.tab.email') || 'Email'}</TabsTrigger>
+                                    <TabsTrigger value="appearance" className="px-3 py-1.5 text-sm glass-effect data-[state=active]:bg-destructive">{t('homeAdmin.tab.appearance') || 'Appearance'}</TabsTrigger>
+                                    <TabsTrigger value="backgrounds" className="px-3 py-1.5 text-sm glass-effect data-[state=active]:bg-destructive">{t('homeAdmin.tab.backgrounds') || 'Backgrounds'}</TabsTrigger>
+                                    <TabsTrigger value="player" className="px-3 py-1.5 text-sm glass-effect data-[state=active]:bg-destructive">{t('homeAdmin.tab.player') || 'Player & Global'}</TabsTrigger>
+                                    <TabsTrigger value="preloader" className="px-3 py-1.5 text-sm glass-effect data-[state=active]:bg-destructive">{t('homeAdmin.tab.preloader') || 'Preloader'}</TabsTrigger>
+                                    <TabsTrigger value="email" className="px-3 py-1.5 text-sm glass-effect data-[state=active]:bg-destructive">{t('homeAdmin.tab.email') || 'Email'}</TabsTrigger>
                                 </TabsList>
                                 <div className="flex-1 border rounded-lg overflow-hidden glass-effect">
                                     <ScrollArea className="h-full">
