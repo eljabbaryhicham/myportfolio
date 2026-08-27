@@ -4,6 +4,12 @@ import { verifyAdminRequest } from '@/lib/admin-auth';
 import { initializeServerApp } from '@/firebase/server-init';
 import admin from 'firebase-admin';
 
+// Health-check used by the client pre-flight so uploads fail loudly (with a
+// clear message) instead of hanging at 0% when BLOB_READ_WRITE_TOKEN is unset.
+export async function GET() {
+  return NextResponse.json({ configured: !!process.env.BLOB_READ_WRITE_TOKEN });
+}
+
 export async function POST(req: NextRequest) {
   const decoded = await verifyAdminRequest(req);
   if (!decoded) {

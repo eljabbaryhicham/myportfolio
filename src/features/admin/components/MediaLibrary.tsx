@@ -554,14 +554,19 @@ export default forwardRef<MediaLibraryRef, MediaLibraryProps>(function MediaLibr
     if (files.length === 0) return;
     const token = await getToken();
     if (!token) { toast({ variant: 'destructive', title: 'Not authenticated', description: 'Please sign in again to upload.' }); return; }
-    // Pre-flight: check server has BLOB_READ_WRITE_TOKEN before starting upload
+    // Pre-flight: check server has BLOB_READ_WRITE_TOKEN before starting upload.
+    // Without it the upload would hang at 0% (handle-upload returns 503). Fail loudly instead.
     try {
-      const probe = await fetch('/api/vercel-blob/handle-upload', { method: 'HEAD' });
-      if (probe.status === 503) {
-        toast({ variant: 'destructive', title: 'Vercel Blob not configured', description: 'BLOB_READ_WRITE_TOKEN is missing on the server.' });
+      const probe = await fetch('/api/vercel-blob/handle-upload', { method: 'GET' });
+      const data = await probe.json().catch(() => ({}));
+      if (!data.configured) {
+        toast({ variant: 'destructive', title: 'Vercel Blob not configured', description: 'Set BLOB_READ_WRITE_TOKEN (link a Blob store in the Vercel dashboard or add it to env).' });
         return;
       }
-    } catch {}
+    } catch {
+      toast({ variant: 'destructive', title: 'Cannot reach upload endpoint', description: 'Check your connection and try again.' });
+      return;
+    }
     for (const file of files) {
       if (file.type.startsWith('image/') && file.size > 50 * 1024 * 1024) {
         toast({ variant: 'destructive', title: 'Image exceeds 50MB limit', description: file.name });
