@@ -368,8 +368,8 @@ export default function HomeAdmin() {
                                                 <fieldset disabled={!canEditHome} className="group">
                                                     <div className="space-y-8 max-w-2xl mx-auto">
                                 <TabsContent value="appearance" className="m-0 space-y-4">
-                                {/* Homepage Appearance */}
-                                <div className="space-y-4 p-4 rounded-lg border">
+{/* Homepage Appearance */}
+                                 <div className="space-y-4">
                                     <h3 className="font-headline text-lg">{t('homeAdmin.homepageHeading')}</h3>
                                     
                                     <FormField
@@ -648,8 +648,8 @@ export default function HomeAdmin() {
                                 </div>
                                 </TabsContent>
                                 <TabsContent value="backgrounds" className="m-0 space-y-4">
-                                {/* Backgrounds */}
-                                <div className="space-y-4 p-4 rounded-lg border">
+{/* Backgrounds */}
+                                 <div className="space-y-4">
                                     <h3 className="font-headline text-lg">{t('homeAdmin.backgroundsHeading')}</h3>
 
                                      {/* Homepage background */}

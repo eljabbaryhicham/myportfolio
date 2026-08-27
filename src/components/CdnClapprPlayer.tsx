@@ -171,7 +171,28 @@ const CdnClapprPlayer = forwardRef(function CdnClapprPlayer({ source, poster, au
     } catch {}
   }, [autoPlay]);
 
-  useImperativeHandle(ref, () => ({ isLoading }), [isLoading]);
+  useImperativeHandle(ref, () => ({
+    isLoading,
+    pause: () => {
+      try {
+        const p = playerRef.current;
+        if (p && typeof p.pause === 'function') p.pause();
+      } catch {}
+    },
+    play: () => {
+      try {
+        const p = playerRef.current;
+        if (p && typeof p.play === 'function') p.play();
+      } catch {}
+    },
+    isPlaying: () => {
+      try {
+        const p = playerRef.current;
+        if (p && typeof p.isPlaying === 'function') return !!p.isPlaying();
+      } catch {}
+      return false;
+    },
+  }), [isLoading]);
 
   return (
     <div className="absolute inset-0 bg-black">

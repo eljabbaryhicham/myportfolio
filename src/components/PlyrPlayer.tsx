@@ -27,7 +27,20 @@ const PlyrPlayer = forwardRef(({ source, poster, autoPlay = true, thumbnailVttUr
   const [isLoading, setIsLoading] = useState(true);
   const playerReadyRef = useRef(false);
 
-  useImperativeHandle(ref, () => ({ isLoading }), [isLoading]);
+  useImperativeHandle(ref, () => ({
+    isLoading,
+    plyr: playerRef.current,
+    pause: () => {
+      try { const p = playerRef.current; if (p && typeof p.pause === 'function') p.pause(); } catch {}
+    },
+    play: () => {
+      try { const p = playerRef.current; if (p && typeof p.play === 'function') p.play(); } catch {}
+    },
+    isPlaying: () => {
+      try { const p = playerRef.current; if (p) return !!p.playing; } catch {}
+      return false;
+    },
+  }), [isLoading]);
 
   useEffect(() => {
     let isMounted = true;
