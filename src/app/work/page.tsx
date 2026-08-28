@@ -157,7 +157,9 @@ function LazyDetailsVideo({
   return (
     <div className="relative w-full h-full">
       {!hasPlayed && (
-        <div className="absolute inset-0 z-20 flex items-center justify-center bg-black">
+        // pointer-events-none so clicks reach the underlying player's play
+        // button when autoPlay is off; the spinner still shows on top.
+        <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/80 pointer-events-none">
           <Preloader />
         </div>
       )}
