@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import { put } from '@vercel/blob';
 import { requireUploadAuth } from '@/lib/upload-auth-middleware';
 
+export async function GET() {
+  return NextResponse.json({ configured: !!process.env.BLOB_READ_WRITE_TOKEN });
+}
+
 export async function POST(req: NextRequest) {
   const auth = await requireUploadAuth(req, 'canUploadMedia');
   if (!auth.success && auth.response) {

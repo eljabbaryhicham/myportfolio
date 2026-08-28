@@ -414,7 +414,7 @@ export default forwardRef<MediaLibraryRef, MediaLibraryProps>(function MediaLibr
   const [urlProgress, setUrlProgress] = useState(0);
 
   // Upload cancellation state
-  const [activeXhr, setActiveXhr] = useState<XMLHttpRequest | null>(null);
+  const activeXhrRef = useRef<XMLHttpRequest | null>(null);
   const [isCancelling, setIsCancelling] = useState(false);
 
   // HandleVercelUpload ref for retry logic (avoids circular dependency)
@@ -603,10 +603,10 @@ export default forwardRef<MediaLibraryRef, MediaLibraryProps>(function MediaLibr
 
   // ---- Upload Cancellation ----
   const cancelUpload = useCallback(() => {
-    if (activeXhr) {
+    if (activeXhrRef.current) {
       setIsCancelling(true);
-      activeXhr.abort();
-      setActiveXhr(null);
+      activeXhrRef.current.abort();
+      activeXhrRef.current = null;
       setIsUploading(false);
       setUploadProgress(0);
       setUploadingFileName('');
@@ -614,7 +614,7 @@ export default forwardRef<MediaLibraryRef, MediaLibraryProps>(function MediaLibr
       toast({ title: 'Upload cancelled', variant: 'default' });
       setTimeout(() => setIsCancelling(false), 500);
     }
-  }, [activeXhr, finishUpload, toast]);
+  }, [finishUpload, toast]);
 
   const cancelAllUploads = useCallback(() => {
     cancelUpload();
@@ -647,10 +647,10 @@ export default forwardRef<MediaLibraryRef, MediaLibraryProps>(function MediaLibr
     if (files.length === 0) return;
     const token = await getToken();
     if (!token) { toast({ variant: 'destructive', title: 'Not authenticated', description: 'Please sign in again to upload.' }); return; }
-    // Pre-flight: check server has BLOB_READ_WRITE_TOKEN before starting upload.
-    // Without it the upload would hang at 0% (handle-upload returns 503). Fail loudly instead.
+    // Pre-flight: check server has BLOB_READ_WRITE_TOKEN and auth before starting upload.
+    // Without it the upload would hang at 0% (upload returns 503/401). Fail loudly instead.
     try {
-      const probe = await fetch('/api/vercel-blob/handle-upload', { method: 'GET' });
+      const probe = await fetch('/api/vercel-blob/upload', { method: 'GET' });
       const data = await probe.json().catch(() => ({}));
       if (!data.configured) {
         toast({ variant: 'destructive', title: 'Vercel Blob not configured', description: 'Set BLOB_READ_WRITE_TOKEN (link a Blob store in the Vercel dashboard or add it to env).' });
@@ -684,7 +684,7 @@ for (const file of files) {
             xhr.open('POST', '/api/vercel-blob/upload');
             xhr.setRequestHeader('Authorization', `Bearer ${token}`);
             xhr.timeout = 120_000;
-            setActiveXhr(xhr);
+            activeXhrRef.current = xhr;
             if (xhr.upload) {
               xhr.upload.onprogress = (e) => {
                 if (e.lengthComputable) {
@@ -696,7 +696,7 @@ for (const file of files) {
               };
             }
             xhr.onload = () => {
-              setActiveXhr(null);
+              activeXhrRef.current = null;
               try {
                 const parsed = JSON.parse(xhr.responseText);
                 if (xhr.status >= 200 && xhr.status < 300 && parsed.success) {
@@ -709,11 +709,11 @@ for (const file of files) {
               }
             };
             xhr.onerror = () => {
-              setActiveXhr(null);
+              activeXhrRef.current = null;
               reject(new Error('Network error during upload'));
             };
             xhr.ontimeout = () => {
-              setActiveXhr(null);
+              activeXhrRef.current = null;
               reject(new Error('Upload timed out. The server may be unreachable.'));
             };
             xhr.send(form);
@@ -737,7 +737,7 @@ for (const file of files) {
             const resourceType = file.type.startsWith('video/') ? 'video' : file.type.startsWith('image/') ? 'image' : 'raw';
             if (newId && props.onUploadComplete) props.onUploadComplete(newId, resourceType);
             if (newId) { setLocalNewlyUploadedId(newId); setTimeout(() => setLocalNewlyUploadedId(null), 3000); }
-            if (newId) signalCompletedUpload(newId, resourceType, 'vercel_blob');
+            if (newId) signalCompletedUpload(newId, resourceType, 'vercel_blob', 'vercel');
           } catch (e) { console.error('MediaLibrary: Firestore add after Vercel upload failed', e); }
         }
       } catch (e: any) {
@@ -754,7 +754,7 @@ for (const file of files) {
         setFailedUploads(prev => [...prev, { file, error: e, retryCount }]);
         toast({ variant: 'destructive', title: 'Upload failed', description: e?.message || String(e) });
       } finally {
-        setActiveXhr(null);
+        activeXhrRef.current = null;
         setIsUploading(false);
         setUploadProgress(0);
         setUploadingFileName('');
@@ -796,7 +796,7 @@ for (const file of files) {
         setLocalNewlyUploadedId(newId);
         setTimeout(() => setLocalNewlyUploadedId(null), 3000);
         const ct = (data.contentType || '').toLowerCase();
-        signalCompletedUpload(newId, ct.startsWith('image/') ? 'image' : ct.startsWith('video/') ? 'video' : 'raw', 'vercel_blob');
+        signalCompletedUpload(newId, ct.startsWith('image/') ? 'image' : ct.startsWith('video/') ? 'video' : 'raw', 'vercel_blob', 'vercel');
       }
       const tab = (data.contentType || '').toLowerCase().startsWith('image/') ? 'images' : (data.contentType || '').toLowerCase().startsWith('video/') ? 'videos' : 'files';
       setActiveTabFn(tab);
@@ -876,7 +876,7 @@ for (const file of files) {
             const docRefPromise = addDocumentNonBlocking(collection(firestore, 'media'), mediaData);
             const docRef = await docRefPromise as DocumentReference | undefined;
             if (docRef && !isDialog && props.onUploadComplete) props.onUploadComplete(docRef.id, response.resource_type, libraryId);
-            if (docRef) signalCompletedUpload(docRef.id, response.resource_type, libraryId);
+            if (docRef) signalCompletedUpload(docRef.id, response.resource_type, libraryId, 'cloudinary');
           }
         } else {
           const error = JSON.parse(xhr.responseText).error;
@@ -1098,7 +1098,7 @@ for (const file of files) {
   // ---- URL upload complete callback (Cloudinary AddFromUrlDialog) ----
   const handleCloudinaryUrlUploadComplete = (mediaId: string, resourceType: 'image' | 'video' | 'raw', libraryId: 'primary' | 'extented') => {
     if (!isDialog && props.onUploadComplete) props.onUploadComplete(mediaId, resourceType, libraryId);
-    signalCompletedUpload(mediaId, resourceType, libraryId);
+    signalCompletedUpload(mediaId, resourceType, libraryId, 'cloudinary');
   };
 
   // ---- Render: library grid ----

@@ -787,10 +787,10 @@ export default function HomeAdmin() {
                                         />
                                     )}
                                  </div>
-                                </TabsContent>
-                                <TabsContent value="player" className="m-0 space-y-4">
-                                {/* Player & Global Settings */}
-                                <div className="space-y-4 p-4 rounded-lg border">
+</TabsContent>
+                                 <TabsContent value="player" className="m-0 space-y-4">
+                                 {/* Player & Global Settings */}
+                                 <div className="space-y-4">
                                      <h3 className="font-headline text-lg">{t('homeAdmin.globalSettings')}</h3>
 
                                      <FormField
@@ -917,8 +917,8 @@ export default function HomeAdmin() {
                                         </FormItem>
                                       )}
                                     />
-                                    <Separator />
-                                    <div className="space-y-4 p-3 rounded-lg border bg-muted/20">
+<Separator />
+                                     <div className="space-y-4">
                                         <h4 className="font-medium text-sm">Video Watermark</h4>
                                         <FormField
                                             control={control}
@@ -1031,10 +1031,10 @@ export default function HomeAdmin() {
 
                                     <Separator />
                                 </div>
-                                </TabsContent>
-                                <TabsContent value="preloader" className="m-0 space-y-4">
-                                {/* Preloader & Animations */}
-                                <div className="space-y-4 p-4 rounded-lg border">
+</TabsContent>
+                                 <TabsContent value="preloader" className="m-0 space-y-4">
+                                 {/* Preloader & Animations */}
+                                 <div className="space-y-4">
                                 <h3 className="font-headline text-lg">{t('homeAdmin.preloaderTabHeading') || 'Preloader & Animations'}</h3>
                                     <FormField
                                         control={control}
@@ -1238,10 +1238,10 @@ export default function HomeAdmin() {
                                         )}
                                     />
                                  </div>
-                                </TabsContent>
-                                <TabsContent value="email" className="m-0 space-y-4">
-                                {/* Email Templates */}
-                                <div className="space-y-4 p-4 rounded-lg border">
+</TabsContent>
+                                 <TabsContent value="email" className="m-0 space-y-4">
+                                 {/* Email Templates */}
+                                 <div className="space-y-4">
                                     <h3 className="font-headline text-lg">{t('homeAdmin.emailTemplatesHeading')}</h3>
                                     <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{t('homeAdmin.emailTemplate.heading')}</h4>
                                     <FormField
