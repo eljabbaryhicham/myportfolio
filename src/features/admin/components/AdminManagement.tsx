@@ -2,7 +2,7 @@
 'use client';
 
 import { useTranslation } from '@/lib/i18n/useTranslation';
-import { SUPERADMIN_EMAIL, isSuperAdmin as isSuperAdminCheck } from '@/lib/constants';
+import { isSuperAdmin as isSuperAdminCheck } from '@/lib/constants';
 import { useCollection, useFirestore, useMemoFirebase, updateDocumentNonBlocking, useUser, useAuth } from '@/firebase';
 import { collection, query, orderBy, doc } from 'firebase/firestore';
 import {
@@ -242,19 +242,19 @@ export default function AdminManagement() {
                                       <p className="font-bold">{user.username}</p>
                                       <p className="text-sm text-muted-foreground">{user.email}</p>
                                   </div>
-                                  <Badge variant={(user.email ?? '').toLowerCase() === 'eljabbaryhicham@mellivision.com' ? 'destructive' : 'secondary'} className="ml-2 whitespace-nowrap">
-                                      {(user.email ?? '').toLowerCase() === 'eljabbaryhicham@mellivision.com' ? t('adminMgmt.superAdmin') : t('adminMgmt.admin')}
+                                  <Badge variant={user.role === 'superadmin' ? 'destructive' : 'secondary'} className="ml-2 whitespace-nowrap">
+                                      {user.role === 'superadmin' ? t('adminMgmt.superAdmin') : t('adminMgmt.admin')}
                                   </Badge>
                               </div>
                               <Separator className="my-4 bg-white/10" />
                               <div className='flex justify-between items-center'>
-                                  {user.email !== SUPERADMIN_EMAIL ? (
+                                  {user.role !== 'superadmin' ? (
                                       <Button variant="outline" size="sm" onClick={() => handleOpenPermissions(user)} disabled={!isSuperAdmin}>
                                           <FontAwesomeIcon icon={faShieldHalved} className="mr-2 h-4 w-4" />
                                           {t('adminMgmt.permissions')}
                                       </Button>
                                   ) : <div />}
-                                  {user.email !== SUPERADMIN_EMAIL && (
+                                  {user.role !== 'superadmin' && (
                                       <Button variant="ghost" size="icon" onClick={() => handleDeleteUser(user.id, user.username)} disabled={!isSuperAdmin}>
                                           <FontAwesomeIcon icon={faTrash} className="h-4 w-4 text-destructive" />
                                       </Button>
@@ -285,12 +285,12 @@ export default function AdminManagement() {
                           <TableCell className="font-medium">{user.username}</TableCell>
                           <TableCell>{user.email}</TableCell>
                           <TableCell>
-                              <Badge variant={(user.email ?? '').toLowerCase() === 'eljabbaryhicham@mellivision.com' ? 'destructive' : 'secondary'}>
-                              {(user.email ?? '').toLowerCase() === 'eljabbaryhicham@mellivision.com' ? t('adminMgmt.superAdmin') : t('adminMgmt.admin')}
+                              <Badge variant={user.role === 'superadmin' ? 'destructive' : 'secondary'}>
+                              {user.role === 'superadmin' ? t('adminMgmt.superAdmin') : t('adminMgmt.admin')}
                               </Badge>
                           </TableCell>
                           <TableCell className="text-center">
-                              {user.email !== SUPERADMIN_EMAIL ? (
+                              {user.role !== 'superadmin' ? (
                                 <Button variant="outline" size="sm" onClick={() => handleOpenPermissions(user)} disabled={!isSuperAdmin}>
                                   <FontAwesomeIcon icon={faShieldHalved} className="mr-2 h-4 w-4" />
                                   {t('adminMgmt.manage')}
@@ -300,7 +300,7 @@ export default function AdminManagement() {
                               )}
                           </TableCell>
                           <TableCell className="text-right">
-                              {user.email !== SUPERADMIN_EMAIL && (
+                              {user.role !== 'superadmin' && (
                               <Button variant="ghost" size="icon" onClick={() => handleDeleteUser(user.id, user.username)} disabled={!isSuperAdmin}>
                                       <FontAwesomeIcon icon={faTrash} className="h-4 w-4 text-destructive" />
                               </Button>
