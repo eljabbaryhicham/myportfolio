@@ -170,10 +170,7 @@ export default function ContactPage() {
                                 <Button asChild className="bg-gradient-to-r from-green-500 to-emerald-600 animate-shake" size="lg">
                                     <Link href={`https://wa.me/${contactInfo.whatsApp.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2">
                                         <FontAwesomeIcon icon={faWhatsapp} className="h-5 w-5" />
-                                        <div className="text-left">
-                                            <p className="text-xs font-light leading-tight">{t('contact.whatsApp')}</p>
-                                            <p className="font-semibold text-sm leading-tight">{contactInfo.whatsApp}</p>
-                                        </div>
+                                        <span className="text-sm font-semibold leading-tight">{t('contact.whatsApp')}</span>
                                     </Link>
                                 </Button>
                             </div>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useDoc, useFirestore, useMemoFirebase } from '@/firebase';
 import { doc } from 'firebase/firestore';
 import type { PortfolioItem } from '@/features/portfolio/data/portfolio-data';
@@ -154,7 +154,15 @@ export function DynamicThemeStyles() {    const firestore = useFirestore();
       [firestore]
     );
     const { data: homeSettings } = useDoc<HomePageSettings>(settingsDocRef);
-    
+
+    // Apply the last-saved theme HSL from localStorage on first render so the
+    // color doesn't flash from the default while Firestore loads. It's only a
+    // synchronous hint; the Firestore value below still wins once it resolves.
+    const [storedHsl] = useState<string | null>(() => {
+      if (typeof window === 'undefined') return null;
+      try { return localStorage.getItem(STORAGE_KEY); } catch { return null; }
+    });
+
     const themeColor = homeSettings?.themeColor;
     const primaryHsl = themeColor ? hexToHsl(themeColor) : null;
     const glassOpacity = (homeSettings?.glassOpacity ?? 25) / 100;
@@ -175,7 +183,7 @@ export function DynamicThemeStyles() {    const firestore = useFirestore();
       }
     }, [primaryHsl]);
 
-    const primary = primaryHsl || '352 76% 48%';
+    const primary = primaryHsl || storedHsl || '352 76% 48%';
   
     return (
       <style>{`
