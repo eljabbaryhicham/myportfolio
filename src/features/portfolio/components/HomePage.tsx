@@ -140,7 +140,6 @@ export default function HomePageContent() {
   const { t, lang } = useTranslation();
   const ctaRef = useRef<HTMLButtonElement | null>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
-  const isAndroid = typeof navigator !== 'undefined' && /Android/i.test(navigator.userAgent);
 
   // Read from the shared SettingsProvider (seeded server-side, kept live
   // by the provider's own useDoc subscription). This avoids a re-fetch
@@ -223,6 +222,8 @@ export default function HomePageContent() {
         // Lazy-load hls.js only when an adaptive-stream hero is configured, so
         // the ~500 KB tracker stays out of the public bundle until needed.
         const { default: Hls } = await import('hls.js');
+        // Compute isAndroid inside effect (client-only) to avoid hydration mismatch
+        const isAndroid = typeof navigator !== 'undefined' && /Android/i.test(navigator.userAgent);
         if (cancelled || !Hls.isSupported()) {
           if (!Hls.isSupported() && video.canPlayType('application/vnd.apple.mpegurl')) {
             video.src = cleanUrl;
@@ -243,7 +244,7 @@ export default function HomePageContent() {
       video.src = cleanUrl;
       forceAutoplay(video);
     }
-  }, [homeSettings?.heroVideoUrl, isAndroid]);
+  }, [homeSettings?.heroVideoUrl]);
 
   return (
     <div className="hide-cursor-homepage homepage-viewport-fix relative h-full w-full overflow-hidden">

@@ -20,7 +20,6 @@ export function SiteBackground() {
     const firestore = useFirestore();
     const pathname = usePathname();
     const isHomePage = pathname === '/';
-    const isAndroid = typeof navigator !== 'undefined' && /Android/i.test(navigator.userAgent);
     
     // homepage/settings is read from the shared provider (server-seeded + live
     // via the provider's own useDoc) to avoid a redundant fetch and a flash.
@@ -81,6 +80,8 @@ export function SiteBackground() {
 
     // Handle HLS streaming for Android background videos
     useEffect(() => {
+      // Compute isAndroid inside effect (client-only) to avoid hydration mismatch
+      const isAndroid = typeof navigator !== 'undefined' && /Android/i.test(navigator.userAgent);
       if (!isVideoShown || !isAndroid || !isHls || !cleanUrl) return;
       const video = bgVideoRef.current;
       if (!video) return;
@@ -105,7 +106,7 @@ export function SiteBackground() {
         });
       })();
       return () => { cancelled = true; if (hls) hls.destroy(); setHlsInstance(null); };
-    }, [isVideoShown, isAndroid, isHls, cleanUrl]);
+    }, [isVideoShown, isHls, cleanUrl]);
 
     // Clean up HLS on unmount or when video changes
     useEffect(() => {
@@ -127,7 +128,7 @@ export function SiteBackground() {
                     <video
                         key={cleanUrl}
                         ref={bgVideoRef}
-                        src={isAndroid && isHls ? undefined : cleanUrl}
+                        src={cleanUrl}
                         className="w-full h-full object-cover"
                         autoPlay
                         loop
