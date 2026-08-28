@@ -93,12 +93,24 @@ service cloud.firestore {
         || (request.auth.uid == userId
             && request.resource.data.role == 'user'
             && request.resource.data.permissions == null);
-      // Users may edit their own doc; admins may edit any (permissions UI).
-      // Prevent self-elevation: a non-admins updating their own doc cannot add
-      // role/permissions; existing admins (canEditHome) may manage others.
+      // Update policy (tighter than before — was: any admin with canEditHome
+      // could write any field on any user, including role/permissions of themselves
+      // and others, with no field-level guard):
+      //   - superadmin: any update
+      //   - self (non-admin): may edit their own doc BUT role/permissions must
+      //     not change (prevents self-elevation)
+      //   - admin with canEditHome: may edit OTHER users' docs but ONLY the
+      //     `permissions`, `role`, `username`, and `email` fields. They cannot
+      //     touch `uid`, `createdAt`, or other protected fields.
+      //   - non-admin editing other users: denied
       allow update: if isSuperAdmin()
-        || (request.auth.uid == userId && request.resource.data.role == 'user' && request.resource.data.permissions == null)
-        || hasPerm('canEditHome');
+        || (request.auth.uid == userId
+            && request.resource.data.role == resource.data.role
+            && request.resource.data.permissions == resource.data.permissions)
+        || (hasPerm('canEditHome')
+            && request.auth.uid != userId
+            && request.resource.data.diff(resource.data).affectedKeys()
+                  .hasOnly(['permissions', 'role', 'username', 'email']));
       // Prevent non-superadmins from deleting user documents.
       allow delete: if isSuperAdmin();
     }

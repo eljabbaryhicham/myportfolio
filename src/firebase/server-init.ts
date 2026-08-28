@@ -12,9 +12,14 @@ import * as path from 'path';
  * Credential resolution order:
  *  1. `FIREBASE_SERVICE_ACCOUNT_KEY` env var containing the full service-account JSON.
  *     (newlines in the private_key may be stored escaped as \\n and are unescaped here)
- *  2. A service-account file at `docs/service-account.json` (local development convenience).
- *  3. Application Default Credentials — available automatically on Google Cloud runtimes
- *     such as Firebase App Hosting / Cloud Run.
+ *  2. `FIREBASE_PROJECT_ID` + `FIREBASE_CLIENT_EMAIL` + `FIREBASE_PRIVATE_KEY` split env vars.
+ *  3. A service-account file at `docs/service-account.json` (local development convenience only —
+ *     this file MUST be gitignored and never committed).
+ *  4. Application Default Credentials — available automatically on Google Cloud runtimes
+ *     such as Firebase App Hosting / Cloud Run (preferred in production).
+ *
+ * SECURITY: never commit `docs/service-account.json` or any populated `.env*` file to git.
+ * Rotate service-account keys via the Firebase console if a leak is suspected.
  *
  * @returns {Promise<admin.app.App>} A promise that resolves to the initialized Firebase Admin App instance.
  */
