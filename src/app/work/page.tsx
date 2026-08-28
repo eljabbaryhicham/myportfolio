@@ -266,26 +266,27 @@ const ProjectDetailsContent = memo(function ProjectDetailsContent({
         return <a href={href} {...rest}>{children}</a>;
       }
       return (
-        <div className="my-3 flex max-w-full min-w-0 items-center gap-2 overflow-hidden rounded-lg border border-border/50 bg-muted/30 p-3 transition-colors hover:bg-muted/50 group/file box-border" style={{ maxWidth: widthPercent === '100%' ? '100%' : `min(${widthPercent}, 100%)`, width: '100%', marginLeft: 'auto', marginRight: 'auto' }}>
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary">
-            <FontAwesomeIcon icon={faArrowDown} className="h-4 w-4" />
+        <div
+          className="group/file my-3 flex max-w-full min-w-0 items-center gap-3 overflow-hidden rounded-xl border border-border/60 bg-card/40 p-3 shadow-sm transition-all duration-200 hover:border-border hover:bg-card/70 hover:shadow-md box-border sm:gap-3.5 sm:p-3.5"
+          style={{ maxWidth: widthPercent === '100%' ? '100%' : `min(${widthPercent}, 100%)`, width: '100%', marginLeft: 'auto', marginRight: 'auto' }}
+        >
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary ring-1 ring-primary/15 transition-colors group-hover/file:bg-primary/15 group-hover/file:ring-primary/25">
+            <FontAwesomeIcon icon={faArrowDown} className="h-4 w-4 transition-transform duration-200 group-hover/file:-translate-y-0.5" />
           </div>
           <div className="min-w-0 flex-1 overflow-hidden">
-            <p className="text-sm font-medium truncate break-all">{filename}</p>
-            <p className="text-xs text-muted-foreground truncate">File attachment</p>
+            <p className="truncate break-all text-sm font-medium leading-tight text-foreground">{filename}</p>
+            <p className="mt-0.5 truncate text-xs text-muted-foreground">File attachment</p>
           </div>
-          <button
-            type="button"
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              window.open(href, '_blank', 'noopener,noreferrer');
-            }}
-            className="shrink-0 inline-flex items-center gap-1 rounded-md bg-primary px-2.5 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/90 transition-colors no-underline cursor-pointer whitespace-nowrap"
+          <a
+            href={href}
+            download
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex shrink-0 items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground shadow-sm transition-all duration-200 hover:bg-primary/90 hover:shadow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background whitespace-nowrap"
           >
             <FontAwesomeIcon icon={faArrowDown} className="h-3 w-3" />
             Download
-          </button>
+          </a>
         </div>
       );
     },
