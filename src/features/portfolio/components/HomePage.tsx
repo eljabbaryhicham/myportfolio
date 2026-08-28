@@ -24,29 +24,6 @@ import { useHomePageSettings } from '@/components/settings/home-page-settings-pr
 const HERO_VIDEO_URL = "https://res.cloudinary.com/dsq1lxrqi/video/upload/sp_auto/pg_5/v1778867307/Ovi_Motion_Design_v3kfy0.m3u8";
 const HERO_VIDEO_POSTER = "https://res.cloudinary.com/dsq1lxrqi/image/upload/so_0,f_auto,q_auto/v1778867307/Ovi_Motion_Design_v3kfy0.jpg";
 
-function Particles() {
-  const circles = useRef<Array<{ size: number; left: string; top: string; duration: number; delay: number }>>(Array.from({ length: 20 }, () => ({
-    size: Math.random() * 3 + 1,
-    left: `${Math.random() * 100}%`,
-    top: `${Math.random() * 100}%`,
-    duration: Math.random() * 10 + 10,
-    delay: Math.random() * 10,
-  }))).current;
-  return (
-    <div className="absolute inset-0 pointer-events-none overflow-hidden" aria-hidden>
-      {circles.map((c, i) => (
-        <motion.div
-          key={i}
-          className="absolute rounded-full bg-white/10"
-          style={{ left: c.left, top: c.top, width: c.size, height: c.size }}
-          animate={{ y: [0, -30, 0], opacity: [0.1, 0.4, 0.1] }}
-          transition={{ duration: c.duration, repeat: Infinity, ease: "easeInOut", delay: c.delay }}
-        />
-      ))}
-    </div>
-  );
-}
-
 function CursorArrow({ targetRef, cursorLottieUrl, tickLottieUrl }: { targetRef: React.RefObject<HTMLButtonElement | null>; cursorLottieUrl?: string; tickLottieUrl?: string }) {
   const arrowRef = useRef<HTMLDivElement>(null);
   const angleRef = useRef(0);
@@ -163,6 +140,7 @@ export default function HomePageContent() {
   const { t, lang } = useTranslation();
   const ctaRef = useRef<HTMLButtonElement | null>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
+  const isAndroid = typeof navigator !== 'undefined' && /Android/i.test(navigator.userAgent);
 
   // Read from the shared SettingsProvider (seeded server-side, kept live
   // by the provider's own useDoc subscription). This avoids a re-fetch
@@ -252,7 +230,8 @@ export default function HomePageContent() {
           }
           return;
         }
-        hls = new Hls({ startLevel: -1 });
+        // Android: cap level to player size (720p max) for performance
+        hls = new Hls({ startLevel: -1, capLevelToPlayerSize: isAndroid });
         hls.loadSource(cleanUrl);
         hls.attachMedia(video);
         hls.on(Hls.Events.MANIFEST_PARSED, () => {
@@ -264,7 +243,7 @@ export default function HomePageContent() {
       video.src = cleanUrl;
       forceAutoplay(video);
     }
-  }, [homeSettings?.heroVideoUrl]);
+  }, [homeSettings?.heroVideoUrl, isAndroid]);
 
   return (
     <div className="hide-cursor-homepage homepage-viewport-fix relative h-full w-full overflow-hidden">
@@ -280,8 +259,6 @@ export default function HomePageContent() {
       />
       <div className="homepage-viewport-fix-inner relative z-10 flex h-full w-full items-center justify-center overflow-auto transition-opacity duration-1000">
         <CursorArrow targetRef={ctaRef} cursorLottieUrl={homeSettings?.cursorLottieUrl} tickLottieUrl={homeSettings?.tickLottieUrl} />
-
-        <Particles />
 
         <AnimatePresence>
           {showFullPreloader && (

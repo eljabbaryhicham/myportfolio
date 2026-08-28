@@ -20,6 +20,7 @@ export function SiteBackground() {
     const firestore = useFirestore();
     const pathname = usePathname();
     const isHomePage = pathname === '/';
+    const isAndroid = typeof navigator !== 'undefined' && /Android/i.test(navigator.userAgent);
     
     // homepage/settings is read from the shared provider (server-seeded + live
     // via the provider's own useDoc) to avoid a redundant fetch and a flash.
@@ -55,9 +56,14 @@ export function SiteBackground() {
       ? homeSettings.isHomePageVideoEnabled ?? true
       : homeSettings.isWebsiteVideoEnabled ?? true) : true;
 
-    const mediaUrl = directUrl || (backgroundType === 'video'
+    const rawMediaUrl = directUrl || (backgroundType === 'video'
       ? backgroundProject?.sourceUrl
       : backgroundMedia?.url);
+
+    // Clean the URL and convert to HLS for Android if it's an m3u8
+    const cleanUrl = rawMediaUrl ? cleanVideoUrl(rawMediaUrl) : rawMediaUrl;
+    const isHls = cleanUrl?.includes('.m3u8');
+    const [hlsInstance, setHlsInstance] = useState<any>(null);
 
     const isVideoShown = backgroundType === 'video' && isVideoEnabled;
 
@@ -71,19 +77,57 @@ export function SiteBackground() {
       return forceAutoplay(video, {
         onPlaying: () => { video.style.opacity = '1'; },
       });
-    }, [isVideoShown, mediaUrl]);
+    }, [isVideoShown, cleanUrl]);
+
+    // Handle HLS streaming for Android background videos
+    useEffect(() => {
+      if (!isVideoShown || !isAndroid || !isHls || !cleanUrl) return;
+      const video = bgVideoRef.current;
+      if (!video) return;
+
+      let hls: any;
+      let cancelled = false;
+      (async () => {
+        const { default: Hls } = await import('hls.js');
+        if (cancelled || !Hls.isSupported()) {
+          if (!Hls.isSupported() && video.canPlayType('application/vnd.apple.mpegurl')) {
+            video.src = cleanUrl;
+            forceAutoplay(video);
+          }
+          return;
+        }
+        hls = new Hls({ startLevel: -1, capLevelToPlayerSize: true });
+        hls.loadSource(cleanUrl);
+        hls.attachMedia(video);
+        setHlsInstance(hls);
+        hls.on(Hls.Events.MANIFEST_PARSED, () => {
+          if (!cancelled) forceAutoplay(video);
+        });
+      })();
+      return () => { cancelled = true; if (hls) hls.destroy(); setHlsInstance(null); };
+    }, [isVideoShown, isAndroid, isHls, cleanUrl]);
+
+    // Clean up HLS on unmount or when video changes
+    useEffect(() => {
+      return () => {
+        if (hlsInstance) {
+          hlsInstance.destroy();
+          setHlsInstance(null);
+        }
+      };
+    }, [hlsInstance]);
 
     // NOTE: no backgroundMediaId requirement — the library-picker flow stores a direct URL.
-    if (!homeSettings || !backgroundType || !mediaUrl) return null;
+    if (!homeSettings || !backgroundType || !rawMediaUrl) return null;
 
     return (
         <div className="absolute inset-0 -z-10 w-full h-full">
                 <div className="relative w-full h-full bg-black">
                 {isVideoShown ? (
                     <video
-                        key={mediaUrl}
+                        key={cleanUrl}
                         ref={bgVideoRef}
-                        src={cleanVideoUrl(mediaUrl)}
+                        src={isAndroid && isHls ? undefined : cleanUrl}
                         className="w-full h-full object-cover"
                         autoPlay
                         loop
@@ -93,7 +137,7 @@ export function SiteBackground() {
                     />
                 ) : backgroundType === 'image' ? (
                     <Image
-                      src={mediaUrl}
+                      src={rawMediaUrl}
                       alt="Background"
                       fill
                       className="object-cover"
