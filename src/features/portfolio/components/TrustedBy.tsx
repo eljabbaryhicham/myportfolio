@@ -5,10 +5,11 @@ import { motion } from "framer-motion";
 import { useFirestore, useMemoFirebase, useCollection } from "@/firebase";
 import { collection, query, orderBy } from "firebase/firestore";
 import { useTranslation } from "@/lib/i18n/useTranslation";
+import { getLocalizedString, type MultilingualString } from "@/lib/i18n/multilingual";
 
 interface Client {
   id: string;
-  name: string;
+  name: MultilingualString;
   logoUrl: string;
   order: number;
   isVisible?: boolean;
@@ -16,7 +17,7 @@ interface Client {
 
 export default function TrustedBy() {
   const firestore = useFirestore();
-  const { t } = useTranslation();
+  const { t, lang } = useTranslation();
   const uid = useId();
 
   const clientsQuery = useMemoFirebase(
@@ -30,7 +31,7 @@ export default function TrustedBy() {
     [clients]
   );
 
-  const names = visibleClients.map((c) => c.name);
+  const names = visibleClients.map((c) => getLocalizedString(c.name, lang));
   if (names.length === 0) return null;
 
   return (

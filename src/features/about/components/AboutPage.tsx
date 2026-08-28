@@ -20,11 +20,12 @@ import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { ScrollIndicator } from '@/components/ScrollIndicator';
 import { useTranslation } from '@/lib/i18n/useTranslation';
+import { getLocalizedString, type MultilingualString } from '@/lib/i18n/multilingual';
 
 
 interface Client {
   id: string;
-  name: string;
+  name: MultilingualString;
   logoUrl: string;
   order: number;
   isVisible?: boolean;
@@ -55,13 +56,13 @@ function cloudinaryOptimized(url: string) {
   return url.replace('/upload/', '/upload/f_auto,q_auto/');
 }
 
-const ClientLogo = ({ client }: { client: Client }) => (
+const ClientLogo = ({ client, alt }: { client: Client; alt: string }) => (
     <div 
       className="relative mx-8 flex-shrink-0 basis-1/5 group"
     >
         <MemoizedImage
             src={cloudinaryOptimized(client.logoUrl)}
-            alt={client.name}
+            alt={alt}
             width={128}
             height={40}
             sizes="128px"
@@ -95,7 +96,7 @@ const itemVariants = {
 export default function AboutPage() {
   const firestore = useFirestore();
   const scrollRef = useRef<HTMLDivElement>(null);
-  const { t } = useTranslation();
+  const { t, lang } = useTranslation();
 
   const clientsQuery = useMemoFirebase(
     () => firestore ? query(collection(firestore, 'clients'), orderBy('order')) : null,
@@ -107,7 +108,7 @@ export default function AboutPage() {
     () => (firestore ? doc(firestore, 'homepage', 'settings') : null),
     [firestore]
   );
-  const { data: pageSettings } = useDoc<Record<string, string>>(settingsDocRef);
+  const { data: pageSettings } = useDoc<Record<string, any>>(settingsDocRef);
   
   const aboutContentRef = useMemoFirebase(
     () => firestore ? doc(firestore, 'about', 'content') : null,
@@ -142,9 +143,9 @@ export default function AboutPage() {
       <div className="p-4 md:p-8 flex-shrink-0">
         <div className="container mx-auto px-0">
             <div className="mb-[clamp(1rem,3vh,2rem)] text-center">
-              <h1 className="text-2xl sm:text-3xl md:text-4xl font-headline tracking-tight">{pageSettings?.aboutHeading || t('about.heading')}</h1>
+              <h1 className="text-2xl sm:text-3xl md:text-4xl font-headline tracking-tight">{getLocalizedString(pageSettings?.aboutHeading, lang) || t('about.heading')}</h1>
               <p className="mt-2 max-w-2xl mx-auto text-sm sm:text-base md:text-lg text-foreground/70">
-                {pageSettings?.aboutSubtitle || t('about.subtitle')}
+                {getLocalizedString(pageSettings?.aboutSubtitle, lang) || t('about.subtitle')}
               </p>
             </div>
         </div>
@@ -236,7 +237,7 @@ export default function AboutPage() {
                       <div className="flex">
                         {duplicatedClients.map((client, index) => (
                           <div key={`${client.id}-${index}`} className="flex-shrink-0 flex-grow-0 basis-1/2 md:basis-1/3 lg:basis-1/5">
-                            <ClientLogo client={client} />
+                            <ClientLogo client={client} alt={getLocalizedString(client.name, lang)} />
                           </div>
                         ))}
                       </div>

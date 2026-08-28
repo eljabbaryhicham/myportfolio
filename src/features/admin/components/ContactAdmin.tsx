@@ -24,6 +24,8 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import Preloader from '@/components/preloader';
 import type { AppUser } from '@/firebase/auth/use-user';
 import { useTranslation } from '@/lib/i18n/useTranslation';
+import { ensureMultilingualString } from '@/lib/i18n/multilingual';
+import { MultilingualInput } from './MultilingualInput';
 import { SUPERADMIN_EMAIL } from '@/lib/constants';
 import MediaLibrary from './MediaLibrary';
 import { faImages } from '@fortawesome/free-solid-svg-icons';
@@ -31,8 +33,8 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 const formSchema = z.object({
   avatarUrl: z.string().url().optional().or(z.literal('')),
-  name: z.string().min(2).optional().or(z.literal('')),
-  title: z.string().min(2).optional().or(z.literal('')),
+  name: z.object({ en: z.string().optional(), fr: z.string().optional() }).optional(),
+  title: z.object({ en: z.string().optional(), fr: z.string().optional() }).optional(),
   email: z.string().email().optional().or(z.literal('')),
   whatsApp: z.string().optional().or(z.literal('')),
   behanceUrl: z.string().url().optional().or(z.literal('')),
@@ -54,8 +56,8 @@ type ContactInfo = z.infer<typeof formSchema>;
 
 const defaultFormValues: ContactInfo = {
     avatarUrl: '',
-    name: '',
-    title: '',
+    name: { en: '', fr: '' },
+    title: { en: '', fr: '' },
     email: '',
     whatsApp: '',
     behanceUrl: '',
@@ -118,8 +120,8 @@ export default function ContactAdmin() {
     if (contactInfo) {
         const values: ContactInfo = {
             avatarUrl: contactInfo.avatarUrl || '',
-            name: contactInfo.name || '',
-            title: contactInfo.title || '',
+            name: ensureMultilingualString(contactInfo.name),
+            title: ensureMultilingualString(contactInfo.title),
             email: contactInfo.email || '',
             whatsApp: contactInfo.whatsApp || '',
             behanceUrl: contactInfo.behanceUrl || '',
@@ -171,7 +173,8 @@ export default function ContactAdmin() {
 
     const subscription = watch((value, { name, type }) => {
       if (name) {
-        debouncedSave(name, value[name as keyof ContactInfo]);
+        const topLevel = name.split('.')[0];
+        debouncedSave(topLevel, value[topLevel as keyof ContactInfo]);
       }
     });
 
@@ -210,31 +213,15 @@ export default function ContactAdmin() {
               <div className="p-6">
                 <Form {...form}>
                     <div className="space-y-8">
-                    <FormField
-                        control={form.control}
+                    <MultilingualInput
                         name="name"
-                        render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>{t('contactAdmin.name')}</FormLabel>
-                            <FormControl>
-                            <Input placeholder={t('contactAdmin.namePlaceholder')} {...field} />
-                            </FormControl>
-                            <FormMessage />
-                        </FormItem>
-                        )}
+                        label={t('contactAdmin.name')}
+                        placeholder={t('contactAdmin.namePlaceholder')}
                     />
-                    <FormField
-                        control={form.control}
+                    <MultilingualInput
                         name="title"
-                        render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>{t('contactAdmin.titleField')}</FormLabel>
-                            <FormControl>
-                            <Input placeholder={t('contactAdmin.titlePlaceholder')} {...field} />
-                            </FormControl>
-                            <FormMessage />
-                        </FormItem>
-                        )}
+                        label={t('contactAdmin.titleField')}
+                        placeholder={t('contactAdmin.titlePlaceholder')}
                     />
                     <FormField
                         control={form.control}

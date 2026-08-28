@@ -42,6 +42,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useTranslation } from '@/lib/i18n/useTranslation';
 import { DEFAULT_EMAIL_TEMPLATE_HTML, DEFAULT_AUTOREPLY_TEMPLATE_HTML } from '@/lib/default-email-template';
 import UnifiedMediaPicker from './UnifiedMediaPicker';
+import { MultilingualInput } from './MultilingualInput';
+import { ensureMultilingualString, type MultilingualString } from '@/lib/i18n/multilingual';
 import { faImages, faEye, faRotateLeft } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { debounce } from '@/lib/utils';
@@ -75,8 +77,8 @@ interface HomePageSettings {
     preloaderSize?: number;
     cursorLottieUrl?: string;
     tickLottieUrl?: string;
-    homePageTitle?: string;
-    homePageSubtitle?: string;
+    homePageTitle?: MultilingualString;
+    homePageSubtitle?: MultilingualString;
     homePageTitleColor?: string;
     menubarLogoSize?: number;
     menubarLogoUrl?: string;
@@ -119,8 +121,8 @@ const settingsSchema = z.object({
   preloaderSize: z.number().min(5).max(100).optional(),
   cursorLottieUrl: z.string().optional(),
   tickLottieUrl: z.string().optional(),
-  homePageTitle: z.string().optional(),
-  homePageSubtitle: z.string().optional(),
+  homePageTitle: z.object({ en: z.string().optional(), fr: z.string().optional() }).optional(),
+  homePageSubtitle: z.object({ en: z.string().optional(), fr: z.string().optional() }).optional(),
   homePageTitleColor: z.string().optional(),
   menubarLogoSize: z.number().min(24).max(80).optional(),
   menubarLogoUrl: z.string().optional(),
@@ -206,8 +208,8 @@ export default function HomeAdmin() {
       preloaderSize: 15,
       cursorLottieUrl: '',
       tickLottieUrl: '',
-      homePageTitle: '',
-      homePageSubtitle: '',
+      homePageTitle: { en: '', fr: '' },
+      homePageSubtitle: { en: '', fr: '' },
       homePageTitleColor: '',
       menubarLogoSize: 48,
       menubarLogoUrl: '',
@@ -256,8 +258,8 @@ export default function HomeAdmin() {
         preloaderSize: homeSettings.preloaderSize || 15,
         cursorLottieUrl: homeSettings.cursorLottieUrl || '',
         tickLottieUrl: homeSettings.tickLottieUrl || '',
-        homePageTitle: homeSettings.homePageTitle || '',
-        homePageSubtitle: homeSettings.homePageSubtitle || '',
+        homePageTitle: ensureMultilingualString(homeSettings.homePageTitle),
+        homePageSubtitle: ensureMultilingualString(homeSettings.homePageSubtitle),
         homePageTitleColor: homeSettings.homePageTitleColor || '',
         menubarLogoSize: homeSettings.menubarLogoSize || 48,
         menubarLogoUrl: homeSettings.menubarLogoUrl || '',
@@ -324,7 +326,8 @@ export default function HomeAdmin() {
 
     const subscription = watch((value, { name }) => {
       if (name) {
-        pendingRef.current[name as string] = value[name];
+        const topLevel = name.split('.')[0];
+        pendingRef.current[topLevel] = (value as Record<string, any>)[topLevel];
         debouncedSave();
       }
     });
@@ -428,31 +431,15 @@ export default function HomeAdmin() {
                                             </FormItem>
                                         )}
                                     />
-                                    <FormField
-                                        control={control}
+                                    <MultilingualInput
                                         name="homePageTitle"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>{t('homeAdmin.homePageTitle') || 'Homepage Title'}</FormLabel>
-                                                <FormControl>
-                                                    <Input placeholder={t('homeAdmin.homePageTitlePlaceholder') || 'Leave empty for default title'} {...field} />
-                                                </FormControl>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
+                                        label={t('homeAdmin.homePageTitle') || 'Homepage Title'}
+                                        placeholder={t('homeAdmin.homePageTitlePlaceholder') || 'Leave empty for default title'}
                                     />
-                                    <FormField
-                                        control={control}
+                                    <MultilingualInput
                                         name="homePageSubtitle"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>{t('homeAdmin.homePageSubtitle') || 'Homepage Subtitle'}</FormLabel>
-                                                <FormControl>
-                                                    <Input placeholder={t('homeAdmin.homePageSubtitlePlaceholder') || 'Leave empty for default subtitle'} {...field} />
-                                                </FormControl>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
+                                        label={t('homeAdmin.homePageSubtitle') || 'Homepage Subtitle'}
+                                        placeholder={t('homeAdmin.homePageSubtitlePlaceholder') || 'Leave empty for default subtitle'}
                                     />
                                     <FormField
                                         control={control}

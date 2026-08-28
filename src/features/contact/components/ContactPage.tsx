@@ -19,11 +19,12 @@ import ContactForm from './ContactForm';
 import { ScrollIndicator } from '@/components/ScrollIndicator';
 import { useRef } from 'react';
 import { useTranslation } from '@/lib/i18n/useTranslation';
+import { getLocalizedString, type MultilingualString } from '@/lib/i18n/multilingual';
 
 interface ContactInfo {
   avatarUrl?: string;
-  name?: string;
-  title?: string;
+  name?: MultilingualString;
+  title?: MultilingualString;
   email?: string;
   whatsApp?: string;
   behanceUrl?: string;
@@ -65,7 +66,7 @@ const itemVariants = {
 export default function ContactPage() {
   const firestore = useFirestore();
   const scrollRef = useRef<HTMLDivElement>(null);
-  const { t } = useTranslation();
+  const { t, lang } = useTranslation();
 
   const contactDocRef = useMemoFirebase(
     () => firestore ? doc(firestore, 'contact', 'details') : null,
@@ -77,7 +78,7 @@ export default function ContactPage() {
     () => (firestore ? doc(firestore, 'homepage', 'settings') : null),
     [firestore]
   );
-  const { data: pageSettings } = useDoc<Record<string, string>>(settingsDocRef);
+  const { data: pageSettings } = useDoc<Record<string, any>>(settingsDocRef);
 
   const contactLinks = contactInfo ? [
     { icon: faEnvelope, label: t('contact.email'), value: contactInfo.email, href: `mailto:${contactInfo.email}`, color: 'hover:text-blue-300' },
@@ -98,9 +99,9 @@ export default function ContactPage() {
       <div className="p-4 md:p-8 flex-shrink-0">
         <div className="container mx-auto px-0">
           <div className="mb-[clamp(1rem,3vh,2rem)] text-center">
-            <h1 className="text-2xl sm:text-3xl md:text-4xl font-headline tracking-tight">{pageSettings?.contactHeading || t('contact.heading')}</h1>
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-headline tracking-tight">{getLocalizedString(pageSettings?.contactHeading, lang) || t('contact.heading')}</h1>
             <p className="mt-2 max-w-2xl mx-auto text-sm sm:text-base md:text-lg text-foreground/70">
-              {pageSettings?.contactSubtitle || t('contact.subtitle')}
+              {getLocalizedString(pageSettings?.contactSubtitle, lang) || t('contact.subtitle')}
             </p>
           </div>
         </div>
@@ -130,11 +131,11 @@ export default function ContactPage() {
                     {contactInfo ? (
                     <div className="glass-effect rounded-lg p-4 sm:p-6 h-full w-full max-w-md flex flex-col items-center justify-center text-center">
                         <Avatar className="border-2 border-white mb-[clamp(0.75rem,2vh,1.25rem)] w-[clamp(3.5rem,9vh,5rem)] h-[clamp(3.5rem,9vh,5rem)]">
-                          <AvatarImage src={contactInfo.avatarUrl} alt={contactInfo.name} />
-                          <AvatarFallback>{contactInfo.name?.substring(0, 2)}</AvatarFallback>
+                          <AvatarImage src={contactInfo.avatarUrl} alt={getLocalizedString(contactInfo.name, lang)} />
+                          <AvatarFallback>{getLocalizedString(contactInfo.name, lang)?.substring(0, 2)}</AvatarFallback>
                         </Avatar>
-                        <h3 className="text-[clamp(1rem,2.4vh,1.25rem)] font-headline">{contactInfo.name}</h3>
-                        <p className="text-[clamp(0.75rem,1.8vh,1rem)] text-foreground/70">{contactInfo.title}</p>
+                        <h3 className="text-[clamp(1rem,2.4vh,1.25rem)] font-headline">{getLocalizedString(contactInfo.name, lang)}</h3>
+                        <p className="text-[clamp(0.75rem,1.8vh,1rem)] text-foreground/70">{getLocalizedString(contactInfo.title, lang)}</p>
                         
                         <Separator className="my-[clamp(0.75rem,2vh,1.25rem)] bg-white/20" />
                         

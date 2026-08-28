@@ -33,15 +33,16 @@ import {
 } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import type { PortfolioItem } from '@/features/portfolio/data/portfolio-data';
-import { useEffect, useState, useRef, useCallback } from 'react';
+import { useEffect, useState } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faXmark, faImages, faPaperclip } from '@fortawesome/free-solid-svg-icons';
+import { faXmark, faImages } from '@fortawesome/free-solid-svg-icons';
 import { useToast } from '@/hooks/use-toast';
 import { Switch } from '@/components/ui/switch';
 import { useTranslation } from '@/lib/i18n/useTranslation';
-import UnifiedMediaPicker from './UnifiedMediaPicker';
+import { MultilingualInput } from './MultilingualInput';
+import { ensureMultilingualString } from '@/lib/i18n/multilingual';
 
 
 // Pre-filled Details content for NEW projects (existing projects untouched).
@@ -60,18 +61,23 @@ Tools Used : Premiere Pro - After Effects - Photoshop
 Direction : MelliVision | Driven By Detail`;
 
 const formSchema = z.object({
-  title: z.string().min(2, {
-    message: 'Title must be at least 2 characters.',
+  title: z.object({
+    en: z.string().min(2, { message: 'Title must be at least 2 characters.' }),
+    fr: z.string().optional(),
   }),
-  description: z.string().min(10, {
-    message: 'Description must be at least 10 characters.',
+  description: z.object({
+    en: z.string().min(10, { message: 'Description must be at least 10 characters.' }),
+    fr: z.string().optional(),
   }),
   type: z.enum(['image', 'video']),
   thumbnailUrl: z.string().url({ message: 'Please enter a valid URL for the grid thumbnail.' }),
   thumbnailVttUrl: z.string().url({ message: 'Please enter a valid VTT URL.' }).optional().or(z.literal('')),
   sourceUrl: z.string().url({ message: 'Please enter a valid URL for the main media.' }).optional().or(z.literal('')),
   previewUrl: z.string().url({ message: 'Please enter a valid URL for the hover preview media.' }).optional().or(z.literal('')),
-  details: z.string().optional(),
+  details: z.object({
+    en: z.string().optional(),
+    fr: z.string().optional(),
+  }).optional(),
   thumbnailHint: z.string().optional(),
   featured: z.boolean().optional(),
   order: z.number().optional(),
@@ -99,15 +105,15 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onCho
     const form = useForm<PortfolioItemFormValues>({
       resolver: zodResolver(formSchema),
       defaultValues: {
-        title: '',
-        description: '',
+        title: { en: '', fr: '' },
+        description: { en: '', fr: '' },
         type: 'image',
         thumbnailUrl: '',
         thumbnailVttUrl: '',
         sourceUrl: '',
         thumbnailHint: '',
         featured: false,
-        details: DEFAULT_DETAILS_TEMPLATE,
+        details: { en: DEFAULT_DETAILS_TEMPLATE, fr: DEFAULT_DETAILS_TEMPLATE },
         order: undefined,
           isVisible: true,
           useVideoFrameAsPoster: false,
@@ -155,7 +161,9 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onCho
             ...item,
             featured: item.featured || false,
             thumbnailHint: item.thumbnailHint || '',
-            details: item.details || '',
+            title: ensureMultilingualString(item.title),
+            description: ensureMultilingualString(item.description),
+            details: ensureMultilingualString(item.details),
             sourceUrl: item.sourceUrl || '',
             previewUrl: item.previewUrl || '',
             thumbnailVttUrl: item.thumbnailVttUrl || '',
@@ -163,8 +171,8 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onCho
             isVisible: item.isVisible ?? true,
             useVideoFrameAsPoster: item.useVideoFrameAsPoster || false,
         } : {
-            title: '',
-            description: '',
+            title: { en: '', fr: '' },
+            description: { en: '', fr: '' },
             type: 'image' as 'image' | 'video',
             thumbnailUrl: '',
             thumbnailVttUrl: '',
@@ -172,7 +180,7 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onCho
             previewUrl: '',
             thumbnailHint: '',
             featured: false,
-            details: DEFAULT_DETAILS_TEMPLATE,
+            details: { en: DEFAULT_DETAILS_TEMPLATE, fr: DEFAULT_DETAILS_TEMPLATE },
             order: undefined, // Let parent component decide the order for new items
             isVisible: true,
             useVideoFrameAsPoster: false,
@@ -195,6 +203,9 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onCho
         onSubmit({
           id: item?.id || '', // id will be handled by parent
           ...values,
+          title: ensureMultilingualString(values.title),
+          description: ensureMultilingualString(values.description),
+          details: values.details ? ensureMultilingualString(values.details) : undefined,
           thumbnailHint: values.thumbnailHint || '',
           isVisible: values.isVisible ?? true,
           useVideoFrameAsPoster: values.useVideoFrameAsPoster || false,
@@ -224,7 +235,7 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onCho
              // If it's a new item, set the title from the filename
             if (!item?.id) {
                 const title = filename.split('.').slice(0, -1).join('.');
-                form.setValue('title', title, { shouldValidate: true });
+                form.setValue('title', { en: title, fr: title }, { shouldValidate: true });
             }
             if (form.getValues('useVideoFrameAsPoster')) {
                 const frameUrl = deriveVideoThumbnail(url);
@@ -245,47 +256,6 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onCho
         });
     };
 
-    const [mediaPickerField, setMediaPickerField] = useState<'description' | 'details' | null>(null);
-    const [isMediaPickerOpen, setIsMediaPickerOpen] = useState(false);
-    const cursorPosRef = useRef<number>(0);
-    const textareaRefs = useRef<{ [key: string]: HTMLTextAreaElement }>({});
-
-    const handleInsertMedia = useCallback((fieldName: 'description' | 'details') => {
-        const textarea = textareaRefs.current[fieldName];
-        cursorPosRef.current = textarea?.selectionStart ?? (form.getValues(fieldName) || '').length;
-        setMediaPickerField(fieldName);
-        setIsMediaPickerOpen(true);
-    }, [form]);
-
-    const handleMediaInserted = useCallback((url: string, type: 'image' | 'video' | 'raw', filename: string) => {
-        if (!mediaPickerField) return;
-        const currentValue = form.getValues(mediaPickerField) || '';
-        const pos = cursorPosRef.current;
-        const before = currentValue.slice(0, pos);
-        const after = currentValue.slice(pos);
-        const suffix = pos < currentValue.length ? '' : '\n';
-        let insertion = '';
-        if (type === 'video') {
-            insertion = `<video src="${url}" controls title="${filename}" />\n`;
-        } else if (type === 'raw') {
-            insertion = `<a href="${url}" download title="${filename}">Download</a>\n`;
-        } else {
-            insertion = `![${filename}](${url})\n`;
-        }
-        const newValue = before + insertion + suffix + after;
-        form.setValue(mediaPickerField, newValue, { shouldValidate: true });
-        setIsMediaPickerOpen(false);
-        setMediaPickerField(null);
-        setTimeout(() => {
-            const textarea = textareaRefs.current[mediaPickerField];
-            if (textarea) {
-                const newPos = pos + insertion.length + suffix.length;
-                textarea.focus();
-                textarea.setSelectionRange(newPos, newPos);
-            }
-        }, 50);
-    }, [mediaPickerField, form]);
-    
     return (<>
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
             <DialogContent className="w-[80vw] h-[90vh] flex flex-col glass-effect p-0 rounded-lg">
@@ -301,81 +271,23 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onCho
                     <Form {...form}>
                       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8">
                         <fieldset disabled={!canEdit} className="group space-y-8">
-                          <FormField
-                          control={form.control}
-                          name="title"
-                          render={({ field }) => (
-                              <FormItem>
-                              <FormLabel>{t('portfolioForm.title')}</FormLabel>
-                              <FormControl>
-                                  <Input placeholder={t('portfolioForm.titlePlaceholder')} {...field} />
-                              </FormControl>
-                              <FormMessage />
-                              </FormItem>
-                          )}
+                          <MultilingualInput
+                            name="title"
+                            label={t('portfolioForm.title')}
+                            placeholder={t('portfolioForm.titlePlaceholder')}
                           />
-                          <FormField
-                          control={form.control}
-                          name="description"
-                          render={({ field }) => (
-                              <FormItem>
-                              <FormLabel>{t('portfolioForm.description')}</FormLabel>
-                              <FormControl>
-                                  <div className="relative">
-                                      <Textarea
-                                        placeholder={t('portfolioForm.descriptionPlaceholder')}
-                                        className="pr-10"
-                                        {...field}
-                                        ref={(el) => { textareaRefs.current.description = el!; field.ref(el); }}
-                                      />
-                                      <Button
-                                        type="button"
-                                        variant="ghost"
-                                        size="icon"
-                                        className="absolute right-1 top-1 h-8 w-8 text-muted-foreground hover:text-foreground"
-                                        onClick={() => handleInsertMedia('description')}
-                                        title="Insert media"
-                                      >
-                                        <FontAwesomeIcon icon={faPaperclip} className="h-4 w-4" />
-                                      </Button>
-                                  </div>
-                              </FormControl>
-                              <FormMessage />
-                              </FormItem>
-                          )}
+                          <MultilingualInput
+                            name="description"
+                            label={t('portfolioForm.description')}
+                            placeholder={t('portfolioForm.descriptionPlaceholder')}
+                            type="textarea"
                           />
-                          <FormField
-                          control={form.control}
-                          name="details"
-                          render={({ field }) => (
-                              <FormItem>
-                              <FormLabel>{t('portfolioForm.details')}</FormLabel>
-                              <FormControl>
-                                  <div className="relative">
-                                      <Textarea
-                                        placeholder={t('portfolioForm.detailsPlaceholder')}
-                                        className="min-h-[150px] pr-10"
-                                        {...field}
-                                        ref={(el) => { textareaRefs.current.details = el!; field.ref(el); }}
-                                      />
-                                      <Button
-                                        type="button"
-                                        variant="ghost"
-                                        size="icon"
-                                        className="absolute right-1 top-1 h-8 w-8 text-muted-foreground hover:text-foreground"
-                                        onClick={() => handleInsertMedia('details')}
-                                        title="Insert media"
-                                      >
-                                        <FontAwesomeIcon icon={faPaperclip} className="h-4 w-4" />
-                                      </Button>
-                                  </div>
-                              </FormControl>
-                              <FormDescription>
-                                {t('portfolioForm.detailsHelp')}
-                              </FormDescription>
-                              <FormMessage />
-                              </FormItem>
-                          )}
+                          <MultilingualInput
+                            name="details"
+                            label={t('portfolioForm.details')}
+                            placeholder={t('portfolioForm.detailsPlaceholder')}
+                            description={t('portfolioForm.detailsHelp')}
+                            type="textarea"
                           />
                           <FormField
                           control={form.control}
@@ -615,13 +527,5 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onCho
                 </DialogClose>
             </DialogContent>
         </Dialog>
-        <UnifiedMediaPicker
-            isOpen={isMediaPickerOpen}
-            onOpenChange={(open) => {
-                setIsMediaPickerOpen(open);
-                if (!open) setMediaPickerField(null);
-            }}
-            onMediaSelect={handleMediaInserted}
-        />
     </>)
 }

@@ -9,10 +9,11 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faChevronDown } from '@fortawesome/free-solid-svg-icons';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { doc } from 'firebase/firestore';
-import { Input } from '@/components/ui/input';
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel } from '@/components/ui/form';
+import { Form } from '@/components/ui/form';
 import { useDoc, useFirestore, useMemoFirebase, setDocumentNonBlocking } from '@/firebase';
 import { useTranslation } from '@/lib/i18n/useTranslation';
+import { ensureMultilingualString } from '@/lib/i18n/multilingual';
+import { MultilingualInput } from './MultilingualInput';
 import { debounce } from '@/lib/utils';
 
 interface PageTextField {
@@ -27,7 +28,7 @@ interface PageTextEditorProps {
   fields: PageTextField[];
 }
 
-const textSchema = z.record(z.string(), z.string().optional());
+const textSchema = z.record(z.string(), z.object({ en: z.string(), fr: z.string() }).optional());
 type TextFormValues = z.infer<typeof textSchema>;
 
 /**
@@ -42,16 +43,16 @@ export default function PageTextEditor({ titleKey, fields }: PageTextEditorProps
     () => (firestore ? doc(firestore, 'homepage', 'settings') : null),
     [firestore]
   );
-  const { data: homeSettings } = useDoc<Record<string, string>>(settingsDocRef);
+  const { data: homeSettings } = useDoc<Record<string, any>>(settingsDocRef);
 
   const form = useForm<TextFormValues>({
     resolver: zodResolver(textSchema),
-    defaultValues: Object.fromEntries(fields.map(f => [f.name, ''])),
+    defaultValues: Object.fromEntries(fields.map(f => [f.name, { en: '', fr: '' }])),
   });
 
   useEffect(() => {
     if (homeSettings) {
-      form.reset(Object.fromEntries(fields.map(f => [f.name, homeSettings[f.name] || ''])));
+      form.reset(Object.fromEntries(fields.map(f => [f.name, ensureMultilingualString(homeSettings[f.name])])));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [homeSettings]);
@@ -68,7 +69,8 @@ export default function PageTextEditor({ titleKey, fields }: PageTextEditorProps
 
     const subscription = form.watch((value, { name }) => {
       if (name && typeof name === 'string') {
-        pendingRef.current[name] = value[name] ?? '';
+        const topLevel = name.split('.')[0];
+        pendingRef.current[topLevel] = (value as Record<string, any>)[topLevel] ?? { en: '', fr: '' };
         debouncedSave();
       }
     });
@@ -92,18 +94,10 @@ export default function PageTextEditor({ titleKey, fields }: PageTextEditorProps
         <Form {...form}>
           <fieldset className="space-y-4">
             {fields.map((f) => (
-              <FormField
+              <MultilingualInput
                 key={f.name}
-                control={form.control}
                 name={f.name}
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t(f.labelKey)}</FormLabel>
-                    <FormControl>
-                      <Input {...field} value={field.value || ''} />
-                    </FormControl>
-                  </FormItem>
-                )}
+                label={t(f.labelKey)}
               />
             ))}
           </fieldset>

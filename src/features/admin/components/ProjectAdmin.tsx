@@ -32,6 +32,7 @@ import { faPlusCircle, faEllipsisH, faCloudUploadAlt, faGripVertical, faEye, faE
 import Preloader from '@/components/preloader';
 import type { AppUser } from '@/firebase/auth/use-user';
 import { useTranslation } from '@/lib/i18n/useTranslation';
+import { getLocalizedString } from '@/lib/i18n/multilingual';
 import { Checkbox } from '@/components/ui/checkbox';
 import BulkActionBar from './BulkActionBar';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
@@ -46,7 +47,7 @@ function ProjectAdmin({ setSelectedItem, setIsSheetOpen }: ProjectAdminProps) {
   const firestore = useFirestore();
   const { user } = useUser();
   const { toast } = useToast();
-  const { t } = useTranslation();
+  const { t, lang } = useTranslation();
   
   const typedUser = user as AppUser | null;
   const isSuperAdmin = typedUser?.email === SUPERADMIN_EMAIL;
@@ -123,7 +124,7 @@ function ProjectAdmin({ setSelectedItem, setIsSheetOpen }: ProjectAdminProps) {
     updateDocumentNonBlocking(docRef, { isVisible: newVisibility });
     toast({
         title: t('projectAdmin.toast.visibilityChanged.title').replace('{visibility}', newVisibility ? t('projectAdmin.show') : t('projectAdmin.hide')),
-        description: t('projectAdmin.toast.visibilityChanged.description').replace('{title}', item.title).replace('{visibility}', newVisibility ? 'visible' : 'hidden'),
+        description: t('projectAdmin.toast.visibilityChanged.description').replace('{title}', getLocalizedString(item.title, lang)).replace('{visibility}', newVisibility ? 'visible' : 'hidden'),
     });
   };
 
@@ -343,15 +344,15 @@ function ProjectAdmin({ setSelectedItem, setIsSheetOpen }: ProjectAdminProps) {
                     <TableCell className="flex justify-center">
                       <Image
                         src={item.thumbnailUrl}
-                        alt={item.title}
+                        alt={getLocalizedString(item.title, lang)}
                         width={50}
                         height={50}
                         className="object-cover rounded-md"
                       />
                     </TableCell>
-                    <TableCell className="font-medium max-w-[100px] md:max-w-xs truncate text-center">{item.title}</TableCell>
+                    <TableCell className="font-medium max-w-[100px] md:max-w-xs truncate text-center">{getLocalizedString(item.title, lang)}</TableCell>
                     <TableCell className="hidden md:table-cell text-center">{item.type}</TableCell>
-                    <TableCell className="hidden lg:table-cell max-w-xs truncate text-center">{item.description}</TableCell>
+                    <TableCell className="hidden lg:table-cell max-w-xs truncate text-center">{getLocalizedString(item.description, lang)}</TableCell>
                     <TableCell className="text-center">
                       <div className="flex justify-center items-center gap-1">
                           <Button variant="ghost" size="icon" onClick={() => handleToggleVisibility(item)} disabled={!canEditProjects} title={item.isVisible === false ? t('projectAdmin.show') : t('projectAdmin.hide')}>

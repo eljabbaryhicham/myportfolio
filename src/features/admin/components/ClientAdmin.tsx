@@ -2,6 +2,8 @@
 'use client';
 
 import { useTranslation } from '@/lib/i18n/useTranslation';
+import { getLocalizedString, ensureMultilingualString, type MultilingualString } from '@/lib/i18n/multilingual';
+import { MultilingualInput } from './MultilingualInput';
 import { SUPERADMIN_EMAIL } from '@/lib/constants';
 import { useMemo, useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
@@ -43,24 +45,24 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 
 interface Client {
   id: string;
-  name: string;
+  name: MultilingualString;
   logoUrl: string;
   order: number;
   isVisible?: boolean;
 }
 
 const defaultClients: Omit<Client, 'id'>[] = [
-    { name: 'QuantumLeap', logoUrl: 'https://res.cloudinary.com/da1srnoer/image/upload/v1760834216/nqnqvmroqxngfamrcpuf.png', order: 0, isVisible: true },
-    { name: 'StellarForge', logoUrl: 'https://res.cloudinary.com/da1srnoer/image/upload/v1760834216/nqnqvmroqxngfamrcpuf.png', order: 1, isVisible: true },
-    { name: 'ApexInnovate', logoUrl: 'https://res.cloudinary.com/da1srnoer/image/upload/v1760834216/nqnqvmroqxngfamrcpuf.png', order: 2, isVisible: true },
-    { name: 'NexusCore', logoUrl: 'https://res.cloudinary.com/da1srnoer/image/upload/v1760834216/nqnqvmroqxngfamrcpuf.png', order: 3, isVisible: true },
-    { name: 'VertexDynamics', logoUrl: 'https://res.cloudinary.com/da1srnoer/image/upload/v1760834216/nqnqvmroqxngfamrcpuf.png', order: 4, isVisible: true },
-    { name: 'MomentumSuite', logoUrl: 'https://res.cloudinary.com/da1srnoer/image/upload/v1760834216/nqnqvmroqxngfamrcpuf.png', order: 5, isVisible: true },
+    { name: { en: 'QuantumLeap', fr: 'QuantumLeap' }, logoUrl: 'https://res.cloudinary.com/da1srnoer/image/upload/v1760834216/nqnqvmroqxngfamrcpuf.png', order: 0, isVisible: true },
+    { name: { en: 'StellarForge', fr: 'StellarForge' }, logoUrl: 'https://res.cloudinary.com/da1srnoer/image/upload/v1760834216/nqnqvmroqxngfamrcpuf.png', order: 1, isVisible: true },
+    { name: { en: 'ApexInnovate', fr: 'ApexInnovate' }, logoUrl: 'https://res.cloudinary.com/da1srnoer/image/upload/v1760834216/nqnqvmroqxngfamrcpuf.png', order: 2, isVisible: true },
+    { name: { en: 'NexusCore', fr: 'NexusCore' }, logoUrl: 'https://res.cloudinary.com/da1srnoer/image/upload/v1760834216/nqnqvmroqxngfamrcpuf.png', order: 3, isVisible: true },
+    { name: { en: 'VertexDynamics', fr: 'VertexDynamics' }, logoUrl: 'https://res.cloudinary.com/da1srnoer/image/upload/v1760834216/nqnqvmroqxngfamrcpuf.png', order: 4, isVisible: true },
+    { name: { en: 'MomentumSuite', fr: 'MomentumSuite' }, logoUrl: 'https://res.cloudinary.com/da1srnoer/image/upload/v1760834216/nqnqvmroqxngfamrcpuf.png', order: 5, isVisible: true },
 ];
 
 
 const formSchema = z.object({
-  name: z.string().min(2, { message: 'Name must be at least 2 characters.' }),
+  name: z.object({ en: z.string().min(2, { message: 'Name must be at least 2 characters.' }), fr: z.string().optional() }),
   logoUrl: z.string().url({ message: 'Please enter a valid URL.' }),
 });
 
@@ -71,14 +73,14 @@ function ClientForm({ client, onSubmit, onCancel, onChooseFromLibrary, canEdit }
   const form = useForm<ClientFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      name: client?.name || '',
+      name: ensureMultilingualString(client?.name),
       logoUrl: client?.logoUrl || '',
     },
   });
 
   useEffect(() => {
     form.reset({
-      name: client?.name || '',
+      name: ensureMultilingualString(client?.name),
       logoUrl: client?.logoUrl || '',
     });
   }, [client, form]);
@@ -104,18 +106,10 @@ function ClientForm({ client, onSubmit, onCancel, onChooseFromLibrary, canEdit }
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
         <fieldset disabled={!canEdit} className="group space-y-8">
-            <FormField
-            control={form.control}
-            name="name"
-            render={({ field }) => (
-                <FormItem>
-                <FormLabel>{t('clientAdmin.name')}</FormLabel>
-                <FormControl>
-                    <Input placeholder={t('clientAdmin.namePlaceholder')} {...field} />
-                </FormControl>
-                <FormMessage />
-                </FormItem>
-            )}
+            <MultilingualInput
+                name="name"
+                label={t('clientAdmin.name')}
+                placeholder={t('clientAdmin.namePlaceholder')}
             />
             <FormField
             control={form.control}
@@ -146,7 +140,7 @@ function ClientForm({ client, onSubmit, onCancel, onChooseFromLibrary, canEdit }
 }
 
 export default function ClientAdmin() {
-  const { t } = useTranslation();
+  const { t, lang } = useTranslation();
   const firestore = useFirestore();
   const { user } = useUser();
   const { toast } = useToast();
@@ -225,7 +219,7 @@ export default function ClientAdmin() {
     updateDocumentNonBlocking(docRef, { isVisible: newVisibility });
     toast({
         title: t('clientAdmin.toast.visibilityChanged.title').replace('{visibility}', newVisibility ? 'visible' : 'hidden'),
-        description: t('clientAdmin.toast.visibilityChanged.description').replace('{name}', item.name).replace('{visibility}', newVisibility ? 'visible' : 'hidden'),
+        description: t('clientAdmin.toast.visibilityChanged.description').replace('{name}', getLocalizedString(item.name, lang)).replace('{visibility}', newVisibility ? 'visible' : 'hidden'),
     });
   };
 
@@ -279,16 +273,17 @@ export default function ClientAdmin() {
   
   const handleFormSubmit = (values: ClientFormValues) => {
     if (!firestore || !canEdit) return;
+    const submitted = { ...values, name: ensureMultilingualString(values.name) };
 
     if (selectedClient && selectedClient.id) {
         // Editing existing client
         const clientRef = doc(firestore, 'clients', selectedClient.id);
-        setDocumentNonBlocking(clientRef, { ...values, order: selectedClient.order ?? 0, isVisible: selectedClient.isVisible ?? true }, { merge: true });
+        setDocumentNonBlocking(clientRef, { ...submitted, order: selectedClient.order ?? 0, isVisible: selectedClient.isVisible ?? true }, { merge: true });
         toast({ title: t('clientAdmin.toast.updated.title'), description: t('clientAdmin.toast.updated.description')});
     } else {
         // Adding new client
         const maxOrder = clients ? Math.max(-1, ...clients.map(c => c.order)) : -1;
-        const newClient = { ...values, order: maxOrder + 1, isVisible: true };
+        const newClient = { ...submitted, order: maxOrder + 1, isVisible: true };
         addDocumentNonBlocking(collection(firestore, 'clients'), newClient);
         toast({ title: t('clientAdmin.toast.added.title'), description: t('clientAdmin.toast.added.description')});
     }
@@ -424,12 +419,12 @@ export default function ClientAdmin() {
                                     <FontAwesomeIcon icon={faGripVertical} className={cn("h-5 w-5 text-foreground/50", !canEdit && "opacity-20", canEdit && "cursor-grab")} />
                                     <Image
                                         src={client.logoUrl}
-                                        alt={client.name}
+                                        alt={getLocalizedString(client.name, lang)}
                                         width={80}
                                         height={32}
                                         className="object-contain h-8 w-20 grayscale brightness-0 invert"
                                     />
-                                    <p className="font-medium truncate">{client.name}</p>
+                                    <p className="font-medium truncate">{getLocalizedString(client.name, lang)}</p>
                                 </div>
                                 <div className="flex items-center">
                                     <Button variant="ghost" size="icon" onClick={() => handleToggleVisibility(client)} disabled={!canEdit} title={client.isVisible === false ? t('clientAdmin.show') : t('clientAdmin.hide')}>
@@ -494,13 +489,13 @@ export default function ClientAdmin() {
                                 <TableCell className="flex justify-center">
                                     <Image
                                     src={client.logoUrl}
-                                    alt={client.name}
+                                    alt={getLocalizedString(client.name, lang)}
                                     width={100}
                                     height={40}
                                     className="object-contain h-10 w-24 grayscale brightness-0 invert"
                                     />
                                 </TableCell>
-                                <TableCell className="font-medium max-w-[100px] md:max-w-xs truncate">{client.name}</TableCell>
+                                <TableCell className="font-medium max-w-[100px] md:max-w-xs truncate">{getLocalizedString(client.name, lang)}</TableCell>
                                 <TableCell className="text-right">
                                     <div className="flex justify-end items-center gap-1">
                                       <Button variant="ghost" size="icon" onClick={() => handleToggleVisibility(client)} disabled={!canEdit} title={client.isVisible === false ? t('clientAdmin.show') : t('clientAdmin.hide')}>

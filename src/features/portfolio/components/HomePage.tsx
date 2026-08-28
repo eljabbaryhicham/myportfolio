@@ -18,6 +18,7 @@ import TrustedBy from "./TrustedBy";
 import { useDoc, useFirestore, useMemoFirebase } from "@/firebase";
 import { doc } from "firebase/firestore";
 import { useTranslation } from "@/lib/i18n/useTranslation";
+import { getLocalizedString, type MultilingualString } from "@/lib/i18n/multilingual";
 import { cleanVideoUrl } from "@/lib/video";
 import { forceAutoplay } from "@/lib/video-autoplay";
 const HERO_VIDEO_URL = "https://res.cloudinary.com/dsq1lxrqi/video/upload/sp_auto/pg_5/v1778867307/Ovi_Motion_Design_v3kfy0.m3u8";
@@ -31,8 +32,8 @@ interface HomePageSettings {
     heroVideoUrl?: string;
     cursorLottieUrl?: string;
     tickLottieUrl?: string;
-    homePageTitle?: string;
-    homePageSubtitle?: string;
+    homePageTitle?: MultilingualString;
+    homePageSubtitle?: MultilingualString;
     homePageTitleColor?: string;
     glassOpacity?: number;
 }
@@ -174,7 +175,7 @@ const itemVariants = {
 
 export default function HomePageContent() {
   const firestore = useFirestore();
-  const { t } = useTranslation();
+  const { t, lang } = useTranslation();
   const ctaRef = useRef<HTMLButtonElement | null>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
 
@@ -321,10 +322,10 @@ export default function HomePageContent() {
           >
             <motion.div variants={itemVariants} className="text-center space-y-2 max-w-lg md:max-w-xl lg:max-w-2xl px-4" style={{ textShadow: "0 2px 12px rgba(0,0,0,0.6)" }}>
               <h2 className="text-base sm:text-lg md:text-3xl lg:text-4xl font-headline tracking-tight min-h-[1.5rem] md:min-h-[2.5rem]" style={{ color: homeSettings?.homePageTitleColor || 'rgba(255,255,255,0.9)' }}>
-                {homeSettings?.homePageTitle || t('home.hero.heading')}
+                {getLocalizedString(homeSettings?.homePageTitle, lang) || t('home.hero.heading')}
               </h2>
               <p className="text-xs sm:text-sm md:text-lg lg:text-xl text-foreground/60 leading-relaxed min-h-[2.5rem] md:min-h-[1.75rem]" style={{ textShadow: "0 1px 8px rgba(0,0,0,0.5)" }}>
-                {homeSettings?.homePageSubtitle || t('home.hero.subtitle')}
+                {getLocalizedString(homeSettings?.homePageSubtitle, lang) || t('home.hero.subtitle')}
               </p>
             </motion.div>
             <motion.div variants={itemVariants} className="flex items-center justify-center gap-1.5 sm:gap-2 md:gap-4">

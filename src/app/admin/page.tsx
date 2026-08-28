@@ -13,7 +13,7 @@ import { signOut } from 'firebase/auth';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import dynamicImport from 'next/dynamic';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faRightFromBracket } from '@fortawesome/free-solid-svg-icons';
+import { faRightFromBracket, faWandMagicSparkles } from '@fortawesome/free-solid-svg-icons';
 import { Separator } from '@/components/ui/separator';
 import Preloader from '@/components/preloader';
 const ProjectAdmin = dynamicImport(() => import('@/features/admin/components/ProjectAdmin'), { ssr: false, loading: () => <Preloader /> });
@@ -21,6 +21,7 @@ const ContactAdmin = dynamicImport(() => import('@/features/admin/components/Con
 const MediaAdmin = dynamicImport(() => import('@/features/admin/components/MediaLibrary'), { ssr: false, loading: () => <Preloader /> });
 const HomeAdmin = dynamicImport(() => import('@/features/admin/components/HomeAdmin'), { ssr: false, loading: () => <Preloader /> });
 import type { PortfolioItem } from '@/features/portfolio/data/portfolio-data';
+import { createMultilingualString } from '@/lib/i18n/multilingual';
 const PortfolioItemFormSheet = dynamicImport(() => import('@/features/admin/components/PortfolioItemForm').then(m => m.PortfolioItemFormSheet), { ssr: false, loading: () => <Preloader /> });
 import { addDocumentNonBlocking, setDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { collection, doc, getDocs, query, orderBy, limit } from 'firebase/firestore';
@@ -216,6 +217,42 @@ function AdminPage() {
     }
   };
 
+  const [migrationRunning, setMigrationRunning] = useState(false);
+  const handleRunMigration = async () => {
+    if (!isSuperAdmin || migrationRunning) return;
+    try {
+      setMigrationRunning(true);
+      toast({
+        title: t('admin.migrationRunning'),
+      });
+      const res = await fetch('/api/admin/migrate-multilingual', { method: 'POST' });
+      const result = await res.json();
+      if (!res.ok) {
+        throw new Error(result.error || res.statusText);
+      }
+      if (result.success) {
+        toast({
+          title: t('admin.migrationDone'),
+          description: result.message,
+        });
+      } else {
+        toast({
+          variant: 'destructive',
+          title: t('admin.migrationFailed'),
+          description: result.message,
+        });
+      }
+    } catch (error: any) {
+      toast({
+        variant: 'destructive',
+        title: t('admin.migrationFailed'),
+        description: error.message,
+      });
+    } finally {
+      setMigrationRunning(false);
+    }
+  };
+
   const handlePortfolioFormSubmit = async (values: PortfolioItem) => {
     if (!firestore || !canEditProjects) return;
 
@@ -252,13 +289,13 @@ function AdminPage() {
     const title = filename.split('.').slice(0, -1).join('.'); // Remove file extension
     setSelectedPortfolioItem({
       id: '',
-      title: title || 'New Project',
-      description: '',
+      title: createMultilingualString(title || 'New Project'),
+      description: createMultilingualString(''),
       type: type === 'raw' ? 'image' : type,
       thumbnailUrl: type === 'video' ? '' : url, // For videos, thumbnail might be different
       sourceUrl: url,
       thumbnailHint: '',
-      details: DEFAULT_DETAILS_TEMPLATE,
+      details: createMultilingualString(DEFAULT_DETAILS_TEMPLATE),
     } as PortfolioItem);
     setFromMediaLibrary(true);
     setIsLibraryOpen(false); // Close library
@@ -330,6 +367,12 @@ function AdminPage() {
               </p>
             </div>
             <div className="flex items-center gap-2 md:gap-4 flex-wrap justify-center">
+              {isSuperAdmin && (
+                <Button onClick={handleRunMigration} variant="secondary" disabled={migrationRunning}>
+                  <FontAwesomeIcon icon={faWandMagicSparkles} className="mr-2 h-4 w-4" />
+                  {migrationRunning ? t('admin.migrationRunning') : t('admin.runMigration')}
+                </Button>
+              )}
               <Button onClick={() => handleLogout(false)} variant="secondary">
                 <FontAwesomeIcon icon={faRightFromBracket} className="mr-2 h-4 w-4" />
                 {t('admin.signOut')}

@@ -31,6 +31,7 @@ import { useSearchParams, usePathname } from 'next/navigation';
 import type { AppUser } from '@/firebase/auth/use-user';
 import dynamic from 'next/dynamic';
 import { useTranslation } from '@/lib/i18n/useTranslation';
+import { getLocalizedString } from '@/lib/i18n/multilingual';
 import { SUPERADMIN_EMAIL } from '@/lib/constants';
 import { cleanVideoUrl } from '@/lib/video';
 import ReactMarkdown from 'react-markdown';
@@ -364,7 +365,7 @@ const MemoizedPortfolioMedia = memo(({
   plyrRef: React.Ref<any>;
   clapprRef?: React.Ref<any>;
 }) => {
-  const { t } = useTranslation();
+  const { t, lang } = useTranslation();
   const containerRef = useRef<HTMLDivElement>(null);
   // Images own their preloader here — same principle as the video players:
   // hide it only when the bitmap is actually loaded and painted.
@@ -493,7 +494,7 @@ const MemoizedPortfolioMedia = memo(({
         )}
         <MemoizedImage
           src={item.sourceUrl || item.thumbnailUrl}
-          alt={item.title}
+          alt={getLocalizedString(item.title, lang)}
           fill
           className={cn("object-contain", isImageLoading ? 'opacity-0' : 'opacity-100')}
         />
@@ -513,7 +514,7 @@ MemoizedPortfolioMedia.displayName = 'MemoizedPortfolioMedia';
 
 
 const PortfolioGridItem = ({ item, onClick, onEditClick, isAdmin, isSuperAdmin, onSwitchPlayer, isPriority }: { item: PortfolioItem, onClick: () => void, onEditClick: () => void, isAdmin: boolean, isSuperAdmin: boolean, onSwitchPlayer: () => void, isPriority?: boolean }) => {
-  const { t } = useTranslation();
+  const { t, lang } = useTranslation();
   const [isLoaded, setIsLoaded] = useState(false);
   // Hover preview (desktop only): mount a muted looping <video> / full image
   // over the thumbnail while hovered; unmounting on leave frees the decoder.
@@ -567,7 +568,7 @@ const PortfolioGridItem = ({ item, onClick, onEditClick, isAdmin, isSuperAdmin, 
         )}
         <Image
           src={item.thumbnailUrl}
-          alt={item.title}
+          alt={getLocalizedString(item.title, lang)}
           fill
           priority={!!isPriority}
           fetchPriority={isPriority ? "high" : "auto"}
@@ -594,7 +595,7 @@ const PortfolioGridItem = ({ item, onClick, onEditClick, isAdmin, isSuperAdmin, 
         {isHovering && item.type === 'image' && previewSource && previewSource !== item.thumbnailUrl && (
           <MemoizedImage
             src={previewSource}
-            alt={item.title}
+            alt={getLocalizedString(item.title, lang)}
             fill
             className="object-cover animate-in fade-in duration-500"
             sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
@@ -607,10 +608,10 @@ const PortfolioGridItem = ({ item, onClick, onEditClick, isAdmin, isSuperAdmin, 
           {isLoaded ? (
             <>
               <h3 className="font-bold text-white text-base md:text-lg">
-                {item.title}
+                {getLocalizedString(item.title, lang)}
               </h3>
               <p className="text-white/80 text-xs md:text-sm line-clamp-2">
-                {item.description}
+                {getLocalizedString(item.description, lang)}
               </p>
             </>
           ) : (
@@ -686,7 +687,7 @@ function WorkPageContent() {
   const { toast } = useToast();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const { t } = useTranslation();
+  const { t, lang } = useTranslation();
 
   const typedUser = user as AppUser | null;
   const isSuperAdmin = typedUser?.email === SUPERADMIN_EMAIL;
@@ -895,7 +896,7 @@ function WorkPageContent() {
   // mid-transition and leaving AnimatePresence an empty shell on slow devices.
   useEffect(() => {
     if (!selectedSlug || !portfolioItems) return;
-    const item = portfolioItems.find(p => slugify(p.title) === selectedSlug);
+    const item = portfolioItems.find(p => slugify(getLocalizedString(p.title, lang)) === selectedSlug);
     if (item && item.id !== selectedItem?.id) {
       handleItemClick(item);
     } else if (!item) {
@@ -922,7 +923,7 @@ function WorkPageContent() {
   const handleItemClick = useCallback((item: PortfolioItem) => {
     setDirection(null);
     setSelectedItem(item);
-    updateUrl(slugify(item.title));
+    updateUrl(slugify(getLocalizedString(item.title, lang)));
   }, [updateUrl]);
   
   const minOrder = useMemo(() => {
@@ -941,7 +942,7 @@ function WorkPageContent() {
     if (selectedItem) {
       const LONG_DESCRIPTION_THRESHOLD = 150;
       setIsDescriptionLong(
-        (selectedItem.description?.length || 0) > LONG_DESCRIPTION_THRESHOLD
+        (getLocalizedString(selectedItem.description, lang).length || 0) > LONG_DESCRIPTION_THRESHOLD
       );
     } else {
       setIsDescriptionLong(false);
@@ -1145,9 +1146,9 @@ function WorkPageContent() {
         <div className="p-4 md:p-8 pb-4 flex-shrink-0">
           <div className="container mx-auto px-0">
             <div className="mb-8 text-center">
-              <h1 className="text-3xl md:text-4xl font-headline tracking-tight">{homeSettings?.workHeading || t('work.heading')}</h1>
+              <h1 className="text-3xl md:text-4xl font-headline tracking-tight">{getLocalizedString(homeSettings?.workHeading, lang) || t('work.heading')}</h1>
               <p className="mt-2 max-w-2xl mx-auto text-base md:text-lg text-foreground/70">
-                {homeSettings?.workSubtitle || t('work.subtitle')}
+                {getLocalizedString(homeSettings?.workSubtitle, lang) || t('work.subtitle')}
               </p>
             </div>
             <div className="flex flex-wrap justify-center gap-2 mb-4">
@@ -1274,10 +1275,10 @@ function WorkPageContent() {
                       <DialogHeader className="p-4 md:p-6 flex-shrink-0 relative">
                         <div className="text-center" onPointerDown={(e) => { if (isMobile) dragControls.start(e); }}>
                           <DialogTitle className="text-base md:text-2xl font-headline px-[20%]">
-                            {selectedItem.title}
+                            {getLocalizedString(selectedItem.title, lang)}
                           </DialogTitle>
                           <DialogDescription className="text-sm md:text-base text-center text-foreground/70 mt-2 md:mt-4 whitespace-pre-wrap max-w-2xl mx-auto">
-                              {selectedItem.description}
+                              {getLocalizedString(selectedItem.description, lang)}
                           </DialogDescription>
                         </div>
                       
@@ -1338,7 +1339,7 @@ function WorkPageContent() {
                                     <FontAwesomeIcon icon={faUpDown} className="mr-2" />
                                     {t('work.details.showDetails')}
                                   </Button>
-                                  {hasDetailsMedia(selectedItem.details) && (
+                                  {hasDetailsMedia(getLocalizedString(selectedItem.details, lang)) && (
                                     <span
                                       className="absolute -top-1.5 -right-1.5 flex items-center justify-center h-5 w-5 rounded-full bg-primary text-primary-foreground shadow-md"
                                       title={t('work.details.mediaBadge')}
@@ -1383,11 +1384,11 @@ function WorkPageContent() {
             {selectedItem && (
                 <>
                 <DialogHeader className="p-4 md:p-6 pb-0 min-w-0">
-                    <DialogTitle className="font-headline text-base sm:text-lg md:text-xl break-words leading-tight hyphens-auto">{t('work.details.title').replace('{title}', selectedItem.title)}</DialogTitle>
+                    <DialogTitle className="font-headline text-base sm:text-lg md:text-xl break-words leading-tight hyphens-auto">{t('work.details.title').replace('{title}', getLocalizedString(selectedItem.title, lang))}</DialogTitle>
                 </DialogHeader>
                 <ScrollArea className="flex-1 min-w-0 [&>div>div]:!block [&>div>div]:min-w-0 [&>div>div]:w-full">
                     <div className="project-details prose prose-sm sm:prose-base dark:prose-invert max-w-full w-full min-w-0 overflow-hidden break-words space-y-4 text-xs sm:text-sm text-foreground/80 p-3 sm:p-4 md:p-6 box-border prose-p:my-2 prose-p:leading-relaxed prose-headings:break-words prose-h1:text-lg sm:prose-h1:text-xl prose-h2:text-base sm:prose-h2:text-lg prose-h3:text-sm sm:prose-h3:text-base prose-li:text-xs sm:prose-li:text-sm prose-a:break-all">
-                        <ProjectDetailsContent details={selectedItem.details || ''} playerType={workPagePlayer} onImageFullscreen={setFullscreenImageUrl} mediaWidth={homeSettings?.mediaWidth} showMediaTitles={homeSettings?.showMediaTitles ?? true} watermark={watermarkLogoUrl} watermarkSize={watermarkSize} watermarkOpacity={watermarkOpacity} watermarkPosition={watermarkPosition} />
+                        <ProjectDetailsContent details={getLocalizedString(selectedItem.details, lang)} playerType={workPagePlayer} onImageFullscreen={setFullscreenImageUrl} mediaWidth={homeSettings?.mediaWidth} showMediaTitles={homeSettings?.showMediaTitles ?? true} watermark={watermarkLogoUrl} watermarkSize={watermarkSize} watermarkOpacity={watermarkOpacity} watermarkPosition={watermarkPosition} />
                     </div>
                 </ScrollArea>
                  <DialogClose className={cn(
@@ -1408,13 +1409,13 @@ function WorkPageContent() {
             <DialogHeader>
               <DialogTitle className="font-headline">{t('work.details.contactTitle')}</DialogTitle>
               <DialogDescription>
-                {t('work.details.contactDescription').replace('{title}', selectedItem?.title || '')}
+                {t('work.details.contactDescription').replace('{title}', selectedItem ? getLocalizedString(selectedItem.title, lang) : '')}
               </DialogDescription>
             </DialogHeader>
             <Suspense fallback={<div className="h-64" />}>
               <LazyContactForm
                   onSuccess={() => setIsContactFormOpen(false)}
-                  defaultMessage={selectedItem ? t('work.details.contactDefaultMessage').replace('{title}', selectedItem.title) : ''}
+                  defaultMessage={selectedItem ? t('work.details.contactDefaultMessage').replace('{title}', getLocalizedString(selectedItem.title, lang)) : ''}
               />
             </Suspense>
             <DialogClose className={cn(
