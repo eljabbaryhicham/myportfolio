@@ -320,7 +320,7 @@ export default function HomePageContent() {
                 filter: "blur(50px)",
               }} />
               <video ref={videoRef} autoPlay muted loop playsInline preload="metadata" poster={HERO_VIDEO_POSTER} className="absolute inset-0 w-full h-full object-cover" style={{ pointerEvents: 'none' }} />
-              <div className="absolute inset-0 bg-black/60" />
+              <div className="absolute inset-0 bg-background/60" />
               <div className="absolute inset-0" style={{ backdropFilter: "blur(1px)" }} />
             </div>
             {isLogoVisible && homeLogoUrl && (
