@@ -35,6 +35,8 @@ interface HomePageSettings {
 }
 
 const MENUBAR_LOGO_CACHE_KEY = 'menubar-logo-url';
+const NAV_BUTTON_SIZE_CACHE_KEY = 'menubar-nav-button-size';
+const MENUBAR_LOGO_SIZE_CACHE_KEY = 'menubar-logo-size';
 
 export function AppNav() {
   const pathname = usePathname();
@@ -66,6 +68,45 @@ export function AppNav() {
       return null;
     }
   });
+
+  // Hydrate the button/logo sizes instantly from local cache so the buttons
+  // render at the saved size on first paint instead of growing from the default.
+  const [cachedNavButtonSize, setCachedNavButtonSize] = React.useState<number | null>(() => {
+    if (typeof window === 'undefined') return null;
+    try {
+      const v = window.localStorage.getItem(NAV_BUTTON_SIZE_CACHE_KEY);
+      return v ? Number(v) : null;
+    } catch {
+      return null;
+    }
+  });
+
+  const [cachedMenubarLogoSize, setCachedMenubarLogoSize] = React.useState<number | null>(() => {
+    if (typeof window === 'undefined') return null;
+    try {
+      const v = window.localStorage.getItem(MENUBAR_LOGO_SIZE_CACHE_KEY);
+      return v ? Number(v) : null;
+    } catch {
+      return null;
+    }
+  });
+
+  React.useEffect(() => {
+    if (homeSettings?.navButtonSize && homeSettings.navButtonSize !== cachedNavButtonSize) {
+      setCachedNavButtonSize(homeSettings.navButtonSize);
+      try { window.localStorage.setItem(NAV_BUTTON_SIZE_CACHE_KEY, String(homeSettings.navButtonSize)); } catch {}
+    }
+  }, [homeSettings?.navButtonSize, cachedNavButtonSize]);
+
+  React.useEffect(() => {
+    if (homeSettings?.menubarLogoSize && homeSettings.menubarLogoSize !== cachedMenubarLogoSize) {
+      setCachedMenubarLogoSize(homeSettings.menubarLogoSize);
+      try { window.localStorage.setItem(MENUBAR_LOGO_SIZE_CACHE_KEY, String(homeSettings.menubarLogoSize)); } catch {}
+    }
+  }, [homeSettings?.menubarLogoSize, cachedMenubarLogoSize]);
+
+  const navButtonSize = homeSettings?.navButtonSize || cachedNavButtonSize || 40;
+  const menubarLogoSize = homeSettings?.menubarLogoSize || cachedMenubarLogoSize || 48;
 
   React.useEffect(() => {
     const resolved = homeSettings?.menubarLogoUrl || homeSettings?.homePageLogoUrl || contactInfo?.logoUrl;
@@ -110,7 +151,7 @@ export function AppNav() {
             "text-white",
             isActive ? "" : (isSpecialButton ? "bg-cyan-500/80" : "glass-effect"),
           )}
-          style={!isMobile ? { width: homeSettings?.navButtonSize || 40, height: homeSettings?.navButtonSize || 40 } : undefined}
+          style={!isMobile ? { width: navButtonSize, height: navButtonSize } : undefined}
         >
           {isActive && (
             <motion.div
@@ -191,7 +232,7 @@ export function AppNav() {
         {(() => {
             // Always reserve the logo slot so nav items don't shift when
             // the logo URL resolves asynchronously.
-            const size = homeSettings?.menubarLogoSize || 48;
+            const size = menubarLogoSize;
             const innerSize = size - 8;
             if (!logoUrl) {
               return <div className="mt-4" style={{ width: size, height: size }} aria-hidden="true" />;
