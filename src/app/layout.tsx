@@ -9,33 +9,34 @@ import { bungee, quicksand, dancingScript } from './fonts';
 import AppShell from '@/components/layout/app-shell';
 import { getHomePageSettings } from '@/lib/home-page-settings';
 
-export const metadata: Metadata = {
-  metadataBase: new URL('https://mellivision.com'),
-  title: { default: 'MelliVision — Driven By Detail', template: '%s | MelliVision' },
-  description: 'MelliVision — Driven By Detail. Premium motion design, VFX and creative production for brands worldwide. Explore our work.',
-  openGraph: {
-    title: 'MelliVision — Driven By Detail',
-    description: 'Premium motion design, VFX and creative production for brands worldwide.',
-    url: 'https://mellivision.com',
-    siteName: 'MelliVision',
-    images: [{ url: '/opengraph-image', width: 1200, height: 630 }],
-    locale: 'en_US',
-    type: 'website',
-  },
-  twitter: { card: 'summary_large_image', title: 'MelliVision — Driven By Detail', description: 'Premium motion design, VFX and creative production.' },
-  alternates: { canonical: '/' },
-  robots: { index: true, follow: true },
-};
-
-// generateMetadata runs at request time and shares the same cache()-wrapped
-// Firestore read as RootLayout via getHomePageSettings(), so no extra round trip.
+// Single export: generateMetadata runs at request time, shares the cache()-
+// wrapped Firestore read with RootLayout via getHomePageSettings(), and
+// injects the admin-configured favicon/logo into the SSR <head>. The static
+// /favicon.ico is the fallback only if all three URLs are missing.
 export async function generateMetadata(): Promise<Metadata> {
   const settings = await getHomePageSettings();
   const url = settings?.faviconUrl || settings?.menubarLogoUrl || settings?.homePageLogoUrl;
   const icons: NonNullable<Metadata['icons']> = url
     ? { icon: url, shortcut: url, apple: url }
     : { icon: '/favicon.ico', shortcut: '/favicon.ico' };
-  return { ...metadata, icons };
+  return {
+    metadataBase: new URL('https://mellivision.com'),
+    title: { default: 'MelliVision — Driven By Detail', template: '%s | MelliVision' },
+    description: 'MelliVision — Driven By Detail. Premium motion design, VFX and creative production for brands worldwide. Explore our work.',
+    openGraph: {
+      title: 'MelliVision — Driven By Detail',
+      description: 'Premium motion design, VFX and creative production for brands worldwide.',
+      url: 'https://mellivision.com',
+      siteName: 'MelliVision',
+      images: [{ url: '/opengraph-image', width: 1200, height: 630 }],
+      locale: 'en_US',
+      type: 'website',
+    },
+    twitter: { card: 'summary_large_image', title: 'MelliVision — Driven By Detail', description: 'Premium motion design, VFX and creative production.' },
+    alternates: { canonical: '/' },
+    robots: { index: true, follow: true },
+    icons,
+  };
 }
 
 export const viewport: Viewport = {
