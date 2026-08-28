@@ -69,47 +69,27 @@ export function AppNav() {
     }
   });
 
-  // Hydrate the button/logo sizes instantly from local cache so the buttons
-  // render at the saved size on first paint instead of growing from the default.
-  const [cachedNavButtonSize, setCachedNavButtonSize] = React.useState<number | null>(() => {
-    if (typeof window === 'undefined') return null;
-    try {
-      const v = window.localStorage.getItem(NAV_BUTTON_SIZE_CACHE_KEY);
-      return v ? Number(v) : null;
-    } catch {
-      return null;
-    }
-  });
-
-  const [cachedMenubarLogoSize, setCachedMenubarLogoSize] = React.useState<number | null>(() => {
-    if (typeof window === 'undefined') return null;
-    try {
-      const v = window.localStorage.getItem(MENUBAR_LOGO_SIZE_CACHE_KEY);
-      return v ? Number(v) : null;
-    } catch {
-      return null;
-    }
-  });
-
+  // Keep the button/logo sizes in sync with Firestore live: whenever the
+  // settings change (e.g. from the admin panel), update the CSS variable (which
+  // the buttons/logo read) and refresh the first-paint cache. The initial
+  // value on first paint comes from the inline head script reading localStorage.
   React.useEffect(() => {
-    if (homeSettings?.navButtonSize && homeSettings.navButtonSize !== cachedNavButtonSize) {
-      setCachedNavButtonSize(homeSettings.navButtonSize);
+    if (homeSettings?.navButtonSize) {
+      document.documentElement.style.setProperty('--nav-button-size', `${homeSettings.navButtonSize}px`);
       try {
         window.localStorage.setItem(NAV_BUTTON_SIZE_CACHE_KEY, String(homeSettings.navButtonSize));
-        document.documentElement.style.setProperty('--nav-button-size', `${homeSettings.navButtonSize}px`);
       } catch {}
     }
-  }, [homeSettings?.navButtonSize, cachedNavButtonSize]);
+  }, [homeSettings?.navButtonSize]);
 
   React.useEffect(() => {
-    if (homeSettings?.menubarLogoSize && homeSettings.menubarLogoSize !== cachedMenubarLogoSize) {
-      setCachedMenubarLogoSize(homeSettings.menubarLogoSize);
+    if (homeSettings?.menubarLogoSize) {
+      document.documentElement.style.setProperty('--menubar-logo-size', `${homeSettings.menubarLogoSize}px`);
       try {
         window.localStorage.setItem(MENUBAR_LOGO_SIZE_CACHE_KEY, String(homeSettings.menubarLogoSize));
-        document.documentElement.style.setProperty('--menubar-logo-size', `${homeSettings.menubarLogoSize}px`);
       } catch {}
     }
-  }, [homeSettings?.menubarLogoSize, cachedMenubarLogoSize]);
+  }, [homeSettings?.menubarLogoSize]);
 
   React.useEffect(() => {
     const resolved = homeSettings?.menubarLogoUrl || homeSettings?.homePageLogoUrl || contactInfo?.logoUrl;
