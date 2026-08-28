@@ -27,7 +27,6 @@ import { useIsExtraWide } from '@/hooks/use-is-extra-wide';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useToast } from '@/hooks/use-toast';
 import { motion, AnimatePresence, PanInfo, useDragControls } from 'framer-motion';
-import { useSearchParams, usePathname } from 'next/navigation';
 import type { AppUser } from '@/firebase/auth/use-user';
 import dynamic from 'next/dynamic';
 import { useTranslation } from '@/lib/i18n/useTranslation';
@@ -39,16 +38,10 @@ import remarkGfm from 'remark-gfm';
 import rehypeRaw from 'rehype-raw';
 import rehypeSanitize, { defaultSchema } from 'rehype-sanitize';
 import type { HomePageSettings } from '@/lib/types';
-
-function getWatermarkPositionStyle(position: string) {
-  switch(position) {
-    case 'top-left': return { top: '10px', left: '10px' } as const;
-    case 'top-right': return { top: '10px', right: '10px' } as const;
-    case 'bottom-left': return { bottom: '10px', left: '10px' } as const;
-    case 'bottom-right':
-    default: return { bottom: '10px', right: '42px' } as const;
-  }
-}
+import CdnClapprPlayer from '@/components/CdnClapprPlayer';
+import PlyrPlayer from '@/components/PlyrPlayer';
+import { getWatermarkPositionStyle, hasDetailsMedia, normalizeSelfClosingMedia, slugify } from '@/features/portfolio/components/work-helpers';
+import { useWorkUrlSync } from '@/features/portfolio/components/useWorkUrlSync';
 
 let playersPreloaded = false;
 function preloadPlayers() {
@@ -65,28 +58,10 @@ const PortfolioItemFormSheet = dynamic(() => import('@/features/admin/components
 const UnifiedMediaPicker = dynamic(() => import('@/features/admin/components/UnifiedMediaPicker'), { ssr: false });
 const LazyContactForm = lazy(() => import('@/features/contact/components/ContactForm'));
 
-// Video players imported directly (not lazy) to ensure ref forwarding works
-// for pause/play control via useImperativeHandle.
-import CdnClapprPlayer from '@/components/CdnClapprPlayer';
-import PlyrPlayer from '@/components/PlyrPlayer';
-
 const MemoizedPlyrPlayer = memo(PlyrPlayer);
 const MemoizedCdnClapprPlayer = memo(CdnClapprPlayer);
 
 const MemoizedImage = memo(Image);
-
-// Markdown's raw-HTML parser follows real HTML rules where `<video ... />`
-// is an UNCLOSED tag (self-closing only exists for void elements like <img>).
-// Every subsequent video then nests inside the first one and only a single
-// player renders. Rewrite the self-closing form to explicit open+close tags
-// so embedded videos stay siblings.
-const normalizeSelfClosingMedia = (md: string) =>
-  md.replace(/<(video|audio)\b([^>]*?)\/>/gi, '<$1$2></$1>');
-
-// Detects embedded media (raw HTML tags or Markdown images) inside project
-// details — used to badge the "Show details" button.
-const DETAILS_MEDIA_RE = /<\s*(video|audio|img|source)\b|!\[[^\]]*\]\([^)]+\)/i;
-const hasDetailsMedia = (details?: string) => !!details && DETAILS_MEDIA_RE.test(details);
 
 // Android: defer heavy Clappr/Plyr init past the dialog's enter
 // animation. iOS/desktop keep the original immediate behaviour.
@@ -660,8 +635,6 @@ const PortfolioGridItem = ({ item, onClick, onEditClick, isAdmin, isSuperAdmin, 
   );
 };
 
-const slugify = (text: string) => text.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, '');
-
 export default function WorkPage() {
   return (
     <Suspense fallback={<WorkPageLoading />}>
@@ -685,8 +658,7 @@ function WorkPageContent() {
   // profile doc, so don't wait for useUser()'s extra profile read.
   const { isUserLoading: isAuthSettling } = useFirebase();
   const { toast } = useToast();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
+  const { selectedSlug, updateUrl } = useWorkUrlSync();
   const { t, lang } = useTranslation();
 
   const typedUser = user as AppUser | null;
@@ -719,8 +691,6 @@ function WorkPageContent() {
     [firestore]
   );
   const { data: homeSettings } = useDoc<HomePageSettings>(settingsDocRef);
-
-  const selectedSlug = searchParams.get('id');
 
   const [selectedItem, setSelectedItem] = useState<PortfolioItem | null>(null);
   const [selectedItemForEdit, setSelectedItemForEdit] = useState<PortfolioItem | null>(null);
@@ -905,21 +875,6 @@ function WorkPageContent() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedSlug, portfolioItems]);
   
-  const updateUrl = useCallback((slug: string | null) => {
-    const params = new URLSearchParams(searchParams.toString());
-    if (slug) {
-      params.set('id', slug);
-    } else {
-      params.delete('id');
-    }
-    // Shallow URL update: keep the project link shareable WITHOUT triggering
-    // an App Router navigation — router.push caused a full route transition
-    // per click that blanked the details dialog on slow/mobile connections.
-    const qs = params.toString();
-    const url = qs ? `${pathname}?${qs}` : pathname;
-    window.history.replaceState(window.history.state, '', url);
-  }, [pathname, searchParams]);
-
   const handleItemClick = useCallback((item: PortfolioItem) => {
     setDirection(null);
     setSelectedItem(item);
