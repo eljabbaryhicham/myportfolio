@@ -415,6 +415,8 @@ export default forwardRef<MediaLibraryRef, MediaLibraryProps>(function MediaLibr
 
   // Upload cancellation state
   const activeXhrRef = useRef<XMLHttpRequest | null>(null);
+  // Abort controller for the Vercel Blob presigned `upload()` (video) path.
+  const activeBlobAbortRef = useRef<AbortController | null>(null);
   const [isCancelling, setIsCancelling] = useState(false);
 
   // HandleVercelUpload ref for retry logic (avoids circular dependency)
@@ -507,7 +509,7 @@ export default forwardRef<MediaLibraryRef, MediaLibraryProps>(function MediaLibr
         interrupted.forEach((snap) => {
           toast({
             title: 'Interrupted upload detected',
-            description: `"${snap.fileName}" was at ${snap.progress}%. Click to resume.`,
+            description: `"${snap.fileName}" was at ${snap.progress}%. It did not finish — please select and upload it again.`,
             variant: 'default',
           });
         });
@@ -603,18 +605,27 @@ export default forwardRef<MediaLibraryRef, MediaLibraryProps>(function MediaLibr
 
   // ---- Upload Cancellation ----
   const cancelUpload = useCallback(() => {
+    let cancelled = false;
     if (activeXhrRef.current) {
-      setIsCancelling(true);
       activeXhrRef.current.abort();
       activeXhrRef.current = null;
+      cancelled = true;
+    }
+    if (activeBlobAbortRef.current) {
+      activeBlobAbortRef.current.abort();
+      activeBlobAbortRef.current = null;
+      cancelled = true;
+    }
+    if (cancelled) {
+      setIsCancelling(true);
       setIsUploading(false);
       setUploadProgress(0);
       setUploadingFileName('');
-      finishUpload('vercel');
+      finishUpload(provider === 'cloudinary' ? 'cloudinary' : 'vercel');
       toast({ title: 'Upload cancelled', variant: 'default' });
       setTimeout(() => setIsCancelling(false), 500);
     }
-  }, [finishUpload, toast]);
+  }, [finishUpload, toast, provider]);
 
   const cancelAllUploads = useCallback(() => {
     cancelUpload();
@@ -684,6 +695,9 @@ for (const file of files) {
             // Next.js serverless request-body limit that makes large video uploads
             // through the proxy route fail (while small images/raw files pass through).
             const { upload } = await import('@vercel/blob/client');
+            // Fresh AbortController so the Cancel button can stop this upload.
+            const controller = new AbortController();
+            activeBlobAbortRef.current = controller;
             const blob = await upload(
               `vercel-blob/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, '_')}`,
               file,
@@ -692,6 +706,7 @@ for (const file of files) {
                 handleUploadUrl: '/api/vercel-blob/handle-upload',
                 headers: { Authorization: `Bearer ${token}` },
                 contentType: file.type || undefined,
+                abortSignal: controller.signal,
                 onUploadProgress: (e: { loaded?: number; total?: number; percentage?: number }) => {
                   const p = Math.round(e.percentage ?? (e.total ? ((e.loaded || 0) / e.total) * 100 : 0));
                   setUploadProgress(p);
@@ -782,6 +797,7 @@ for (const file of files) {
         toast({ variant: 'destructive', title: 'Upload failed', description: e?.message || String(e) });
       } finally {
         activeXhrRef.current = null;
+        activeBlobAbortRef.current = null;
         setIsUploading(false);
         setUploadProgress(0);
         setUploadingFileName('');
@@ -874,6 +890,7 @@ for (const file of files) {
       formData.append('file', file);
       formData.append('upload_preset', uploadPreset);
       const xhr = new XMLHttpRequest();
+      activeXhrRef.current = xhr;
       xhr.open('POST', `https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`, true);
       xhr.upload.onprogress = (event) => {
         if (event.lengthComputable) {
@@ -882,6 +899,13 @@ for (const file of files) {
           updateGlobalProgress(progress, 'cloudinary');
           if (progress >= 100) finishGlobalUpload('cloudinary');
         }
+      };
+      // Aborted via the Cancel button — reset UI without showing a failure.
+      xhr.onabort = () => {
+        activeXhrRef.current = null;
+        setIsUploading(false);
+        setUploadProgress(0);
+        setUploadingFileName('');
       };
       xhr.onload = async () => {
         if (xhr.status === 200) {
@@ -912,7 +936,7 @@ for (const file of files) {
       };
       xhr.onerror = () => { toast({ variant: 'destructive', title: t('mediaAdmin.toast.uploadFailedNetwork.title').replace('{file}', file.name), description: t('mediaAdmin.toast.uploadFailedNetwork.description') }); };
       xhr.send(formData);
-      await new Promise(resolve => { xhr.onloadend = () => resolve(undefined); });
+      await new Promise(resolve => { xhr.onloadend = () => { activeXhrRef.current = null; resolve(undefined); }; });
     }
     setIsUploading(false);
     setUploadingFileName('');

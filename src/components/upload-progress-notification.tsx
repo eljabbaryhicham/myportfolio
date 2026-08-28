@@ -60,14 +60,15 @@ export default function UploadProgressNotification() {
   };
 
   const goToMediaTab = (provider: 'vercel' | 'cloudinary', resourceType?: 'image' | 'video' | 'raw') => {
-    // Use query params so the admin page can read them and switch tabs
     const tab = resourceType === 'video' ? 'videos' : resourceType === 'raw' ? 'files' : 'images';
-    const url = `/admin?tab=media&innerTab=${provider}&mediaTab=${tab}`;
     if (pathname === '/admin') {
-      // Already on admin page - use replace to avoid history clutter, then reload to trigger tab switch
-      window.history.replaceState(null, '', url);
-      window.location.reload();
+      // Already on the admin page: switch tabs via an event (no full reload), so
+      // an in-flight upload is NOT aborted. The admin page listens and forwards
+      // the sub-tab to the media library.
+      window.dispatchEvent(new CustomEvent('admin-goto-media', { detail: { provider, tab } }));
     } else {
+      // Navigate from elsewhere: use query params so the admin page switches on mount.
+      const url = `/admin?tab=media&innerTab=${provider}&mediaTab=${tab}`;
       router.push(url);
     }
   };

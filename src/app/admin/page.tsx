@@ -81,9 +81,20 @@ function AdminPage() {
       const qs = new URLSearchParams(window.location.search);
       const tabParam = qs.get('tab');
       const innerTabParam = qs.get('innerTab');
+      const mediaTabParam = qs.get('mediaTab') as 'images' | 'videos' | 'files' | null;
       if (tabParam === 'media' && (innerTabParam === 'cloudinary' || innerTabParam === 'vercel')) {
         setActiveTab('media');
         setInnerMediaTab(innerTabParam);
+        // Forward the sub-tab to the media library (it is force-mounted, so its
+        // listener is already active) so it opens on the matching sub-tab.
+        if (mediaTabParam && ['images', 'videos', 'files'].includes(mediaTabParam)) {
+          window.dispatchEvent(new CustomEvent('media-library-maximize', {
+            detail: {
+              provider: innerTabParam === 'cloudinary' ? 'cloudinary' : 'vercel_blob',
+              tab: mediaTabParam,
+            },
+          }));
+        }
         // Clean the URL so a page refresh doesn't keep forcing the media tab.
         window.history.replaceState(null, '', '/admin');
         return;
@@ -100,6 +111,25 @@ function AdminPage() {
       setInnerMediaTab(savedInnerTab);
       localStorage.removeItem('adminInnerMediaTab');
     }
+  }, []);
+
+  // Switch to the correct Media + provider tab WITHOUT a page reload when the
+  // upload notification's "open in library" is clicked while already on /admin
+  // (a reload would abort any in-flight upload). Forwards the sub-tab to the
+  // media library so it opens on the matching images/videos/files view.
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent).detail as { provider?: 'vercel' | 'cloudinary'; tab?: string } | undefined;
+      if (!detail) return;
+      setActiveTab('media');
+      setInnerMediaTab(detail.provider === 'cloudinary' ? 'cloudinary' : 'vercel');
+      const provider = detail.provider === 'cloudinary' ? 'cloudinary' : 'vercel_blob';
+      window.dispatchEvent(new CustomEvent('media-library-maximize', {
+        detail: { provider, tab: detail.tab || 'images' },
+      }));
+    };
+    window.addEventListener('admin-goto-media', handler);
+    return () => window.removeEventListener('admin-goto-media', handler);
   }, []);
   
   useEffect(() => {
