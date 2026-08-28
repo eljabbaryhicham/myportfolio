@@ -58,3 +58,75 @@ export async function getStructuredDataJsonLd(): Promise<string> {
     '@graph': graph,
   });
 }
+
+// ---------------------------------------------------------------------------
+// Per-item JSON-LD for /work?id=...
+// ---------------------------------------------------------------------------
+export type MinimalPortfolioItem = {
+  id?: string;
+  type?: 'image' | 'video';
+  title?: { en?: string; fr?: string } | string;
+  description?: { en?: string; fr?: string } | string;
+  thumbnailUrl?: string;
+  sourceUrl?: string;
+  previewUrl?: string;
+  details?: { en?: string; fr?: string } | string;
+  updatedAt?: { toDate?: () => Date };
+};
+
+function getLocalized(item: MinimalPortfolioItem, field: 'title' | 'description' | 'details', fallback: string): string {
+  const v = item[field];
+  if (typeof v === 'string') return v;
+  if (v && typeof v === 'object') return v.en || v.fr || fallback;
+  return fallback;
+}
+
+export function portfolioItemJsonLd(item: MinimalPortfolioItem): string {
+  const title = getLocalized(item, 'title', 'Untitled');
+  const description = getLocalized(item, 'description', '');
+  const detailText = getLocalized(item, 'details', description);
+  const url = `${SITE_URL}/work?id=${encodeURIComponent(item.id || '')}`;
+  const thumb = item.thumbnailUrl;
+  const isVideo = item.type === 'video' && (item.sourceUrl || item.previewUrl);
+
+  const videoObject = isVideo
+    ? {
+        '@type': 'VideoObject',
+        name: title,
+        description: description || detailText,
+        thumbnailUrl: thumb ? [thumb] : undefined,
+        contentUrl: item.sourceUrl || item.previewUrl,
+        embedUrl: url,
+        uploadDate: item.updatedAt?.toDate ? item.updatedAt.toDate().toISOString() : undefined,
+        publisher: { '@id': `${SITE_URL}/#organization` },
+      }
+    : null;
+
+  const creativeWork = {
+    '@context': 'https://schema.org',
+    '@type': isVideo ? 'VideoObject' : 'CreativeWork',
+    name: title,
+    description: description || detailText,
+    url,
+    image: thumb,
+    author: { '@id': `${SITE_URL}/#person` },
+    publisher: { '@id': `${SITE_URL}/#organization` },
+    dateModified: item.updatedAt?.toDate ? item.updatedAt.toDate().toISOString() : undefined,
+    ...(videoObject ? videoObject : {}),
+  };
+
+  const breadcrumb = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', item: SITE_URL },
+      { '@type': 'ListItem', position: 2, name: 'Work', item: `${SITE_URL}/work` },
+      { '@type': 'ListItem', position: 3, name: title, item: url },
+    ],
+  };
+
+  return JSON.stringify({
+    '@context': 'https://schema.org',
+    '@graph': [creativeWork, breadcrumb],
+  });
+}

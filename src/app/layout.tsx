@@ -67,6 +67,9 @@ export async function generateMetadata(): Promise<Metadata> {
     },
     icons,
     formatDetection: { email: false, address: false, telephone: false },
+    ...(process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION
+      ? { verification: { google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION } }
+      : {}),
   };
 }
 
