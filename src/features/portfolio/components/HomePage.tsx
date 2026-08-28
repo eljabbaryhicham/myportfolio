@@ -308,12 +308,24 @@ export default function HomePageContent() {
             animate={isLoading ? "hidden" : "visible"}
           >
             <motion.div variants={itemVariants} className="text-center space-y-2 max-w-lg md:max-w-xl lg:max-w-2xl px-4" style={{ textShadow: "0 2px 12px rgba(0,0,0,0.6)" }}>
-              <h2 className="text-base sm:text-lg md:text-3xl lg:text-4xl font-headline tracking-tight min-h-[1.5rem] md:min-h-[2.5rem]" style={{ color: homeSettings?.homePageTitleColor || 'rgba(255,255,255,0.9)' }}>
-                {getLocalizedString(homeSettings?.homePageTitle, lang) || t('home.hero.heading')}
-              </h2>
-              <p className="text-xs sm:text-sm md:text-lg lg:text-xl text-foreground/60 leading-relaxed min-h-[2.5rem] md:min-h-[1.75rem]" style={{ textShadow: "0 1px 8px rgba(0,0,0,0.5)" }}>
-                {getLocalizedString(homeSettings?.homePageSubtitle, lang) || t('home.hero.subtitle')}
-              </p>
+              {isLoading ? (
+                <div className="min-h-[1.5rem] md:min-h-[2.5rem] flex items-center justify-center">
+                  <div className="h-4 md:h-6 w-56 sm:w-72 animate-pulse rounded bg-white/10" />
+                </div>
+              ) : (
+                <h2 className="text-base sm:text-lg md:text-3xl lg:text-4xl font-headline tracking-tight min-h-[1.5rem] md:min-h-[2.5rem]" style={{ color: homeSettings?.homePageTitleColor || 'rgba(255,255,255,0.9)' }}>
+                  {getLocalizedString(homeSettings?.homePageTitle, lang) || t('home.hero.heading')}
+                </h2>
+              )}
+              {isLoading ? (
+                <div className="min-h-[2.5rem] md:min-h-[1.75rem] flex items-center justify-center">
+                  <div className="h-3 md:h-4 w-72 sm:w-96 animate-pulse rounded bg-white/10" />
+                </div>
+              ) : (
+                <p className="text-xs sm:text-sm md:text-lg lg:text-xl text-foreground/60 leading-relaxed min-h-[2.5rem] md:min-h-[1.75rem]" style={{ textShadow: "0 1px 8px rgba(0,0,0,0.5)" }}>
+                  {getLocalizedString(homeSettings?.homePageSubtitle, lang) || t('home.hero.subtitle')}
+                </p>
+              )}
             </motion.div>
             <motion.div variants={itemVariants} className="flex items-center justify-center gap-1.5 sm:gap-2 md:gap-4">
               <Button asChild className="group transition-shadow duration-300 rounded-full min-h-[36px] h-9 md:h-8 px-2.5 sm:px-3 md:px-4 text-[10px] sm:text-[11px] md:text-sm gap-1 shrink-0" style={{ boxShadow: "0 0 15px rgba(255,255,255,0.1)" }}>

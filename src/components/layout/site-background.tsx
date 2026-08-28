@@ -183,22 +183,24 @@ export function DynamicThemeStyles() {    const firestore = useFirestore();
       }
     }, [primaryHsl]);
 
-    const primary = primaryHsl || storedHsl || '352 76% 48%';
-  
+    // Resolve the accent from Firestore first (once loaded), else the
+    // localStorage hint, else null. While null (SSR / before hydration) we emit
+    // NO accent override so the inline <head> script that already applied the
+    // persisted accent to :root before first paint is not overwritten by the
+    // default-red placeholder — eliminating the theme flash on load.
+    const primary = primaryHsl || storedHsl || null;
+    const accent = primary
+      ? `--primary: ${primary};--accent: ${primary};--destructive: ${primary};--ring: ${primary};`
+      : '';
+
     return (
       <style>{`
         :root {
-            --primary: ${primary};
-            --accent: ${primary};
-            --destructive: ${primary};
-            --ring: ${primary};
+            ${accent}
             --glass-bg: rgba(${glassRgb[0]}, ${glassRgb[1]}, ${glassRgb[2]}, ${glassOpacity});
         }
         .dark {
-            --primary: ${primary};
-            --accent: ${primary};
-            --destructive: ${primary};
-            --ring: ${primary};
+            ${accent}
             --glass-bg: rgba(${glassRgb[0]}, ${glassRgb[1]}, ${glassRgb[2]}, ${glassOpacity});
         }
       `}</style>
