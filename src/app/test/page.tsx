@@ -18,6 +18,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useTranslation } from '@/lib/i18n/useTranslation';
 import { SUPERADMIN_EMAIL } from '@/lib/constants';
 import type { HomePageSettings } from '@/lib/types';
+import { useHomePageSettings } from '@/components/settings/home-page-settings-provider';
 
 export default function TestPage() {
   const { user, isUserLoading } = useUser();
@@ -33,11 +34,13 @@ export default function TestPage() {
   const typedUser = user as AppUser | null;
   const isSuperAdmin = typedUser?.email === SUPERADMIN_EMAIL;
 
+  // homepage/settings is sourced from the shared provider (server-seeded + live).
+  // TestPage still needs the writeable settingsDocRef to toggle workPagePlayer.
+  const { settings: homeSettings } = useHomePageSettings();
   const settingsDocRef = useMemoFirebase(
     () => (firestore ? doc(firestore, 'homepage', 'settings') : null),
     [firestore]
   );
-  const { data: homeSettings } = useDoc<HomePageSettings>(settingsDocRef);
   const workPagePlayer = homeSettings?.workPagePlayer || 'clappr';
 
 

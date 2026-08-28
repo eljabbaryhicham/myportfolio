@@ -27,6 +27,7 @@ const navItems = [
 ];
 
 import type { HomePageSettings } from '@/lib/types';
+import { useHomePageSettings } from '@/components/settings/home-page-settings-provider';
 
 const MENUBAR_LOGO_CACHE_KEY = 'menubar-logo-url';
 const NAV_BUTTON_SIZE_CACHE_KEY = 'menubar-nav-button-size';
@@ -46,11 +47,8 @@ export function AppNav() {
   );
   const { data: contactInfo } = useDoc(contactDocRef);
 
-  const settingsDocRef = useMemoFirebase(
-    () => (firestore ? doc(firestore, 'homepage', 'settings') : null),
-    [firestore]
-  );
-  const { data: homeSettings } = useDoc<HomePageSettings>(settingsDocRef);
+  // homepage/settings comes from the shared provider (server-seeded + live).
+  const { settings: homeSettings } = useHomePageSettings();
 
   // Hydrate the logo instantly from a local cache instead of waiting for the
   // Firestore settings/contact docs to resolve on every page load.

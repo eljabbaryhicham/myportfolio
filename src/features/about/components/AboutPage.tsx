@@ -21,6 +21,7 @@ import { cn } from '@/lib/utils';
 import { ScrollIndicator } from '@/components/ScrollIndicator';
 import { useTranslation } from '@/lib/i18n/useTranslation';
 import { getLocalizedString, type MultilingualString } from '@/lib/i18n/multilingual';
+import { useHomePageSettings } from '@/components/settings/home-page-settings-provider';
 
 
 interface Client {
@@ -104,11 +105,8 @@ export default function AboutPage() {
   );
   const { data: allClients, isLoading: isLoadingClients } = useCollection<Client>(clientsQuery);
 
-  const settingsDocRef = useMemoFirebase(
-    () => (firestore ? doc(firestore, 'homepage', 'settings') : null),
-    [firestore]
-  );
-  const { data: pageSettings } = useDoc<Record<string, any>>(settingsDocRef);
+  // homepage/settings is sourced from the shared provider (server-seeded + live).
+  const { settings: pageSettings } = useHomePageSettings();
   
   const aboutContentRef = useMemoFirebase(
     () => firestore ? doc(firestore, 'about', 'content') : null,

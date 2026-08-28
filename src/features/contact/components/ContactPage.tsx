@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useDoc, useFirestore, useMemoFirebase } from '@/firebase';
 import { doc } from 'firebase/firestore';
+import { useHomePageSettings } from '@/components/settings/home-page-settings-provider';
 import { Separator } from '@/components/ui/separator';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEnvelope } from '@fortawesome/free-solid-svg-icons';
@@ -74,11 +75,8 @@ export default function ContactPage() {
   );
   const { data: contactInfo, isLoading } = useDoc<ContactInfo>(contactDocRef);
 
-  const settingsDocRef = useMemoFirebase(
-    () => (firestore ? doc(firestore, 'homepage', 'settings') : null),
-    [firestore]
-  );
-  const { data: pageSettings } = useDoc<Record<string, any>>(settingsDocRef);
+  // homepage/settings is sourced from the shared provider (server-seeded + live).
+  const { settings: pageSettings } = useHomePageSettings();
 
   const contactLinks = contactInfo ? [
     { icon: faEnvelope, label: t('contact.email'), value: contactInfo.email, href: `mailto:${contactInfo.email}`, color: 'hover:text-blue-300' },

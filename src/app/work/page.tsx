@@ -18,6 +18,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { useCollection, useFirestore, useMemoFirebase, useUser, setDocumentNonBlocking, addDocumentNonBlocking, useDoc, useFirebase } from '@/firebase';
 import { collection, doc } from 'firebase/firestore';
 import { deleteDocumentNonBlocking } from '@/firebase/non-blocking-updates';
+import { useHomePageSettings } from '@/components/settings/home-page-settings-provider';
 import type { PortfolioItem } from '@/features/portfolio/data/portfolio-data';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUpDown, faXmark, faExpand, faPalette, faFilm, faArrowLeft, faArrowRight, faPencilAlt, faArrowDown, faSyncAlt, faCircleExclamation } from '@fortawesome/free-solid-svg-icons';
@@ -686,11 +687,13 @@ function WorkPageContent() {
   );
   const { data: contactInfo } = useDoc(contactDocRef);
 
+  // homepage/settings is sourced from the shared provider (server-seeded + live).
+  const { settings: homeSettings } = useHomePageSettings();
+  // Local settingsDocRef kept for superadmin write operations (player toggle, etc).
   const settingsDocRef = useMemoFirebase(
     () => (firestore ? doc(firestore, 'homepage', 'settings') : null),
     [firestore]
   );
-  const { data: homeSettings } = useDoc<HomePageSettings>(settingsDocRef);
 
   const [selectedItem, setSelectedItem] = useState<PortfolioItem | null>(null);
   const [selectedItemForEdit, setSelectedItemForEdit] = useState<PortfolioItem | null>(null);

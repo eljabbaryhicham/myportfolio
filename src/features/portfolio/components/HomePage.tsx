@@ -15,13 +15,12 @@ import { cn } from "@/lib/utils";
 import Preloader from "@/components/preloader";
 import Logo from "@/components/logo";
 import TrustedBy from "./TrustedBy";
-import { useDoc, useFirestore, useMemoFirebase } from "@/firebase";
-import { doc } from "firebase/firestore";
 import { useTranslation } from "@/lib/i18n/useTranslation";
 import { getLocalizedString } from "@/lib/i18n/multilingual";
 import { cleanVideoUrl } from "@/lib/video";
 import { forceAutoplay } from "@/lib/video-autoplay";
 import type { HomePageSettings } from "@/lib/types";
+import { useHomePageSettings } from '@/components/settings/home-page-settings-provider';
 const HERO_VIDEO_URL = "https://res.cloudinary.com/dsq1lxrqi/video/upload/sp_auto/pg_5/v1778867307/Ovi_Motion_Design_v3kfy0.m3u8";
 const HERO_VIDEO_POSTER = "https://res.cloudinary.com/dsq1lxrqi/image/upload/so_0,f_auto,q_auto/v1778867307/Ovi_Motion_Design_v3kfy0.jpg";
 
@@ -161,16 +160,14 @@ const itemVariants = {
 };
 
 export default function HomePageContent() {
-  const firestore = useFirestore();
   const { t, lang } = useTranslation();
   const ctaRef = useRef<HTMLButtonElement | null>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
 
-  const settingsDocRef = useMemoFirebase(
-    () => (firestore ? doc(firestore, 'homepage', 'settings') : null),
-    [firestore]
-  );
-  const { data: homeSettings, isLoading: isLoadingSettings } = useDoc<HomePageSettings>(settingsDocRef);
+  // Read from the shared SettingsProvider (seeded server-side, kept live
+  // by the provider's own useDoc subscription). This avoids a re-fetch
+  // and a flash of defaults on first paint.
+  const { settings: homeSettings, isLoading: isLoadingSettings } = useHomePageSettings();
   // Only show the full-screen preloader on the very first load (no cached data yet);
   // on client-side navigations Firestore may briefly be isLoading while re-attaching,
   // but we already have data to render so we must not flash a black overlay.

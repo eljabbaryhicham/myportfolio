@@ -10,6 +10,7 @@ import { cn } from '@/lib/utils';
 import type { HomePageSettings } from '@/lib/types';
 import { cleanVideoUrl } from '@/lib/video';
 import { forceAutoplay } from '@/lib/video-autoplay';
+import { useHomePageSettings } from '@/components/settings/home-page-settings-provider';
 
 interface MediaAsset {
     url: string;
@@ -20,11 +21,9 @@ export function SiteBackground() {
     const pathname = usePathname();
     const isHomePage = pathname === '/';
     
-    const settingsDocRef = useMemoFirebase(
-      () => (firestore ? doc(firestore, 'homepage', 'settings') : null),
-      [firestore]
-    );
-    const { data: homeSettings } = useDoc<HomePageSettings>(settingsDocRef);
+    // homepage/settings is read from the shared provider (server-seeded + live
+    // via the provider's own useDoc) to avoid a redundant fetch and a flash.
+    const { settings: homeSettings } = useHomePageSettings();
 
     const backgroundType = homeSettings ? (isHomePage
         ? homeSettings.homePageBackgroundType
@@ -148,12 +147,9 @@ function hexToHsl(hex: string): string | null {
 
 const STORAGE_KEY = 'belofted_theme_hsl';
 
-export function DynamicThemeStyles() {    const firestore = useFirestore();
-    const settingsDocRef = useMemoFirebase(
-      () => (firestore ? doc(firestore, 'homepage', 'settings') : null),
-      [firestore]
-    );
-    const { data: homeSettings } = useDoc<HomePageSettings>(settingsDocRef);
+export function DynamicThemeStyles() {
+    // Settings come from the shared provider (server-seeded, live-updated).
+    const { settings: homeSettings } = useHomePageSettings();
 
     // Apply the last-saved theme HSL from localStorage on first render so the
     // color doesn't flash from the default while Firestore loads. It's only a
@@ -210,13 +206,8 @@ export function DynamicThemeStyles() {    const firestore = useFirestore();
 // Keeps the browser tab favicon in sync with the admin-configured logo
 // (menubar logo first, homepage logo as fallback).
 export function DynamicFavicon() {
-    const firestore = useFirestore();
     const pathname = usePathname();
-    const settingsDocRef = useMemoFirebase(
-      () => (firestore ? doc(firestore, 'homepage', 'settings') : null),
-      [firestore]
-    );
-    const { data: homeSettings } = useDoc<HomePageSettings>(settingsDocRef);
+    const { settings: homeSettings } = useHomePageSettings();
 
     useEffect(() => {
         const logoUrl = homeSettings?.faviconUrl || homeSettings?.menubarLogoUrl || homeSettings?.homePageLogoUrl;
