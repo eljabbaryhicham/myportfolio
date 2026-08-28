@@ -20,7 +20,7 @@ import { Button } from '@/components/ui/button';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrash, faShieldHalved, faPlusCircle, faRotate } from '@fortawesome/free-solid-svg-icons';
 import { useToast } from '@/hooks/use-toast';
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { Separator } from '@/components/ui/separator';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Switch } from '@/components/ui/switch';
@@ -110,7 +110,12 @@ export default function AdminManagement() {
     () => (firestore ? query(collection(firestore, 'users'), orderBy('username', 'asc')) : null),
     [firestore]
   );
-  const { data: users, isLoading } = useCollection<AdminUser>(usersQuery);
+  const { data: users, isLoading, error } = useCollection<AdminUser>(usersQuery);
+  
+  // DEBUG
+  useEffect(() => {
+    console.log('[AdminManagement DEBUG] isLoading:', isLoading, '| users:', users, '| error:', error);
+  }, [users, isLoading, error]);
   
   const typedUser = currentUser as AppUser | null;
   const isSuperAdmin = isSuperAdminCheck(typedUser);
