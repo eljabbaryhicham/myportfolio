@@ -954,12 +954,7 @@ for (const file of files) {
   // ---- Dropzone ----
   const onDrop = provider === 'cloudinary' ? onCloudinaryDrop : (accepted: File[]) => handleVercelUpload(accepted);
 
-  const dropzoneAccept = provider === 'cloudinary' ? {
-    'image/*': ['.jpeg', '.jpg', '.png', '.gif', '.webp', '.svg'],
-    'video/*': ['.mp4', '.mov', '.webm'],
-    'text/vtt': ['.vtt'],
-    'application/json': ['.json'],
-  } : undefined;
+  const dropzoneAccept = undefined;
 
   const { getRootProps: getRootPropsMain, getInputProps: getInputPropsMain, isDragActive: isDragActiveMain } = useDropzone({
     onDrop, accept: dropzoneAccept, disabled: !canUpload || effectiveIsUploading, multiple: true,
