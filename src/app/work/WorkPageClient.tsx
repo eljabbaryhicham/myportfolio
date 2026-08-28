@@ -1102,8 +1102,8 @@ function WorkPageContent() {
     },
   };
   
-  const gridStyle = isMobile 
-    ? { gridTemplateColumns: 'repeat(2, 1fr)' } 
+  const gridStyle = hasMounted && isMobile
+    ? { gridTemplateColumns: 'repeat(2, 1fr)' }
     : { gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))' };
 
   const logoUrl = homeSettings?.homePageLogoUrl || contactInfo?.logoUrl;
@@ -1339,7 +1339,7 @@ function WorkPageContent() {
             </motion.div>
             <DialogClose className={cn(
                 "absolute right-4 top-4 z-30 h-10 w-10 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center ring-offset-background transition-opacity focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 md:hover:opacity-100",
-                isMobile ? "opacity-70" : (isCloseButtonVisible ? "opacity-70" : "opacity-0 focus:opacity-100 focus-visible:opacity-100")
+                hasMounted && isMobile ? "opacity-70" : (isCloseButtonVisible ? "opacity-70" : "opacity-0 focus:opacity-100 focus-visible:opacity-100")
             )}>
               <FontAwesomeIcon icon={faXmark} className="h-4 w-4" />
               <span className="sr-only">{t('work.details.close')}</span>
@@ -1366,7 +1366,7 @@ function WorkPageContent() {
                 </ScrollArea>
                  <DialogClose className={cn(
                     "absolute top-4 right-4 z-[101] h-10 w-10 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center md:hover:!opacity-100 ring-offset-background transition-opacity focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
-                    isMobile ? "opacity-70" : (isCloseButtonVisible ? "opacity-70" : "opacity-0 focus:opacity-100 focus-visible:opacity-100")
+                    hasMounted && isMobile ? "opacity-70" : (isCloseButtonVisible ? "opacity-70" : "opacity-0 focus:opacity-100 focus-visible:opacity-100")
                   )}>
                     <FontAwesomeIcon icon={faXmark} className="h-5 w-5" />
                     <span className="sr-only">{t('work.details.close')}</span>
@@ -1425,7 +1425,7 @@ function WorkPageContent() {
           )}
           <DialogClose className={cn(
               "absolute top-4 right-4 z-[101] h-10 w-10 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center md:hover:!opacity-100 ring-offset-background transition-opacity focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
-              isMobile ? "opacity-70" : (isCloseButtonVisible ? "opacity-70" : "opacity-0")
+              hasMounted && isMobile ? "opacity-70" : (isCloseButtonVisible ? "opacity-70" : "opacity-0")
           )}>
               <FontAwesomeIcon icon={faXmark} className="h-5 w-5" />
               <span className="sr-only">{t('work.details.close')}</span>
