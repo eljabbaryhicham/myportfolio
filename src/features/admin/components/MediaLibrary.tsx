@@ -699,6 +699,11 @@ for (const file of files) {
         startGlobalUpload(file.name, 'vercel');
         // Initialize progress tracking in sessionStorage
         saveUploadProgress(file, 'pending', 0, 0, file.size, 'vercel');
+        // Local capture of the active upload's abort signal. The ref-based
+        // activeBlobAbortRef is nulled by cancelUpload() before the abort
+        // rejection propagates, so the catch below reads THIS scoped signal
+        // to reliably detect a user-initiated cancel.
+        let activeUploadSignal: AbortSignal | null = null;
         try {
           let data: { url: string; pathname: string; size: number; contentType: string };
           if (file.type.startsWith('video/')) {
@@ -710,6 +715,7 @@ for (const file of files) {
             // Fresh AbortController so the Cancel button can stop this upload.
             const controller = new AbortController();
             activeBlobAbortRef.current = controller;
+            activeUploadSignal = controller.signal;
             const blob = await upload(
               `vercel-blob/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, '_')}`,
               file,
@@ -807,9 +813,10 @@ for (const file of files) {
       } catch (e: any) {
         // Don't track cancellation as a failure. The `isCancelling` state is
         // captured by a stale closure (false at upload start), so read the
-        // ref mirror for the live value, and fall back to the AbortController's
-        // own signal so any SDK-specific error name is still treated as cancel.
-        const wasCancelledByController = activeBlobAbortRef.current?.signal.aborted === true;
+        // ref mirror for the live value, and fall back to the scoped abort
+        // signal (captured before cancelUpload nulls the shared ref) so any
+        // SDK-specific error name after abort is still treated as a cancel.
+        const wasCancelledByController = activeUploadSignal?.aborted === true;
         if (e?.name === 'AbortError' || e?.name === 'CancellationError' || isCancellingRef.current || wasCancelledByController) {
           // Clear the in-progress session snapshot so a cancelled upload doesn't
           // later appear as a false "Interrupted upload detected".
