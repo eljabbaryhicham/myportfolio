@@ -1,9 +1,9 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useContext } from 'react';
 const FALLBACK_GIF = 'https://res.cloudinary.com/dsq1lxrqi/image/upload/f_auto,q_auto/v1787348899/honey_badger_alive__gyx22e.gif';
-import { useDoc, useFirestore, useMemoFirebase } from '@/firebase';
-import { doc } from 'firebase/firestore';
+import { HomePageSettingsContext } from '@/components/settings/home-page-settings-provider';
+import type { HomePageSettings } from '@/lib/types';
 
 interface PreloaderSettings {
   preloaderType?: 'default' | 'lottie' | 'gif' | 'webm';
@@ -14,6 +14,18 @@ interface PreloaderSettings {
 let cachedSettings: PreloaderSettings | null = null;
 let cacheTimestamp = 0;
 const CACHE_TTL = 30000;
+
+function usePreloaderSettingsFromContext(): PreloaderSettings | null {
+  const ctx = useContext(HomePageSettingsContext);
+  if (!ctx) return null;
+  const settings = ctx.settings as (HomePageSettings & PreloaderSettings) | null;
+  if (!settings) return null;
+  return {
+    preloaderType: settings.preloaderType,
+    preloaderUrl: settings.preloaderUrl,
+    preloaderSize: settings.preloaderSize,
+  };
+}
 
 // Lazy-load lottie-react (~300 KB) only when a Lottie animation is actually
 // rendered, keeping the default GIF/preloader path lightweight.
@@ -93,31 +105,8 @@ const WebmLoader = ({ url, size }: { url: string; size?: number }) => {
 };
 
 const Preloader = ({ settings }: { settings?: PreloaderSettings }) => {
-  const firestore = useFirestore();
-  const [resolved, setResolved] = useState<PreloaderSettings | null>(
-    settings || cachedSettings
-  );
-
-  const settingsDocRef = useMemoFirebase(
-    () => firestore ? doc(firestore, 'homepage', 'settings') : null,
-    [firestore]
-  );
-  const { data: remoteSettings } = useDoc<PreloaderSettings>(settingsDocRef);
-
-  useEffect(() => {
-    if (settings) {
-      setResolved(settings);
-      return;
-    }
-    if (remoteSettings) {
-      const s = { preloaderType: remoteSettings.preloaderType, preloaderUrl: remoteSettings.preloaderUrl, preloaderSize: remoteSettings.preloaderSize };
-      cachedSettings = s;
-      cacheTimestamp = Date.now();
-      setResolved(s);
-    }
-  }, [settings, remoteSettings]);
-
-  const active = settings || resolved;
+  const fromContext = usePreloaderSettingsFromContext();
+  const active = settings || fromContext || cachedSettings;
 
   const type = active?.preloaderType || 'default';
   const url = active?.preloaderUrl || '';

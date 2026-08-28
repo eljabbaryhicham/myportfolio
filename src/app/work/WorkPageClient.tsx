@@ -15,7 +15,7 @@ import { useState, memo, useEffect, useMemo, useRef, useCallback, lazy, Suspense
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { useCollection, useFirestore, useMemoFirebase, useUser, setDocumentNonBlocking, addDocumentNonBlocking, useDoc, useFirebase } from '@/firebase';
+import { useCollection, useFirestore, useMemoFirebase, useUser, setDocumentNonBlocking, addDocumentNonBlocking, useDoc } from '@/firebase';
 import { collection, doc } from 'firebase/firestore';
 import { deleteDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { useHomePageSettings } from '@/components/settings/home-page-settings-provider';
@@ -666,9 +666,6 @@ function WorkPageLoading() {
 function WorkPageContent() {
   const firestore = useFirestore();
   const { user } = useUser();
-  // Auth-settle only: Firestore rules need the auth token, not the user
-  // profile doc, so don't wait for useUser()'s extra profile read.
-  const { isUserLoading: isAuthSettling } = useFirebase();
   const { toast } = useToast();
   const { selectedSlug, updateUrl } = useWorkUrlSync();
   const { t, lang } = useTranslation();
@@ -683,35 +680,25 @@ function WorkPageContent() {
   // from blinking on fast connections.
   const [mounted, setMounted] = useState(false);
   useEffect(() => {
-    const startedAt = Date.now();
-    const MIN_VISIBLE_MS = 150;
-    const reveal = () => {
-      const elapsed = Date.now() - startedAt;
-      const wait = Math.max(0, MIN_VISIBLE_MS - elapsed);
-      setTimeout(() => setMounted(true), wait);
-    };
     if (typeof window === 'undefined') return;
     if (document.readyState === 'complete') {
-      reveal();
+      setMounted(true);
       return;
     }
-    window.addEventListener('load', reveal, { once: true });
-    return () => window.removeEventListener('load', reveal);
+    const onLoad = () => setMounted(true);
+    window.addEventListener('load', onLoad, { once: true });
+    return () => window.removeEventListener('load', onLoad);
   }, []);
 
   const typedUser = user as AppUser | null;
   const isSuperAdmin = typedUser?.email === SUPERADMIN_EMAIL;
   const canEditProjects = isSuperAdmin || (typedUser?.permissions?.canEditProjects ?? true);
 
-  // NOTE: no server-side orderBy — Firestore silently excludes documents that
-  // are missing the 'order' field, which made the page show "no projects"
-  // even when projects existed. We sort client-side instead.
-  // Also wait for auth to settle before subscribing, otherwise a cold session
-  // (refresh → navigate from home) can hit security rules before the token
-  // is restored and fail the first read.
+  // Projects are publicly readable — no auth needed. Fetch immediately so projects
+  // appear as fast as possible on navigation.
   const projectsQuery = useMemoFirebase(
-    () => (firestore && !isAuthSettling ? collection(firestore, 'projects') : null),
-    [firestore, isAuthSettling]
+    () => (firestore ? collection(firestore, 'projects') : null),
+    [firestore]
   );
   const {
     data: portfolioItems,
@@ -1170,7 +1157,7 @@ function WorkPageContent() {
   if (!mounted) {
     return (
       <div className="h-full w-full flex items-center justify-center">
-        <div className="text-foreground/40 text-sm animate-pulse">Loading portfolio...</div>
+        <Preloader />
       </div>
     );
   }

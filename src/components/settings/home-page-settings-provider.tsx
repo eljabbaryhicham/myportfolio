@@ -14,6 +14,8 @@ interface HomePageSettingsContextValue {
 
 const HomePageSettingsContext = createContext<HomePageSettingsContextValue | null>(null);
 
+export { HomePageSettingsContext };
+
 /**
  * Provides the public homepage/settings document to the React tree.
  *
