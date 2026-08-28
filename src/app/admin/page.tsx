@@ -81,17 +81,20 @@ function AdminPage() {
       const qs = new URLSearchParams(window.location.search);
       const tabParam = qs.get('tab');
       const innerTabParam = qs.get('innerTab');
-      const mediaTabParam = qs.get('mediaTab') as 'images' | 'videos' | 'files' | null;
       if (tabParam === 'media' && (innerTabParam === 'cloudinary' || innerTabParam === 'vercel')) {
         setActiveTab('media');
         setInnerMediaTab(innerTabParam);
-        // Forward the sub-tab to the media library (it is force-mounted, so its
-        // listener is already active) so it opens on the matching sub-tab.
-        if (mediaTabParam && ['images', 'videos', 'files'].includes(mediaTabParam)) {
+        // Finished navigation (docId present): open the library + highlight the
+        // file. Progress navigation has no docId -> just switch the provider tab.
+        const docIdParam = qs.get('docId');
+        const mediaTabParam = qs.get('mediaTab') as 'images' | 'videos' | 'files' | null;
+        if (docIdParam && mediaTabParam && ['images', 'videos', 'files'].includes(mediaTabParam)) {
           window.dispatchEvent(new CustomEvent('media-library-maximize', {
             detail: {
               provider: innerTabParam === 'cloudinary' ? 'cloudinary' : 'vercel_blob',
               tab: mediaTabParam,
+              docId: docIdParam,
+              library: qs.get('library') || undefined,
             },
           }));
         }
@@ -119,14 +122,23 @@ function AdminPage() {
   // media library so it opens on the matching images/videos/files view.
   useEffect(() => {
     const handler = (e: Event) => {
-      const detail = (e as CustomEvent).detail as { provider?: 'vercel' | 'cloudinary'; tab?: string } | undefined;
+      const detail = (e as CustomEvent).detail as { provider?: 'vercel' | 'cloudinary'; mode?: string; tab?: string; docId?: string; library?: string } | undefined;
       if (!detail) return;
       setActiveTab('media');
       setInnerMediaTab(detail.provider === 'cloudinary' ? 'cloudinary' : 'vercel');
-      const provider = detail.provider === 'cloudinary' ? 'cloudinary' : 'vercel_blob';
-      window.dispatchEvent(new CustomEvent('media-library-maximize', {
-        detail: { provider, tab: detail.tab || 'images' },
-      }));
+      // Finished mode only: open the media library and highlight the file.
+      // Progress mode: just switch to the Cloudinary/Vercel provider tab.
+      if (detail.mode === 'finished' && detail.docId) {
+        const provider = detail.provider === 'cloudinary' ? 'cloudinary' : 'vercel_blob';
+        window.dispatchEvent(new CustomEvent('media-library-maximize', {
+          detail: {
+            provider,
+            tab: detail.tab || 'images',
+            docId: detail.docId,
+            library: detail.library,
+          },
+        }));
+      }
     };
     window.addEventListener('admin-goto-media', handler);
     return () => window.removeEventListener('admin-goto-media', handler);

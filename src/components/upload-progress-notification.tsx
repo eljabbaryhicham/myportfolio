@@ -13,7 +13,7 @@ export default function UploadProgressNotification() {
   const pathname = usePathname();
   const router = useRouter();
 
-  const [completed, setCompleted] = useState<Array<{ provider: 'vercel' | 'cloudinary'; fileName: string; resourceType?: 'image' | 'video' | 'raw'; id: number }>>([]);
+  const [completed, setCompleted] = useState<Array<{ provider: 'vercel' | 'cloudinary'; fileName: string; resourceType?: 'image' | 'video' | 'raw'; docId?: string; libraryId?: 'primary' | 'extented' | 'vercel_blob'; id: number }>>([]);
   const [dismissedActive, setDismissedActive] = useState<Array<'vercel' | 'cloudinary'>>([]);
   const prevVercelUploading = useRef(vercel.isUploading);
   const prevCloudinaryUploading = useRef(cloudinary.isUploading);
@@ -37,7 +37,7 @@ export default function UploadProgressNotification() {
     if (prevVercelUploading.current && !vercel.isUploading && vercel.fileName) {
       // Only show completed notification if upload actually succeeded (completedUpload exists)
       if (completedUpload && completedUpload.provider === 'vercel') {
-        setCompleted(prev => [...prev, { provider: 'vercel', fileName: vercel.fileName, resourceType: completedUpload.resourceType, id: nextId.current++ }]);
+        setCompleted(prev => [...prev, { provider: 'vercel', fileName: vercel.fileName, resourceType: completedUpload.resourceType, docId: completedUpload.docId, libraryId: completedUpload.libraryId, id: nextId.current++ }]);
       }
       clearFileName('vercel');
     }
@@ -48,7 +48,7 @@ export default function UploadProgressNotification() {
     if (prevCloudinaryUploading.current && !cloudinary.isUploading && cloudinary.fileName) {
       // Only show completed notification if upload actually succeeded (completedUpload exists)
       if (completedUpload && completedUpload.provider === 'cloudinary') {
-        setCompleted(prev => [...prev, { provider: 'cloudinary', fileName: cloudinary.fileName, resourceType: completedUpload.resourceType, id: nextId.current++ }]);
+        setCompleted(prev => [...prev, { provider: 'cloudinary', fileName: cloudinary.fileName, resourceType: completedUpload.resourceType, docId: completedUpload.docId, libraryId: completedUpload.libraryId, id: nextId.current++ }]);
       }
       clearFileName('cloudinary');
     }
@@ -59,17 +59,28 @@ export default function UploadProgressNotification() {
     setCompleted(prev => prev.filter(c => c.id !== id));
   };
 
-  const goToMediaTab = (provider: 'vercel' | 'cloudinary', resourceType?: 'image' | 'video' | 'raw') => {
-    const tab = resourceType === 'video' ? 'videos' : resourceType === 'raw' ? 'files' : 'images';
+  const goToMediaTab = (
+    provider: 'vercel' | 'cloudinary',
+    opts?: { resourceType?: 'image' | 'video' | 'raw'; docId?: string; libraryId?: string }
+  ) => {
+    const tab = opts?.resourceType === 'video' ? 'videos' : opts?.resourceType === 'raw' ? 'files' : 'images';
+    // Progress mode (no docId yet): just switch to the provider tab.
+    // Finished mode (docId present): also open the library and highlight the file.
+    const mode = opts?.docId ? 'finished' : 'progress';
+    const payload = { provider, mode, tab, docId: opts?.docId, library: opts?.libraryId };
     if (pathname === '/admin') {
-      // Already on the admin page: switch tabs via an event (no full reload), so
-      // an in-flight upload is NOT aborted. The admin page listens and forwards
-      // the sub-tab to the media library.
-      window.dispatchEvent(new CustomEvent('admin-goto-media', { detail: { provider, tab } }));
+      // Already on the admin page: switch via an event (no full reload), so an
+      // in-flight upload is NOT aborted. The admin page forwards finished ones
+      // to the media library to highlight the downloaded file.
+      window.dispatchEvent(new CustomEvent('admin-goto-media', { detail: payload }));
     } else {
       // Navigate from elsewhere: use query params so the admin page switches on mount.
-      const url = `/admin?tab=media&innerTab=${provider}&mediaTab=${tab}`;
-      router.push(url);
+      const qs = new URLSearchParams({ tab: 'media', innerTab: provider, mediaTab: tab });
+      if (mode === 'finished' && opts?.docId) {
+        qs.set('docId', opts.docId);
+        if (opts.libraryId) qs.set('library', opts.libraryId);
+      }
+      router.push(`/admin?${qs.toString()}`);
     }
   };
 
@@ -147,7 +158,7 @@ export default function UploadProgressNotification() {
                 variant="ghost"
                 size="sm"
                 className="h-8 w-8 p-0"
-                onClick={() => { dismiss(c.id); goToMediaTab(c.provider, c.resourceType); }}
+                onClick={() => { dismiss(c.id); goToMediaTab(c.provider, { resourceType: c.resourceType, docId: c.docId, libraryId: c.libraryId }); }}
                 title="Open in media library"
               >
                 <FontAwesomeIcon icon={faArrowUpRightFromSquare} className="h-4 w-4" />
