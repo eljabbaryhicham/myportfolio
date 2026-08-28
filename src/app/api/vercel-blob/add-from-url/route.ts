@@ -3,6 +3,29 @@ import { put } from '@vercel/blob';
 import { requireUploadAuth } from '@/lib/upload-auth-middleware';
 import { initializeServerApp } from '@/firebase/server-init';
 import admin from 'firebase-admin';
+import { isInternalUrl } from '@/lib/ssrf';
+import { logger } from '@/lib/logger';
+
+// Per-user rate limit (in-memory, single-instance). The route is already
+// auth-gated by requireUploadAuth, so a leaked admin token is the worst-case
+// abuse vector; this blunts it.
+const RATE_LIMIT_WINDOW_MS = 60_000;
+const RATE_LIMIT_MAX = 10;
+const hits = new Map<string, { count: number; resetAt: number }>();
+
+function isRateLimited(uid: string): boolean {
+  const now = Date.now();
+  const entry = hits.get(uid);
+  if (!entry || entry.resetAt < now) {
+    hits.set(uid, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS });
+    return false;
+  }
+  entry.count += 1;
+  return entry.count > RATE_LIMIT_MAX;
+}
+
+const MAX_IMAGE_BYTES = 50 * 1024 * 1024;     // 50MB (matches the regular drag-and-drop client cap)
+const MAX_VIDEO_BYTES = 500 * 1024 * 1024;    // 500MB (matches the client cap at MediaLibrary.tsx)
 
 export async function POST(req: NextRequest) {
   const auth = await requireUploadAuth(req, 'canUploadMedia');
@@ -10,6 +33,10 @@ export async function POST(req: NextRequest) {
     return auth.response;
   }
   const decoded = auth.user!;
+
+  if (isRateLimited(decoded.uid)) {
+    return NextResponse.json({ success: false, message: 'Too many requests. Please wait a minute.' }, { status: 429 });
+  }
 
   let body: any;
   try {
@@ -20,6 +47,12 @@ export async function POST(req: NextRequest) {
   const url = body?.url?.trim();
   if (!url || !/^https?:\/\//.test(url)) {
     return NextResponse.json({ success: false, message: 'Invalid URL' }, { status: 400 });
+  }
+
+  // SSRF guard: never let the server fetch loopback / private / cloud-metadata
+  // addresses, even if the caller is an admin.
+  if (isInternalUrl(url)) {
+    return NextResponse.json({ success: false, message: 'Blocked: this URL points to an internal or private host.' }, { status: 400 });
   }
 
   try {
@@ -60,8 +93,11 @@ export async function POST(req: NextRequest) {
       contentType = mimeMap[ext] || contentType;
     }
 
-    if (contentType.startsWith('image/') && size > 50 * 1024 * 1024) {
+    if (contentType.startsWith('image/') && size > MAX_IMAGE_BYTES) {
       return NextResponse.json({ success: false, message: 'Image exceeds 50MB limit' }, { status: 413 });
+    }
+    if (contentType.startsWith('video/') && size > MAX_VIDEO_BYTES) {
+      return NextResponse.json({ success: false, message: 'Video exceeds 500MB limit' }, { status: 413 });
     }
 
     const urlParts = new URL(url);
@@ -86,12 +122,12 @@ export async function POST(req: NextRequest) {
         sourceUrl: url,
       });
     } catch (e) {
-      console.warn('Firestore mirror failed for add-from-url', e);
+      logger.warn('Firestore mirror failed for add-from-url', e);
     }
 
     return NextResponse.json({ success: true, url: blob.url, pathname: blob.pathname, contentType, size, filename: originalName });
   } catch (e: any) {
-    console.error('Vercel Blob add-from-url failed', e);
+    logger.error('Vercel Blob add-from-url failed', e);
     return NextResponse.json({ success: false, message: e?.message || 'Failed to fetch URL' }, { status: 500 });
   }
 }
