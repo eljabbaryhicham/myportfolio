@@ -1,20 +1,26 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faFileImage, faFilm, faFileLines, faXmark } from '@fortawesome/free-solid-svg-icons';
-import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
+import { faFileImage, faFilm, faFileLines, faXmark, faCloudUploadAlt, faLink } from '@fortawesome/free-solid-svg-icons';
+import { useCollection, useFirestore, useMemoFirebase, useUser, useAuth } from '@/firebase';
 import { collection, query, orderBy } from 'firebase/firestore';
 import { useTranslation } from '@/lib/i18n/useTranslation';
 import Preloader from '@/components/preloader';
 import { useMediaProvider } from '@/hooks/use-media-provider';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
+import { useDropzone } from 'react-dropzone';
+import { useToast } from '@/hooks/use-toast';
+import { useMediaUpload } from '@/features/admin/hooks/use-media-upload';
+import { SUPERADMIN_EMAIL } from '@/lib/constants';
+import { Progress } from '@/components/ui/progress';
+import AddFromUrlDialog from './AddFromUrlDialog';
 
 // Cloudinary URL helpers
 const CLOUDINARY_UPLOAD_RE = /\/(image|video|raw)\/upload\//;
@@ -70,6 +76,95 @@ export default function UnifiedMediaPicker({ isOpen, onOpenChange, onMediaSelect
   const [activeLibrary, setActiveLibrary] = useState<'primary' | 'extented'>('primary');
   const [searchQuery, setSearchQuery] = useState('');
   const [formatChoiceAsset, setFormatChoiceAsset] = useState<{ url: string; resourceType: 'image' | 'video' | 'raw'; filename: string } | null>(null);
+  const [isUrlDialogOpen, setIsUrlDialogOpen] = useState(false);
+
+  // ---- Inline upload affordance ----
+  // Lets the user drop a file (or paste a URL) without leaving the picker.
+  // Mirrors the permission model from MediaLibrary: superadmin OR a user
+  // doc with canUploadMedia.
+  const { user } = useUser();
+  const auth = useAuth();
+  const typedUser = user as { email?: string | null; permissions?: { canUploadMedia?: boolean } } | null;
+  const isSuperAdmin = typedUser?.email === SUPERADMIN_EMAIL;
+  const canUpload = isSuperAdmin || (typedUser?.permissions?.canUploadMedia ?? true);
+  const { toast } = useToast();
+  const { upload: doUpload, isUploading, progress: uploadProgress, error: uploadError, reset: resetUpload } = useMediaUpload({
+    provider: provider as 'cloudinary' | 'vercel',
+    libraryId: provider === 'cloudinary' ? activeLibrary : undefined,
+    enabled: canUpload,
+  });
+
+  const handleUploadedFile = useCallback(
+    (result: { url: string; resourceType: 'image' | 'video' | 'raw'; filename: string }) => {
+      // For Cloudinary images, route through the format-choice dialog so the
+      // user picks a delivery format. For everything else, select directly.
+      if (provider === 'cloudinary' && (result.resourceType === 'image' || result.resourceType === 'video')) {
+        setFormatChoiceAsset({ url: result.url, resourceType: result.resourceType, filename: result.filename });
+      } else {
+        handleSelect(result.url, result.resourceType, result.filename);
+      }
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [provider]
+  );
+
+  const onDrop = useCallback(
+    (accepted: File[]) => {
+      if (!canUpload) {
+        toast({ variant: 'destructive', title: t('mediaAdmin.toast.permissionDenied.title') || 'Permission denied', description: t('mediaAdmin.toast.permissionDenied.description') || 'You do not have permission to upload media.' });
+        return;
+      }
+      if (accepted.length === 0) return;
+      const file = accepted[0]; // Single-file upload in the picker
+      resetUpload();
+      doUpload(file).then(handleUploadedFile).catch((e) => {
+        if (e?.name === 'AbortError') return; // user cancelled
+        toast({ variant: 'destructive', title: t('mediaAdmin.toast.uploadFailed.title') || 'Upload failed', description: e?.message || String(e) });
+      });
+    },
+    [canUpload, doUpload, handleUploadedFile, resetUpload, toast, t]
+  );
+
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    onDrop,
+    multiple: false,
+    disabled: !canUpload || isUploading,
+    accept: {
+      'image/*': ['.png', '.jpg', '.jpeg', '.gif', '.webp', '.avif', '.svg', '.bmp'],
+      'video/*': ['.mp4', '.mov', '.webm', '.m3u8'],
+    },
+  });
+
+  const handleUploadFromUrl = useCallback(
+    async (url: string) => {
+      setIsUrlDialogOpen(false);
+      // Vercel path: use the dedicated /api/vercel-blob/add-from-url route
+      // (already secured with SSRF guard + size cap + rate limit).
+      // Cloudinary path: handled by AddFromUrlDialog (opened via the
+      // "From URL" button below — that dialog has its own submit handler).
+      if (provider !== 'vercel') return;
+      try {
+        const token = auth?.currentUser ? await auth.currentUser.getIdToken() : null;
+        if (!token) throw new Error('Not signed in.');
+        const res = await fetch('/api/vercel-blob/add-from-url', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ url }),
+        });
+        const data = await res.json();
+        if (!res.ok || !data.success) throw new Error(data.message || 'Add from URL failed');
+        const ct = (data.contentType || '').toLowerCase();
+        handleUploadedFile({
+          url: data.url,
+          resourceType: ct.startsWith('image/') ? 'image' : ct.startsWith('video/') ? 'video' : 'raw',
+          filename: (data.pathname || '').split('/').pop() || 'file',
+        });
+      } catch (e: any) {
+        toast({ variant: 'destructive', title: 'Add from URL failed', description: e?.message || String(e) });
+      }
+    },
+    [provider, auth, handleUploadedFile, toast]
+  );
 
   const mediaCollectionRef = useMemoFirebase(() => firestore ? query(collection(firestore, 'media'), orderBy('created_at', 'desc')) : null, [firestore]);
   const { data: mediaAssets, isLoading: isLoadingMedia } = useCollection<MediaAsset>(mediaCollectionRef);
@@ -240,6 +335,53 @@ export default function UnifiedMediaPicker({ isOpen, onOpenChange, onMediaSelect
             </TabsList>
             <Input value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder={t('mediaAdmin.searchPlaceholder')} className="max-w-[200px] ml-auto glass-effect" />
           </div>
+
+          {canUpload && (
+            <div className="px-4 pt-2 flex items-center gap-2 flex-wrap">
+              <div
+                {...getRootProps()}
+                className={cn(
+                  'flex-1 min-w-[200px] flex items-center justify-center gap-2 rounded-md border-2 border-dashed px-3 py-2 text-sm cursor-pointer transition-colors',
+                  isDragActive ? 'border-primary bg-primary/10 text-primary' : 'border-white/15 text-muted-foreground hover:border-white/30 hover:text-foreground',
+                  isUploading && 'opacity-50 cursor-not-allowed'
+                )}
+              >
+                <input {...getInputProps()} />
+                <FontAwesomeIcon icon={faCloudUploadAlt} className="h-4 w-4" />
+                <span>
+                  {isUploading
+                    ? `Uploading… ${uploadProgress}%`
+                    : isDragActive
+                      ? 'Drop to upload'
+                      : 'Drop a file here, or click to browse'}
+                </span>
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setIsUrlDialogOpen(true)}
+                disabled={isUploading}
+                className="glass-effect shrink-0"
+              >
+                <FontAwesomeIcon icon={faLink} className="mr-2 h-3 w-3" />
+                From URL
+              </Button>
+            </div>
+          )}
+
+          {isUploading && (
+            <div className="px-4 pt-2">
+              <Progress value={uploadProgress} className="h-1" />
+            </div>
+          )}
+
+          {uploadError && !isUploading && (
+            <div className="px-4 pt-2 text-xs text-destructive">
+              {uploadError.message}
+              <button onClick={resetUpload} className="ml-2 underline">dismiss</button>
+            </div>
+          )}
           <ScrollArea className="flex-1 mt-3">
             {provider === 'cloudinary' ? (
               <>
@@ -315,6 +457,73 @@ export default function UnifiedMediaPicker({ isOpen, onOpenChange, onMediaSelect
         </DialogFooter>
       </DialogContent>
     </Dialog>
+
+    {/* Cloudinary URL upload — reuses the existing AddFromUrlDialog (which
+        uses the Genkit flow + Cloudinary uploader and writes the Firestore
+        mirror). The dialog is opened in the same picker's modal stack so
+        closing it returns the user to the picker. */}
+    {provider === 'cloudinary' && (
+      <AddFromUrlDialog
+        isOpen={isUrlDialogOpen}
+        onOpenChange={setIsUrlDialogOpen}
+        onUploadComplete={async (mediaId, resourceType, libraryId) => {
+          setIsUrlDialogOpen(false);
+          // AddFromUrlDialog just wrote the Firestore mirror; read it back
+          // to get the url + filename, then auto-select the new asset.
+          // (For a tighter integration we'd refactor AddFromUrlDialog to
+          // return the asset, but this keeps the change small.)
+          if (!firestore) return;
+          const { doc, getDoc } = await import('firebase/firestore');
+          const snap = await getDoc(doc(firestore, 'media', mediaId));
+          if (snap.exists()) {
+            const data = snap.data() as { url: string; public_id: string; filename?: string; title?: string };
+            handleSelect(data.url, resourceType, data.filename || data.title || data.public_id);
+          }
+        }}
+      />
+    )}
+
+    {/* Vercel URL upload — a small inline form, since the AddFromUrlDialog is
+        Cloudinary-only. The actual work is done by /api/vercel-blob/add-from-url
+        (which has SSRF guard + size cap + rate limit). */}
+    {provider === 'vercel' && (
+      <Dialog open={isUrlDialogOpen} onOpenChange={setIsUrlDialogOpen}>
+        <DialogContent className="w-[80vw] max-w-lg glass-effect">
+          <DialogHeader>
+            <DialogTitle>{t('mediaAdmin.addFromUrl') || 'Add from URL'}</DialogTitle>
+            <DialogDescription>
+              {t('mediaAdmin.addFromUrlDescription') || 'Fetch a publicly accessible file and add it to your Vercel Blob library.'}
+            </DialogDescription>
+          </DialogHeader>
+          <UrlUploadForm onSubmit={(url) => handleUploadFromUrl(url)} />
+        </DialogContent>
+      </Dialog>
+    )}
     </>
+  );
+}
+
+function UrlUploadForm({ onSubmit }: { onSubmit: (url: string) => void }) {
+  const [url, setUrl] = useState('');
+  return (
+    <form
+      onSubmit={(e) => {
+        e.preventDefault();
+        if (url.trim()) onSubmit(url.trim());
+      }}
+      className="space-y-3 pt-2"
+    >
+      <Input
+        type="url"
+        placeholder="https://example.com/image.jpg"
+        value={url}
+        onChange={(e) => setUrl(e.target.value)}
+        required
+        autoFocus
+      />
+      <div className="flex justify-end gap-2">
+        <Button type="submit">Fetch & Upload</Button>
+      </div>
+    </form>
   );
 }
