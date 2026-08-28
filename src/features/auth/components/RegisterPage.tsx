@@ -14,9 +14,9 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { useAuth, useUser, useFirestore, setDocumentNonBlocking } from '@/firebase';
+import { useAuth, useUser } from '@/firebase';
 import {
-  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
 } from 'firebase/auth';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
@@ -24,22 +24,21 @@ import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import Link from 'next/link';
-import { doc } from 'firebase/firestore';
 import { useTranslation } from '@/lib/i18n/useTranslation';
 
 const formSchema = z.object({
-  username: z.string().min(3, { message: 'Username must be at least 3 characters.' }),
+  username: z
+    .string()
+    .min(3, { message: 'Username must be at least 3 characters.' })
+    .max(30, { message: 'Username is too long.' })
+    .regex(/^[a-zA-Z0-9_]+$/, { message: 'Username can only contain letters, numbers, and underscore.' }),
   password: z.string().min(6, {
     message: 'Password must be at least 6 characters.',
   }),
-  secretCode: z.string().superRefine((val, ctx) => {
-    if (val !== 'BELOFTED') {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: 'Invalid secret code.',
-      });
-    }
-  }),
+  // The invite code is checked SERVER-side in /api/auth/register-claim.
+  // We only do a non-empty + length check here so the client never holds
+  // the real code in its bundle.
+  inviteCode: z.string().min(1, { message: 'Invitation code is required.' }).max(200),
 });
 
 type RegisterFormValues = z.infer<typeof formSchema>;
@@ -47,7 +46,6 @@ type RegisterFormValues = z.infer<typeof formSchema>;
 export default function RegisterPage() {
   const { t } = useTranslation();
   const auth = useAuth();
-  const firestore = useFirestore();
   const { user, isUserLoading } = useUser();
   const { toast } = useToast();
   const router = useRouter();
@@ -64,26 +62,44 @@ export default function RegisterPage() {
     defaultValues: {
       username: '',
       password: '',
-      secretCode: '',
+      inviteCode: '',
     },
   });
 
   const handleSignUp = async (values: RegisterFormValues) => {
-    if (!auth || !firestore) return;
+    if (!auth) return;
     setIsSubmitting(true);
-    
-    const email = `${values.username.toLowerCase()}@example.com`;
+
     try {
-      const userCredential = await createUserWithEmailAndPassword(auth, email, values.password);
-      
-      const userDocRef = doc(firestore, 'users', userCredential.user.uid);
-      await setDocumentNonBlocking(userDocRef, {
-        uid: userCredential.user.uid,
-        username: values.username,
-        email: userCredential.user.email,
-        role: 'user',
-        createdAt: new Date().toISOString(),
-      }, {});
+      // 1. Create the Auth user + user doc server-side (Admin SDK). The server
+      //    checks the invite code against REGISTER_INVITE_CODE (server-only env).
+      const claimRes = await fetch('/api/auth/register-claim', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          username: values.username,
+          password: values.password,
+          code: values.inviteCode,
+        }),
+      });
+
+      if (!claimRes.ok) {
+        const errBody = await claimRes.json().catch(() => ({}));
+        const message = errBody?.error || 'Could not create account.';
+        // 401 means the code was wrong — show a field-level error on the
+        // invite code input. Everything else is a generic toast.
+        if (claimRes.status === 401) {
+          form.setError('inviteCode', { message });
+        } else {
+          toast({ variant: 'destructive', title: t('register.toast.error.title'), description: message });
+        }
+        return;
+      }
+
+      // 2. Sign the new user in. Admin SDK does not produce a client session,
+      //    so we sign in via the Firebase client SDK.
+      const { email } = await claimRes.json();
+      await signInWithEmailAndPassword(auth, email, values.password);
 
       toast({
         title: t('register.toast.success.title'),
@@ -94,10 +110,10 @@ export default function RegisterPage() {
       toast({
         variant: 'destructive',
         title: t('register.toast.error.title'),
-        description: error.code === 'auth/email-already-in-use' ? t('register.toast.error.description') : error.message,
+        description: error?.message || t('register.toast.error.description'),
       });
     } finally {
-        setIsSubmitting(false);
+      setIsSubmitting(false);
     }
   };
 
@@ -151,7 +167,7 @@ export default function RegisterPage() {
                   />
                   <FormField
                       control={form.control}
-                      name="secretCode"
+                      name="inviteCode"
                       render={({ field }) => (
                       <FormItem>
                           <FormLabel>{t('register.secretCode')}</FormLabel>
