@@ -25,11 +25,13 @@ const PlyrPlayer = forwardRef(({ source, poster, autoPlay = true, thumbnailVttUr
   const playerRef = useRef<PlyrInstance | null>(null);
   const hlsRef = useRef<Hls | null>(null);
   const isMobile = useIsMobile();
-  const [isLoading, setIsLoading] = useState(true);
+  // Latch: hide preloader the moment playback starts; never re-show on
+  // later loadstart/buffering.
+  const [hasPlayed, setHasPlayed] = useState(false);
   const playerReadyRef = useRef(false);
 
   useImperativeHandle(ref, () => ({
-    isLoading,
+    isLoading: !hasPlayed,
     plyr: playerRef.current,
     pause: () => {
       try { const p = playerRef.current; if (p && typeof p.pause === 'function') p.pause(); } catch {}
@@ -41,7 +43,7 @@ const PlyrPlayer = forwardRef(({ source, poster, autoPlay = true, thumbnailVttUr
       try { const p = playerRef.current; if (p) return !!p.playing; } catch {}
       return false;
     },
-  }), [isLoading]);
+  }), [hasPlayed]);
 
   useEffect(() => {
     let isMounted = true;
@@ -49,7 +51,7 @@ const PlyrPlayer = forwardRef(({ source, poster, autoPlay = true, thumbnailVttUr
     const initPlayer = async () => {
         const container = containerRef.current;
         if (!container) return;
-        setIsLoading(true);
+        setHasPlayed(false);
 
         const isYoutube = source.includes('youtube.com') || source.includes('youtu.be');
         const isVimeo = source.includes('vimeo.com');
@@ -86,15 +88,13 @@ const PlyrPlayer = forwardRef(({ source, poster, autoPlay = true, thumbnailVttUr
                 const done = () => {
                     if (settled || !isMounted) return;
                     settled = true;
-                    setIsLoading(false);
+                    setHasPlayed(true);
                 };
-                // Wait for the video to actually start playing before hiding preloader
+                // Hide preloader the moment playback starts; never re-show on
+                // later loadstart/buffering.
                 video.addEventListener('playing', done, { once: true });
                 // Safety: if playing never fires (e.g. autoplay blocked), fallback after delay
                 const safety = setTimeout(done, 4000);
-                video.addEventListener('loadstart', () => {
-                    if (isMounted && !settled) setIsLoading(true);
-                });
                 element = video;
             }
 
@@ -106,21 +106,21 @@ const PlyrPlayer = forwardRef(({ source, poster, autoPlay = true, thumbnailVttUr
                 playerReadyRef.current = true;
                 // For click-to-play (autoPlay false) hide preloader once ready so poster + play button show.
                 // For autoplay keep preloader until playing to avoid controls + preloader overlap.
-                if (!autoPlay && isMounted) setIsLoading(false);
+                if (!autoPlay && isMounted) setHasPlayed(true);
             };
             const onPlayerError = () => {
-                if (isMounted) setIsLoading(false);
+                if (isMounted) setHasPlayed(true);
             };
             const wireEvents = (p: PlyrInstance) => {
                 p.on('ready', onPlayerReady);
                 p.on('error', onPlayerError);
                 // Hide preloader and unmute for autoplay-with-sound (start muted for policy, then sound)
-                p.on('playing', () => { 
+                p.on('playing', () => {
                   if (isMounted) {
-                    setIsLoading(false);
+                    setHasPlayed(true);
                     if (autoPlay) {
                       try { p.muted = false; } catch {}
-                      try { 
+                      try {
                         const v = container.querySelector('video') as HTMLVideoElement | null;
                         if (v) { v.muted = false; v.removeAttribute('muted'); }
                       } catch {}
@@ -217,7 +217,7 @@ const PlyrPlayer = forwardRef(({ source, poster, autoPlay = true, thumbnailVttUr
 
         } catch (error) {
             logger.error("Error initializing Plyr player:", error);
-            if (isMounted) setIsLoading(false);
+            if (isMounted) setHasPlayed(true);
         }
     };
 
@@ -259,7 +259,7 @@ const PlyrPlayer = forwardRef(({ source, poster, autoPlay = true, thumbnailVttUr
       <div ref={containerRef} className="w-full h-full">
          {/* Plyr will be injected here */}
       </div>
-      {isLoading && (
+      {!hasPlayed && (
         <div className="absolute inset-0 flex items-center justify-center bg-black pointer-events-none z-10">
           <Preloader />
         </div>

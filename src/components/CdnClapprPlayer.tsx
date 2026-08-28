@@ -23,8 +23,10 @@ const CdnClapprPlayer = forwardRef(function CdnClapprPlayer({ source, poster, au
   const playerContainerRef = useRef<HTMLDivElement>(null);
   const playerRef = useRef<any>(null);
   const [containerId] = useState(() => `cdn-clappr-player-${Math.random().toString(36).substring(7)}`);
-  
-  const [isLoading, setIsLoading] = useState(true);
+
+  // Latch: hide preloader the moment playback starts; never re-show on
+  // later loadstart/buffering.
+  const [hasPlayed, setHasPlayed] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -33,14 +35,14 @@ const CdnClapprPlayer = forwardRef(function CdnClapprPlayer({ source, poster, au
     const initPlayer = async () => {
       const container = playerContainerRef.current;
       if (!container) return;
-      setIsLoading(true);
+      setHasPlayed(false);
 
       try {
         const mod: any = await import('@clappr/player');
         const Clappr = mod?.default || mod?.Clappr || (window as any).Clappr;
         if (!isMounted || !Clappr) {
           logger.error('Clappr failed to load: module did not expose Clappr');
-          if (isMounted) setIsLoading(false);
+          if (isMounted) setHasPlayed(true);
           return;
         }
         if (!isMounted || !container) return;
@@ -67,29 +69,27 @@ const CdnClapprPlayer = forwardRef(function CdnClapprPlayer({ source, poster, au
             events: {
               onReady: () => {
                 // For click-to-play (autoPlay false) hide preloader once ready so poster shows.
-                // For autoplay, keep preloader until video actually starts playing to avoid
-                // showing controls over black frame — preloader and controls overlapping.
-                if (isMounted && !autoPlay) setIsLoading(false);
+                if (isMounted && !autoPlay) setHasPlayed(true);
               },
               onError: (e: any) => {
                 if (isMounted) {
-                  setIsLoading(false);
+                  setHasPlayed(true);
                   logger.error("Clappr player error:", e);
                 }
               },
             }
         });
-        
+
         playerRef.current = newPlayer;
 
         // Hide preloader only when video frame is presented (playing), not onReady.
         // This prevents preloader + controls appearing together over black screen.
         // Autoplay must start muted (browser policy) then unmute for sound.
-        const hideOnPlay = () => { 
-          if (isMounted) setIsLoading(false);
+        const hideOnPlay = () => {
+          if (isMounted) setHasPlayed(true);
           if (autoPlay) {
             try { newPlayer.setVolume(100); } catch {}
-            try { 
+            try {
               const v = container.querySelector('video') as HTMLVideoElement | null;
               if (v) { v.muted = false; v.removeAttribute('muted'); }
             } catch {}
@@ -126,7 +126,7 @@ const CdnClapprPlayer = forwardRef(function CdnClapprPlayer({ source, poster, au
           newPlayer.on(Clappr.Events.PLAYBACK_PLAY, hideOnPlay);
         } catch {}
         // Safety fallback if playing never fires (autoplay blocked or error)
-        setTimeout(() => { if (isMounted) setIsLoading(false); }, 8000);
+        setTimeout(() => { if (isMounted) setHasPlayed(true); }, 8000);
 
       } catch (error: any) {
         logger.error(error);
@@ -137,7 +137,7 @@ const CdnClapprPlayer = forwardRef(function CdnClapprPlayer({ source, poster, au
             description: error.message || 'An essential script for video playback failed to load. Please check your internet connection or ad-blocker.',
             duration: 9000,
           });
-          setIsLoading(false);
+          setHasPlayed(true);
         }
       }
     };
@@ -173,7 +173,7 @@ const CdnClapprPlayer = forwardRef(function CdnClapprPlayer({ source, poster, au
   }, [autoPlay]);
 
   useImperativeHandle(ref, () => ({
-    isLoading,
+    isLoading: !hasPlayed,
     pause: () => {
       try {
         const p = playerRef.current;
@@ -193,7 +193,7 @@ const CdnClapprPlayer = forwardRef(function CdnClapprPlayer({ source, poster, au
       } catch {}
       return false;
     },
-  }), [isLoading]);
+  }), [hasPlayed]);
 
   return (
     <div className="absolute inset-0 bg-black">
@@ -202,7 +202,7 @@ const CdnClapprPlayer = forwardRef(function CdnClapprPlayer({ source, poster, au
         ref={playerContainerRef}
         className="w-full h-full"
       />
-      {isLoading && (
+      {!hasPlayed && (
         <div className="absolute inset-0 flex items-center justify-center bg-black pointer-events-none z-10">
           <Preloader />
         </div>

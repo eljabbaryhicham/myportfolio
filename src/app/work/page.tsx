@@ -87,7 +87,11 @@ function LazyDetailsVideo({
   const playerRef = useRef<any>(null);
   const [inView, setInView] = useState(false);
   const [activated, setActivated] = useState(false);
-  const [playerLoading, setPlayerLoading] = useState(true);
+  // Latch: once the video has actually started playing, never show the
+  // preloader again — even if buffering/loadstart re-triggers a loading
+  // state in the player. Hide as soon as playback starts, not when the
+  // buffer is full.
+  const [hasPlayed, setHasPlayed] = useState(false);
   const isAndroid = useMemo(() => typeof navigator !== 'undefined' && /Android/i.test(navigator.userAgent), []);
   const [ready, setReady] = useState(false);
   const shouldLoad = inView || activated;
@@ -95,8 +99,8 @@ function LazyDetailsVideo({
     if (!shouldLoad) return;
     const check = () => {
       const data = playerRef.current;
-      if (data && typeof data === 'object' && 'isLoading' in data) {
-        setPlayerLoading(!!data.isLoading);
+      if (data && typeof data === 'object' && typeof data.isPlaying === 'function' && data.isPlaying()) {
+        setHasPlayed(true);
       }
     };
     check();
@@ -152,7 +156,7 @@ function LazyDetailsVideo({
   }
   return (
     <div className="relative w-full h-full">
-      {playerLoading && (
+      {!hasPlayed && (
         <div className="absolute inset-0 z-20 flex items-center justify-center bg-black">
           <Preloader />
         </div>
@@ -164,7 +168,7 @@ function LazyDetailsVideo({
           <MemoizedCdnClapprPlayer ref={playerRef} source={cleanVideoUrl(videoSrc) || videoSrc} poster={poster} autoPlay={false} />
         )}
       </Suspense>
-      {watermark && !playerLoading && (
+      {watermark && hasPlayed && (
         <div className="absolute pointer-events-none z-20" style={{ ...getWatermarkPositionStyle(watermarkPosition || 'bottom-right'), width: `${watermarkSize ?? 12}%`, minWidth: '50px', maxWidth: '250px', textAlign: 'center', opacity: (watermarkOpacity ?? 70) / 100 }}>
           <img src={watermark} alt="watermark" style={{ maxWidth: '100%' }} loading="lazy" />
         </div>
