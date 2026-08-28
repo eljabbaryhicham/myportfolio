@@ -420,16 +420,16 @@ function AdminPage() {
               <TabsContent value="contact" className="flex-1 overflow-auto mt-4">
                   <ContactAdmin />
               </TabsContent>
-              <TabsContent value="media" className="flex-1 overflow-auto mt-4 data-[state=inactive]:hidden" forceMount>
+              <TabsContent value="media" className="flex-1 overflow-auto mt-4">
                   <Tabs value={innerMediaTab} onValueChange={(v) => setInnerMediaTab(v as 'cloudinary' | 'vercel')} className="w-full">
                     <TabsList className="mb-4">
                       <TabsTrigger value="cloudinary" className="glass-effect data-[state=active]:bg-destructive">Cloudinary</TabsTrigger>
                       <TabsTrigger value="vercel" className="glass-effect data-[state=active]:bg-destructive">Vercel Blob</TabsTrigger>
                     </TabsList>
-                    <TabsContent value="cloudinary" forceMount className="data-[state=inactive]:hidden">
+                    <TabsContent value="cloudinary">
                       <MediaAdmin provider="cloudinary" onUploadComplete={handleUploadComplete} onMediaSelect={handleOpenPortfolioFormWithMedia} />
                     </TabsContent>
-                    <TabsContent value="vercel" forceMount className="data-[state=inactive]:hidden">
+                    <TabsContent value="vercel">
                       <MediaAdmin provider="vercel_blob" onUploadComplete={handleVercelUploadComplete} />
                     </TabsContent>
                   </Tabs>
