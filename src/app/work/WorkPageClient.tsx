@@ -787,6 +787,13 @@ function WorkPageContent() {
         return;
     }
 
+    if (isMobile) {
+        const mobileInitialLoad = 8;
+        setItemsPerLoad(mobileInitialLoad);
+        setVisibleItemsCount(prev => prev === null ? mobileInitialLoad - 1 : prev);
+        return;
+    }
+
     if (gridRef.current) {
         const itemMinWidth = 300; // Corresponds to `minmax(300px, 1fr)`
         const gridGap = 16; // Corresponds to `gap-4`
@@ -802,6 +809,27 @@ function WorkPageContent() {
         const calculatedCount = columnCount * rowCount;
         setItemsPerLoad(calculatedCount);
         setVisibleItemsCount(prev => prev === null ? calculatedCount - 1 : prev);
+        return;
+    }
+
+    // Desktop fallback: gridRef may not be attached yet on the first pass
+    // (e.g. when the page is gated by a post-mount loading state). Pick a
+    // reasonable default based on viewport so projects still appear, and let
+    // the resize listener recompute once the ref is in place.
+    if (typeof window !== 'undefined') {
+      const fallbackMinWidth = 300;
+      const fallbackGap = 16;
+      const fallbackColumnCount = Math.max(
+        1,
+        Math.floor((window.innerWidth + fallbackGap) / (fallbackMinWidth + fallbackGap))
+      );
+      const fallbackRowCount = Math.max(
+        1,
+        Math.floor((window.innerHeight * 0.8) / ((window.innerWidth / fallbackColumnCount) + fallbackGap))
+      );
+      const fallbackCount = fallbackColumnCount * fallbackRowCount;
+      setItemsPerLoad(fallbackCount);
+      setVisibleItemsCount(prev => prev === null ? fallbackCount - 1 : prev);
     }
   }, [isMobile]);
 
