@@ -826,23 +826,32 @@ function WorkPageContent() {
           }
         } catch {}
     }
-    // Bulletproof fallback: pause the raw <video> element(s) in the main popup
-    // (and details modal) directly. This guarantees the main video stops even
-    // if a player ref is stale/null, and covers videos inside the details modal.
+    // Bulletproof: while ANY work dialog (details/contact) is open, keep THE MAIN
+    // POPUP video paused. A player re-initializes/autoplays when a nested dialog
+    // mounts, so a one-shot pause isn't enough — we also intercept any `play` on
+    // that video and immediately re-pause. Scoped to mainMediaRef only so videos
+    // inside the details modal (click-to-play) keep their intended behavior.
     if (isDialogOpen && typeof document !== 'undefined') {
-      try {
-        const alreadyPaused = new Set<HTMLVideoElement>();
-        // Main dialog video(s) + any videos rendered inside open modals.
-        const roots: (HTMLElement | null)[] = [mainMediaRef.current, document.getElementById('work-details-dialog'), document.getElementById('work-contact-dialog')];
-        roots.forEach(root => {
-          if (!root) return;
-          root.querySelectorAll('video').forEach((v) => {
-            if (alreadyPaused.has(v)) return;
-            alreadyPaused.add(v);
-            try { if (typeof v.pause === 'function') v.pause(); } catch {}
-          });
+      const pauseMainVideo = () => {
+        const root = mainMediaRef.current;
+        if (!root) return;
+        root.querySelectorAll('video').forEach((v) => {
+          try { if (typeof v.pause === 'function') v.pause(); } catch {}
         });
-      } catch {}
+      };
+      pauseMainVideo();
+      // 'play' doesn't bubble, but a capturing listener on document still fires
+      // for any descendant — intercept the main popup's video and re-pause.
+      const onPlayCapture = (e: Event) => {
+        const t = e.target as HTMLVideoElement | null;
+        if (t && t.tagName === 'VIDEO' && mainMediaRef.current?.contains(t) === true && !t.paused) {
+          try { t.pause(); } catch {}
+        }
+      };
+      document.addEventListener('play', onPlayCapture, true);
+      return () => {
+        document.removeEventListener('play', onPlayCapture, true);
+      };
     }
   }, [isDialogOpen]);
 
