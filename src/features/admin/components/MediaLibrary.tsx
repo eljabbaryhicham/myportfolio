@@ -1,7 +1,7 @@
 'use client';
 
 import { useTranslation } from '@/lib/i18n/useTranslation';
-import { SUPERADMIN_EMAIL } from '@/lib/constants';
+import { isSuperAdmin as isSuperAdminCheck } from '@/lib/constants';
 import React, { useCallback, useState, useEffect, useMemo, useRef, forwardRef, useImperativeHandle } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { Button } from '@/components/ui/button';
@@ -456,7 +456,7 @@ export default forwardRef<MediaLibraryRef, MediaLibraryProps>(function MediaLibr
 
   // ---- Permissions (Cloudinary checks; Vercel implicitly allows all) ----
   const typedUser = user as AppUser | null;
-  const isSuperAdmin = typedUser?.email === SUPERADMIN_EMAIL;
+  const isSuperAdmin = isSuperAdminCheck(typedUser);
   const canUpload = provider === 'cloudinary' ? (isSuperAdmin || (typedUser?.permissions?.canUploadMedia ?? true)) : true;
   const canDelete = provider === 'cloudinary' ? (isSuperAdmin || (typedUser?.permissions?.canDeleteMedia ?? true)) : true;
   const canEditHome = provider === 'cloudinary' ? (isSuperAdmin || (typedUser?.permissions?.canEditHome ?? true)) : true;

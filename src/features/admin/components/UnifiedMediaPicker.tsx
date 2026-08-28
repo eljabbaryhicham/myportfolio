@@ -18,7 +18,7 @@ import { Button } from '@/components/ui/button';
 import { useDropzone } from 'react-dropzone';
 import { useToast } from '@/hooks/use-toast';
 import { useMediaUpload } from '@/features/admin/hooks/use-media-upload';
-import { SUPERADMIN_EMAIL } from '@/lib/constants';
+import { isSuperAdmin as isSuperAdminCheck } from '@/lib/constants';
 import { Progress } from '@/components/ui/progress';
 import AddFromUrlDialog from './AddFromUrlDialog';
 
@@ -85,7 +85,7 @@ export default function UnifiedMediaPicker({ isOpen, onOpenChange, onMediaSelect
   const { user } = useUser();
   const auth = useAuth();
   const typedUser = user as { email?: string | null; permissions?: { canUploadMedia?: boolean } } | null;
-  const isSuperAdmin = typedUser?.email === SUPERADMIN_EMAIL;
+  const isSuperAdmin = isSuperAdminCheck(typedUser);
   const canUpload = isSuperAdmin || (typedUser?.permissions?.canUploadMedia ?? true);
   const { toast } = useToast();
   const { upload: doUpload, isUploading, progress: uploadProgress, error: uploadError, reset: resetUpload } = useMediaUpload({

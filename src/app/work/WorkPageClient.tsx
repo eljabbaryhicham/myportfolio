@@ -33,7 +33,7 @@ import type { AppUser } from '@/firebase/auth/use-user';
 import dynamic from 'next/dynamic';
 import { useTranslation } from '@/lib/i18n/useTranslation';
 import { getLocalizedString } from '@/lib/i18n/multilingual';
-import { SUPERADMIN_EMAIL } from '@/lib/constants';
+import { isSuperAdmin as isSuperAdminCheck } from '@/lib/constants';
 import { cleanVideoUrl } from '@/lib/video';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -671,7 +671,7 @@ function WorkPageContent() {
   const { t, lang } = useTranslation();
 
   const typedUser = user as AppUser | null;
-  const isSuperAdmin = typedUser?.email === SUPERADMIN_EMAIL;
+  const isSuperAdmin = isSuperAdminCheck(typedUser);
   const canEditProjects = isSuperAdmin || (typedUser?.permissions?.canEditProjects ?? true);
 
   // Projects are publicly readable — no auth needed. Fetch immediately so projects

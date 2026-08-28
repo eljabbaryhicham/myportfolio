@@ -2,7 +2,7 @@
 
 import admin from 'firebase-admin';
 import { initializeServerApp } from '@/firebase/server-init';
-import { SUPERADMIN_EMAIL } from '@/lib/constants';
+import { SUPERADMIN_EMAIL, isSuperAdmin as isSuperAdminCheck } from '@/lib/constants';
 
 function friendlyError(error: any): string {
   const msg = error?.message || 'Unknown error';
@@ -78,7 +78,7 @@ export async function syncAuthUsersToFirestore(idToken: string): Promise<{
     for (const authUser of missing) {
       const { email } = authUser;
       const username = email.split('@')[0] || authUser.uid;
-      const isSuperAdmin = email === SUPERADMIN_EMAIL;
+      const isSuperAdmin = isSuperAdminCheck({ email });
 
       const userDoc = {
         uid: authUser.uid,

@@ -2,7 +2,7 @@
 'use client';
 
 import { useTranslation } from '@/lib/i18n/useTranslation';
-import { SUPERADMIN_EMAIL } from '@/lib/constants';
+import { SUPERADMIN_EMAIL, isSuperAdmin as isSuperAdminCheck } from '@/lib/constants';
 import { useCollection, useFirestore, useMemoFirebase, updateDocumentNonBlocking, useUser, useAuth } from '@/firebase';
 import { collection, query, orderBy, doc } from 'firebase/firestore';
 import {
@@ -113,7 +113,7 @@ export default function AdminManagement() {
   const { data: users, isLoading } = useCollection<AdminUser>(usersQuery);
   
   const typedUser = currentUser as AppUser | null;
-  const isSuperAdmin = typedUser?.email === SUPERADMIN_EMAIL;
+  const isSuperAdmin = isSuperAdminCheck(typedUser);
   
   const [selectedUser, setSelectedUser] = useState<AdminUser | null>(null);
   const [isPermissionsDialogOpen, setIsPermissionsDialogOpen] = useState(false);
@@ -242,8 +242,8 @@ export default function AdminManagement() {
                                       <p className="font-bold">{user.username}</p>
                                       <p className="text-sm text-muted-foreground">{user.email}</p>
                                   </div>
-                                  <Badge variant={user.email === SUPERADMIN_EMAIL ? 'destructive' : 'secondary'} className="ml-2 whitespace-nowrap">
-                                      {user.email === SUPERADMIN_EMAIL ? t('adminMgmt.superAdmin') : t('adminMgmt.admin')}
+                                  <Badge variant={(user.email ?? '').toLowerCase() === 'eljabbaryhicham@mellivision.com' ? 'destructive' : 'secondary'} className="ml-2 whitespace-nowrap">
+                                      {(user.email ?? '').toLowerCase() === 'eljabbaryhicham@mellivision.com' ? t('adminMgmt.superAdmin') : t('adminMgmt.admin')}
                                   </Badge>
                               </div>
                               <Separator className="my-4 bg-white/10" />
@@ -285,8 +285,8 @@ export default function AdminManagement() {
                           <TableCell className="font-medium">{user.username}</TableCell>
                           <TableCell>{user.email}</TableCell>
                           <TableCell>
-                              <Badge variant={user.email === SUPERADMIN_EMAIL ? 'destructive' : 'secondary'}>
-                              {user.email === SUPERADMIN_EMAIL ? t('adminMgmt.superAdmin') : t('adminMgmt.admin')}
+                              <Badge variant={(user.email ?? '').toLowerCase() === 'eljabbaryhicham@mellivision.com' ? 'destructive' : 'secondary'}>
+                              {(user.email ?? '').toLowerCase() === 'eljabbaryhicham@mellivision.com' ? t('adminMgmt.superAdmin') : t('adminMgmt.admin')}
                               </Badge>
                           </TableCell>
                           <TableCell className="text-center">

@@ -27,7 +27,7 @@ import type { AppUser } from '@/firebase/auth/use-user';
 import { useTranslation } from '@/lib/i18n/useTranslation';
 import { ensureMultilingualString } from '@/lib/i18n/multilingual';
 import { MultilingualInput } from './MultilingualInput';
-import { SUPERADMIN_EMAIL } from '@/lib/constants';
+import { isSuperAdmin as isSuperAdminCheck } from '@/lib/constants';
 import MediaLibrary from './MediaLibrary';
 import { faImages } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -90,7 +90,7 @@ export default function ContactAdmin() {
   const { user } = useUser();
 
   const typedUser = user as AppUser | null;
-  const isSuperAdmin = typedUser?.email === SUPERADMIN_EMAIL;
+  const isSuperAdmin = isSuperAdminCheck(typedUser);
   const canEditContact = isSuperAdmin || (typedUser?.permissions?.canEditContact ?? true);
 
   const contactDocRef = useMemoFirebase(

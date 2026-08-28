@@ -2,7 +2,7 @@
 'use client';
 
 import { useTranslation } from '@/lib/i18n/useTranslation';
-import { SUPERADMIN_EMAIL } from '@/lib/constants';
+import { isSuperAdmin as isSuperAdminCheck } from '@/lib/constants';
 import PageTextEditor from '@/features/admin/components/PageTextEditor';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
@@ -61,7 +61,7 @@ export default function AboutAdmin() {
   const { user } = useUser();
   
   const typedUser = user as AppUser | null;
-  const isSuperAdmin = typedUser?.email === SUPERADMIN_EMAIL;
+  const isSuperAdmin = isSuperAdminCheck(typedUser);
   const canEditAbout = isSuperAdmin || (typedUser?.permissions?.canEditAbout ?? true);
 
   const [isFormOpen, setIsFormOpen] = useState(false);

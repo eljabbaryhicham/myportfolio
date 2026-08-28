@@ -32,7 +32,7 @@ const AboutAdmin = dynamicImport(() => import('@/features/admin/components/About
 const UnifiedMediaPicker = dynamicImport(() => import('@/features/admin/components/UnifiedMediaPicker'), { ssr: false, loading: () => <Preloader /> });
 import { useTranslation } from '@/lib/i18n/useTranslation';
 import { useUploadProgress } from '@/components/upload-progress-context';
-import { SUPERADMIN_EMAIL } from '@/lib/constants';
+import { isSuperAdmin as isSuperAdminCheck } from '@/lib/constants';
 
 
 function AdminPage() {
@@ -71,7 +71,7 @@ function AdminPage() {
   }, []);
 
   const typedUser = user as AppUser | null;
-  const isSuperAdmin = typedUser?.email?.toLowerCase() === 'eljabbaryhicham@mellivision.com';
+  const isSuperAdmin = isSuperAdminCheck(typedUser);
   
   const canEditProjects = isSuperAdmin || (typedUser?.permissions?.canEditProjects ?? true);
   

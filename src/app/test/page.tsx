@@ -16,7 +16,7 @@ import PlyrPlayer from '@/components/PlyrPlayer';
 import type { AppUser } from '@/firebase/auth/use-user';
 import { useToast } from '@/hooks/use-toast';
 import { useTranslation } from '@/lib/i18n/useTranslation';
-import { SUPERADMIN_EMAIL } from '@/lib/constants';
+import { isSuperAdmin as isSuperAdminCheck } from '@/lib/constants';
 import type { HomePageSettings } from '@/lib/types';
 import { useHomePageSettings } from '@/components/settings/home-page-settings-provider';
 
@@ -32,7 +32,7 @@ export default function TestPage() {
   const [inputValue, setInputValue] = useState(defaultUrl);
 
   const typedUser = user as AppUser | null;
-  const isSuperAdmin = typedUser?.email === SUPERADMIN_EMAIL;
+  const isSuperAdmin = isSuperAdminCheck(typedUser);
 
   // homepage/settings is sourced from the shared provider (server-seeded + live).
   // TestPage still needs the writeable settingsDocRef to toggle workPagePlayer.

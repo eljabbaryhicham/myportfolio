@@ -28,7 +28,7 @@ import type { PortfolioItem } from '@/features/portfolio/data/portfolio-data';
 import { useEffect, useState } from 'react';
 import Preloader from '@/components/preloader';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { SUPERADMIN_EMAIL } from '@/lib/constants';
+import { isSuperAdmin as isSuperAdminCheck } from '@/lib/constants';
 import type { AppUser } from '@/firebase/auth/use-user';
 import { Switch } from '@/components/ui/switch';
 import { Slider } from '@/components/ui/slider';
@@ -148,7 +148,7 @@ export default function HomeAdmin() {
   const [isMounted, setIsMounted] = useState(false);
 
   const typedUser = user as AppUser | null;
-  const isSuperAdmin = typedUser?.email === SUPERADMIN_EMAIL;
+  const isSuperAdmin = isSuperAdminCheck(typedUser);
   const canEditHome = isSuperAdmin || (typedUser?.permissions?.canEditHome ?? true);
 
   const settingsDocRef = useMemoFirebase(
