@@ -4,9 +4,10 @@ import { cn } from '@/lib/utils';
 import React from 'react';
 import type { Metadata, Viewport } from 'next';
 import { SpeedInsights } from '@vercel/speed-insights/next';
-import { Analytics } from '@vercel/analytics/next';
+import { Analytics } from '@vercel/analytics/react';
 import { bungee, quicksand, dancingScript } from './fonts';
 import AppShell from '@/components/layout/app-shell';
+import { getHomePageSettings } from '@/lib/home-page-settings';
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://mellivision.com'),
@@ -33,11 +34,17 @@ export const viewport: Viewport = {
   viewportFit: 'cover',
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // Server-fetch the public homepage/settings once per request so the SSR
+  // HTML can render the admin-configured values (theme, title, background…)
+  // on first paint. The result is passed to <AppShell> which seeds a
+  // client-side SettingsProvider; live admin edits still propagate via
+  // useDoc after hydration.
+  const initialSettings = await getHomePageSettings();
   return (
     <html lang="en" className={cn("dark h-full", bungee.variable, quicksand.variable, dancingScript.variable)} suppressHydrationWarning>
       <head>
@@ -67,7 +74,7 @@ export default function RootLayout({
         }} />
       </head>
       <body className={cn('font-body antialiased text-center h-full')} style={{ background: '#000' }} suppressHydrationWarning>
-        <AppShell>
+        <AppShell initialSettings={initialSettings}>
           {children}
         </AppShell>
         <SpeedInsights />
