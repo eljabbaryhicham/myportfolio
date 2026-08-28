@@ -282,9 +282,9 @@ const ProjectDetailsContent = memo(function ProjectDetailsContent({
             download
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex shrink-0 items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground shadow-sm transition-all duration-200 hover:bg-primary/90 hover:shadow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background whitespace-nowrap"
+            className="inline-flex shrink-0 items-center gap-1.5 rounded-md bg-destructive px-3 py-1.5 text-xs font-medium text-destructive-foreground shadow-sm transition-all duration-200 hover:bg-destructive/90 hover:shadow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background whitespace-nowrap"
           >
-            <FontAwesomeIcon icon={faArrowDown} className="h-3 w-3" />
+            <FontAwesomeIcon icon={faArrowDown} className="h-3 w-3 text-destructive-foreground" />
             Download
           </a>
         </div>

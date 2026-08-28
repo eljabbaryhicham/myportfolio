@@ -157,13 +157,13 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onCho
         if (type === 'video') {
           insertion = `${leading}<video src="${url}" controls />${trailing}`;
         } else if (type === 'raw') {
-          // Files (PDF, ZIP, etc.) become a clickable download link. Use the
-          // filename as the link text; the markdown renderer turns it into
-          // a plain <a>. The "download card" UI in ProjectDetailsContent only
-          // triggers for <a download>, so we render a regular link here.
-          // (For a download card, extend detailsSanitizeSchema + use HTML.)
+          // Files (PDF, ZIP, etc.) become a clickable download link rendered
+          // as the styled card in ProjectDetailsContent. That card only
+          // triggers when the markdown parser sees <a download>, so we
+          // emit raw HTML instead of a Markdown link. detailsSanitizeSchema
+          // already permits href / download / title on <a>.
           const linkText = filename || 'Download file';
-          insertion = `${leading}[${linkText}](${url})${trailing}`;
+          insertion = `${leading}<a href="${url}" download title="${linkText}">${linkText}</a>${trailing}`;
         } else {
           insertion = `${leading}![media](${url})${trailing}`;
         }

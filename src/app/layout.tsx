@@ -27,6 +27,17 @@ export const metadata: Metadata = {
   robots: { index: true, follow: true },
 };
 
+// generateMetadata runs at request time and shares the same cache()-wrapped
+// Firestore read as RootLayout via getHomePageSettings(), so no extra round trip.
+export async function generateMetadata(): Promise<Metadata> {
+  const settings = await getHomePageSettings();
+  const url = settings?.faviconUrl || settings?.menubarLogoUrl || settings?.homePageLogoUrl;
+  const icons: NonNullable<Metadata['icons']> = url
+    ? { icon: url, shortcut: url, apple: url }
+    : { icon: '/favicon.ico', shortcut: '/favicon.ico' };
+  return { ...metadata, icons };
+}
+
 export const viewport: Viewport = {
   themeColor: '#808080',
   width: 'device-width',
