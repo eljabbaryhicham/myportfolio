@@ -1074,7 +1074,7 @@ function WorkPageContent() {
     visible: {
       opacity: 1,
       transition: {
-        staggerChildren: 0.05,
+        staggerChildren: 0.2,
       },
     },
   };
@@ -1084,6 +1084,9 @@ function WorkPageContent() {
     visible: {
       y: 0,
       opacity: 1,
+      transition: {
+        duration: 0.5,
+      },
     },
   };
   
