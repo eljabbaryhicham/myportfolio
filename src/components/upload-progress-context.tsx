@@ -105,6 +105,10 @@ export function UploadProgressProvider({ children }: { children: React.ReactNode
   }, []);
 
   const startUpload = useCallback((fileName: string, provider: 'vercel' | 'cloudinary') => {
+    // Clear any stale "completed" upload from a previous run so a failed upload
+    // can never reuse an old success state (which caused a false "Uploaded" card).
+    setCompletedUpload(null);
+    try { localStorage.removeItem(COMPLETED_UPLOAD_KEY); } catch {}
     setState((prev) => ({
       ...prev,
       [provider]: { isUploading: true, progress: 0, fileName },

@@ -677,53 +677,74 @@ for (const file of files) {
         // Initialize progress tracking in sessionStorage
         saveUploadProgress(file, 'pending', 0, 0, file.size, 'vercel');
         try {
-          // Upload via a server-side route using @vercel/blob `put()` — the same
-          // mechanism the working "upload using URL" path uses. The browser's
-          // client `upload()` (direct PUT to blob storage) hangs at 0% for some
-          // environments, so we proxy through the API route and stream progress
-          // via XMLHttpRequest, which is reliable.
-          const data = await new Promise<{ url: string; pathname: string; size: number; contentType: string }>((resolve, reject) => {
-            const form = new FormData();
-            form.append('file', file);
-            const xhr = new XMLHttpRequest();
-            xhr.open('POST', '/api/vercel-blob/upload');
-            xhr.setRequestHeader('Authorization', `Bearer ${token}`);
-            // Increase timeout for videos (10 minutes) vs images (2 minutes)
-            xhr.timeout = file.type.startsWith('video/') ? 600_000 : 120_000;
-            activeXhrRef.current = xhr;
-            if (xhr.upload) {
-              xhr.upload.onprogress = (e) => {
-                if (e.lengthComputable) {
-                  const p = Math.round((e.loaded / e.total) * 100);
+          let data: { url: string; pathname: string; size: number; contentType: string };
+          if (file.type.startsWith('video/')) {
+            // Large videos: use Vercel Blob's client `upload()` which sends the
+            // payload DIRECTLY to blob storage via a presigned URL. This bypasses the
+            // Next.js serverless request-body limit that makes large video uploads
+            // through the proxy route fail (while small images/raw files pass through).
+            const { upload } = await import('@vercel/blob/client');
+            const blob = await upload(
+              `vercel-blob/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, '_')}`,
+              file,
+              {
+                access: 'public' as const,
+                handleUploadUrl: '/api/vercel-blob/handle-upload',
+                headers: { Authorization: `Bearer ${token}` },
+                contentType: file.type || undefined,
+                onUploadProgress: (e: { loaded?: number; total?: number; percentage?: number }) => {
+                  const p = Math.round(e.percentage ?? (e.total ? ((e.loaded || 0) / e.total) * 100 : 0));
                   setUploadProgress(p);
                   updateGlobalProgress(p, 'vercel');
-                  saveUploadProgress(file, 'uploading', p, e.loaded, e.total, 'vercel');
+                  saveUploadProgress(file, 'uploading', p, e.loaded || 0, e.total || file.size, 'vercel');
+                },
+              }
+            );
+            data = { url: blob.url, pathname: blob.pathname, size: file.size, contentType: blob.contentType || file.type };
+          } else {
+            // Proxy through the API route (reliable for images/raw files).
+            data = await new Promise<{ url: string; pathname: string; size: number; contentType: string }>((resolve, reject) => {
+              const form = new FormData();
+              form.append('file', file);
+              const xhr = new XMLHttpRequest();
+              xhr.open('POST', '/api/vercel-blob/upload');
+              xhr.setRequestHeader('Authorization', `Bearer ${token}`);
+              xhr.timeout = 120_000;
+              activeXhrRef.current = xhr;
+              if (xhr.upload) {
+                xhr.upload.onprogress = (e) => {
+                  if (e.lengthComputable) {
+                    const p = Math.round((e.loaded / e.total) * 100);
+                    setUploadProgress(p);
+                    updateGlobalProgress(p, 'vercel');
+                    saveUploadProgress(file, 'uploading', p, e.loaded, e.total, 'vercel');
+                  }
+                };
+              }
+              xhr.onload = () => {
+                activeXhrRef.current = null;
+                try {
+                  const parsed = JSON.parse(xhr.responseText);
+                  if (xhr.status >= 200 && xhr.status < 300 && parsed.success) {
+                    resolve(parsed);
+                  } else {
+                    reject(new Error(parsed?.message || `Upload failed (${xhr.status})`));
+                  }
+                } catch {
+                  reject(new Error('Invalid server response'));
                 }
               };
-            }
-            xhr.onload = () => {
-              activeXhrRef.current = null;
-              try {
-                const parsed = JSON.parse(xhr.responseText);
-                if (xhr.status >= 200 && xhr.status < 300 && parsed.success) {
-                  resolve(parsed);
-                } else {
-                  reject(new Error(parsed?.message || `Upload failed (${xhr.status})`));
-                }
-              } catch {
-                reject(new Error('Invalid server response'));
-              }
-            };
-            xhr.onerror = () => {
-              activeXhrRef.current = null;
-              reject(new Error('Network error during upload'));
-            };
-            xhr.ontimeout = () => {
-              activeXhrRef.current = null;
-              reject(new Error('Upload timed out. The server may be unreachable.'));
-            };
-            xhr.send(form);
-          });
+              xhr.onerror = () => {
+                activeXhrRef.current = null;
+                reject(new Error('Network error during upload'));
+              };
+              xhr.ontimeout = () => {
+                activeXhrRef.current = null;
+                reject(new Error('Upload timed out. The server may be unreachable.'));
+              };
+              xhr.send(form);
+            });
+          }
           setUploadProgress(100);
           updateGlobalProgress(100, 'vercel');
           finishUpload('vercel');

@@ -13,7 +13,7 @@ export default function UploadProgressNotification() {
   const pathname = usePathname();
   const router = useRouter();
 
-  const [completed, setCompleted] = useState<Array<{ provider: 'vercel' | 'cloudinary'; fileName: string; id: number }>>([]);
+  const [completed, setCompleted] = useState<Array<{ provider: 'vercel' | 'cloudinary'; fileName: string; resourceType?: 'image' | 'video' | 'raw'; id: number }>>([]);
   const [dismissedActive, setDismissedActive] = useState<Array<'vercel' | 'cloudinary'>>([]);
   const prevVercelUploading = useRef(vercel.isUploading);
   const prevCloudinaryUploading = useRef(cloudinary.isUploading);
@@ -37,7 +37,7 @@ export default function UploadProgressNotification() {
     if (prevVercelUploading.current && !vercel.isUploading && vercel.fileName) {
       // Only show completed notification if upload actually succeeded (completedUpload exists)
       if (completedUpload && completedUpload.provider === 'vercel') {
-        setCompleted(prev => [...prev, { provider: 'vercel', fileName: vercel.fileName, id: nextId.current++ }]);
+        setCompleted(prev => [...prev, { provider: 'vercel', fileName: vercel.fileName, resourceType: completedUpload.resourceType, id: nextId.current++ }]);
       }
       clearFileName('vercel');
     }
@@ -48,7 +48,7 @@ export default function UploadProgressNotification() {
     if (prevCloudinaryUploading.current && !cloudinary.isUploading && cloudinary.fileName) {
       // Only show completed notification if upload actually succeeded (completedUpload exists)
       if (completedUpload && completedUpload.provider === 'cloudinary') {
-        setCompleted(prev => [...prev, { provider: 'cloudinary', fileName: cloudinary.fileName, id: nextId.current++ }]);
+        setCompleted(prev => [...prev, { provider: 'cloudinary', fileName: cloudinary.fileName, resourceType: completedUpload.resourceType, id: nextId.current++ }]);
       }
       clearFileName('cloudinary');
     }
@@ -59,9 +59,9 @@ export default function UploadProgressNotification() {
     setCompleted(prev => prev.filter(c => c.id !== id));
   };
 
-  const goToMediaTab = (provider: 'vercel' | 'cloudinary') => {
+  const goToMediaTab = (provider: 'vercel' | 'cloudinary', resourceType?: 'image' | 'video' | 'raw') => {
     // Use query params so the admin page can read them and switch tabs
-    const tab = completedUpload?.resourceType === 'video' ? 'videos' : completedUpload?.resourceType === 'raw' ? 'files' : 'images';
+    const tab = resourceType === 'video' ? 'videos' : resourceType === 'raw' ? 'files' : 'images';
     const url = `/admin?tab=media&innerTab=${provider}&mediaTab=${tab}`;
     if (pathname === '/admin') {
       // Already on admin page - use replace to avoid history clutter, then reload to trigger tab switch
@@ -146,7 +146,7 @@ export default function UploadProgressNotification() {
                 variant="ghost"
                 size="sm"
                 className="h-8 w-8 p-0"
-                onClick={() => { dismiss(c.id); goToMediaTab(c.provider); }}
+                onClick={() => { dismiss(c.id); goToMediaTab(c.provider, c.resourceType); }}
                 title="Open in media library"
               >
                 <FontAwesomeIcon icon={faArrowUpRightFromSquare} className="h-4 w-4" />

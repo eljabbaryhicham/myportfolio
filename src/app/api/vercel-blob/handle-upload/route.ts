@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { handleUpload } from '@vercel/blob/client';
 import { verifyAdminRequest } from '@/lib/admin-auth';
-import { initializeServerApp } from '@/firebase/server-init';
-import admin from 'firebase-admin';
 
 // Health-check used by the client pre-flight so uploads fail loudly (with a
 // clear message) instead of hanging at 0% when BLOB_READ_WRITE_TOKEN is unset.
@@ -36,26 +34,8 @@ export async function POST(req: NextRequest) {
           tokenPayload: JSON.stringify({ uid: decoded.uid, filename: pathname.split('/').pop() || 'file' }),
         };
       },
-      onUploadCompleted: async ({ blob, tokenPayload }) => {
-        try {
-          const app = await initializeServerApp();
-          const db = admin.firestore(app);
-          let payload: any = {};
-          try { payload = JSON.parse(tokenPayload || '{}'); } catch {}
-          await db.collection('vercel_blobs').add({
-            provider: 'vercel_blob',
-            url: blob.url,
-            pathname: blob.pathname,
-            size: (blob as any).size ?? null,
-            contentType: blob.contentType || 'application/octet-stream',
-            filename: payload.filename || blob.pathname.split('/').pop() || 'file',
-            uploadedAt: admin.firestore.FieldValue.serverTimestamp(),
-            uploadedBy: payload.uid || decoded.uid,
-          });
-        } catch (e) {
-          console.error('Vercel Blob onUploadCompleted Firestore mirror failed', e);
-        }
-      },
+      // Firestore mirroring is handled client-side (MediaLibrary) to avoid
+      // duplicate docs and to work without Admin SDK Firestore permissions.
     });
 
     return NextResponse.json(jsonResponse);

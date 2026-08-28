@@ -58,7 +58,6 @@ function preloadPlayers() {
   import('hls.js').catch(() => {});
 }
 
-const CdnClapprPlayer = dynamic(() => import('@/components/CdnClapprPlayer'), { ssr: false });
 // Admin-only editors/media-picker: code-split out of the public route chunk so
 // visitors to /work don't download them. Rendered only when an admin is signed in.
 const PortfolioItemFormSheet = dynamic(() => import('@/features/admin/components/PortfolioItemForm').then((m) => m.PortfolioItemFormSheet), { ssr: false });
@@ -66,7 +65,8 @@ const UnifiedMediaPicker = dynamic(() => import('@/features/admin/components/Uni
 const LazyContactForm = lazy(() => import('@/features/contact/components/ContactForm'));
 
 // Video players imported directly (not lazy) to ensure ref forwarding works
-// for pause/play control via useImperativeHandle
+// for pause/play control via useImperativeHandle.
+import CdnClapprPlayer from '@/components/CdnClapprPlayer';
 import PlyrPlayer from '@/components/PlyrPlayer';
 
 const MemoizedPlyrPlayer = memo(PlyrPlayer);
@@ -738,6 +738,7 @@ function WorkPageContent() {
   const gridRef = useRef<HTMLDivElement>(null);
   const plyrRef = useRef<any>(null);
   const clapprRef = useRef<any>(null);
+  const mainMediaRef = useRef<HTMLDivElement>(null);
   
   const [isLibraryOpen, setIsLibraryOpen] = useState(false);
   const [librarySelectionConfig, setLibrarySelectionConfig] = useState<{ onSelect: (url: string, type: 'image' | 'video' | 'raw', filename: string) => void } | null>(null);
@@ -824,6 +825,24 @@ function WorkPageContent() {
             else if (typeof clapprPlayer.isPlaying === 'function' && clapprPlayer.isPlaying()) clapprPlayer.pause();
           }
         } catch {}
+    }
+    // Bulletproof fallback: pause the raw <video> element(s) in the main popup
+    // (and details modal) directly. This guarantees the main video stops even
+    // if a player ref is stale/null, and covers videos inside the details modal.
+    if (isDialogOpen && typeof document !== 'undefined') {
+      try {
+        const alreadyPaused = new Set<HTMLVideoElement>();
+        // Main dialog video(s) + any videos rendered inside open modals.
+        const roots: (HTMLElement | null)[] = [mainMediaRef.current, document.getElementById('work-details-dialog'), document.getElementById('work-contact-dialog')];
+        roots.forEach(root => {
+          if (!root) return;
+          root.querySelectorAll('video').forEach((v) => {
+            if (alreadyPaused.has(v)) return;
+            alreadyPaused.add(v);
+            try { if (typeof v.pause === 'function') v.pause(); } catch {}
+          });
+        });
+      } catch {}
     }
   }, [isDialogOpen]);
 
@@ -1281,7 +1300,7 @@ function WorkPageContent() {
                       
                       <ScrollArea className="flex-1 min-h-0">
                         <div className="relative flex flex-col justify-center h-full" onPointerDown={(e) => { if (isMobile) dragControls.start(e); }}>
-                          <div className="w-full">
+                          <div className="w-full" ref={mainMediaRef}>
                             {isClient && (
                               <Suspense fallback={null}>
                                 <MemoizedPortfolioMedia
@@ -1347,7 +1366,7 @@ function WorkPageContent() {
       
       {/* Nested Dialog for Details */}
       <Dialog open={isDetailsModalOpen} onOpenChange={setDetailsModalOpen}>
-        <DialogContent className="w-[80vw] max-w-[95vw] min-w-0 overflow-hidden h-[80dvh] md:h-[90dvh] glass-effect p-0 flex flex-col group"
+        <DialogContent id="work-details-dialog" className="w-[80vw] max-w-[95vw] min-w-0 overflow-hidden h-[80dvh] md:h-[90dvh] glass-effect p-0 flex flex-col group"
           onMouseMove={handleDialogMouseMove}
           onMouseEnter={handleDialogMouseEnter}
           onMouseLeave={handleDialogMouseLeave}
@@ -1376,7 +1395,7 @@ function WorkPageContent() {
       
       {/* Contact Form Dialog */}
       <Dialog open={isContactFormOpen} onOpenChange={setIsContactFormOpen}>
-        <DialogContent className="w-[80vw] max-w-xl glass-effect">
+        <DialogContent id="work-contact-dialog" className="w-[80vw] max-w-xl glass-effect">
             <DialogHeader>
               <DialogTitle className="font-headline">{t('work.details.contactTitle')}</DialogTitle>
               <DialogDescription>

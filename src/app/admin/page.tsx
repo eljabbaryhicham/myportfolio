@@ -12,7 +12,6 @@ import { useToast } from '@/hooks/use-toast';
 import { signOut } from 'firebase/auth';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import dynamicImport from 'next/dynamic';
-import { AdminTabInitializer } from '@/components/AdminTabInitializer';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faRightFromBracket } from '@fortawesome/free-solid-svg-icons';
 import { Separator } from '@/components/ui/separator';
@@ -76,8 +75,22 @@ function AdminPage() {
   const canEditProjects = isSuperAdmin || (typedUser?.permissions?.canEditProjects ?? true);
   
   useEffect(() => {
-    // The AdminTabInitializer component handles query params
-    // This useEffect only handles localStorage for backward compatibility
+    // Read query params from notification navigation (e.g. /admin?tab=media&innerTab=vercel&mediaTab=videos)
+    // and switch to the correct admin + provider tab.
+    try {
+      const qs = new URLSearchParams(window.location.search);
+      const tabParam = qs.get('tab');
+      const innerTabParam = qs.get('innerTab');
+      if (tabParam === 'media' && (innerTabParam === 'cloudinary' || innerTabParam === 'vercel')) {
+        setActiveTab('media');
+        setInnerMediaTab(innerTabParam);
+        // Clean the URL so a page refresh doesn't keep forcing the media tab.
+        window.history.replaceState(null, '', '/admin');
+        return;
+      }
+    } catch {}
+
+    // localStorage backward compatibility
     const savedTab = localStorage.getItem('adminActiveTab');
     if (savedTab) {
       setActiveTab(savedTab);
@@ -265,7 +278,6 @@ function AdminPage() {
 
   return (
     <>
-      <AdminTabInitializer />
       <div className="flex h-full w-full items-center justify-center min-h-full p-4">
         <div className="container mx-auto px-0 flex flex-col h-full min-h-0 w-full">
           <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4 text-center">
