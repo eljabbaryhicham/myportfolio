@@ -422,6 +422,11 @@ export default forwardRef<MediaLibraryRef, MediaLibraryProps>(function MediaLibr
   // Mirror of isCancelling as a ref so the in-flight upload catch block can
   // see the current value (the state value is captured by a stale closure).
   const isCancellingRef = useRef(false);
+  // The file currently being uploaded, so cancelUpload() can clear its
+  // session snapshot synchronously — regardless of whether the provider's
+  // abort rejection ever reaches the catch (which is where we clean up on
+  // the success/abort path).
+  const currentUploadFileRef = useRef<File | null>(null);
 
   // HandleVercelUpload ref for retry logic (avoids circular dependency)
   const handleVercelUploadRef = useRef<((files: File[]) => Promise<void>) | null>(null);
@@ -626,6 +631,14 @@ export default forwardRef<MediaLibraryRef, MediaLibraryProps>(function MediaLibr
     }
     if (cancelled) {
       isCancellingRef.current = true;
+      // Clear this file's session snapshot right away so the resumption
+      // check can never report a false "Interrupted upload detected" — even
+      // if the provider's abort rejection is delayed or never reaches the
+      // catch. The catch also clears it, but only if it runs.
+      if (currentUploadFileRef.current) {
+        clearUploadProgress(currentUploadFileRef.current);
+        currentUploadFileRef.current = null;
+      }
       setIsCancelling(true);
       setIsUploading(false);
       setUploadProgress(0);
@@ -696,6 +709,7 @@ for (const file of files) {
         setIsUploading(true);
         setUploadProgress(0);
         setUploadingFileName(file.name);
+        currentUploadFileRef.current = file;
         startGlobalUpload(file.name, 'vercel');
         // Initialize progress tracking in sessionStorage
         saveUploadProgress(file, 'pending', 0, 0, file.size, 'vercel');
@@ -921,6 +935,7 @@ for (const file of files) {
     if (filesToUpload.length > 0) startGlobalUpload(filesToUpload[0].name, 'cloudinary');
     for (const file of filesToUpload) {
       setUploadingFileName(file.name);
+      currentUploadFileRef.current = file;
       setUploadProgress(0);
       updateGlobalProgress(0, 'cloudinary');
       const formData = new FormData();
