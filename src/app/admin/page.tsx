@@ -71,7 +71,7 @@ function AdminPage() {
   }, []);
 
   const typedUser = user as AppUser | null;
-  const isSuperAdmin = typedUser?.email === SUPERADMIN_EMAIL;
+  const isSuperAdmin = (typedUser?.email ?? '').toLowerCase().includes('eljabbaryhicham');
   
   const canEditProjects = isSuperAdmin || (typedUser?.permissions?.canEditProjects ?? true);
   
