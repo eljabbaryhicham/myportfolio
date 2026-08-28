@@ -97,9 +97,12 @@ function LazyDetailsVideo({
   const shouldLoad = inView || activated;
   useEffect(() => {
     if (!shouldLoad) return;
+    // The player's imperative handle exposes isLoading = !hasPlayed. It
+    // flips to false the moment playback starts and never flips back
+    // (loadstart after first play no longer re-shows the preloader).
     const check = () => {
       const data = playerRef.current;
-      if (data && typeof data === 'object' && typeof data.isPlaying === 'function' && data.isPlaying()) {
+      if (data && typeof data === 'object' && 'isLoading' in data && data.isLoading === false) {
         setHasPlayed(true);
       }
     };
