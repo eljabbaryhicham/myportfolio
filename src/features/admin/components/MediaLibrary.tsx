@@ -104,6 +104,19 @@ const hlsVariant = (url: string): string => {
   return withTransform(stripped, 'sp_auto');
 };
 
+// ---- Upload cancellation handles (module-scoped) ----
+// These live at module scope instead of inside the component so they survive
+// unmount/remount. Radix Tabs unmounts inactive panels, so navigating away
+// from the media tab destroys component-local refs — but the in-flight
+// upload's XHR/AbortController lives on in the unmounted async closure. By
+// keeping the handles here, a freshly remounted MediaLibrary's cancel button
+// can still reach and abort the running upload. Only one MediaLibrary / upload
+// is active at a time (tabs unmount the rest), so a single shared handle is
+// safe for both providers.
+const activeXhrRef: { current: XMLHttpRequest | null } = { current: null };
+const activeBlobAbortRef: { current: AbortController | null } = { current: null };
+const currentUploadFileRef: { current: File | null } = { current: null };
+
 function formatBytes(bytes: number) {
   if (bytes === 0) return '0 B';
   const k = 1024;
@@ -415,18 +428,12 @@ export default forwardRef<MediaLibraryRef, MediaLibraryProps>(function MediaLibr
   const [urlProgress, setUrlProgress] = useState(0);
 
   // Upload cancellation state
-  const activeXhrRef = useRef<XMLHttpRequest | null>(null);
-  // Abort controller for the Vercel Blob presigned `upload()` (video) path.
-  const activeBlobAbortRef = useRef<AbortController | null>(null);
+  // (activeXhrRef / activeBlobAbortRef / currentUploadFileRef are module-scoped
+  // so they survive unmount when the user navigates away from the media tab.)
   const [isCancelling, setIsCancelling] = useState(false);
   // Mirror of isCancelling as a ref so the in-flight upload catch block can
   // see the current value (the state value is captured by a stale closure).
   const isCancellingRef = useRef(false);
-  // The file currently being uploaded, so cancelUpload() can clear its
-  // session snapshot synchronously — regardless of whether the provider's
-  // abort rejection ever reaches the catch (which is where we clean up on
-  // the success/abort path).
-  const currentUploadFileRef = useRef<File | null>(null);
 
   // HandleVercelUpload ref for retry logic (avoids circular dependency)
   const handleVercelUploadRef = useRef<((files: File[]) => Promise<void>) | null>(null);
