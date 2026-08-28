@@ -176,23 +176,9 @@ export function AppNav() {
   };
   
 
-  // Only animate in on the very first mount — not on every re-render
-  // (e.g. pathname changes during navigation).
-  const hasAnimatedIn = React.useRef(false);
-  React.useEffect(() => {
-    hasAnimatedIn.current = true;
-  }, []);
-
-  const animateIn = !hasAnimatedIn.current;
-
   if (hasMounted && isMobile) {
     return (
-      <motion.div
-        className="w-full flex-shrink-0 p-2"
-        initial={animateIn ? { y: '100%' } : false}
-        animate={{ y: 0 }}
-        transition={{ type: 'spring', stiffness: 80, damping: 15 }}
-      >
+      <div className="w-full flex-shrink-0 p-2">
         <div className={cn(
           "flex h-[7vh] min-h-[60px] flex-row items-center justify-between rounded-lg border border-border/50 glass-effect px-2"
           )}>
@@ -201,17 +187,12 @@ export function AppNav() {
           </nav>
           <LanguageSwitcher />
         </div>
-      </motion.div>
+      </div>
     );
   }
 
   return (
-    <motion.aside
-      className="w-full md:w-auto flex-shrink-0 p-2"
-      initial={animateIn ? { x: '100%' } : false}
-      animate={{ x: 0 }}
-      transition={{ type: 'spring', stiffness: 80, damping: 20 }}
-    >
+    <aside className="w-full md:w-auto flex-shrink-0 p-2">
       <div className={cn(
         "flex h-full flex-row md:flex-col items-center justify-between rounded-lg border border-border/50 px-2 py-4 md:p-4 glass-effect"
         )}>
@@ -242,6 +223,6 @@ export function AppNav() {
           <LanguageSwitcher />
         </div>
       </div>
-    </motion.aside>
+    </aside>
   );
 }
