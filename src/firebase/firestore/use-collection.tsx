@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import {
   Query,
   onSnapshot,
@@ -11,7 +11,6 @@ import {
 } from 'firebase/firestore';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
-import { toast } from '@/hooks/use-toast';
 
 
 /** Utility type to add an 'id' field to a given type T. */
@@ -62,12 +61,12 @@ export function useCollection<T = any>(
   const [data, setData] = useState<StateDataType>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<FirestoreError | Error | null>(null);
+  const hasLoadedRef = useRef(false);
 
   useEffect(() => {
     if (!memoizedTargetRefOrQuery) {
-      setData(null);
-      setIsLoading(false);
-      setError(null);
+      // Same null-ref handling as useDoc (§4.5/§2.3): don't wipe loaded data.
+      if (!hasLoadedRef.current) setIsLoading(true);
       return;
     }
 
@@ -89,6 +88,7 @@ export function useCollection<T = any>(
         setData(results);
         setError(null);
         setIsLoading(false);
+        hasLoadedRef.current = true;
       },
       (error: FirestoreError) => {
         // This logic extracts the path from either a ref or a query
@@ -105,14 +105,11 @@ export function useCollection<T = any>(
         setError(contextualError);
         setData(null);
         setIsLoading(false);
+        hasLoadedRef.current = false;
 
-        // trigger global error propagation
+        // trigger global error propagation — surfaced centrally (§4.2). No
+        // inline toast: public reads would otherwise spam "Data Fetch Blocked".
         errorEmitter.emit('permission-error', contextualError);
-        toast({
-            variant: 'destructive',
-            title: 'Data Fetch Blocked',
-            description: 'Could not load data. Please check if a browser extension (like an ad blocker) is interfering, or if you have the necessary permissions.',
-        });
       }
     );
 

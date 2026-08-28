@@ -1,6 +1,6 @@
 'use client';
     
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import {
   DocumentReference,
   onSnapshot,
@@ -10,7 +10,6 @@ import {
 } from 'firebase/firestore';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
-import { toast } from '@/hooks/use-toast';
 
 /** Utility type to add an 'id' field to a given type T. */
 type WithId<T> = T & { id: string };
@@ -47,12 +46,15 @@ export function useDoc<T = any>(
   const [data, setData] = useState<StateDataType>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<FirestoreError | Error | null>(null);
+  // Tracks whether we've ever loaded real data, so a transient null ref (e.g.
+  // while auth resolves) doesn't force consumers back to a loading/empty flash.
+  const hasLoadedRef = useRef(false);
 
   useEffect(() => {
     if (!memoizedDocRef) {
-      setData(null);
-      setIsLoading(false);
-      setError(null);
+      // §4.5 / §2.3: A null ref is usually transient. Don't wipe previously
+      // loaded data; only keep loading=true until we've produced data once.
+      if (!hasLoadedRef.current) setIsLoading(true);
       return;
     }
 
@@ -65,9 +67,11 @@ export function useDoc<T = any>(
       (snapshot: DocumentSnapshot<DocumentData>) => {
         if (snapshot.exists()) {
           setData({ ...(snapshot.data() as T), id: snapshot.id });
+          hasLoadedRef.current = true;
         } else if (!snapshot.metadata.fromCache) {
           // Non-existent AND confirmed by the server → genuinely deleted.
           setData(null);
+          hasLoadedRef.current = true;
         }
         // else: cache-only snapshot claiming the doc doesn't exist (common
         // after mobile suspend/resume). Ignore it — keep previous state and
@@ -84,14 +88,13 @@ export function useDoc<T = any>(
         setError(contextualError);
         setData(null);
         setIsLoading(false);
+        hasLoadedRef.current = false;
 
-        // trigger global error propagation
+        // trigger global error propagation — surfaced centrally by
+        // FirebaseErrorListener. §4.2: the hook itself does NOT toast here;
+        // a public page reading a missing doc would otherwise fire a confusing
+        // "Data Fetch Blocked" toast on every 404.
         errorEmitter.emit('permission-error', contextualError);
-        toast({
-            variant: 'destructive',
-            title: 'Data Fetch Blocked',
-            description: 'Could not load data. Please check if a browser extension (like an ad blocker) is interfering, or if you have the necessary permissions.',
-        });
       }
     );
 
