@@ -419,6 +419,9 @@ export default forwardRef<MediaLibraryRef, MediaLibraryProps>(function MediaLibr
   // Abort controller for the Vercel Blob presigned `upload()` (video) path.
   const activeBlobAbortRef = useRef<AbortController | null>(null);
   const [isCancelling, setIsCancelling] = useState(false);
+  // Mirror of isCancelling as a ref so the in-flight upload catch block can
+  // see the current value (the state value is captured by a stale closure).
+  const isCancellingRef = useRef(false);
 
   // HandleVercelUpload ref for retry logic (avoids circular dependency)
   const handleVercelUploadRef = useRef<((files: File[]) => Promise<void>) | null>(null);
@@ -622,13 +625,17 @@ export default forwardRef<MediaLibraryRef, MediaLibraryProps>(function MediaLibr
       cancelled = true;
     }
     if (cancelled) {
+      isCancellingRef.current = true;
       setIsCancelling(true);
       setIsUploading(false);
       setUploadProgress(0);
       setUploadingFileName('');
       finishUpload(provider === 'cloudinary' ? 'cloudinary' : 'vercel');
       toast({ title: 'Upload cancelled', variant: 'default' });
-      setTimeout(() => setIsCancelling(false), 500);
+      setTimeout(() => {
+        isCancellingRef.current = false;
+        setIsCancelling(false);
+      }, 500);
     }
   }, [finishUpload, toast, provider]);
 
@@ -762,6 +769,16 @@ for (const file of files) {
                 activeXhrRef.current = null;
                 reject(new Error('Upload timed out. The server may be unreachable.'));
               };
+              // Aborted via the Cancel button — settle the promise with an
+              // AbortError so the surrounding `await` returns and the catch
+              // can run (Cloudinary has the same handler; without it, abort
+              // leaves this promise pending forever).
+              xhr.onabort = () => {
+                activeXhrRef.current = null;
+                const err = new Error('Upload cancelled');
+                err.name = 'AbortError';
+                reject(err);
+              };
               xhr.send(form);
             });
           }
@@ -788,11 +805,16 @@ for (const file of files) {
           } catch (e) { logger.error('MediaLibrary: Firestore add after Vercel upload failed', e); }
         }
       } catch (e: any) {
-        // Don't track cancellation as a failure
-        if (e?.name === 'AbortError' || e?.name === 'CancellationError' || isCancelling) {
+        // Don't track cancellation as a failure. The `isCancelling` state is
+        // captured by a stale closure (false at upload start), so read the
+        // ref mirror for the live value, and fall back to the AbortController's
+        // own signal so any SDK-specific error name is still treated as cancel.
+        const wasCancelledByController = activeBlobAbortRef.current?.signal.aborted === true;
+        if (e?.name === 'AbortError' || e?.name === 'CancellationError' || isCancellingRef.current || wasCancelledByController) {
           // Clear the in-progress session snapshot so a cancelled upload doesn't
           // later appear as a false "Interrupted upload detected".
           clearUploadProgress(file);
+          isCancellingRef.current = false;
           setIsCancelling(false);
           return;
         }
@@ -812,7 +834,7 @@ for (const file of files) {
         setTimeout(() => finishUpload(), 1000);
       }
     }
-  }, [getToken, toast, firestore, auth, finishUpload, startGlobalUpload, updateGlobalProgress, props.onUploadComplete, setActiveTabFn, signalCompletedUpload, isCancelling]);
+  }, [getToken, toast, firestore, auth, finishUpload, startGlobalUpload, updateGlobalProgress, props.onUploadComplete, setActiveTabFn, signalCompletedUpload]);
 
   // Update ref for retry logic
   handleVercelUploadRef.current = handleVercelUpload;
