@@ -27,9 +27,9 @@ async function fetchItemById(id: string | undefined): Promise<MinimalPortfolioIt
 export async function generateMetadata({
   searchParams,
 }: {
-  searchParams: Promise<{ id?: string }>;
+  searchParams: Promise<{ id?: string }> | { id?: string } | undefined;
 }): Promise<Metadata> {
-  const params = await searchParams;
+  const params = searchParams ? await searchParams : {};
   const id = typeof params.id === 'string' ? params.id : undefined;
   const item = await fetchItemById(id);
 

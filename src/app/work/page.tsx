@@ -25,9 +25,9 @@ async function fetchItem(id: string | undefined): Promise<MinimalPortfolioItem |
 export default async function WorkPage({
   searchParams,
 }: {
-  searchParams: Promise<{ id?: string }>;
+  searchParams: Promise<{ id?: string }> | { id?: string } | undefined;
 }) {
-  const params = await searchParams;
+  const params = searchParams ? await searchParams : {};
   const id = typeof params.id === 'string' ? params.id : '';
   const item = await fetchItem(id);
   const jsonLd = item ? portfolioItemJsonLd({ ...item, id }) : null;
