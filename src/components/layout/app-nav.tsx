@@ -8,6 +8,7 @@ import { useUser, useDoc, useFirestore, useMemoFirebase } from "@/firebase";
 import { motion } from "framer-motion";
 import React from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useHasMounted } from "@/hooks/use-has-mounted";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faHouse, faImage, faCircleInfo, faEnvelope, faShieldHalved, faFlask } from "@fortawesome/free-solid-svg-icons";
 import Logo from "../logo";
@@ -38,6 +39,7 @@ export function AppNav() {
   const { user } = useUser();
   const firestore = useFirestore();
   const isMobile = useIsMobile();
+  const hasMounted = useHasMounted();
   const { lang } = useLanguage();
   const t = (key: string) => translations[lang]?.[key] ?? translations.en[key] ?? key;
 
@@ -122,11 +124,11 @@ export function AppNav() {
           aria-current={isActive ? "page" : undefined}
           className={cn(
             "group relative flex items-center justify-center rounded-full transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
-            isMobile ? 'h-[clamp(2.5rem,10vw,3rem)] w-[clamp(2.5rem,10vw,3rem)] aspect-square' : "",
+            hasMounted && isMobile ? 'h-[clamp(2.5rem,10vw,3rem)] w-[clamp(2.5rem,10vw,3rem)] aspect-square' : "",
             "text-white",
             isActive ? "" : (isSpecialButton ? "bg-cyan-500/80" : "glass-effect"),
           )}
-          style={!isMobile ? { width: 'var(--nav-button-size)', height: 'var(--nav-button-size)' } : undefined}
+          style={!hasMounted || isMobile ? undefined : { width: 'var(--nav-button-size)', height: 'var(--nav-button-size)' }}
         >
           {isActive && (
             <motion.div
@@ -151,7 +153,7 @@ export function AppNav() {
       </div>
     );
 
-    if (isMobile) {
+    if (hasMounted && isMobile) {
       return (
         <div key={item.href} className="h-full flex flex-1 items-center justify-center">
             {navButtonContent}
@@ -174,7 +176,7 @@ export function AppNav() {
   };
   
 
-  if (isMobile) {
+  if (hasMounted && isMobile) {
     return (
       <motion.div
         className="w-full flex-shrink-0 p-2"

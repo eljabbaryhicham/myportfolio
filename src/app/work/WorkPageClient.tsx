@@ -26,6 +26,7 @@ import { Separator } from '@/components/ui/separator';
 import Preloader from '@/components/preloader';
 import { useIsExtraWide } from '@/hooks/use-is-extra-wide';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useHasMounted } from '@/hooks/use-has-mounted';
 import { useToast } from '@/hooks/use-toast';
 import { motion, AnimatePresence, PanInfo, useDragControls } from 'framer-motion';
 import type { AppUser } from '@/firebase/auth/use-user';
@@ -719,6 +720,7 @@ function WorkPageContent() {
   const [isCloseButtonVisible, setIsCloseButtonVisible] = useState(false);
   const inactivityTimer = useRef<NodeJS.Timeout | null>(null);
   const isMobile = useIsMobile();
+  const hasMounted = useHasMounted();
   const gridRef = useRef<HTMLDivElement>(null);
   const plyrRef = useRef<any>(null);
   const clapprRef = useRef<any>(null);
@@ -1223,7 +1225,7 @@ function WorkPageContent() {
           >
             <motion.div
                 onDragEnd={handleDragEnd}
-                drag={isMobile ? "x" : false}
+                drag={hasMounted && isMobile ? "x" : false}
                 dragListener={false}
                 dragControls={dragControls}
                 dragConstraints={{ left: 0, right: 0 }}
@@ -1244,7 +1246,7 @@ function WorkPageContent() {
                   >
                     <div className="flex flex-col flex-1 min-h-0 h-full">
                       <DialogHeader className="p-4 md:p-6 flex-shrink-0 relative">
-                        <div className="text-center" onPointerDown={(e) => { if (isMobile) dragControls.start(e); }}>
+                        <div className="text-center" onPointerDown={(e) => { if (hasMounted && isMobile) dragControls.start(e); }}>
                           <DialogTitle className="text-base md:text-2xl font-headline px-[20%]">
                             {getLocalizedString(selectedItem.title, lang)}
                           </DialogTitle>
@@ -1280,7 +1282,7 @@ function WorkPageContent() {
                       <Separator className="bg-white/10 my-0" />
                       
                       <ScrollArea className="flex-1 min-h-0">
-                        <div className="relative flex flex-col justify-center h-full" onPointerDown={(e) => { if (isMobile) dragControls.start(e); }}>
+                        <div className="relative flex flex-col justify-center h-full" onPointerDown={(e) => { if (hasMounted && isMobile) dragControls.start(e); }}>
                           <div className="w-full" ref={mainMediaRef}>
                             {isClient && (
                               <Suspense fallback={null}>
