@@ -17,9 +17,10 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
-import { useDoc, useFirestore, useMemoFirebase, setDocumentNonBlocking, useUser, useCollection } from '@/firebase';
+import { useMergedAutosave } from '@/hooks/useMergedAutosave';
+import { useDoc, useFirestore, useMemoFirebase, useUser, useCollection } from '@/firebase';
 import { collection, doc } from 'firebase/firestore';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import Preloader from '@/components/preloader';
 import type { AppUser } from '@/firebase/auth/use-user';
@@ -156,33 +157,17 @@ export default function ContactAdmin() {
     setIsMounted(true);
   }, []);
 
-  useEffect(() => {
-    if (!canEditContact || !isMounted || !contactDocRef) return;
-
-    let timer: ReturnType<typeof setTimeout>;
-    const debouncedSave = (fieldName: string, value: any) => {
-        clearTimeout(timer);
-        timer = setTimeout(() => {
-            setDocumentNonBlocking(contactDocRef, { [fieldName]: value }, { merge: true });
-            toast({
-                title: t('homeAdmin.toast.saved.title'),
-                description: t('homeAdmin.toast.saved.description'),
-            });
-        }, 500);
-    };
-
-    const subscription = watch((value, { name, type }) => {
-      if (name) {
-        const topLevel = name.split('.')[0];
-        debouncedSave(topLevel, value[topLevel as keyof ContactInfo]);
-      }
-    });
-
-    return () => {
-      subscription.unsubscribe();
-      clearTimeout(timer);
-    };
-  }, [watch, contactDocRef, canEditContact, toast, isMounted, t]);
+  useMergedAutosave({
+    enabled: canEditContact && isMounted,
+    ref: contactDocRef,
+    watch,
+    onSaved: () => {
+      toast({
+        title: t('homeAdmin.toast.saved.title'),
+        description: t('homeAdmin.toast.saved.description'),
+      });
+    },
+  });
 
   if (isLoading) {
     return (

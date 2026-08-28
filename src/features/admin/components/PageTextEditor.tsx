@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import * as z from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -10,11 +10,11 @@ import { faChevronDown } from '@fortawesome/free-solid-svg-icons';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { doc } from 'firebase/firestore';
 import { Form } from '@/components/ui/form';
-import { useDoc, useFirestore, useMemoFirebase, setDocumentNonBlocking } from '@/firebase';
+import { useDoc, useFirestore, useMemoFirebase } from '@/firebase';
 import { useTranslation } from '@/lib/i18n/useTranslation';
 import { ensureMultilingualString } from '@/lib/i18n/multilingual';
 import { MultilingualInput } from './MultilingualInput';
-import { debounce } from '@/lib/utils';
+import { useMergedAutosave } from '@/hooks/useMergedAutosave';
 
 interface PageTextField {
   /** Field name stored on homepage/settings */
@@ -57,29 +57,17 @@ export default function PageTextEditor({ titleKey, fields }: PageTextEditorProps
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [homeSettings]);
 
-  const pendingRef = useRef<Record<string, any>>({});
-
-  useEffect(() => {
-    const debouncedSave = debounce(() => {
-      if (!settingsDocRef || Object.keys(pendingRef.current).length === 0) return;
-      const changes = pendingRef.current;
-      pendingRef.current = {};
-      setDocumentNonBlocking(settingsDocRef, changes, { merge: true });
-    }, 500);
-
-    const subscription = form.watch((value, { name }) => {
-      if (name && typeof name === 'string') {
-        const topLevel = name.split('.')[0];
-        pendingRef.current[topLevel] = (value as Record<string, any>)[topLevel] ?? { en: '', fr: '' };
-        debouncedSave();
+  useMergedAutosave({
+    ref: settingsDocRef,
+    watch: form.watch,
+    beforeWrite: (changes) => {
+      const merged: Record<string, any> = {};
+      for (const [key, value] of Object.entries(changes)) {
+        merged[key] = value ?? { en: '', fr: '' };
       }
-    });
-
-    return () => {
-      subscription.unsubscribe();
-      debouncedSave.cancel();
-    };
-  }, [form, settingsDocRef]);
+      return merged;
+    },
+  });
 
   return (
     <Collapsible defaultOpen={false} className="p-4 rounded-lg border glass-effect">

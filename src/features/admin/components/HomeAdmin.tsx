@@ -46,9 +46,9 @@ import { MultilingualInput } from './MultilingualInput';
 import { ensureMultilingualString } from '@/lib/i18n/multilingual';
 import { faImages, faEye, faRotateLeft } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { debounce } from '@/lib/utils';
 import type { HomePageSettings } from '@/lib/types';
 import { useMediaProvider } from '@/hooks/use-media-provider';
+import { useMergedAutosave } from '@/hooks/useMergedAutosave';
 
 function renderEmailPreview(template?: string): string {
   return (template?.trim() ? template : DEFAULT_EMAIL_TEMPLATE_HTML)
@@ -267,61 +267,41 @@ export default function HomeAdmin() {
     }
   }, [homeSettings, form]);
 
-  useEffect(() => {
-    if (!canEditHome || !isMounted) return;
-
-    // Batch ALL pending field changes into one merged write. A single shared
-    // debounce timer that saves only the last-changed field silently DROPPED
-    // earlier edits (e.g. pick a background image then switch type <500ms
-    // later → the URL write was lost).
-    const pendingRef: { current: Record<string, any> } = { current: {} };
-
-    const debouncedSave = debounce(() => {
-        if (!settingsDocRef || Object.keys(pendingRef.current).length === 0) return;
-        const changes = pendingRef.current;
-        pendingRef.current = {};
-        setDocumentNonBlocking(settingsDocRef, changes, { merge: true });
-        const themeColor = changes.themeColor;
-        if (themeColor) {
-            try {
-                const hex = themeColor.replace('#', '');
-                const r = parseInt(hex.substring(0, 2), 16) / 255;
-                const g = parseInt(hex.substring(2, 4), 16) / 255;
-                const b = parseInt(hex.substring(4, 6), 16) / 255;
-                const max = Math.max(r, g, b), min = Math.min(r, g, b);
-                let h = 0, s = 0, l = (max + min) / 2;
-                if (max !== min) {
-                    const d = max - min;
-                    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
-                    switch (max) {
-                        case r: h = ((g - b) / d + (g < b ? 6 : 0)) / 6; break;
-                        case g: h = ((b - r) / d + 2) / 6; break;
-                        case b: h = ((r - g) / d + 4) / 6; break;
-                    }
-                }
-                const hsl = `${Math.round(h * 360)} ${Math.round(s * 100)}% ${Math.round(l * 100)}%`;
-                localStorage.setItem('belofted_theme_hsl', hsl);
-            } catch {}
-        }
-        toast({
-            title: t('homeAdmin.toast.saved.title'),
-            description: t('homeAdmin.toast.saved.description'),
-        });
-    }, 500);
-
-    const subscription = watch((value, { name }) => {
-      if (name) {
-        const topLevel = name.split('.')[0];
-        pendingRef.current[topLevel] = (value as Record<string, any>)[topLevel];
-        debouncedSave();
+  useMergedAutosave({
+    enabled: canEditHome && isMounted,
+    ref: settingsDocRef,
+    watch,
+    afterWrite: (written) => {
+      const themeColor = written.themeColor;
+      if (themeColor) {
+        try {
+          const hex = themeColor.replace('#', '');
+          const r = parseInt(hex.substring(0, 2), 16) / 255;
+          const g = parseInt(hex.substring(2, 4), 16) / 255;
+          const b = parseInt(hex.substring(4, 6), 16) / 255;
+          const max = Math.max(r, g, b), min = Math.min(r, g, b);
+          let h = 0, s = 0, l = (max + min) / 2;
+          if (max !== min) {
+            const d = max - min;
+            s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+            switch (max) {
+              case r: h = ((g - b) / d + (g < b ? 6 : 0)) / 6; break;
+              case g: h = ((b - r) / d + 2) / 6; break;
+              case b: h = ((r - g) / d + 4) / 6; break;
+            }
+          }
+          const hsl = `${Math.round(h * 360)} ${Math.round(s * 100)}% ${Math.round(l * 100)}%`;
+          localStorage.setItem('belofted_theme_hsl', hsl);
+        } catch {}
       }
-    });
-
-    return () => {
-        subscription.unsubscribe();
-        debouncedSave.cancel();
-    };
-  }, [watch, settingsDocRef, canEditHome, toast, isMounted, t]);
+    },
+    onSaved: () => {
+      toast({
+        title: t('homeAdmin.toast.saved.title'),
+        description: t('homeAdmin.toast.saved.description'),
+      });
+    },
+  });
 
   const isLoading = isLoadingSettings || isLoadingProjects || isLoadingMedia;
 
