@@ -2,6 +2,10 @@
 const nextConfig = {
   /* config options here */
 
+  // Free perf/security wins for a public-facing site (§4.6)
+  compress: true,
+  poweredByHeader: false,
+
   images: {
     formats: ['image/avif', 'image/webp'],
     minimumCacheTTL: 31536000,
