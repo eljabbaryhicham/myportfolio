@@ -18,25 +18,12 @@ import TrustedBy from "./TrustedBy";
 import { useDoc, useFirestore, useMemoFirebase } from "@/firebase";
 import { doc } from "firebase/firestore";
 import { useTranslation } from "@/lib/i18n/useTranslation";
-import { getLocalizedString, type MultilingualString } from "@/lib/i18n/multilingual";
+import { getLocalizedString } from "@/lib/i18n/multilingual";
 import { cleanVideoUrl } from "@/lib/video";
 import { forceAutoplay } from "@/lib/video-autoplay";
+import type { HomePageSettings } from "@/lib/types";
 const HERO_VIDEO_URL = "https://res.cloudinary.com/dsq1lxrqi/video/upload/sp_auto/pg_5/v1778867307/Ovi_Motion_Design_v3kfy0.m3u8";
 const HERO_VIDEO_POSTER = "https://res.cloudinary.com/dsq1lxrqi/image/upload/so_0,f_auto,q_auto/v1778867307/Ovi_Motion_Design_v3kfy0.jpg";
-
-interface HomePageSettings {
-    homePageLogoUrl?: string;
-    isHomePageLogoVisible?: boolean;
-    homePageLogoScale?: number;
-    homePageLogoColor?: string;
-    heroVideoUrl?: string;
-    cursorLottieUrl?: string;
-    tickLottieUrl?: string;
-    homePageTitle?: MultilingualString;
-    homePageSubtitle?: MultilingualString;
-    homePageTitleColor?: string;
-    glassOpacity?: number;
-}
 
 function Particles() {
   const circles = useRef<Array<{ size: number; left: string; top: string; duration: number; delay: number }>>(Array.from({ length: 20 }, () => ({

@@ -43,60 +43,18 @@ import { useTranslation } from '@/lib/i18n/useTranslation';
 import { DEFAULT_EMAIL_TEMPLATE_HTML, DEFAULT_AUTOREPLY_TEMPLATE_HTML } from '@/lib/default-email-template';
 import UnifiedMediaPicker from './UnifiedMediaPicker';
 import { MultilingualInput } from './MultilingualInput';
-import { ensureMultilingualString, type MultilingualString } from '@/lib/i18n/multilingual';
+import { ensureMultilingualString } from '@/lib/i18n/multilingual';
 import { faImages, faEye, faRotateLeft } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { debounce } from '@/lib/utils';
+import type { HomePageSettings } from '@/lib/types';
+import { useMediaProvider } from '@/hooks/use-media-provider';
 
 function renderEmailPreview(template?: string): string {
   return (template?.trim() ? template : DEFAULT_EMAIL_TEMPLATE_HTML)
     .replace(/\{\{name\}\}/g, 'Jane Doe')
     .replace(/\{\{email\}\}/g, 'jane@example.com')
     .replace(/\{\{message\}\}/g, 'Hello!\n\nThis is a sample message so you can preview how your email template looks.');
-}
-
-interface HomePageSettings {
-    homePageBackgroundType?: 'video' | 'image';
-    homePageBackgroundMediaId?: string;
-    homePageBackgroundUrl?: string;
-    websiteBackgroundType?: 'video' | 'image';
-    websiteBackgroundMediaId?: string;
-    websiteBackgroundUrl?: string;
-    isHomePageVideoEnabled?: boolean;
-    isWebsiteVideoEnabled?: boolean;
-    workPagePlayer?: 'plyr' | 'clappr';
-    isTestPageEnabled?: boolean;
-    homePageLogoUrl?: string;
-    isHomePageLogoVisible?: boolean;
-    homePageLogoScale?: number;
-    homePageLogoColor?: string;
-    themeColor?: string;
-    heroVideoUrl?: string;
-    preloaderType?: 'default' | 'lottie' | 'gif' | 'webm';
-    preloaderUrl?: string;
-    preloaderSize?: number;
-    cursorLottieUrl?: string;
-    tickLottieUrl?: string;
-    homePageTitle?: MultilingualString;
-    homePageSubtitle?: MultilingualString;
-    homePageTitleColor?: string;
-    menubarLogoSize?: number;
-    menubarLogoUrl?: string;
-    emailTemplateHtml?: string;
-    autoReplyTemplateHtml?: string;
-    isArrowAnimationEnabled?: boolean;
-    arrowLottieUrl?: string;
-    faviconUrl?: string;
-    glassOpacity?: number;
-    mediaWidth?: number;
-    showMediaTitles?: boolean;
-    glassColor?: string;
-    navButtonSize?: number;
-    provider?: 'cloudinary' | 'vercel_blob';
-    watermarkLogoUrl?: string;
-    watermarkSize?: number;
-    watermarkOpacity?: number;
-    watermarkPosition?: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
 }
 
 const settingsSchema = z.object({
@@ -136,7 +94,6 @@ const settingsSchema = z.object({
   showMediaTitles: z.boolean().optional(),
   glassColor: z.string().optional(),
   navButtonSize: z.number().min(28).max(64).optional(),
-  provider: z.enum(['cloudinary', 'vercel_blob']).optional(),
   watermarkLogoUrl: z.string().optional(),
   watermarkSize: z.number().min(5).max(30).optional(),
   watermarkOpacity: z.number().min(0).max(100).optional(),
@@ -151,6 +108,36 @@ interface MediaAsset {
     filename: string;
     resource_type: 'image' | 'video' | 'raw';
     title?: string;
+}
+
+/**
+ * Admin-only UI preference for which media provider the picker defaults to.
+ * Persisted in localStorage (not Firestore) — it's a UI hint, not content.
+ */
+function ProviderRadioField({ label, description }: { label: string; description: string }) {
+    const [provider, setProvider] = useMediaProvider();
+    return (
+        <FormItem>
+            <FormLabel>{label}</FormLabel>
+            <FormControl>
+                <RadioGroup
+                    onValueChange={(v) => setProvider(v as 'cloudinary' | 'vercel_blob')}
+                    value={provider}
+                    className="flex items-center space-x-4"
+                >
+                    <FormItem className="flex items-center space-x-2 space-y-0">
+                        <FormControl><RadioGroupItem value="cloudinary" /></FormControl>
+                        <FormLabel className="font-normal">Cloudinary</FormLabel>
+                    </FormItem>
+                    <FormItem className="flex items-center space-x-2 space-y-0">
+                        <FormControl><RadioGroupItem value="vercel_blob" /></FormControl>
+                        <FormLabel className="font-normal">Vercel Blob</FormLabel>
+                    </FormItem>
+                </RadioGroup>
+            </FormControl>
+            <FormDescription>{description}</FormDescription>
+        </FormItem>
+    );
 }
 
 export default function HomeAdmin() {
@@ -223,7 +210,6 @@ export default function HomeAdmin() {
       showMediaTitles: true,
       glassColor: '#000000',
       navButtonSize: 40,
-      provider: 'cloudinary',
       watermarkLogoUrl: '',
       watermarkSize: 12,
       watermarkOpacity: 70,
@@ -273,7 +259,6 @@ export default function HomeAdmin() {
         showMediaTitles: homeSettings.showMediaTitles ?? true,
         glassColor: homeSettings.glassColor || '#000000',
         navButtonSize: homeSettings.navButtonSize || 40,
-        provider: homeSettings.provider || 'cloudinary',
         watermarkLogoUrl: homeSettings.watermarkLogoUrl || '',
         watermarkSize: homeSettings.watermarkSize ?? 12,
         watermarkOpacity: homeSettings.watermarkOpacity ?? 70,
@@ -561,35 +546,9 @@ export default function HomeAdmin() {
                                          )}
                                      />
 
-                                    <FormField
-                                        control={control}
-                                        name="provider"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>{t('homeAdmin.provider') || 'Media Provider'}</FormLabel>
-                                                <FormControl>
-                                                    <RadioGroup
-                                                        onValueChange={(value) => {
-                                                            field.onChange(value);
-                                                        }}
-                                                        value={field.value || 'cloudinary'}
-                                                        className="flex items-center space-x-4"
-                                                    >
-                                                        <FormItem className="flex items-center space-x-2 space-y-0">
-                                                            <FormControl><RadioGroupItem value="cloudinary" /></FormControl>
-                                                            <FormLabel className="font-normal">Cloudinary</FormLabel>
-                                                        </FormItem>
-                                                        <FormItem className="flex items-center space-x-2 space-y-0">
-                                                            <FormControl><RadioGroupItem value="vercel_blob" /></FormControl>
-                                                            <FormLabel className="font-normal">Vercel Blob</FormLabel>
-                                                        </FormItem>
-                                                    </RadioGroup>
-                                                </FormControl>
-                                                <FormDescription>
-                                                    {t('homeAdmin.providerDescription') || 'Choose which library the media picker opens by default'}
-                                                </FormDescription>
-                                            </FormItem>
-                                        )}
+                                    <ProviderRadioField
+                                        label={t('homeAdmin.provider') || 'Media Provider'}
+                                        description={t('homeAdmin.providerDescription') || 'Choose which library the media picker opens by default'}
                                     />
 
                                     <FormField

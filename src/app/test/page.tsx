@@ -17,11 +17,7 @@ import type { AppUser } from '@/firebase/auth/use-user';
 import { useToast } from '@/hooks/use-toast';
 import { useTranslation } from '@/lib/i18n/useTranslation';
 import { SUPERADMIN_EMAIL } from '@/lib/constants';
-
-interface HomePageSettings {
-    workPagePlayer?: 'plyr' | 'clappr';
-    isTestPageEnabled?: boolean;
-}
+import type { HomePageSettings } from '@/lib/types';
 
 export default function TestPage() {
   const { user, isUserLoading } = useUser();

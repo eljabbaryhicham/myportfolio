@@ -26,13 +26,7 @@ const navItems = [
   { href: "/admin", key: "nav.admin", icon: faShieldHalved, public: false, adminOnly: true },
 ];
 
-interface HomePageSettings {
-    isTestPageEnabled?: boolean;
-    homePageLogoUrl?: string;
-    menubarLogoSize?: number;
-    menubarLogoUrl?: string;
-    navButtonSize?: number;
-}
+import type { HomePageSettings } from '@/lib/types';
 
 const MENUBAR_LOGO_CACHE_KEY = 'menubar-logo-url';
 const NAV_BUTTON_SIZE_CACHE_KEY = 'menubar-nav-button-size';

@@ -12,6 +12,7 @@ import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection, query, orderBy } from 'firebase/firestore';
 import { useTranslation } from '@/lib/i18n/useTranslation';
 import Preloader from '@/components/preloader';
+import { useMediaProvider } from '@/hooks/use-media-provider';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 
@@ -60,8 +61,11 @@ interface UnifiedMediaPickerProps {
 export default function UnifiedMediaPicker({ isOpen, onOpenChange, onMediaSelect, forceProvider }: UnifiedMediaPickerProps) {
   const { t } = useTranslation();
   const firestore = useFirestore();
+  const [preferredProvider] = useMediaProvider();
 
-  const [provider, setProvider] = useState<'cloudinary' | 'vercel'>(forceProvider || 'cloudinary');
+  const [provider, setProvider] = useState<'cloudinary' | 'vercel'>(
+    forceProvider || (preferredProvider === 'vercel_blob' ? 'vercel' : 'cloudinary')
+  );
   const [activeTab, setActiveTab] = useState<'images' | 'videos' | 'files'>('images');
   const [activeLibrary, setActiveLibrary] = useState<'primary' | 'extented'>('primary');
   const [searchQuery, setSearchQuery] = useState('');
