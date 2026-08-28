@@ -177,6 +177,41 @@ export default function HomePageContent() {
   const hasLoadedOnce = useRef(false);
   useEffect(() => { if (!isLoading) hasLoadedOnce.current = true; }, [isLoading]);
 
+  // Full-page preloader gate: true until the window's `load` event has fired
+  // (i.e. all images, fonts, and the hero video metadata are ready) AND a
+  // short minimum visible time has elapsed so the brand preloader never
+  // blinks on fast connections. On client-side navigations back to home the
+  // document is already fully loaded (`readyState === 'complete'`), so we
+  // reveal immediately and never flash the preloader for in-app navigation.
+  // Replaces the old "settings not loaded" gate that became always-false once
+  // the SettingsProvider seeds SSR data.
+  const [pageReady, setPageReady] = useState(false);
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const MIN_VISIBLE_MS = 500;
+    const startedAt = Date.now();
+    const reveal = () => {
+      const elapsed = Date.now() - startedAt;
+      const wait = Math.max(0, MIN_VISIBLE_MS - elapsed);
+      setTimeout(() => setPageReady(true), wait);
+    };
+    if (document.readyState === 'complete') {
+      // Page already fully loaded (in-app navigation/mount after load): no
+      // wait, no preloader flash.
+      setPageReady(true);
+      return;
+    }
+    const onLoad = () => {
+      window.removeEventListener('load', onLoad);
+      reveal();
+    };
+    window.addEventListener('load', onLoad);
+    return () => window.removeEventListener('load', onLoad);
+  }, []);
+  // Show the full-screen preloader while settings are still loading OR the
+  // page hasn't fully loaded. After both, fade it out.
+  const showFullPreloader = isLoading || !pageReady;
+
   const homeLogoUrl = homeSettings?.homePageLogoUrl;
   const isLogoVisible = homeSettings?.isHomePageLogoVisible ?? true;
   const logoScale = homeSettings?.homePageLogoScale || 1;
@@ -249,7 +284,7 @@ export default function HomePageContent() {
         <Particles />
 
         <AnimatePresence>
-          {isLoading && (
+          {showFullPreloader && (
             <motion.div
               key="home-preloader"
               className="fixed inset-0 z-[9999] flex items-center justify-center bg-black"
