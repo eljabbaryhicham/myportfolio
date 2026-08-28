@@ -31,15 +31,27 @@ export function shouldRetry(
   if (attempt >= config.maxRetries) return false;
 
   const errorMessage = error instanceof Error ? error.message : String(error);
+  
+  // Only block retries for truly non-retryable errors (client errors that won't succeed on retry)
   const nonRetryableErrors = [
     'Invalid server response',
-    'Network error during upload',
-    'Upload timed out',
-    '401',
-    '403',
-    '413',
-    '500',
+    '401',  // Unauthorized - token issue
+    '403',  // Forbidden - permission issue
+    '413',  // Payload too large - won't succeed on retry
   ];
+
+  // Allow retries for transient errors:
+  // - Network errors (often transient)
+  // - Timeouts (often transient, especially for large files)
+  // - 5xx server errors (often transient)
+  const isTransient = errorMessage.includes('Network error') || 
+                      errorMessage.includes('timed out') || 
+                      errorMessage.includes('500') || 
+                      errorMessage.includes('502') || 
+                      errorMessage.includes('503') || 
+                      errorMessage.includes('504');
+
+  if (isTransient) return true;
 
   return !nonRetryableErrors.some((e) => errorMessage.includes(e));
 }

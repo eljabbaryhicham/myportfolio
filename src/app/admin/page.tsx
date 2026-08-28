@@ -1,6 +1,8 @@
 
 'use client';
 
+export const dynamic = 'force-dynamic';
+
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/firebase';
@@ -9,24 +11,25 @@ import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import { signOut } from 'firebase/auth';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import dynamic from 'next/dynamic';
+import dynamicImport from 'next/dynamic';
+import { AdminTabInitializer } from '@/components/AdminTabInitializer';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faRightFromBracket } from '@fortawesome/free-solid-svg-icons';
 import { Separator } from '@/components/ui/separator';
 import Preloader from '@/components/preloader';
-const ProjectAdmin = dynamic(() => import('@/features/admin/components/ProjectAdmin'), { ssr: false, loading: () => <Preloader /> });
-const ContactAdmin = dynamic(() => import('@/features/admin/components/ContactAdmin'), { ssr: false, loading: () => <Preloader /> });
-const MediaAdmin = dynamic(() => import('@/features/admin/components/MediaLibrary'), { ssr: false, loading: () => <Preloader /> });
-const HomeAdmin = dynamic(() => import('@/features/admin/components/HomeAdmin'), { ssr: false, loading: () => <Preloader /> });
+const ProjectAdmin = dynamicImport(() => import('@/features/admin/components/ProjectAdmin'), { ssr: false, loading: () => <Preloader /> });
+const ContactAdmin = dynamicImport(() => import('@/features/admin/components/ContactAdmin'), { ssr: false, loading: () => <Preloader /> });
+const MediaAdmin = dynamicImport(() => import('@/features/admin/components/MediaLibrary'), { ssr: false, loading: () => <Preloader /> });
+const HomeAdmin = dynamicImport(() => import('@/features/admin/components/HomeAdmin'), { ssr: false, loading: () => <Preloader /> });
 import type { PortfolioItem } from '@/features/portfolio/data/portfolio-data';
-const PortfolioItemFormSheet = dynamic(() => import('@/features/admin/components/PortfolioItemForm').then(m => m.PortfolioItemFormSheet), { ssr: false, loading: () => <Preloader /> });
+const PortfolioItemFormSheet = dynamicImport(() => import('@/features/admin/components/PortfolioItemForm').then(m => m.PortfolioItemFormSheet), { ssr: false, loading: () => <Preloader /> });
 import { addDocumentNonBlocking, setDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { collection, doc, getDocs, query, orderBy, limit } from 'firebase/firestore';
 import { DEFAULT_DETAILS_TEMPLATE } from '@/features/admin/components/PortfolioItemForm';
 import { useFirestore, useUser } from '@/firebase';
-const AdminManagement = dynamic(() => import('@/features/admin/components/AdminManagement'), { ssr: false, loading: () => <Preloader /> });
-const AboutAdmin = dynamic(() => import('@/features/admin/components/AboutAdmin'), { ssr: false, loading: () => <Preloader /> });
-const UnifiedMediaPicker = dynamic(() => import('@/features/admin/components/UnifiedMediaPicker'), { ssr: false, loading: () => <Preloader /> });
+const AdminManagement = dynamicImport(() => import('@/features/admin/components/AdminManagement'), { ssr: false, loading: () => <Preloader /> });
+const AboutAdmin = dynamicImport(() => import('@/features/admin/components/AboutAdmin'), { ssr: false, loading: () => <Preloader /> });
+const UnifiedMediaPicker = dynamicImport(() => import('@/features/admin/components/UnifiedMediaPicker'), { ssr: false, loading: () => <Preloader /> });
 import { useTranslation } from '@/lib/i18n/useTranslation';
 import { useUploadProgress } from '@/components/upload-progress-context';
 import { SUPERADMIN_EMAIL } from '@/lib/constants';
@@ -48,10 +51,11 @@ function AdminPage() {
   const [libraryForceProvider, setLibraryForceProvider] = useState<'cloudinary' | 'vercel' | undefined>(undefined);
   const [activeTab, setActiveTab] = useState('home');
   const [fromMediaLibrary, setFromMediaLibrary] = useState(false);
+  const [innerMediaTab, setInnerMediaTab] = useState<'cloudinary' | 'vercel'>('cloudinary');
+  
   const [newlyUploadedId, setNewlyUploadedId] = useState<string | null>(null);
   const [dialogActiveTab, setDialogActiveTab] = useState<'images' | 'videos' | 'files'>('images');
   const [dialogActiveLibrary, setDialogActiveLibrary] = useState<'primary' | 'extented'>('primary');
-  const [innerMediaTab, setInnerMediaTab] = useState('cloudinary');
   const [isVercelLibraryOpen, setIsVercelLibraryOpen] = useState(false);
   const [vercelActiveTab, setVercelActiveTab] = useState<'images' | 'videos' | 'files'>('images');
   const { setActiveMediaTab, completedUpload } = useUploadProgress();
@@ -72,6 +76,8 @@ function AdminPage() {
   const canEditProjects = isSuperAdmin || (typedUser?.permissions?.canEditProjects ?? true);
   
   useEffect(() => {
+    // The AdminTabInitializer component handles query params
+    // This useEffect only handles localStorage for backward compatibility
     const savedTab = localStorage.getItem('adminActiveTab');
     if (savedTab) {
       setActiveTab(savedTab);
@@ -259,6 +265,7 @@ function AdminPage() {
 
   return (
     <>
+      <AdminTabInitializer />
       <div className="flex h-full w-full items-center justify-center min-h-full p-4">
         <div className="container mx-auto px-0 flex flex-col h-full min-h-0 w-full">
           <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4 text-center">
@@ -310,7 +317,7 @@ function AdminPage() {
                   <ContactAdmin />
               </TabsContent>
               <TabsContent value="media" className="flex-1 overflow-auto mt-4 data-[state=inactive]:hidden" forceMount>
-                  <Tabs value={innerMediaTab} onValueChange={setInnerMediaTab} className="w-full">
+                  <Tabs value={innerMediaTab} onValueChange={(v) => setInnerMediaTab(v as 'cloudinary' | 'vercel')} className="w-full">
                     <TabsList className="mb-4">
                       <TabsTrigger value="cloudinary" className="glass-effect data-[state=active]:bg-destructive">Cloudinary</TabsTrigger>
                       <TabsTrigger value="vercel" className="glass-effect data-[state=active]:bg-destructive">Vercel Blob</TabsTrigger>

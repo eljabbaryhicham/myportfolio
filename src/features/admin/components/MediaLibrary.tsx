@@ -665,6 +665,11 @@ for (const file of files) {
           toast({ variant: 'destructive', title: 'Image exceeds 50MB limit', description: file.name });
           continue;
         }
+        // Video size limit: 500MB to prevent timeout issues
+        if (file.type.startsWith('video/') && file.size > 500 * 1024 * 1024) {
+          toast({ variant: 'destructive', title: 'Video exceeds 500MB limit', description: file.name });
+          continue;
+        }
         setIsUploading(true);
         setUploadProgress(0);
         setUploadingFileName(file.name);
@@ -683,7 +688,8 @@ for (const file of files) {
             const xhr = new XMLHttpRequest();
             xhr.open('POST', '/api/vercel-blob/upload');
             xhr.setRequestHeader('Authorization', `Bearer ${token}`);
-            xhr.timeout = 120_000;
+            // Increase timeout for videos (10 minutes) vs images (2 minutes)
+            xhr.timeout = file.type.startsWith('video/') ? 600_000 : 120_000;
             activeXhrRef.current = xhr;
             if (xhr.upload) {
               xhr.upload.onprogress = (e) => {

@@ -30,14 +30,15 @@ import { motion, AnimatePresence, PanInfo, useDragControls } from 'framer-motion
 import { useSearchParams, usePathname } from 'next/navigation';
 import type { AppUser } from '@/firebase/auth/use-user';
 import dynamic from 'next/dynamic';
-const CdnClapprPlayer = dynamic(() => import('@/components/CdnClapprPlayer'), { ssr: false });
-// Admin-only editors/media-picker: code-split out of the public route chunk so
-// visitors to /work don't download them. Rendered only when an admin is signed in.
-const PortfolioItemFormSheet = dynamic(() => import('@/features/admin/components/PortfolioItemForm').then((m) => m.PortfolioItemFormSheet), { ssr: false });
-const UnifiedMediaPicker = dynamic(() => import('@/features/admin/components/UnifiedMediaPicker'), { ssr: false });
 import { useTranslation } from '@/lib/i18n/useTranslation';
 import { SUPERADMIN_EMAIL } from '@/lib/constants';
 import { cleanVideoUrl } from '@/lib/video';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import rehypeRaw from 'rehype-raw';
+import rehypeSanitize, { defaultSchema } from 'rehype-sanitize';
+import type { HomePageSettings } from '@/lib/types';
+
 function getWatermarkPositionStyle(position: string) {
   switch(position) {
     case 'top-left': return { top: '10px', left: '10px' } as const;
@@ -47,6 +48,7 @@ function getWatermarkPositionStyle(position: string) {
     default: return { bottom: '10px', right: '42px' } as const;
   }
 }
+
 let playersPreloaded = false;
 function preloadPlayers() {
   if (playersPreloaded) return;
@@ -55,19 +57,22 @@ function preloadPlayers() {
   import('@/components/PlyrPlayer');
   import('hls.js').catch(() => {});
 }
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
-import rehypeRaw from 'rehype-raw';
-import rehypeSanitize, { defaultSchema } from 'rehype-sanitize';
-import type { HomePageSettings } from '@/lib/types';
+
+const CdnClapprPlayer = dynamic(() => import('@/components/CdnClapprPlayer'), { ssr: false });
+// Admin-only editors/media-picker: code-split out of the public route chunk so
+// visitors to /work don't download them. Rendered only when an admin is signed in.
+const PortfolioItemFormSheet = dynamic(() => import('@/features/admin/components/PortfolioItemForm').then((m) => m.PortfolioItemFormSheet), { ssr: false });
+const UnifiedMediaPicker = dynamic(() => import('@/features/admin/components/UnifiedMediaPicker'), { ssr: false });
+const LazyContactForm = lazy(() => import('@/features/contact/components/ContactForm'));
+
+// Video players imported directly (not lazy) to ensure ref forwarding works
+// for pause/play control via useImperativeHandle
+import PlyrPlayer from '@/components/PlyrPlayer';
+
+const MemoizedPlyrPlayer = memo(PlyrPlayer);
+const MemoizedCdnClapprPlayer = memo(CdnClapprPlayer);
 
 const MemoizedImage = memo(Image);
-// Lazy: keeps hls.js + plyr CSS out of the /work route chunk until a video
-// dialog actually opens. NOT wrapped in memo() — React.memo wrapping React.lazy
-// breaks ref forwarding, so useImperativeHandle never reaches the parent.
-const MemoizedPlyrPlayer = lazy(() => import('@/components/PlyrPlayer'));
-const MemoizedCdnClapprPlayer = memo(CdnClapprPlayer);
-const LazyContactForm = lazy(() => import('@/features/contact/components/ContactForm'));
 
 // Markdown's raw-HTML parser follows real HTML rules where `<video ... />`
 // is an UNCLOSED tag (self-closing only exists for void elements like <img>).

@@ -35,39 +35,40 @@ export default function UploadProgressNotification() {
 
   useEffect(() => {
     if (prevVercelUploading.current && !vercel.isUploading && vercel.fileName) {
-      setCompleted(prev => [...prev, { provider: 'vercel', fileName: vercel.fileName, id: nextId.current++ }]);
+      // Only show completed notification if upload actually succeeded (completedUpload exists)
+      if (completedUpload && completedUpload.provider === 'vercel') {
+        setCompleted(prev => [...prev, { provider: 'vercel', fileName: vercel.fileName, id: nextId.current++ }]);
+      }
       clearFileName('vercel');
     }
     prevVercelUploading.current = vercel.isUploading;
-  }, [vercel.isUploading, vercel.fileName, clearFileName]);
+  }, [vercel.isUploading, vercel.fileName, clearFileName, completedUpload]);
 
   useEffect(() => {
     if (prevCloudinaryUploading.current && !cloudinary.isUploading && cloudinary.fileName) {
-      setCompleted(prev => [...prev, { provider: 'cloudinary', fileName: cloudinary.fileName, id: nextId.current++ }]);
+      // Only show completed notification if upload actually succeeded (completedUpload exists)
+      if (completedUpload && completedUpload.provider === 'cloudinary') {
+        setCompleted(prev => [...prev, { provider: 'cloudinary', fileName: cloudinary.fileName, id: nextId.current++ }]);
+      }
       clearFileName('cloudinary');
     }
     prevCloudinaryUploading.current = cloudinary.isUploading;
-  }, [cloudinary.isUploading, cloudinary.fileName, clearFileName]);
+  }, [cloudinary.isUploading, cloudinary.fileName, clearFileName, completedUpload]);
 
   const dismiss = (id: number) => {
     setCompleted(prev => prev.filter(c => c.id !== id));
   };
 
   const goToMediaTab = (provider: 'vercel' | 'cloudinary') => {
-    localStorage.setItem('adminActiveTab', 'media');
-    localStorage.setItem('adminInnerMediaTab', provider);
+    // Use query params so the admin page can read them and switch tabs
     const tab = completedUpload?.resourceType === 'video' ? 'videos' : completedUpload?.resourceType === 'raw' ? 'files' : 'images';
+    const url = `/admin?tab=media&innerTab=${provider}&mediaTab=${tab}`;
     if (pathname === '/admin') {
-      window.dispatchEvent(new CustomEvent('media-library-maximize', {
-        detail: {
-          provider,
-          tab,
-          library: completedUpload?.libraryId || 'primary',
-          docId: completedUpload?.docId || null,
-        }
-      }));
+      // Already on admin page - use replace to avoid history clutter, then reload to trigger tab switch
+      window.history.replaceState(null, '', url);
+      window.location.reload();
     } else {
-      router.push('/admin');
+      router.push(url);
     }
   };
 
