@@ -28,7 +28,7 @@ async function requireSuperAdmin(idToken: string): Promise<admin.app.App | null>
   try {
     const app = await initializeServerApp();
     const decoded = await admin.auth(app).verifyIdToken(idToken);
-    if (decoded.email === SUPERADMIN_EMAIL) return app;
+    if (isSuperAdminCheck({ email: decoded.email })) return app;
     return null;
   } catch (e) {
     console.warn('requireSuperAdmin: verification failed, denying.', e);
