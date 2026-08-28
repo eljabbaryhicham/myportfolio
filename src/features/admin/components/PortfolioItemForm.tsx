@@ -139,7 +139,7 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onCho
     );
 
     const handleMediaInserted = useCallback(
-      (url: string, type: 'image' | 'video' | 'raw', _filename: string) => {
+      (url: string, type: 'image' | 'video' | 'raw', filename: string) => {
         if (!mediaInsertTarget) return;
         const { fieldName, locale, cursorPos } = mediaInsertTarget;
         const fieldPath = `${fieldName}.${locale}` as const;
@@ -153,10 +153,20 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onCho
         // If there's content after, add a trailing newline so the next
         // paragraph isn't glued to the media.
         const trailing = after.length === 0 ? '' : (after.startsWith('\n') ? '' : '\n');
-        const insertion =
-          type === 'video'
-            ? `${leading}<video src="${url}" controls />${trailing}`
-            : `${leading}![media](${url})${trailing}`;
+        let insertion: string;
+        if (type === 'video') {
+          insertion = `${leading}<video src="${url}" controls />${trailing}`;
+        } else if (type === 'raw') {
+          // Files (PDF, ZIP, etc.) become a clickable download link. Use the
+          // filename as the link text; the markdown renderer turns it into
+          // a plain <a>. The "download card" UI in ProjectDetailsContent only
+          // triggers for <a download>, so we render a regular link here.
+          // (For a download card, extend detailsSanitizeSchema + use HTML.)
+          const linkText = filename || 'Download file';
+          insertion = `${leading}[${linkText}](${url})${trailing}`;
+        } else {
+          insertion = `${leading}![media](${url})${trailing}`;
+        }
         const newValue = before + insertion + after;
         form.setValue(fieldPath as any, newValue, { shouldValidate: true });
         setIsMediaInsertPickerOpen(false);

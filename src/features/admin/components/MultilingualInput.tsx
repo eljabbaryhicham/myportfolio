@@ -37,9 +37,9 @@ interface MultilingualFieldProps {
   className?: string;
   /**
    * When set AND `type === 'textarea'`, renders a paperclip button that
-   * calls this callback with the active locale's textarea cursor position
-   * (so the parent can insert media at the cursor). The parent is
-   * responsible for opening the media picker and calling form.setValue
+   * calls this callback with the active locale's last-known cursor
+   * position (so the parent can insert media at the cursor). The parent
+   * is responsible for opening the media picker and calling form.setValue
    * with the resulting insertion. See PortfolioItemFormSheet for usage.
    */
   onInsertMedia?: (fieldName: string, locale: SupportedLocale, cursorPos: number) => void;
@@ -109,13 +109,7 @@ export function MultilingualInput({
               showMediaPicker={showMediaPicker}
               onPickMedia={
                 onInsertMedia
-                  ? () => {
-                      // The active locale's textarea is the one the user is
-                      // typing in; capture its cursor position now (the
-                      // click itself moves the caret, so we read it before
-                      // the picker opens).
-                      onInsertMedia(name, locale, getActiveCursor(name, locale));
-                    }
+                  ? (cursorPos: number) => onInsertMedia(name, locale, cursorPos)
                   : undefined
               }
             />
@@ -143,7 +137,7 @@ function LocaleField({
   disabled?: boolean;
   defaultValue: string;
   showMediaPicker?: boolean;
-  onPickMedia?: () => void;
+  onPickMedia?: (cursorPos: number) => void;
 }) {
   const { register } = useFormContext();
   // `register` directly binds the textarea/input to RHF at the full path
@@ -151,6 +145,17 @@ function LocaleField({
   // — no nested Controllers — so form state is correct regardless of which
   // tab is mounted.
   const registered = register(name);
+  // Cached cursor position. Reading `selectionStart` at button-click time
+  // is unreliable: clicking a button inside the textarea's container
+  // causes the textarea to blur, and many browsers reset selectionStart
+  // to 0 on blur. We track the position on user interactions instead, and
+  // onPickMedia reads the cached value.
+  const lastCursorRef = useRef<number>(0);
+  const trackCursor = (el: HTMLTextAreaElement | HTMLInputElement | null) => {
+    if (el && 'selectionStart' in el && el.selectionStart != null) {
+      lastCursorRef.current = el.selectionStart;
+    }
+  };
   if (type === 'textarea') {
     return (
       <div className="relative">
@@ -161,6 +166,10 @@ function LocaleField({
           placeholder={placeholder}
           disabled={disabled}
           className="min-h-[80px] pr-10"
+          onSelect={(e) => trackCursor(e.currentTarget)}
+          onKeyUp={(e) => trackCursor(e.currentTarget)}
+          onMouseUp={(e) => trackCursor(e.currentTarget)}
+          onFocus={(e) => trackCursor(e.currentTarget)}
         />
         {showMediaPicker && (
           <Button
@@ -168,7 +177,24 @@ function LocaleField({
             variant="ghost"
             size="icon"
             className="absolute right-1 top-1 h-8 w-8 text-muted-foreground hover:text-foreground"
-            onClick={onPickMedia}
+            // preventDefault on mousedown stops the textarea from blurring
+            // (and the browser from resetting selectionStart to 0) before
+            // our onClick reads the cursor. This is the standard fix for
+            // "click button next to textarea" insertion UX.
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={() => {
+              // Re-read the cursor from the live element one more time
+              // (defensive: in case the browser updated it on focus).
+              if (typeof document !== 'undefined') {
+                const el = document.querySelector<HTMLTextAreaElement>(
+                  `textarea[name="${CSS.escape(name)}"]`
+                );
+                if (el && 'selectionStart' in el && el.selectionStart != null) {
+                  lastCursorRef.current = el.selectionStart;
+                }
+              }
+              onPickMedia?.(lastCursorRef.current);
+            }}
             disabled={disabled}
             title="Insert media"
             aria-label="Insert media from library"
@@ -188,26 +214,4 @@ function LocaleField({
       disabled={disabled}
     />
   );
-}
-
-/**
- * Reads the cursor position of the RHF-registered textarea/input matching
- * the given form path. We reach into the DOM directly because RHF's
- * `register` returns a `ref` callback that we don't have a handle to here.
- * The form path is `name.locale` (e.g. "details.fr"), so we look up the
- * element by its `name` attribute.
- */
-function getActiveCursor(name: string, _locale: SupportedLocale): number {
-  if (typeof document === 'undefined') return 0;
-  // `name` here is the RHF path (e.g. "details.fr"); the input's `name`
-  // attribute matches it.
-  const el = document.querySelector<HTMLTextAreaElement | HTMLInputElement>(
-    `textarea[name="${CSS.escape(name)}"], input[name="${CSS.escape(name)}"]`
-  );
-  if (!el) return 0;
-  // Prefer selectionStart on textareas; fall back to value.length for inputs.
-  if ('selectionStart' in el && el.selectionStart != null) {
-    return el.selectionStart;
-  }
-  return el.value.length;
 }
