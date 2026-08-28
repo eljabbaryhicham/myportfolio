@@ -32,8 +32,8 @@ interface Client {
 }
 
 interface AboutPageContent {
-    title: string;
-    content: string;
+    title: MultilingualString;
+    content: MultilingualString;
     imageUrl: string;
     logoUrl?: string;
     logoScale?: number;
@@ -175,8 +175,8 @@ export default function AboutPage() {
                                 <Logo src={logoUrl} />
                             </div>
                         )}
-                        <h2 className="text-xl sm:text-2xl md:text-3xl font-headline tracking-tight mb-[clamp(0.75rem,2vh,1.25rem)]">{aboutContent?.title}</h2>
-                        <p className="text-sm sm:text-base text-foreground/70 leading-relaxed mb-[clamp(1rem,2.5vh,1.75rem)] text-center">{aboutContent?.content}</p>
+                        <h2 className="text-xl sm:text-2xl md:text-3xl font-headline tracking-tight mb-[clamp(0.75rem,2vh,1.25rem)]">{getLocalizedString(aboutContent?.title, lang)}</h2>
+                        <p className="text-sm sm:text-base text-foreground/70 leading-relaxed mb-[clamp(1rem,2.5vh,1.75rem)] text-center">{getLocalizedString(aboutContent?.content, lang)}</p>
                         <div className="hidden sm:flex flex-col sm:flex-row gap-4 justify-center">
                             <Button asChild>
                                 <Link href="/contact">

@@ -18,7 +18,6 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { useDoc, useFirestore, useMemoFirebase, setDocumentNonBlocking, useUser } from '@/firebase';
 import { doc } from 'firebase/firestore';
@@ -40,10 +39,12 @@ import {
 } from '@/components/ui/dialog';
 import type { AppUser } from '@/firebase/auth/use-user';
 import { Slider } from '@/components/ui/slider';
+import { ensureMultilingualString } from '@/lib/i18n/multilingual';
+import { MultilingualInput } from './MultilingualInput';
 
 const formSchema = z.object({
-  title: z.string().min(2, { message: 'Title must be at least 2 characters.' }),
-  content: z.string().min(10, { message: 'Content must be at least 10 characters.' }),
+  title: z.object({ en: z.string(), fr: z.string() }),
+  content: z.object({ en: z.string(), fr: z.string() }),
   imageUrl: z.string().url({ message: 'Please enter a valid URL.' }),
   logoUrl: z.string().url({ message: 'Please enter a valid URL.' }).optional().or(z.literal('')),
   logoScale: z.number().min(0.5).max(5).optional(),
@@ -78,8 +79,8 @@ export default function AboutAdmin() {
   const form = useForm<AboutFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      title: '',
-      content: '',
+      title: { en: '', fr: '' },
+      content: { en: '', fr: '' },
       imageUrl: '',
       logoUrl: '',
       logoScale: 1,
@@ -89,8 +90,8 @@ export default function AboutAdmin() {
   useEffect(() => {
     if (aboutContent) {
       form.reset({
-        title: aboutContent.title || '',
-        content: aboutContent.content || '',
+        title: ensureMultilingualString(aboutContent.title),
+        content: ensureMultilingualString(aboutContent.content),
         imageUrl: aboutContent.imageUrl || '',
         logoUrl: aboutContent.logoUrl || '',
         logoScale: aboutContent.logoScale || 1,
@@ -222,31 +223,18 @@ export default function AboutAdmin() {
                                 </FormItem>
                               )}
                             />
-                            <FormField
-                              control={form.control}
+                            <MultilingualInput
                               name="title"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel>{t('aboutAdmin.heading')}</FormLabel>
-                                  <FormControl>
-                                    <Input placeholder={t('aboutAdmin.headingPlaceholder')} {...field} />
-                                  </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
+                              label={t('aboutAdmin.heading')}
+                              placeholder={t('aboutAdmin.headingPlaceholder')}
+                              disabled={!canEditAbout}
                             />
-                            <FormField
-                              control={form.control}
+                            <MultilingualInput
                               name="content"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel>{t('aboutAdmin.paragraph')}</FormLabel>
-                                  <FormControl>
-                                    <Textarea placeholder={t('aboutAdmin.paragraphPlaceholder')} className="min-h-[150px]" {...field} />
-                                  </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
+                              label={t('aboutAdmin.paragraph')}
+                              placeholder={t('aboutAdmin.paragraphPlaceholder')}
+                              type="textarea"
+                              disabled={!canEditAbout}
                             />
                             <FormField
                               control={form.control}
