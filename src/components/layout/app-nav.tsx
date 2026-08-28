@@ -176,11 +176,20 @@ export function AppNav() {
   };
   
 
+  // Only animate in on the very first mount — not on every re-render
+  // (e.g. pathname changes during navigation).
+  const hasAnimatedIn = React.useRef(false);
+  React.useEffect(() => {
+    hasAnimatedIn.current = true;
+  }, []);
+
+  const animateIn = !hasAnimatedIn.current;
+
   if (hasMounted && isMobile) {
     return (
       <motion.div
         className="w-full flex-shrink-0 p-2"
-        initial={{ y: '100%' }}
+        initial={animateIn ? { y: '100%' } : false}
         animate={{ y: 0 }}
         transition={{ type: 'spring', stiffness: 80, damping: 15 }}
       >
@@ -199,7 +208,7 @@ export function AppNav() {
   return (
     <motion.aside
       className="w-full md:w-auto flex-shrink-0 p-2"
-      initial={{ x: '100%' }}
+      initial={animateIn ? { x: '100%' } : false}
       animate={{ x: 0 }}
       transition={{ type: 'spring', stiffness: 80, damping: 20 }}
     >
