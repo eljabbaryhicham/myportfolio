@@ -94,19 +94,22 @@ export function AppNav() {
   React.useEffect(() => {
     if (homeSettings?.navButtonSize && homeSettings.navButtonSize !== cachedNavButtonSize) {
       setCachedNavButtonSize(homeSettings.navButtonSize);
-      try { window.localStorage.setItem(NAV_BUTTON_SIZE_CACHE_KEY, String(homeSettings.navButtonSize)); } catch {}
+      try {
+        window.localStorage.setItem(NAV_BUTTON_SIZE_CACHE_KEY, String(homeSettings.navButtonSize));
+        document.documentElement.style.setProperty('--nav-button-size', `${homeSettings.navButtonSize}px`);
+      } catch {}
     }
   }, [homeSettings?.navButtonSize, cachedNavButtonSize]);
 
   React.useEffect(() => {
     if (homeSettings?.menubarLogoSize && homeSettings.menubarLogoSize !== cachedMenubarLogoSize) {
       setCachedMenubarLogoSize(homeSettings.menubarLogoSize);
-      try { window.localStorage.setItem(MENUBAR_LOGO_SIZE_CACHE_KEY, String(homeSettings.menubarLogoSize)); } catch {}
+      try {
+        window.localStorage.setItem(MENUBAR_LOGO_SIZE_CACHE_KEY, String(homeSettings.menubarLogoSize));
+        document.documentElement.style.setProperty('--menubar-logo-size', `${homeSettings.menubarLogoSize}px`);
+      } catch {}
     }
   }, [homeSettings?.menubarLogoSize, cachedMenubarLogoSize]);
-
-  const navButtonSize = homeSettings?.navButtonSize || cachedNavButtonSize || 40;
-  const menubarLogoSize = homeSettings?.menubarLogoSize || cachedMenubarLogoSize || 48;
 
   React.useEffect(() => {
     const resolved = homeSettings?.menubarLogoUrl || homeSettings?.homePageLogoUrl || contactInfo?.logoUrl;
@@ -151,7 +154,7 @@ export function AppNav() {
             "text-white",
             isActive ? "" : (isSpecialButton ? "bg-cyan-500/80" : "glass-effect"),
           )}
-          style={!isMobile ? { width: navButtonSize, height: navButtonSize } : undefined}
+          style={!isMobile ? { width: 'var(--nav-button-size)', height: 'var(--nav-button-size)' } : undefined}
         >
           {isActive && (
             <motion.div
@@ -232,16 +235,14 @@ export function AppNav() {
         {(() => {
             // Always reserve the logo slot so nav items don't shift when
             // the logo URL resolves asynchronously.
-            const size = menubarLogoSize;
-            const innerSize = size - 8;
             if (!logoUrl) {
-              return <div className="mt-4" style={{ width: size, height: size }} aria-hidden="true" />;
+              return <div className="mt-4" style={{ width: 'var(--menubar-logo-size)', height: 'var(--menubar-logo-size)' }} aria-hidden="true" />;
             }
             return (
                 <Link href="/" className="relative group mt-4">
-                    <div className="relative flex items-center justify-center" style={{ width: size, height: size }}>
+                    <div className="relative flex items-center justify-center" style={{ width: 'var(--menubar-logo-size)', height: 'var(--menubar-logo-size)' }}>
                         <div className="absolute inset-0 rounded-full animate-spinning-circle-border bg-gradient-to-r from-primary via-transparent to-transparent"></div>
-                        <div className="relative bg-transparent rounded-full p-1 flex items-center justify-center" style={{ width: innerSize, height: innerSize }}>
+                        <div className="relative bg-transparent rounded-full p-1 flex items-center justify-center" style={{ width: 'calc(var(--menubar-logo-size) - 8px)', height: 'calc(var(--menubar-logo-size) - 8px)' }}>
                             <Logo src={logoUrl} />
                         </div>
                     </div>
