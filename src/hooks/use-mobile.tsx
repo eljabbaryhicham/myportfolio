@@ -20,13 +20,22 @@ function detectMobile(): boolean {
 }
 
 export function useIsMobile() {
-  // Initialize synchronously so the correct layout renders on the very first
-  // paint. Prevents the desktop branch from flashing before swapping (e.g.
-  // the nav bar appearing at the top then jumping into place on refresh).
-  const [isMobile, setIsMobile] = React.useState<boolean>(() => detectMobile());
+  // Initialize with false (server-safe) to avoid hydration mismatch.
+  // The real value is set in useEffect after mount.
+  const [isMobile, setIsMobile] = React.useState<boolean>(false);
 
   React.useEffect(() => {
     if (typeof window === "undefined") return;
+
+    const detectMobile = (): boolean => {
+      let coarse = false;
+      try {
+        coarse = window.matchMedia("(pointer: coarse)").matches;
+      } catch { /* ignore */ }
+      const narrow = window.innerWidth < MOBILE_BREAKPOINT;
+      const mobileUA = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+      return narrow || coarse || mobileUA;
+    };
 
     const onChange = () => setIsMobile(detectMobile());
     const mql = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT - 1}px)`);
@@ -38,7 +47,7 @@ export function useIsMobile() {
       mql.removeEventListener("change", onChange);
       coarseMql.removeEventListener("change", onChange);
     };
-  }, [])
+  }, []);
 
-  return isMobile
+  return isMobile;
 }
