@@ -95,15 +95,15 @@ service cloud.firestore {
         || (request.auth.uid == userId
             && request.resource.data.role == 'user'
             && request.resource.data.permissions == null);
-      // Update policy (tighter than before — was: any admin with canEditHome
-      // could write any field on any user, including role/permissions of themselves
-      // and others, with no field-level guard):
+      // Update policy:
       //   - superadmin: any update
-      //   - self (non-admin): may edit their own doc BUT role/permissions must
-      //     not change (prevents self-elevation)
-      //   - admin with canEditHome: may edit OTHER users' docs but ONLY the
-      //     `permissions`, `role`, `username`, and `email` fields. They cannot
-      //     touch `uid`, `createdAt`, or other protected fields.
+      //   - self (anyone, including non-admin): may edit their own doc BUT
+      //     role and permissions must not change (prevents self-elevation)
+      //   - non-superadmin admin (canEditHome) editing OTHER users: may only
+      //     change `username` and `email`. They CANNOT change role or
+      //     permissions, which closes the chain where a bad admin promotes
+      //     another user to superadmin. Only the existing superadmin can
+      //     grant or revoke elevated access.
       //   - non-admin editing other users: denied
       allow update: if isSuperAdmin()
         || (request.auth.uid == userId
@@ -112,7 +112,7 @@ service cloud.firestore {
         || (hasPerm('canEditHome')
             && request.auth.uid != userId
             && request.resource.data.diff(resource.data).affectedKeys()
-                  .hasOnly(['permissions', 'role', 'username', 'email']));
+                  .hasOnly(['username', 'email']));
       // Prevent non-superadmins from deleting user documents.
       allow delete: if isSuperAdmin();
     }
