@@ -53,7 +53,7 @@ export default function NewAdminForm({ onSuccess }: NewAdminFormProps) {
     if (!auth || !firestore) return;
     setIsSubmitting(true);
 
-    const email = `${values.username.toLowerCase()}@example.com`;
+    const email = `${values.username.toLowerCase()}@mellivision.com`;
     try {
       // Check if username is already taken in Firestore
       const usersQuery = query(collection(firestore, 'users'), where('username', '==', values.username));
