@@ -159,9 +159,9 @@ function LazyDetailsVideo({
       )}
       <Suspense fallback={null}>
         {playerType === 'plyr' ? (
-          <MemoizedPlyrPlayer ref={playerRef} source={cleanVideoUrl(videoSrc) || videoSrc} poster={poster} autoPlay={true} />
+          <MemoizedPlyrPlayer ref={playerRef} source={cleanVideoUrl(videoSrc) || videoSrc} poster={poster} autoPlay={false} />
         ) : (
-          <MemoizedCdnClapprPlayer ref={playerRef} source={cleanVideoUrl(videoSrc) || videoSrc} poster={poster} autoPlay={true} />
+          <MemoizedCdnClapprPlayer ref={playerRef} source={cleanVideoUrl(videoSrc) || videoSrc} poster={poster} autoPlay={false} />
         )}
       </Suspense>
       {watermark && !playerLoading && (
