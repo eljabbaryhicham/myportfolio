@@ -155,7 +155,7 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onCho
         const trailing = after.length === 0 ? '' : (after.startsWith('\n') ? '' : '\n');
         let insertion: string;
         if (type === 'video') {
-          insertion = `${leading}<video src="${url}" controls />${trailing}`;
+          insertion = `${leading}<video src="${url}" />${trailing}`;
         } else if (type === 'raw') {
           // Files (PDF, ZIP, etc.) become a clickable download link rendered
           // as the styled card in ProjectDetailsContent. That card only
