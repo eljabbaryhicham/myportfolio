@@ -33,7 +33,7 @@ import {
 } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import type { PortfolioItem } from '@/features/portfolio/data/portfolio-data';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -43,6 +43,7 @@ import { Switch } from '@/components/ui/switch';
 import { useTranslation } from '@/lib/i18n/useTranslation';
 import { MultilingualInput } from './MultilingualInput';
 import { ensureMultilingualString } from '@/lib/i18n/multilingual';
+import UnifiedMediaPicker from './UnifiedMediaPicker';
 
 
 // Pre-filled Details content for NEW projects (existing projects untouched).
@@ -119,6 +120,62 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onCho
           useVideoFrameAsPoster: false,
         }
     });
+
+    // ---- Insert media at cursor (details field only) ----
+    // When the user clicks the paperclip on the details MultilingualInput, we
+    // capture the (fieldName, locale, cursorPos) so the picker can insert
+    // at the right place in the right locale when it returns a URL.
+    const [mediaInsertTarget, setMediaInsertTarget] = useState<
+      { fieldName: string; locale: 'en' | 'fr'; cursorPos: number } | null
+    >(null);
+    const [isMediaInsertPickerOpen, setIsMediaInsertPickerOpen] = useState(false);
+
+    const handleDetailsInsertMedia = useCallback(
+      (fieldName: string, locale: 'en' | 'fr', cursorPos: number) => {
+        setMediaInsertTarget({ fieldName, locale, cursorPos });
+        setIsMediaInsertPickerOpen(true);
+      },
+      []
+    );
+
+    const handleMediaInserted = useCallback(
+      (url: string, type: 'image' | 'video' | 'raw', _filename: string) => {
+        if (!mediaInsertTarget) return;
+        const { fieldName, locale, cursorPos } = mediaInsertTarget;
+        const fieldPath = `${fieldName}.${locale}` as const;
+        const currentValue = (form.getValues(fieldName as any)?.[locale] as string | undefined) ?? '';
+        const safePos = Math.max(0, Math.min(cursorPos, currentValue.length));
+        const before = currentValue.slice(0, safePos);
+        const after = currentValue.slice(safePos);
+        // If we're inserting at end-of-string, add a leading newline so the
+        // media sits on its own line.
+        const leading = before.length === 0 ? '' : (before.endsWith('\n') ? '' : '\n');
+        // If there's content after, add a trailing newline so the next
+        // paragraph isn't glued to the media.
+        const trailing = after.length === 0 ? '' : (after.startsWith('\n') ? '' : '\n');
+        const insertion =
+          type === 'video'
+            ? `${leading}<video src="${url}" controls />${trailing}`
+            : `${leading}![media](${url})${trailing}`;
+        const newValue = before + insertion + after;
+        form.setValue(fieldPath as any, newValue, { shouldValidate: true });
+        setIsMediaInsertPickerOpen(false);
+        setMediaInsertTarget(null);
+        // Re-focus the textarea at the new cursor position (after the
+        // insertion, so the user can keep typing).
+        setTimeout(() => {
+          const el = document.querySelector<HTMLTextAreaElement>(
+            `textarea[name="${CSS.escape(fieldPath)}"]`
+          );
+          if (el) {
+            el.focus();
+            const newPos = safePos + insertion.length;
+            el.setSelectionRange(newPos, newPos);
+          }
+        }, 50);
+      },
+      [mediaInsertTarget, form]
+    );
 
     const itemType = useWatch({
       control: form.control,
@@ -288,6 +345,7 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onCho
                             placeholder={t('portfolioForm.detailsPlaceholder')}
                             description={t('portfolioForm.detailsHelp')}
                             type="textarea"
+                            onInsertMedia={handleDetailsInsertMedia}
                           />
                           <FormField
                           control={form.control}
@@ -527,5 +585,13 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onCho
                 </DialogClose>
             </DialogContent>
         </Dialog>
+        <UnifiedMediaPicker
+            isOpen={isMediaInsertPickerOpen}
+            onOpenChange={(open) => {
+                setIsMediaInsertPickerOpen(open);
+                if (!open) setMediaInsertTarget(null);
+            }}
+            onMediaSelect={handleMediaInserted}
+        />
     </>)
 }
