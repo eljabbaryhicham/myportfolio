@@ -7,7 +7,7 @@ service cloud.firestore {
     // NOTE: this email MUST stay in sync with `src/lib/constants.ts` SUPERADMIN_EMAIL.
     // If you change it here, change it there too (and vice versa).
     function isSuperAdmin() {
-      return request.auth != null && request.auth.token.email == 'eljabbaryhicham@Mellivision.com';
+      return request.auth != null && request.auth.token.email.lower() == 'eljabbaryhicham@mellivision.com';
     }
 
     function isSignedIn() {

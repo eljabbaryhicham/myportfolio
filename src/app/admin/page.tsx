@@ -71,7 +71,7 @@ function AdminPage() {
   }, []);
 
   const typedUser = user as AppUser | null;
-  const isSuperAdmin = typedUser?.email === 'eljabbaryhicham@Mellivision.com';
+  const isSuperAdmin = typedUser?.email?.toLowerCase() === 'eljabbaryhicham@mellivision.com';
   
   const canEditProjects = isSuperAdmin || (typedUser?.permissions?.canEditProjects ?? true);
   
