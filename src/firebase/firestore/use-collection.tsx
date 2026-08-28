@@ -65,8 +65,16 @@ export function useCollection<T = any>(
 
   useEffect(() => {
     if (!memoizedTargetRefOrQuery) {
-      // Same null-ref handling as useDoc (§4.5/§2.3): don't wipe loaded data.
-      if (!hasLoadedRef.current) setIsLoading(true);
+      // Same null-ref handling as useDoc (§4.5/§2.3): preserve already-loaded
+      // data and mark done; if we never produced data, mark done with null
+      // data so consumers don't get stuck on a skeleton forever.
+      if (hasLoadedRef.current) {
+        setIsLoading(false);
+      } else {
+        setData(null);
+        setIsLoading(false);
+        setError(null);
+      }
       return;
     }
 

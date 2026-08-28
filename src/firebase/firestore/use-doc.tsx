@@ -52,9 +52,17 @@ export function useDoc<T = any>(
 
   useEffect(() => {
     if (!memoizedDocRef) {
-      // §4.5 / §2.3: A null ref is usually transient. Don't wipe previously
-      // loaded data; only keep loading=true until we've produced data once.
-      if (!hasLoadedRef.current) setIsLoading(true);
+      // §4.5 / §2.3: A null ref is usually transient (e.g. auth resolving).
+      // Preserve already-loaded data and keep isLoading=false; if we never
+      // produced data (ref has been null since mount), mark the hook as done
+      // with null data so consumers don't get stuck on a skeleton forever.
+      if (hasLoadedRef.current) {
+        setIsLoading(false);
+      } else {
+        setData(null);
+        setIsLoading(false);
+        setError(null);
+      }
       return;
     }
 
