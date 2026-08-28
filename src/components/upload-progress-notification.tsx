@@ -15,9 +15,8 @@ export default function UploadProgressNotification() {
 
   const [completed, setCompleted] = useState<Array<{ provider: 'vercel' | 'cloudinary'; fileName: string; resourceType?: 'image' | 'video' | 'raw'; docId?: string; libraryId?: 'primary' | 'extented' | 'vercel_blob'; id: number }>>([]);
   const [dismissedActive, setDismissedActive] = useState<Array<'vercel' | 'cloudinary'>>([]);
-  const prevVercelUploading = useRef(vercel.isUploading);
-  const prevCloudinaryUploading = useRef(cloudinary.isUploading);
   const nextId = useRef(0);
+  const lastNotifiedId = useRef<string | null>(null);
 
   // Re-show an active upload's card whenever a fresh upload starts for that
   // provider (dismiss only affects the current run, not future uploads).
@@ -33,27 +32,28 @@ export default function UploadProgressNotification() {
     }
   }, [cloudinary.isUploading, cloudinary.fileName]);
 
+  // Create the "upload finished" card directly from the authoritative
+  // `completedUpload` state (which now carries the fileName). The old approach
+  // reacted to the isUploading->false transition, but that raced with the async
+  // Firestore write + signalCompletedUpload, so the card was never shown.
   useEffect(() => {
-    if (prevVercelUploading.current && !vercel.isUploading && vercel.fileName) {
-      // Only show completed notification if upload actually succeeded (completedUpload exists)
-      if (completedUpload && completedUpload.provider === 'vercel') {
-        setCompleted(prev => [...prev, { provider: 'vercel', fileName: vercel.fileName, resourceType: completedUpload.resourceType, docId: completedUpload.docId, libraryId: completedUpload.libraryId, id: nextId.current++ }]);
-      }
-      clearFileName('vercel');
-    }
-    prevVercelUploading.current = vercel.isUploading;
-  }, [vercel.isUploading, vercel.fileName, clearFileName, completedUpload]);
-
-  useEffect(() => {
-    if (prevCloudinaryUploading.current && !cloudinary.isUploading && cloudinary.fileName) {
-      // Only show completed notification if upload actually succeeded (completedUpload exists)
-      if (completedUpload && completedUpload.provider === 'cloudinary') {
-        setCompleted(prev => [...prev, { provider: 'cloudinary', fileName: cloudinary.fileName, resourceType: completedUpload.resourceType, docId: completedUpload.docId, libraryId: completedUpload.libraryId, id: nextId.current++ }]);
-      }
-      clearFileName('cloudinary');
-    }
-    prevCloudinaryUploading.current = cloudinary.isUploading;
-  }, [cloudinary.isUploading, cloudinary.fileName, clearFileName, completedUpload]);
+    if (!completedUpload) return;
+    if (lastNotifiedId.current === completedUpload.docId) return;
+    lastNotifiedId.current = completedUpload.docId;
+    const fileName =
+      completedUpload.fileName ||
+      (completedUpload.provider === 'vercel' ? vercel.fileName : cloudinary.fileName) ||
+      'Uploaded file';
+    setCompleted(prev => [...prev, {
+      provider: completedUpload.provider,
+      fileName,
+      resourceType: completedUpload.resourceType,
+      docId: completedUpload.docId,
+      libraryId: completedUpload.libraryId,
+      id: nextId.current++,
+    }]);
+    clearFileName(completedUpload.provider);
+  }, [completedUpload, clearFileName, vercel.fileName, cloudinary.fileName]);
 
   const dismiss = (id: number) => {
     setCompleted(prev => prev.filter(c => c.id !== id));

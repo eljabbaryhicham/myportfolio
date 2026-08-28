@@ -501,6 +501,10 @@ export default forwardRef<MediaLibraryRef, MediaLibraryProps>(function MediaLibr
 
   // ---- Upload Resumption: Check for interrupted uploads on mount ----
   useEffect(() => {
+    // Don't report an "interrupted" upload when this provider is actively
+    // uploading right now (the media tab can mount mid-upload via notification
+    // navigation) — that upload is ongoing, not interrupted.
+    if (effectiveIsUploading) return;
     const checkInterruptedUploads = () => {
       const providerType = provider === 'cloudinary' ? 'cloudinary' : 'vercel';
       const interrupted = getInterruptedUploads(providerType);
@@ -516,7 +520,7 @@ export default forwardRef<MediaLibraryRef, MediaLibraryProps>(function MediaLibr
       }
     };
     checkInterruptedUploads();
-  }, [provider, toast]);
+  }, [provider, toast, effectiveIsUploading]);
 
   // ---- Listen for maximize button navigation from notification ----
   useEffect(() => {
@@ -779,12 +783,15 @@ for (const file of files) {
             const resourceType = file.type.startsWith('video/') ? 'video' : file.type.startsWith('image/') ? 'image' : 'raw';
             if (newId && props.onUploadComplete) props.onUploadComplete(newId, resourceType);
             if (newId) { setLocalNewlyUploadedId(newId); setTimeout(() => setLocalNewlyUploadedId(null), 3000); }
-            if (newId) signalCompletedUpload(newId, resourceType, 'vercel_blob', 'vercel');
+            if (newId) signalCompletedUpload(newId, resourceType, 'vercel_blob', 'vercel', file.name);
           } catch (e) { console.error('MediaLibrary: Firestore add after Vercel upload failed', e); }
         }
       } catch (e: any) {
         // Don't track cancellation as a failure
         if (e?.name === 'AbortError' || e?.name === 'CancellationError' || isCancelling) {
+          // Clear the in-progress session snapshot so a cancelled upload doesn't
+          // later appear as a false "Interrupted upload detected".
+          clearUploadProgress(file);
           setIsCancelling(false);
           return;
         }
@@ -839,7 +846,7 @@ for (const file of files) {
         setLocalNewlyUploadedId(newId);
         setTimeout(() => setLocalNewlyUploadedId(null), 3000);
         const ct = (data.contentType || '').toLowerCase();
-        signalCompletedUpload(newId, ct.startsWith('image/') ? 'image' : ct.startsWith('video/') ? 'video' : 'raw', 'vercel_blob', 'vercel');
+        signalCompletedUpload(newId, ct.startsWith('image/') ? 'image' : ct.startsWith('video/') ? 'video' : 'raw', 'vercel_blob', 'vercel', (data.pathname || '').split('/').pop() || 'file');
       }
       const tab = (data.contentType || '').toLowerCase().startsWith('image/') ? 'images' : (data.contentType || '').toLowerCase().startsWith('video/') ? 'videos' : 'files';
       setActiveTabFn(tab);
@@ -927,7 +934,7 @@ for (const file of files) {
             const docRefPromise = addDocumentNonBlocking(collection(firestore, 'media'), mediaData);
             const docRef = await docRefPromise as DocumentReference | undefined;
             if (docRef && !isDialog && props.onUploadComplete) props.onUploadComplete(docRef.id, response.resource_type, libraryId);
-            if (docRef) signalCompletedUpload(docRef.id, response.resource_type, libraryId, 'cloudinary');
+            if (docRef) signalCompletedUpload(docRef.id, response.resource_type, libraryId, 'cloudinary', file.name);
           }
         } else {
           const error = JSON.parse(xhr.responseText).error;

@@ -20,6 +20,7 @@ type CompletedUpload = {
   resourceType: 'image' | 'video' | 'raw';
   libraryId: 'primary' | 'extented' | 'vercel_blob';
   provider: 'vercel' | 'cloudinary';
+  fileName?: string;
 } | null;
 
 const COMPLETED_UPLOAD_KEY = 'mv_completed_upload';
@@ -32,7 +33,7 @@ type UploadProgressContextType = UploadProgressState & {
   clearFileName: (provider: 'vercel' | 'cloudinary') => void;
   setActiveMediaTab: (tab: string | null) => void;
   completedUpload: CompletedUpload;
-  signalCompletedUpload: (docId: string, resourceType: 'image' | 'video' | 'raw', libraryId: 'primary' | 'extented' | 'vercel_blob', provider: 'vercel' | 'cloudinary') => void;
+  signalCompletedUpload: (docId: string, resourceType: 'image' | 'video' | 'raw', libraryId: 'primary' | 'extented' | 'vercel_blob', provider: 'vercel' | 'cloudinary', fileName?: string) => void;
   consumeCompletedUpload: () => void;
 };
 
@@ -158,8 +159,8 @@ export function UploadProgressProvider({ children }: { children: React.ReactNode
     }));
   }, []);
 
-  const signalCompletedUpload = useCallback((docId: string, resourceType: 'image' | 'video' | 'raw', libraryId: 'primary' | 'extented' | 'vercel_blob', provider: 'vercel' | 'cloudinary') => {
-    const data = { docId, resourceType, libraryId, provider };
+  const signalCompletedUpload = useCallback((docId: string, resourceType: 'image' | 'video' | 'raw', libraryId: 'primary' | 'extented' | 'vercel_blob', provider: 'vercel' | 'cloudinary', fileName?: string) => {
+    const data = { docId, resourceType, libraryId, provider, fileName };
     setCompletedUpload(data);
     try { localStorage.setItem(COMPLETED_UPLOAD_KEY, JSON.stringify(data)); } catch {}
   }, []);
