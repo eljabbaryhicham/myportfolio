@@ -60,7 +60,7 @@ export default function LoginPage() {
     if (values.login.includes('@')) {
       emailToSignIn = values.login; // Assume it's an email
     } else {
-      emailToSignIn = `${values.login.toLowerCase()}@example.com`; // Assume it's a username
+      emailToSignIn = `${values.login.toLowerCase()}@mellivision.com`; // Assume it's a username
     }
     
     try {
