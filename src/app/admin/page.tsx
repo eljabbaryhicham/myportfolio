@@ -225,7 +225,14 @@ function AdminPage() {
       toast({
         title: t('admin.migrationRunning'),
       });
-      const res = await fetch('/api/admin/migrate-multilingual', { method: 'POST' });
+      const token = await auth?.currentUser?.getIdToken();
+      if (!token) {
+        throw new Error('Not authenticated');
+      }
+      const res = await fetch('/api/admin/migrate-multilingual', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` },
+      });
       const result = await res.json();
       if (!res.ok) {
         throw new Error(result.error || res.statusText);
