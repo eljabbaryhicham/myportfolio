@@ -9,22 +9,13 @@ const nextConfig = {
   images: {
     formats: ['image/avif', 'image/webp'],
     minimumCacheTTL: 31536000,
+    // Only the hosts the media pipeline actually uses. Adding more widens
+    // the attack surface (an attacker who writes a malicious URL into
+    // Firestore can have it served from your origin via <Image>).
     remotePatterns: [
       {
         protocol: 'https',
         hostname: 'res.cloudinary.com',
-      },
-      {
-        protocol: 'https',
-        hostname: 'i.imgur.com',
-      },
-       {
-        protocol: 'https',
-        hostname: 'picsum.photos',
-      },
-      {
-        protocol: 'https',
-        hostname: 'files.catbox.moe',
       },
       {
         protocol: 'https',
