@@ -670,26 +670,6 @@ function WorkPageContent() {
   const { selectedSlug, updateUrl } = useWorkUrlSync();
   const { t, lang } = useTranslation();
 
-  // Gate the entire work page on a post-mount state to prevent the
-  // React #441 hydration mismatch introduced when the page was converted
-  // to a client component (SEO commit 07d530c). The Firestore IndexedDB
-  // cache can deliver a snapshot synchronously during hydration, causing
-  // the first client render to differ from the server render. Showing a
-  // loading state on both server and client until mount eliminates the
-  // mismatch entirely. A 150ms minimum visible time prevents the message
-  // from blinking on fast connections.
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    if (document.readyState === 'complete') {
-      setMounted(true);
-      return;
-    }
-    const onLoad = () => setMounted(true);
-    window.addEventListener('load', onLoad, { once: true });
-    return () => window.removeEventListener('load', onLoad);
-  }, []);
-
   const typedUser = user as AppUser | null;
   const isSuperAdmin = typedUser?.email === SUPERADMIN_EMAIL;
   const canEditProjects = isSuperAdmin || (typedUser?.permissions?.canEditProjects ?? true);
@@ -1153,14 +1133,6 @@ function WorkPageContent() {
   const watermarkSize = homeSettings?.watermarkSize ?? 12;
   const watermarkOpacity = homeSettings?.watermarkOpacity ?? 70;
   const watermarkPosition = homeSettings?.watermarkPosition || 'bottom-right';
-
-  if (!mounted) {
-    return (
-      <div className="h-full w-full flex items-center justify-center">
-        <Preloader />
-      </div>
-    );
-  }
 
   return (
     <>
