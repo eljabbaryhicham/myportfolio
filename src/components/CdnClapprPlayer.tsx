@@ -2,6 +2,7 @@
 import { useEffect, useRef, useState, forwardRef, useImperativeHandle } from 'react';
 import Preloader from './preloader';
 import { useToast } from '@/hooks/use-toast';
+import { logger } from '@/lib/logger';
 import { forceAutoplay } from '@/lib/video-autoplay';
 
 // Make Clappr available on the window object for type safety
@@ -38,7 +39,7 @@ const CdnClapprPlayer = forwardRef(function CdnClapprPlayer({ source, poster, au
         const mod: any = await import('@clappr/player');
         const Clappr = mod?.default || mod?.Clappr || (window as any).Clappr;
         if (!isMounted || !Clappr) {
-          console.error('Clappr failed to load: module did not expose Clappr');
+          logger.error('Clappr failed to load: module did not expose Clappr');
           if (isMounted) setIsLoading(false);
           return;
         }
@@ -73,7 +74,7 @@ const CdnClapprPlayer = forwardRef(function CdnClapprPlayer({ source, poster, au
               onError: (e: any) => {
                 if (isMounted) {
                   setIsLoading(false);
-                  console.error("Clappr player error:", e);
+                  logger.error("Clappr player error:", e);
                 }
               },
             }
@@ -128,7 +129,7 @@ const CdnClapprPlayer = forwardRef(function CdnClapprPlayer({ source, poster, au
         setTimeout(() => { if (isMounted) setIsLoading(false); }, 8000);
 
       } catch (error: any) {
-        console.error(error);
+        logger.error(error);
         if (isMounted) {
           toast({
             variant: 'destructive',
@@ -151,7 +152,7 @@ const CdnClapprPlayer = forwardRef(function CdnClapprPlayer({ source, poster, au
            player.stop();
            player.destroy();
         } catch (e) {
-          console.error("Error destroying Clappr player:", e);
+          logger.error("Error destroying Clappr player:", e);
         }
       }
       playerRef.current = null;

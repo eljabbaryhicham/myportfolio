@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server';
 import { initializeServerApp } from '@/firebase/server-init';
 import admin from 'firebase-admin';
 
+import { logger } from '@/lib/logger';
 import { SUPERADMIN_EMAIL } from '@/lib/constants';
 
 export async function verifyAdminRequest(req: NextRequest): Promise<{ uid: string; email?: string } | null> {
@@ -16,7 +17,7 @@ export async function verifyAdminRequest(req: NextRequest): Promise<{ uid: strin
   try {
     app = await initializeServerApp();
   } catch (e) {
-    console.error('verifyAdminRequest: Firebase Admin SDK not initialized, denying access.', e);
+    logger.error('verifyAdminRequest: Firebase Admin SDK not initialized, denying access.', e);
     return null;
   }
 
@@ -24,7 +25,7 @@ export async function verifyAdminRequest(req: NextRequest): Promise<{ uid: strin
   try {
     decoded = await admin.auth(app).verifyIdToken(token);
   } catch (e) {
-    console.warn('verifyAdminRequest: token verification failed, denying access.', e);
+    logger.warn('verifyAdminRequest: token verification failed, denying access.', e);
     return null;
   }
 
@@ -41,7 +42,7 @@ export async function verifyAdminRequest(req: NextRequest): Promise<{ uid: strin
     }
     return null;
   } catch (e) {
-    console.warn('verifyAdminRequest: Firestore permission check failed, denying access', e);
+    logger.warn('verifyAdminRequest: Firestore permission check failed, denying access', e);
     return null;
   }
 }

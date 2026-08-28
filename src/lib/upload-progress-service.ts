@@ -1,4 +1,5 @@
 'use client';
+import { logger } from '@/lib/logger';
 
 interface UploadProgressSnapshot {
   stage: 'pending' | 'uploading' | 'completed' | 'failed' | 'cancelled';
@@ -61,7 +62,7 @@ export function saveUploadProgress(
 
     saveSession(session);
   } catch (e) {
-    console.warn('Failed to save upload progress:', e);
+    logger.warn('Failed to save upload progress:', e);
   }
 }
 
@@ -84,7 +85,7 @@ export function loadUploadProgress(
 
     return snapshot;
   } catch (e) {
-    console.warn('Failed to load upload progress:', e);
+    logger.warn('Failed to load upload progress:', e);
     return null;
   }
 }
@@ -104,7 +105,7 @@ export function getAllUploadProgress(provider?: 'vercel' | 'cloudinary'): Upload
     const snapshots = Array.from(session.files.values());
     return provider ? snapshots.filter((s) => s.provider === provider) : snapshots;
   } catch (e) {
-    console.warn('Failed to load all upload progress:', e);
+    logger.warn('Failed to load all upload progress:', e);
     return [];
   }
 }
@@ -131,7 +132,7 @@ export function clearUploadProgress(file?: File): void {
       saveSession(session);
     }
   } catch (e) {
-    console.warn('Failed to clear upload progress:', e);
+    logger.warn('Failed to clear upload progress:', e);
   }
 }
 
@@ -175,7 +176,7 @@ function loadSession(): UploadSession | null {
       updatedAt: parsed.updatedAt,
     };
   } catch (e) {
-    console.warn('Failed to parse upload session:', e);
+    logger.warn('Failed to parse upload session:', e);
     return null;
   }
 }
@@ -201,7 +202,7 @@ function saveSession(session: UploadSession): void {
     };
     sessionStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(serialized));
   } catch (e) {
-    console.warn('Failed to save upload session:', e);
+    logger.warn('Failed to save upload session:', e);
   }
 }
 
@@ -210,7 +211,7 @@ function clearSession(): void {
   try {
     sessionStorage.removeItem(SESSION_STORAGE_KEY);
   } catch (e) {
-    console.warn('Failed to clear upload session:', e);
+    logger.warn('Failed to clear upload session:', e);
   }
 }
 
@@ -250,6 +251,6 @@ export function markUploadFailed(
       saveSession(session);
     }
   } catch (e) {
-    console.warn('Failed to mark upload as failed:', e);
+    logger.warn('Failed to mark upload as failed:', e);
   }
 }

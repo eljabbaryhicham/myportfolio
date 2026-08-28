@@ -6,6 +6,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import Preloader from './preloader';
 import 'plyr/dist/plyr.css';
 import Hls from 'hls.js';
+import { logger } from '@/lib/logger';
 import { forceAutoplay } from '@/lib/video-autoplay';
 
 type PlyrCtor = typeof import('plyr')['default'];
@@ -215,7 +216,7 @@ const PlyrPlayer = forwardRef(({ source, poster, autoPlay = true, thumbnailVttUr
             }
 
         } catch (error) {
-            console.error("Error initializing Plyr player:", error);
+            logger.error("Error initializing Plyr player:", error);
             if (isMounted) setIsLoading(false);
         }
     };

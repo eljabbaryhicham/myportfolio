@@ -17,6 +17,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose, DialogDe
 import { cn } from '@/lib/utils';
 import Preloader from '@/components/preloader';
 import { useCollection, useFirestore, useMemoFirebase, addDocumentNonBlocking, deleteDocumentNonBlocking, useUser, useAuth, setDocumentNonBlocking } from '@/firebase';
+import { logger } from '@/lib/logger';
 import {
   saveUploadProgress,
   loadUploadProgress,
@@ -509,7 +510,7 @@ export default forwardRef<MediaLibraryRef, MediaLibraryProps>(function MediaLibr
       const providerType = provider === 'cloudinary' ? 'cloudinary' : 'vercel';
       const interrupted = getInterruptedUploads(providerType);
       if (interrupted.length > 0) {
-        console.log(`Found ${interrupted.length} interrupted uploads for ${providerType}`);
+        logger.info(`Found ${interrupted.length} interrupted uploads for ${providerType}`);
         interrupted.forEach((snap) => {
           toast({
             title: 'Interrupted upload detected',
@@ -784,7 +785,7 @@ for (const file of files) {
             if (newId && props.onUploadComplete) props.onUploadComplete(newId, resourceType);
             if (newId) { setLocalNewlyUploadedId(newId); setTimeout(() => setLocalNewlyUploadedId(null), 3000); }
             if (newId) signalCompletedUpload(newId, resourceType, 'vercel_blob', 'vercel', file.name);
-          } catch (e) { console.error('MediaLibrary: Firestore add after Vercel upload failed', e); }
+          } catch (e) { logger.error('MediaLibrary: Firestore add after Vercel upload failed', e); }
         }
       } catch (e: any) {
         // Don't track cancellation as a failure
@@ -1000,7 +1001,7 @@ for (const file of files) {
       const data = await res.json();
       if (!res.ok || !data.success) throw new Error(data.message || 'Delete failed');
       if (firestore) {
-        try { await deleteDocumentNonBlocking(doc(firestore, 'vercel_blobs', file.id)); } catch (e) { console.error('MediaLibrary: Firestore delete after Vercel delete failed', e); }
+        try { await deleteDocumentNonBlocking(doc(firestore, 'vercel_blobs', file.id)); } catch (e) { logger.error('MediaLibrary: Firestore delete after Vercel delete failed', e); }
       }
       toast({ title: 'Deleted' });
     } catch (e: any) {
@@ -1134,10 +1135,10 @@ for (const file of files) {
         });
         const data = await res.json();
         if (!res.ok || !data.success) throw new Error(data.message || 'Delete failed');
-        try { await deleteDocumentNonBlocking(doc(firestore!, 'vercel_blobs', b.id)); } catch (e) { console.error('MediaLibrary: Firestore delete in bulk failed', e); }
+        try { await deleteDocumentNonBlocking(doc(firestore!, 'vercel_blobs', b.id)); } catch (e) { logger.error('MediaLibrary: Firestore delete in bulk failed', e); }
       } catch (e) {
         failed++;
-        try { await deleteDocumentNonBlocking(doc(firestore!, 'vercel_blobs', b.id)); } catch (e) { console.error('MediaLibrary: Firestore delete in bulk failed', e); }
+        try { await deleteDocumentNonBlocking(doc(firestore!, 'vercel_blobs', b.id)); } catch (e) { logger.error('MediaLibrary: Firestore delete in bulk failed', e); }
       }
     }
     if (failed > 0) toast({ variant: 'destructive', title: `Deleted ${ids.length - failed}/${ids.length}`, description: `${failed} failed` });
