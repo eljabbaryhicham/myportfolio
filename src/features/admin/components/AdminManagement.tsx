@@ -100,7 +100,6 @@ function PermissionsDialog({ user, isOpen, onOpenChange, onSave }: { user: Admin
 }
 
 export default function AdminManagement() {
-  console.log('[AdminManagement] Component mounted!');
   const { t } = useTranslation();
   const firestore = useFirestore();
   const { user: currentUser } = useUser();
@@ -111,12 +110,9 @@ export default function AdminManagement() {
     () => (firestore ? query(collection(firestore, 'users'), orderBy('username', 'asc')) : null),
     [firestore]
   );
-  const { data: users, isLoading, error } = useCollection<AdminUser>(usersQuery);
+  const { data: users, isLoading } = useCollection<AdminUser>(usersQuery);
   
-  // DEBUG
-  useEffect(() => {
-    console.log('[AdminManagement DEBUG] isLoading:', isLoading, '| users:', users, '| error:', error);
-  }, [users, isLoading, error]);
+  const typedUser = currentUser as AppUser | null;
   
   const typedUser = currentUser as AppUser | null;
   const isSuperAdmin = isSuperAdminCheck(typedUser);
