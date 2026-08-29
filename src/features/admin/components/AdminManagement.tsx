@@ -4,7 +4,7 @@
 import { useTranslation } from '@/lib/i18n/useTranslation';
 import { isSuperAdmin as isSuperAdminCheck } from '@/lib/constants';
 import { useCollection, useFirestore, useMemoFirebase, updateDocumentNonBlocking, useUser, useAuth } from '@/firebase';
-import { collection, query, orderBy, doc } from 'firebase/firestore';
+import { collection, query, doc } from 'firebase/firestore';
 import {
   Table,
   TableBody,
@@ -107,7 +107,7 @@ export default function AdminManagement() {
   const { toast } = useToast();
 
   const usersQuery = useMemoFirebase(
-    () => (firestore ? query(collection(firestore, 'users'), orderBy('username', 'asc')) : null),
+    () => (firestore ? query(collection(firestore, 'users')) : null),
     [firestore]
   );
   const { data: users, isLoading } = useCollection<AdminUser>(usersQuery);
