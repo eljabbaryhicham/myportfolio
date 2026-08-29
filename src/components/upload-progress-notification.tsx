@@ -49,6 +49,23 @@ export default function UploadProgressNotification() {
     return () => window.removeEventListener('admin-goto-media', handler);
   }, []);
 
+  // When the media library or media picker applies its highlight to the
+  // finished upload, drop the matching "Uploaded" card so the notification
+  // doesn't linger after the user has already seen the new file.
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent<{ provider?: 'vercel' | 'cloudinary'; docId?: string }>).detail;
+      if (!detail?.provider) return;
+      setCompleted(prev => prev.filter((c) => {
+        if (c.provider !== detail.provider) return true;
+        if (detail.docId) return c.docId !== detail.docId;
+        return false;
+      }));
+    };
+    window.addEventListener('media-upload-highlighted', handler);
+    return () => window.removeEventListener('media-upload-highlighted', handler);
+  }, []);
+
   // Create the "upload finished" card directly from the authoritative
   // `completedUpload` state (which now carries the fileName). The old approach
   // reacted to the isUploading->false transition, but that raced with the async

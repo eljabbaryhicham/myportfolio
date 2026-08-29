@@ -517,6 +517,9 @@ export default forwardRef<MediaLibraryRef, MediaLibraryProps>(function MediaLibr
     }
     setLocalNewlyUploadedId(docId);
     setIsFullLibraryOpen(true);
+    window.dispatchEvent(new CustomEvent('media-upload-highlighted', {
+      detail: { provider: completedUpload.provider, docId },
+    }));
     const t1 = setTimeout(() => consumeCompletedUpload(), 3500);
     const t2 = setTimeout(() => setLocalNewlyUploadedId(null), 3000);
     return () => { clearTimeout(t1); clearTimeout(t2); };

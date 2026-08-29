@@ -88,6 +88,9 @@ export default function UnifiedMediaPicker({ isOpen, onOpenChange, onMediaSelect
     if (!completedUpload) return;
     if (completedUpload.source !== 'media-picker') return;
     setNewlyUploadedId(completedUpload.docId);
+    window.dispatchEvent(new CustomEvent('media-upload-highlighted', {
+      detail: { provider: completedUpload.provider, docId: completedUpload.docId },
+    }));
     consumeCompletedUpload();
     const t = setTimeout(() => setNewlyUploadedId(null), 3000);
     return () => clearTimeout(t);
