@@ -132,8 +132,8 @@ export default function ContactPage() {
                           <AvatarImage src={contactInfo.avatarUrl} alt={getLocalizedString(contactInfo.name, lang)} />
                           <AvatarFallback>{getLocalizedString(contactInfo.name, lang)?.substring(0, 2)}</AvatarFallback>
                         </Avatar>
-                        <h3 className="text-[clamp(1rem,2.4vh,1.25rem)] font-headline">{getLocalizedString(contactInfo.name, lang)}</h3>
-                        <p className="text-[clamp(0.75rem,1.8vh,1rem)] text-foreground/70">{getLocalizedString(contactInfo.title, lang)}</p>
+                        <h3 className="text-[clamp(1.125rem,2.8vh,1.5rem)] font-headline">{getLocalizedString(contactInfo.name, lang)}</h3>
+                        <p className="text-[clamp(0.875rem,2.1vh,1.125rem)] text-foreground/70">{getLocalizedString(contactInfo.title, lang)}</p>
                         
                         <Separator className="my-[clamp(0.75rem,2vh,1.25rem)] bg-white/20" />
                         
@@ -148,12 +148,12 @@ export default function ContactPage() {
                                     target="_blank"
                                     rel="noopener noreferrer"
                                   >
-                                          <div className={cn("w-[clamp(2.75rem,6.5vh,3rem)] h-[clamp(2.75rem,6.5vh,3rem)] flex-shrink-0 rounded-full flex items-center justify-center glass-effect transition-colors duration-300 text-white", link.color)}>
-                                          <Icon icon={link.icon} className="w-[clamp(1rem,2.6vh,1.5rem)] h-[clamp(1rem,2.6vh,1.5rem)]" />
+                                          <div className={cn("w-[clamp(3rem,7vh,3.5rem)] h-[clamp(3rem,7vh,3.5rem)] flex-shrink-0 rounded-full flex items-center justify-center glass-effect transition-colors duration-300 text-white", link.color)}>
+                                          <Icon icon={link.icon} className="w-[clamp(1.125rem,3vh,1.75rem)] h-[clamp(1.125rem,3vh,1.75rem)]" />
                                       </div>
                                       <div className="mt-2 md:mt-0 md:ml-4 break-words">
-                                          <p className="text-xs sm:text-xs md:text-sm text-foreground/70">{link.label}</p>
-                                          <p className="text-xs sm:text-sm md:text-base font-medium group-hover:text-primary transition-colors">{link.value}</p>
+                                          <p className="text-xs sm:text-sm md:text-base text-foreground/70">{link.label}</p>
+                                          <p className="text-sm sm:text-base md:text-lg font-medium group-hover:text-primary transition-colors">{link.value}</p>
                                       </div>
                                   </Link>
                               )
