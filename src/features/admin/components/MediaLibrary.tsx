@@ -257,11 +257,12 @@ const FileCard = ({
         onClick={isSelectionMode ? handleSelect : undefined}
       >
         {showCheckbox && !isSelectionMode && (
-          <div className="absolute top-2 left-2 z-20" onClick={(e) => e.stopPropagation()}>
+          <div className="absolute top-2 left-2 z-30 w-[15%] min-w-5" onClick={(e) => e.stopPropagation()}>
             <Checkbox
               checked={isSelected}
               onCheckedChange={() => onToggleSelect?.(file.id)}
-              className="bg-background/80 backdrop-blur-sm"
+              className="h-auto aspect-square w-full rounded-full bg-background/80 backdrop-blur-sm [&>span]:absolute [&>span]:inset-0"
+              iconClassName="h-[55%] w-[55%]"
             />
           </div>
         )}
@@ -269,7 +270,7 @@ const FileCard = ({
           <div
             className={cn(
               "absolute top-2 z-20 h-4 w-4 rounded-full border-2 border-white shadow-md",
-              showCheckbox && !isSelectionMode ? "left-9" : "left-2",
+              showCheckbox && !isSelectionMode ? "left-[calc(15%+1.75rem)]" : "left-2",
               TAG_COLORS[file.tag]
             )}
             title={t('mediaAdmin.tag.select')}
