@@ -165,9 +165,9 @@ export default function AboutPage() {
                 >
                 <motion.div 
                     variants={itemVariants}
-                    className="flex flex-col gap-[clamp(1.5rem,4vh,3rem)] items-center justify-center lg:flex-row lg:items-stretch"
+                    className="flex flex-col gap-[clamp(1.5rem,4vh,3rem)] items-center justify-center landscape:flex-row landscape:items-stretch"
                   >
-                    <div className="w-full lg:w-1/2 text-center p-4 sm:p-6 md:p-8 flex flex-col justify-center">
+                    <div className="w-full landscape:w-1/2 text-center p-4 sm:p-6 md:p-8 flex flex-col justify-center">
                         {logoUrl && (
                             <div className="w-32 mx-auto mb-4" style={{ transform: `scale(${logoScale})` }}>
                                 <Logo src={logoUrl} />
@@ -190,7 +190,7 @@ export default function AboutPage() {
                             </Button>
                         </div>
                     </div>
-                    <div className="w-full lg:w-1/2 flex flex-col justify-center">
+                    <div className="w-full landscape:w-1/2 flex flex-col justify-center">
                        <h2 className="text-2xl md:text-3xl font-headline tracking-tight mb-[clamp(1rem,3vh,1.75rem)] text-center">{t('about.whatYouGet')}</h2>
                        <div className="grid grid-cols-3 sm:grid-cols-6 grid-rows-2 auto-rows-fr gap-[clamp(0.75rem,2vh,1.25rem)] h-full">
                         {services.map((service, index) => {

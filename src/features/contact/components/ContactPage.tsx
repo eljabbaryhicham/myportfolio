@@ -115,17 +115,17 @@ export default function ContactPage() {
             ) : (
             <>
             <motion.div
-                  className="w-full flex flex-col gap-[clamp(1rem,3vh,2rem)] items-center justify-center lg:flex-row lg:items-stretch"
+                  className="w-full flex flex-col gap-[clamp(1rem,3vh,2rem)] items-center justify-center landscape:flex-row landscape:items-stretch"
                   variants={containerVariants}
                   initial="hidden"
                   animate="visible"
                 >
-                  <motion.div className="w-full lg:w-1/2 lg:h-full flex justify-center" variants={itemVariants}>
+                  <motion.div className="w-full landscape:w-1/2 landscape:h-full flex justify-center" variants={itemVariants}>
                     <div className="glass-effect rounded-lg p-4 sm:p-6 md:p-[clamp(1.5rem,3vh,2rem)] h-full flex flex-col justify-center w-full max-w-lg">
                           <ContactForm />
                     </div>
                   </motion.div>
-                  <motion.div className="w-full lg:w-1/2 lg:h-full flex justify-center" variants={itemVariants}>
+                  <motion.div className="w-full landscape:w-1/2 landscape:h-full flex justify-center" variants={itemVariants}>
                     {contactInfo ? (
                     <div className="glass-effect rounded-lg p-4 sm:p-6 h-full w-full max-w-lg flex flex-col items-center justify-center text-center">
                         <Avatar className="border-2 border-white mb-[clamp(0.75rem,2vh,1.25rem)] w-[clamp(3.5rem,9vh,5rem)] h-[clamp(3.5rem,9vh,5rem)]">
