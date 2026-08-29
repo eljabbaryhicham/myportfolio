@@ -5,6 +5,10 @@ import { NextResponse, type NextRequest } from 'next/server';
 // <script> tags (theme/lang, app-height, mobile detection). This keeps routes
 // statically prerendered (fast navigation) instead of forcing per-request
 // nonces which made the app dynamic. All other directives stay strict.
+// We also keep unsafe-eval in script-src because Clappr (@clappr/player) bundles
+// Underscore's tmpl(), which compiles its UI templates (mediacontrol, poster,
+// spinner, etc.) via new Function(). Without it the player throws and shows a
+// black screen.
 // NOTE media-src/frame-src are NOT covered by default-src (which is 'self').
 // Video/audio playback would be silently blocked on external hosts (Cloudinary,
 // Vercel Blob, YouTube, Vimeo) — the poster/thumbnail still renders via
@@ -12,7 +16,7 @@ import { NextResponse, type NextRequest } from 'next/server';
 // symptom. Media and embeds must be explicitly allowlisted.
 const CSP =
   `default-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; object-src 'none'; ` +
-  `script-src 'self' 'unsafe-inline' https://va.vercel-scripts.com https://cdn.jsdelivr.net https://static.cloudflareinsights.com; ` +
+  `script-src 'self' 'unsafe-inline' 'unsafe-eval' https://va.vercel-scripts.com https://cdn.jsdelivr.net https://static.cloudflareinsights.com; ` +
   `style-src 'self' 'unsafe-inline'; font-src 'self' data:; ` +
   `img-src 'self' data: https:; ` +
   `media-src 'self' https://res.cloudinary.com https://*.public.blob.vercel-storage.com https://*.vercel-storage.com https://portfolio-hicham-ten.vercel.app blob:; ` +

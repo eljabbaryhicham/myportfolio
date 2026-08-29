@@ -47,20 +47,29 @@ export function forceAutoplay(
   let stopped = false;
   let attempts = 0;
   let started = false;
+  // Set to true once the user explicitly pauses AFTER playback has started.
+  // While true, the auto-retry interval must not call play() again, otherwise
+  // the user's pause is undone ~400ms later by the next tick. Cleared when the
+  // user presses play again so re-resume still works.
+  let userPaused = false;
   let interval: ReturnType<typeof setInterval> | null = null;
 
   // Fire onPlaying exactly once, as soon as playback is actually running. Both
   // the 'playing' event and the paused-detection paths converge here so the
   // callback isn't dropped when play() resolves before the event queues.
+  // NOTE: we deliberately do NOT cleanup here. Tearing down the listeners/interval
+  // at this point strips the 'pause' handler that guards against auto-resuming,
+  // and races with the interval being assigned right after the initial playAttempt
+  // (clearInterval would miss it). The retry interval below instead cleans up once
+  // a started video is paused, so a user pause is never undone.
   const markStarted = () => {
     if (started || stopped) return;
     started = true;
     onPlaying?.();
-    cleanup();
   };
 
   const playAttempt = () => {
-    if (stopped) return;
+    if (stopped || userPaused) return;
     attempts += 1;
     try {
       const p = video.play();
@@ -78,25 +87,43 @@ export function forceAutoplay(
     interval = null;
     video.removeEventListener('playing', playingHandler);
     video.removeEventListener('pause', pausedHandler);
+    video.removeEventListener('play', userPlayHandler);
     video.removeEventListener('loadedmetadata', playAttempt);
     video.removeEventListener('canplay', playAttempt);
     video.removeEventListener('loadeddata', playAttempt);
   };
 
   const playingHandler = () => markStarted();
-  const pausedHandler = () => cleanup();
+  // Only treat a pause as a user pause if playback had already started —
+  // players (Clappr, Plyr) emit a transient pause during source load/switch
+  // that must not abort the auto-retry. The interval handles the actual stop.
+  const pausedHandler = () => {
+    if (started) userPaused = true;
+  };
+  // When the user presses play again, clear the flag so a future source reload
+  // (or unmount) doesn't get auto-retried if the component re-runs forceAutoplay.
+  const userPlayHandler = () => { userPaused = false; };
 
   video.addEventListener('playing', playingHandler);
   video.addEventListener('pause', pausedHandler);
+  video.addEventListener('play', userPlayHandler);
   video.addEventListener('loadedmetadata', playAttempt);
   video.addEventListener('canplay', playAttempt);
   video.addEventListener('loadeddata', playAttempt);
   playAttempt();
   interval = setInterval(() => {
     if (stopped) return;
-    if (attempts >= maxAttempts || video.paused === false) {
-      if (video.paused === false) markStarted();
-      else cleanup();
+    if (video.paused === false) {
+      // Already playing — nothing more to retry, but keep listeners so a later
+      // user pause is respected.
+      markStarted();
+      return;
+    }
+    // Playback started (autoplay established) and the user has since paused it,
+    // or the user paused during retries, or we've maxed out: stop forever.
+    // Never call play() again — a user pause must not be auto-resumed.
+    if (started || userPaused || attempts >= maxAttempts) {
+      cleanup();
       return;
     }
     playAttempt();

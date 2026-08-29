@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlay } from '@fortawesome/free-solid-svg-icons';
 import { useUser } from '@/firebase';
-import { useRouter, notFound } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import Preloader from '@/components/preloader';
 import PlyrPlayer from '@/components/PlyrPlayer';
 import { useTranslation } from '@/lib/i18n/useTranslation';
@@ -23,7 +23,7 @@ export default function TestPage() {
   const router = useRouter();
   const { t } = useTranslation();
 
-  const defaultUrl = 'https://res.cloudinary.com/da1srnoer/video/upload/sp_auto/v1761114792/u7h3zjwcglk5vzlxwiaq.m3u8';
+  const defaultUrl = 'https://res.cloudinary.com/dsq1lxrqi/video/upload/v1787606668/Showreel_2026_MOD_o9zim0.mp4';
   const [source, setSource] = useState(defaultUrl);
   const [inputValue, setInputValue] = useState(defaultUrl);
   const [localPlayer, setLocalPlayer] = useState<PlayerChoice>('clappr');
@@ -71,10 +71,6 @@ export default function TestPage() {
     );
   }
 
-  if (homeSettings?.isTestPageEnabled === false) {
-    notFound();
-  }
-
   return (
     <div className="h-full w-full flex items-center justify-center p-4 md:p-8">
       <div className='w-full flex flex-col items-center justify-center'>
@@ -119,7 +115,7 @@ export default function TestPage() {
 
         <Separator className="bg-white/10 w-full max-w-4xl mb-8" />
 
-        <div className="w-full max-w-4xl aspect-video bg-black">
+        <div className="relative w-full max-w-4xl aspect-video bg-black">
           {localPlayer === 'clappr' ? (
               <CdnClapprPlayer key={source} source={source} autoPlay={true} />
           ) : (
