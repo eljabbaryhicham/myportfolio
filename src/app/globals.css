@@ -435,6 +435,7 @@ html, body {
 @media (max-width: 767px) {
   .nav-slide-in {
     animation-name: nav-slide-in-mobile;
+    animation-duration: 0.4s;
   }
 }
 
