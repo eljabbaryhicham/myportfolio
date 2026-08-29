@@ -3,7 +3,7 @@ import { initializeServerApp } from '@/firebase/server-init';
 import admin from 'firebase-admin';
 
 import { logger } from '@/lib/logger';
-import { SUPERADMIN_EMAIL } from '@/lib/constants';
+import { SUPERADMIN_EMAIL, isSuperAdmin as isSuperAdminCheck } from '@/lib/constants';
 
 export async function verifyAdminRequest(req: NextRequest): Promise<{ uid: string; email?: string } | null> {
   const authHeader = req.headers.get('Authorization') || req.headers.get('authorization');
@@ -29,7 +29,7 @@ export async function verifyAdminRequest(req: NextRequest): Promise<{ uid: strin
     return null;
   }
 
-  if (decoded.email === SUPERADMIN_EMAIL) return decoded as any;
+  if (isSuperAdminCheck({ email: decoded.email })) return decoded as any;
 
   // Non-superadmin: require an existing user doc that explicitly grants
   // canUploadMedia. No doc or missing permission => deny (fail closed).
