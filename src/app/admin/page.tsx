@@ -73,6 +73,9 @@ function AdminPage() {
   const typedUser = user as AppUser | null;
   const isSuperAdmin = isSuperAdminCheck(typedUser);
   
+  // DEBUG
+  console.log('[AdminPage] isSuperAdmin:', isSuperAdmin, '| typedUser.email:', typedUser?.email);
+  
   const canEditProjects = isSuperAdmin || (typedUser?.permissions?.canEditProjects ?? true);
   
   useEffect(() => {
