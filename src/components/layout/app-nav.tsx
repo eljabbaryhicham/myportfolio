@@ -178,7 +178,7 @@ export function AppNav() {
 
   if (hasMounted && isMobile) {
     return (
-      <div className="w-full flex-shrink-0 p-2">
+      <div className="w-full flex-shrink-0 p-2 nav-slide-in">
         <div className={cn(
           "flex h-[7vh] min-h-[60px] flex-row items-center justify-between rounded-lg border border-border/50 glass-effect px-2"
           )}>
