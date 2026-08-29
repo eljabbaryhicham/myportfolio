@@ -25,6 +25,7 @@ export function cleanVideoUrl(input?: string | null): string | undefined {
   cleanRest = cleanRest.replace(/^([^/]+)\/\1\//, '$1/');
   // Also handle the specific known duplication: f_auto,q_auto repeated
   cleanRest = cleanRest.replace(/^(f_auto[^/]*\/)\1/, '$1');
+  cleanRest = cleanRest.replace(/,fl_loop/gi, '').replace(/fl_loop,/gi, '').replace(/\/fl_loop\//gi, '/');
 
   const cleanPath = '/' + resourceType + '/upload/' + cleanRest;
 

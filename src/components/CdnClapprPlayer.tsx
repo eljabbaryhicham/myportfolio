@@ -27,6 +27,7 @@ const CdnClapprPlayer = forwardRef(function CdnClapprPlayer({ source, poster, au
   // Latch: hide preloader the moment playback starts; never re-show on
   // later loadstart/buffering.
   const [hasPlayed, setHasPlayed] = useState(false);
+  const wasPlayingBeforePauseRef = useRef(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -164,9 +165,10 @@ const CdnClapprPlayer = forwardRef(function CdnClapprPlayer({ source, poster, au
     if (!player) return;
     try {
       if (autoPlay) {
-        // Try to play if autoPlay became true (e.g., dialog closed)
-        if (typeof player.play === 'function' && !player.isPlaying?.()) player.play();
+        if (wasPlayingBeforePauseRef.current && typeof player.play === 'function' && !player.isPlaying?.()) player.play();
+        wasPlayingBeforePauseRef.current = false;
       } else {
+        wasPlayingBeforePauseRef.current = typeof player.isPlaying === 'function' ? !!player.isPlaying() : false;
         if (typeof player.pause === 'function') player.pause();
       }
     } catch {}

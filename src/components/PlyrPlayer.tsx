@@ -29,6 +29,7 @@ const PlyrPlayer = forwardRef(({ source, poster, autoPlay = true, thumbnailVttUr
   // later loadstart/buffering.
   const [hasPlayed, setHasPlayed] = useState(false);
   const playerReadyRef = useRef(false);
+  const wasPlayingBeforePauseRef = useRef(false);
 
   useImperativeHandle(ref, () => ({
     isLoading: !hasPlayed,
@@ -244,11 +245,13 @@ const PlyrPlayer = forwardRef(({ source, poster, autoPlay = true, thumbnailVttUr
     if (!player) return;
     try {
       if (autoPlay) {
-        if (!player.playing) {
+        if (wasPlayingBeforePauseRef.current && !player.playing) {
           const p = (player.play() as unknown) as Promise<void> | void;
           if (p && typeof (p as Promise<void>).catch === 'function') (p as Promise<void>).catch(() => {});
         }
+        wasPlayingBeforePauseRef.current = false;
       } else {
+        wasPlayingBeforePauseRef.current = !!player.playing;
         if (player.playing) player.pause();
       }
     } catch {}
