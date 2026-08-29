@@ -9,7 +9,6 @@ interface PreloaderSettings {
   preloaderType?: 'default' | 'lottie' | 'gif' | 'webm';
   preloaderUrl?: string;
   preloaderSize?: number;
-  sitePreloaderSize?: number;
 }
 
 let cachedSettings: PreloaderSettings | null = null;
@@ -25,7 +24,6 @@ function usePreloaderSettingsFromContext(): PreloaderSettings | null {
     preloaderType: settings.preloaderType,
     preloaderUrl: settings.preloaderUrl,
     preloaderSize: settings.preloaderSize,
-    sitePreloaderSize: settings.sitePreloaderSize,
   };
 }
 
@@ -106,17 +104,13 @@ const WebmLoader = ({ url, size }: { url: string; size?: number }) => {
   );
 };
 
-const Preloader = ({ settings, fullscreen }: { settings?: PreloaderSettings; fullscreen?: boolean }) => {
+const Preloader = ({ settings }: { settings?: PreloaderSettings }) => {
   const fromContext = usePreloaderSettingsFromContext();
   const active = settings || fromContext || cachedSettings;
 
   const type = active?.preloaderType || 'default';
   const url = active?.preloaderUrl || '';
-  // `fullscreen` preloaders (full-screen site overlay) use the dedicated
-  // sitePreloaderSize, falling back to the generic preloaderSize when unset.
-  const size = fullscreen
-    ? (active?.sitePreloaderSize || active?.preloaderSize || 15)
-    : (active?.preloaderSize || 15);
+  const size = active?.preloaderSize || 15;
 
   if (type === 'gif' && url) return <GifLoader url={url} size={size} />;
   if (type === 'webm' && url) return <WebmLoader url={url} size={size} />;

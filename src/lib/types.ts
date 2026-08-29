@@ -34,7 +34,6 @@ export interface HomePageSettings {
   preloaderType?: 'default' | 'lottie' | 'gif' | 'webm';
   preloaderUrl?: string;
   preloaderSize?: number;
-  sitePreloaderSize?: number;
   isArrowAnimationEnabled?: boolean;
   arrowLottieUrl?: string;
 
