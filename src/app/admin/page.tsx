@@ -58,7 +58,7 @@ function AdminPage() {
   const [dialogActiveLibrary, setDialogActiveLibrary] = useState<'primary' | 'extented'>('primary');
   const [isVercelLibraryOpen, setIsVercelLibraryOpen] = useState(false);
   const [vercelActiveTab, setVercelActiveTab] = useState<'images' | 'videos' | 'files'>('images');
-  const { setActiveMediaTab, completedUpload } = useUploadProgress();
+  const { setActiveMediaTab, completedUpload, consumeCompletedUpload } = useUploadProgress();
 
   const timeoutsRef = useRef<ReturnType<typeof setTimeout>[]>([]);
   const safeTimeout = useCallback((fn: () => void, delay: number) => {
@@ -175,6 +175,14 @@ function AdminPage() {
 
   useEffect(() => {
     if (!completedUpload) return;
+    // Uploads from inside the unified media picker stay inside the picker —
+    // don't yank the user out of their current form by switching tabs. The
+    // picker surfaces the new file via its own Firestore listener and
+    // highlight effect.
+    if (completedUpload.source === 'media-picker') {
+      consumeCompletedUpload();
+      return;
+    }
     const { docId, resourceType, libraryId } = completedUpload;
     setNewlyUploadedId(docId);
     if (activeTab !== 'media') {
@@ -188,7 +196,7 @@ function AdminPage() {
     }
     // Both Vercel Blob and Cloudinary: don't consume here — components handle their own popups
     safeTimeout(() => setNewlyUploadedId(null), 3000);
-  }, [completedUpload, activeTab, setActiveTab]);
+  }, [completedUpload, activeTab, setActiveTab, consumeCompletedUpload]);
 
 
   const handleLogout = async (isUnauthorized = false) => {
