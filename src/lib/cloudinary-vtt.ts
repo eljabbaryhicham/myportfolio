@@ -50,8 +50,11 @@ export function deriveCloudinarySpriteVtt(sourceUrl: string | null | undefined):
   const versionIdx = rest.findIndex((seg) => /^v\d+$/.test(seg));
   const versionPart = versionIdx >= 0 ? rest[versionIdx] : '';
 
-  // Rebuild with a single `fl_sprite` flag and the `.vtt` extension.
-  const transformPart = 'fl_sprite';
+  // Rebuild with a single `fl_sprite` flag and the `.vtt` extension. We also
+  // request a higher-resolution sprite (w_480,q_auto) so the preview tiles are
+  // noticeably sharper than Cloudinary's ~160px default, while q_auto keeps the
+  // file size reasonable.
+  const transformPart = 'w_480,q_auto/fl_sprite';
   const versionPath = versionPart ? `/${versionPart}` : '';
   const encodedPublicId = publicId.split('/').map(encodeURIComponent).join('/');
   const search = url.search ? url.search : '';
