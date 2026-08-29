@@ -61,6 +61,10 @@ export default function UploadProgressNotification() {
         if (detail.docId) return c.docId !== detail.docId;
         return false;
       }));
+      // Also dismiss any lingering "Uploading to ..." progress card for the
+      // same provider — the upload has clearly finished and the new file is
+      // now visible in the active surface, so the progress toast is noise.
+      setDismissedActive(prev => prev.includes(detail.provider as 'vercel' | 'cloudinary') ? prev : [...prev, detail.provider as 'vercel' | 'cloudinary']);
     };
     window.addEventListener('media-upload-highlighted', handler);
     return () => window.removeEventListener('media-upload-highlighted', handler);
