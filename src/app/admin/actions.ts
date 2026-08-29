@@ -47,6 +47,12 @@ export async function syncAuthUsersToFirestore(idToken: string): Promise<{
     const auth = admin.auth(app);
     const db = admin.firestore(app);
 
+    // DEBUG
+    const allAuthUsers = await auth.listUsers(1000);
+    const allFirestoreUsers = await db.collection('users').get();
+    console.log('[DEBUG] Auth UIDs:', allAuthUsers.users.map(u => u.uid));
+    console.log('[DEBUG] Firestore doc IDs:', allFirestoreUsers.docs.map(d => d.id));
+
     // Fetch all Firebase Auth users (handles pagination automatically)
     const authUsers: Array<{ uid: string; email: string }> = [];
     let pageToken: string | null = null;
