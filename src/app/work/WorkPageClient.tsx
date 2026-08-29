@@ -34,7 +34,7 @@ import dynamic from 'next/dynamic';
 import { useTranslation } from '@/lib/i18n/useTranslation';
 import { getLocalizedString } from '@/lib/i18n/multilingual';
 import { isSuperAdmin as isSuperAdminCheck } from '@/lib/constants';
-import { cleanVideoUrl, lowQualityVideoUrl } from '@/lib/video';
+import { cleanVideoUrl, webmVideoUrl } from '@/lib/video';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeRaw from 'rehype-raw';
@@ -511,7 +511,7 @@ const PortfolioGridItem = ({ item, onClick, onEditClick, isAdmin, isSuperAdmin, 
   // Lets admins give HLS-only projects a lightweight mp4/webm preview.
   const previewSource = item.previewUrl || item.sourceUrl;
 
-  const hoverSource = item.previewUrl ? previewSource : lowQualityVideoUrl(previewSource);
+  const hoverSource = item.previewUrl ? previewSource : webmVideoUrl(previewSource);
 
   const canHover = () =>
     typeof window !== 'undefined' && !window.matchMedia('(hover: none)').matches;
