@@ -58,10 +58,13 @@ export const useUser = (): { user: AppUser | null, isUserLoading: boolean, userE
 
     if (userDoc) {
       // If a document exists in Firestore, combine it with the auth data.
+      // Prefer auth email but fall back to Firestore email (some auth sessions
+      // don't include the email, e.g. certain Firebase Auth configurations).
+      const email = authUser.email ?? userDoc.email ?? null;
       setAppUser({
         ...userDoc,
         uid: authUser.uid,
-        email: authUser.email,
+        email,
       });
     } else {
         // If no document exists, fall back to just auth data.
