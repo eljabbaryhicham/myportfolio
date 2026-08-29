@@ -77,14 +77,17 @@ export function forceAutoplay(
     if (interval) clearInterval(interval);
     interval = null;
     video.removeEventListener('playing', playingHandler);
+    video.removeEventListener('pause', pausedHandler);
     video.removeEventListener('loadedmetadata', playAttempt);
     video.removeEventListener('canplay', playAttempt);
     video.removeEventListener('loadeddata', playAttempt);
   };
 
   const playingHandler = () => markStarted();
+  const pausedHandler = () => cleanup();
 
   video.addEventListener('playing', playingHandler);
+  video.addEventListener('pause', pausedHandler);
   video.addEventListener('loadedmetadata', playAttempt);
   video.addEventListener('canplay', playAttempt);
   video.addEventListener('loadeddata', playAttempt);

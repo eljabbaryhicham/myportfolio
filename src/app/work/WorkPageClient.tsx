@@ -707,6 +707,7 @@ function WorkPageContent() {
   
   const [visibleItemsCount, setVisibleItemsCount] = useState<number | null>(null);
   const [itemsPerLoad, setItemsPerLoad] = useState<number>(12);
+  const [gridColumnCount, setGridColumnCount] = useState<number | null>(null);
 
   const [fullscreenImageUrl, setFullscreenImageUrl] = useState<string | null>(null);
   const [isClient, setIsClient] = useState(false);
@@ -749,14 +750,12 @@ function WorkPageContent() {
   }, [allItems, filter]);
   
   const calculateAndSetItems = useCallback(() => {
-    if (isMobile) {
-        const mobileInitialLoad = 8;
-        setItemsPerLoad(mobileInitialLoad);
-        setVisibleItemsCount(prev => prev === null ? mobileInitialLoad - 1 : prev);
-        return;
-    }
+    const calcColumnCount = (width: number) => Math.max(2, Math.floor((width + 16) / (300 + 16)));
 
     if (isMobile) {
+        setGridColumnCount(
+          typeof window !== 'undefined' ? calcColumnCount(window.innerWidth) : null
+        );
         const mobileInitialLoad = 8;
         setItemsPerLoad(mobileInitialLoad);
         setVisibleItemsCount(prev => prev === null ? mobileInitialLoad - 1 : prev);
@@ -764,12 +763,13 @@ function WorkPageContent() {
     }
 
     if (gridRef.current) {
-        const itemMinWidth = 300; // Corresponds to `minmax(300px, 1fr)`
+        const itemMinWidth = 300; // Corresponds to the grid's item width basis
         const gridGap = 16; // Corresponds to `gap-4`
 
         const gridWidth = gridRef.current.offsetWidth;
-        const columnCount = Math.max(1, Math.floor((gridWidth + gridGap) / (itemMinWidth + gridGap)));
-        
+        const columnCount = calcColumnCount(gridWidth);
+        setGridColumnCount(columnCount);
+
         const itemHeightWithGap = (gridWidth / columnCount);
         
         const gridHeight = window.innerHeight * 0.8;
@@ -786,12 +786,9 @@ function WorkPageContent() {
     // reasonable default based on viewport so projects still appear, and let
     // the resize listener recompute once the ref is in place.
     if (typeof window !== 'undefined') {
-      const fallbackMinWidth = 300;
       const fallbackGap = 16;
-      const fallbackColumnCount = Math.max(
-        1,
-        Math.floor((window.innerWidth + fallbackGap) / (fallbackMinWidth + fallbackGap))
-      );
+      const fallbackColumnCount = calcColumnCount(window.innerWidth);
+      setGridColumnCount(fallbackColumnCount);
       const fallbackRowCount = Math.max(
         1,
         Math.floor((window.innerHeight * 0.8) / ((window.innerWidth / fallbackColumnCount) + fallbackGap))
@@ -1125,8 +1122,8 @@ function WorkPageContent() {
     },
   };
   
-  const gridStyle = hasMounted && isMobile
-    ? { gridTemplateColumns: 'repeat(2, 1fr)' }
+  const gridStyle = gridColumnCount
+    ? { gridTemplateColumns: `repeat(${gridColumnCount}, minmax(0, 1fr))` }
     : { gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))' };
 
   const logoUrl = homeSettings?.homePageLogoUrl || contactInfo?.logoUrl;
