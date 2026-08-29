@@ -32,11 +32,11 @@ import NewAdminForm from './NewAdminForm';
 interface AdminUser {
     id: string;
     uid: string;
-    username: string;
+    username?: string;
     email: string;
     role: 'admin' | 'superadmin';
     createdAt: string;
-    permissions: {
+    permissions?: {
       canUploadMedia: boolean;
       canDeleteMedia: boolean;
       canEditProjects: boolean;
@@ -45,11 +45,11 @@ interface AdminUser {
       canEditHome: boolean;
     }
 }
-type Permissions = AdminUser['permissions'];
+type Permissions = NonNullable<AdminUser['permissions']>;
 
 function PermissionsDialog({ user, isOpen, onOpenChange, onSave }: { user: AdminUser, isOpen: boolean, onOpenChange: (open: boolean) => void, onSave: (permissions: Permissions) => void }) {
     const { t } = useTranslation();
-    const [permissions, setPermissions] = useState<Permissions>(user.permissions || {});
+    const [permissions, setPermissions] = useState<Permissions>(user.permissions ?? ({} as Permissions));
     
     const handlePermissionChange = (permission: keyof Permissions, value: boolean) => {
         setPermissions(prev => ({ ...prev, [permission]: value }));
@@ -73,7 +73,7 @@ function PermissionsDialog({ user, isOpen, onOpenChange, onSave }: { user: Admin
         <Dialog open={isOpen} onOpenChange={onOpenChange}>
             <DialogContent className="w-[80vw] glass-effect">
                 <DialogHeader>
-                    <DialogTitle className="font-headline">{t('adminMgmt.editPermissions').replace('{user}', user.username)}</DialogTitle>
+                      <DialogTitle className="font-headline">{t('adminMgmt.editPermissions').replace('{user}', user.username || user.email || 'Unknown')}</DialogTitle>
                     <DialogDescription>
                         {t('adminMgmt.editPermissionsDescription')}
                     </DialogDescription>
@@ -161,7 +161,7 @@ export default function AdminManagement() {
     updateDocumentNonBlocking(userDocRef, { permissions });
     toast({
         title: t('adminMgmt.toast.permissionsUpdated.title'),
-        description: t('adminMgmt.toast.permissionsUpdated.description').replace('{user}', selectedUser.username),
+        description: t('adminMgmt.toast.permissionsUpdated.description').replace('{user}', selectedUser.username || selectedUser.email || 'Unknown'),
     });
   };
 
@@ -239,7 +239,7 @@ export default function AdminManagement() {
                           <div key={user.id} className="p-4 rounded-lg bg-black/10 border border-white/10">
                               <div className='flex justify-between items-start'>
                                   <div>
-                                      <p className="font-bold">{user.username}</p>
+                                      <p className="font-bold">{user.username || user.email || 'Unknown'}</p>
                                       <p className="text-sm text-muted-foreground">{user.email}</p>
                                   </div>
                                   <Badge variant={user.role === 'superadmin' ? 'destructive' : 'secondary'} className="ml-2 whitespace-nowrap">
@@ -255,7 +255,7 @@ export default function AdminManagement() {
                                       </Button>
                                   ) : <div />}
                                   {user.role !== 'superadmin' && (
-                                      <Button variant="ghost" size="icon" onClick={() => handleDeleteUser(user.id, user.username)} disabled={!isSuperAdmin}>
+                                      <Button variant="ghost" size="icon" onClick={() => handleDeleteUser(user.id, user.username || user.email || 'Unknown')} disabled={!isSuperAdmin}>
                                           <FontAwesomeIcon icon={faTrash} className="h-4 w-4 text-destructive" />
                                       </Button>
                                   )}
@@ -282,7 +282,7 @@ export default function AdminManagement() {
                       <TableBody>
                       {displayedUsers.map((user) => (
                           <TableRow key={user.id}>
-                          <TableCell className="font-medium">{user.username}</TableCell>
+                          <TableCell className="font-medium">{user.username || user.email || 'Unknown'}</TableCell>
                           <TableCell>{user.email}</TableCell>
                           <TableCell>
                               <Badge variant={user.role === 'superadmin' ? 'destructive' : 'secondary'}>
@@ -301,7 +301,7 @@ export default function AdminManagement() {
                           </TableCell>
                           <TableCell className="text-right">
                               {user.role !== 'superadmin' && (
-                              <Button variant="ghost" size="icon" onClick={() => handleDeleteUser(user.id, user.username)} disabled={!isSuperAdmin}>
+                              <Button variant="ghost" size="icon" onClick={() => handleDeleteUser(user.id, user.username || user.email || 'Unknown')} disabled={!isSuperAdmin}>
                                       <FontAwesomeIcon icon={faTrash} className="h-4 w-4 text-destructive" />
                               </Button>
                               )}
