@@ -200,10 +200,10 @@ export function AppNav() {
             // Always reserve the logo slot so nav items don't shift when
             // the logo URL resolves asynchronously.
             if (!logoUrl) {
-              return <div className="mt-4" style={{ width: 'var(--menubar-logo-size)', height: 'var(--menubar-logo-size)' }} aria-hidden="true" />;
+              return <div className="mt-4 hidden md:block" style={{ width: 'var(--menubar-logo-size)', height: 'var(--menubar-logo-size)' }} aria-hidden="true" />;
             }
             return (
-                <Link href="/" className="relative group mt-4">
+                <Link href="/" className="relative group mt-4 hidden md:block">
                     <div className="relative flex items-center justify-center" style={{ width: 'var(--menubar-logo-size)', height: 'var(--menubar-logo-size)' }}>
                         <div className="absolute inset-0 rounded-full animate-spinning-circle-border bg-gradient-to-r from-primary via-transparent to-transparent"></div>
                         <div className="relative bg-transparent rounded-full p-1 flex items-center justify-center" style={{ width: 'calc(var(--menubar-logo-size) - 8px)', height: 'calc(var(--menubar-logo-size) - 8px)' }}>
