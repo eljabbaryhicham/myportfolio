@@ -72,7 +72,11 @@ service cloud.firestore {
       allow get, list: if isAdmin();
       allow create: if hasPerm('canUploadMedia');
       allow delete: if hasPerm('canDeleteMedia');
-      allow update: if false;
+      // Media docs are immutable references to storage; the only allowed update
+      // is the admin-organization color tag field.
+      allow update: if isAdmin()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['tag'])
+        && (request.resource.data.tag == null || request.resource.data.tag in ['green', 'red', 'orange', 'blue']);
     }
 
     // Media metadata: admin-only, gated by explicit perms.
@@ -80,7 +84,11 @@ service cloud.firestore {
       allow list, get: if isAdmin();
       allow create: if hasPerm('canUploadMedia');
       allow delete: if hasPerm('canDeleteMedia');
-      allow update: if false;
+      // Media docs are immutable references to storage; the only allowed update
+      // is the admin-organization color tag field.
+      allow update: if isAdmin()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['tag'])
+        && (request.resource.data.tag == null || request.resource.data.tag in ['green', 'red', 'orange', 'blue']);
     }
 
     // Users:

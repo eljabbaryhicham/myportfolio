@@ -11,7 +11,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Input } from '@/components/ui/input';
 import Image from 'next/image';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCloudUploadAlt, faCopy, faTrash, faFilm, faFileImage, faFileLines, faXmark, faPlus, faEye, faFolderOpen, faLink, faUniversity, faStar, faPhotoFilm, faSpinner, faMinus, faShare } from '@fortawesome/free-solid-svg-icons';
+import { faCloudUploadAlt, faCopy, faTrash, faFilm, faFileImage, faFileLines, faXmark, faPlus, faEye, faFolderOpen, faLink, faUniversity, faStar, faPhotoFilm, faSpinner, faMinus, faShare, faTag } from '@fortawesome/free-solid-svg-icons';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
@@ -48,6 +48,8 @@ import BulkActionBar from './BulkActionBar';
 
 export type MediaLibraryProvider = 'cloudinary' | 'vercel_blob';
 
+export type MediaTag = 'green' | 'red' | 'orange' | 'blue';
+
 // Cloudinary asset
 export interface MediaAsset {
   id: string;
@@ -59,6 +61,7 @@ export interface MediaAsset {
   libraryId?: 'primary' | 'extented';
   videoFormat?: 'mp4' | 'm3u8' | 'webm';
   title?: string;
+  tag?: MediaTag;
 }
 
 // Vercel Blob document
@@ -71,6 +74,7 @@ interface VercelBlobDoc {
   contentType: string;
   filename: string;
   uploadedAt?: any;
+  tag?: MediaTag;
 }
 
 // Unified file type used internally
@@ -85,6 +89,7 @@ type UnifiedFile = {
   public_id?: string;
   libraryId?: 'primary' | 'extented';
   videoFormat?: 'mp4' | 'm3u8' | 'webm';
+  tag?: MediaTag;
   // Raw Firestore doc reference for deletion
   _raw: MediaAsset | VercelBlobDoc;
 };
@@ -124,6 +129,20 @@ function formatBytes(bytes: number) {
   const i = Math.floor(Math.log(bytes) / Math.log(k));
   return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
 }
+
+const TAG_COLORS: Record<MediaTag, string> = {
+  green: 'bg-green-500',
+  red: 'bg-red-500',
+  orange: 'bg-orange-500',
+  blue: 'bg-blue-500',
+};
+
+const TAG_TEXT_COLORS: Record<MediaTag, string> = {
+  green: 'text-green-500',
+  red: 'text-red-500',
+  orange: 'text-orange-500',
+  blue: 'text-blue-500',
+};
 
 // ---------------------------------------------------------------------------
 // Props
@@ -193,6 +212,7 @@ const FileCard = ({
   onToggleSelect,
   showCheckbox,
   onRequestFormatSelect,
+  onSetTag,
 }: {
   file: UnifiedFile;
   provider: MediaLibraryProvider;
@@ -212,6 +232,7 @@ const FileCard = ({
   onToggleSelect?: (id: string) => void;
   showCheckbox?: boolean;
   onRequestFormatSelect?: (file: UnifiedFile) => void;
+  onSetTag: (file: UnifiedFile, tag: MediaTag | null) => void;
 }) => {
   const { t } = useTranslation();
 
@@ -243,6 +264,16 @@ const FileCard = ({
               className="bg-background/80 backdrop-blur-sm"
             />
           </div>
+        )}
+        {file.tag && (
+          <div
+            className={cn(
+              "absolute top-2 z-20 h-4 w-4 rounded-full border-2 border-white shadow-md",
+              showCheckbox && !isSelectionMode ? "left-9" : "left-2",
+              TAG_COLORS[file.tag]
+            )}
+            title={t('mediaAdmin.tag.select')}
+          />
         )}
         <div className="relative w-full h-full rounded-md overflow-hidden">
           {file.resourceType === 'image' ? (
@@ -282,6 +313,30 @@ const FileCard = ({
               <Button size="icon" variant="ghost" onClick={() => onPreview(file)} title={t('mediaAdmin.preview')} className="h-8 w-8 md:h-10 md:w-10 text-white glass-effect">
                 <FontAwesomeIcon icon={faEye} />
               </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button size="icon" variant="secondary" title={t('mediaAdmin.tag')} className="h-8 w-8 md:h-10 md:w-10 glass-effect">
+                    <FontAwesomeIcon icon={faTag} className={file.tag ? TAG_TEXT_COLORS[file.tag] : ''} />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent onClick={(e) => e.stopPropagation()}>
+                  <DropdownMenuLabel>{t('mediaAdmin.tag.select')}</DropdownMenuLabel>
+                  <DropdownMenuItem onClick={() => onSetTag(file, 'green')}>
+                    <span className={cn("h-3 w-3 rounded-full", TAG_COLORS.green)} /> {t('mediaAdmin.tag.green')}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => onSetTag(file, 'red')}>
+                    <span className={cn("h-3 w-3 rounded-full", TAG_COLORS.red)} /> {t('mediaAdmin.tag.red')}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => onSetTag(file, 'orange')}>
+                    <span className={cn("h-3 w-3 rounded-full", TAG_COLORS.orange)} /> {t('mediaAdmin.tag.orange')}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => onSetTag(file, 'blue')}>
+                    <span className={cn("h-3 w-3 rounded-full", TAG_COLORS.blue)} /> {t('mediaAdmin.tag.blue')}
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => onSetTag(file, null)}>{t('mediaAdmin.tag.remove')}</DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
               {file.resourceType !== 'raw' && (
                 <Button size="icon" variant="default" onClick={() => onMediaSelect(file.url, file.resourceType, file.filename)} title={t('mediaAdmin.createProject')} className="h-8 w-8 md:h-10 md:w-10 glass-effect">
                   <FontAwesomeIcon icon={faPlus} />
@@ -614,7 +669,8 @@ export default forwardRef<MediaLibraryRef, MediaLibraryProps>(function MediaLibr
           const unified: UnifiedFile = {
             id: asset.id, url: asset.url, filename: asset.filename,
             resourceType: asset.resource_type, public_id: asset.public_id,
-            libraryId: asset.libraryId, videoFormat: asset.videoFormat, _raw: asset,
+            libraryId: asset.libraryId, videoFormat: asset.videoFormat,
+            tag: asset.tag, _raw: asset,
           };
           if (asset.resource_type === 'image') images.push(unified);
           else if (asset.resource_type === 'video') videos.push(unified);
@@ -630,7 +686,8 @@ export default forwardRef<MediaLibraryRef, MediaLibraryProps>(function MediaLibr
           const unified: UnifiedFile = {
             id: blob.id, url: blob.url, filename: blob.filename,
             resourceType: isImage ? 'image' : isVideo ? 'video' : 'raw',
-            size: blob.size, contentType: blob.contentType, _raw: blob,
+            size: blob.size, contentType: blob.contentType,
+            tag: blob.tag, _raw: blob,
           };
           if (isImage) images.push(unified);
           else if (isVideo) videos.push(unified);
@@ -1100,6 +1157,14 @@ for (const file of files) {
     toast({ title: t('mediaAdmin.toast.copied.title'), description: t('mediaAdmin.toast.copied.description') });
   };
 
+  // ---- Set tag (admin organization only) ----
+  const handleSetTag = (file: UnifiedFile, tag: MediaTag | null) => {
+    if (!firestore) return;
+    const colName = provider === 'cloudinary' ? 'media' : 'vercel_blobs';
+    setDocumentNonBlocking(doc(firestore, colName, file.id), { tag }, { merge: true });
+    toast({ title: tag ? t('mediaAdmin.tag') : t('mediaAdmin.tag.remove') });
+  };
+
   // ---- Share Upload Link ----
   const handleShareLink = (url: string, filename: string) => {
     setShareDialogState({ isOpen: true, url, filename });
@@ -1258,6 +1323,7 @@ for (const file of files) {
             isSelectionMode={!!(isDialog && dialogProps?.isSelectionMode)}
             canDelete={canDelete} canEditContact={canEditContact} canEditHome={canEditHome}
             isSelected={selectedIds.has(file.id)} onToggleSelect={handleToggleSelect} showCheckbox={showBulkSelect}
+            onSetTag={handleSetTag}
           />
         ))}
       </div>

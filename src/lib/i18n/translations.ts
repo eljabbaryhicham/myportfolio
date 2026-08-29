@@ -408,6 +408,13 @@ const en: Record<string, string> = {
   'mediaAdmin.toast.projectCreated.description': 'A hidden project was created for this background video.',
   'mediaAdmin.toast.backgroundUpdated.title': 'Background Updated',
   'mediaAdmin.toast.backgroundUpdated.description': 'The background for the {page} has been set.',
+  'mediaAdmin.tag': 'Tag',
+  'mediaAdmin.tag.select': 'Select tag color',
+  'mediaAdmin.tag.remove': 'Remove tag',
+  'mediaAdmin.tag.green': 'Green',
+  'mediaAdmin.tag.red': 'Red',
+  'mediaAdmin.tag.orange': 'Orange',
+  'mediaAdmin.tag.blue': 'Blue',
 
   /* AboutAdmin */
   'aboutAdmin.title': 'Client Management',
@@ -992,6 +999,13 @@ const fr: Record<string, string> = {
   'mediaAdmin.toast.projectCreated.description': 'Un projet masqué a été créé pour cette vidéo de fond.',
   'mediaAdmin.toast.backgroundUpdated.title': 'Fond mis à jour',
   'mediaAdmin.toast.backgroundUpdated.description': 'Le fond pour {page} a été défini.',
+  'mediaAdmin.tag': 'Étiquette',
+  'mediaAdmin.tag.select': 'Choisir une couleur',
+  'mediaAdmin.tag.remove': 'Retirer l\'étiquette',
+  'mediaAdmin.tag.green': 'Vert',
+  'mediaAdmin.tag.red': 'Rouge',
+  'mediaAdmin.tag.orange': 'Orange',
+  'mediaAdmin.tag.blue': 'Bleu',
 
   /* AboutAdmin */
   'aboutAdmin.title': 'Gestion des clients',
