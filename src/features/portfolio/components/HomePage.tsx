@@ -270,7 +270,7 @@ export default function HomePageContent() {
               exit={{ opacity: 0 }}
               transition={{ duration: 0.35 }}
             >
-              <Preloader />
+              <Preloader fullscreen />
             </motion.div>
           )}
         </AnimatePresence>
