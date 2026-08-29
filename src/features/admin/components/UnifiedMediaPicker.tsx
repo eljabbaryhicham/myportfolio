@@ -37,6 +37,8 @@ const hlsVariant = (url: string): string => {
   const stripped = stripTransforms(url).replace(/\.[a-z0-9]+$/i, '.m3u8');
   return withTransform(stripped, 'sp_auto');
 };
+const lowQualityVariant = (url: string): string =>
+  withTransform(stripTransforms(url), 'f_mp4,w_480,q_1').replace(/\.(m3u8|webm|mp4|mov|jpeg|jpg|png|gif|webp|avif)$/i, '.mp4');
 
 type MediaAsset = {
   id: string;
@@ -458,6 +460,9 @@ export default function UnifiedMediaPicker({ isOpen, onOpenChange, onMediaSelect
               </Button>
               <Button onClick={() => { if (formatChoiceAsset) { handleSelect(hlsVariant(formatChoiceAsset.url), 'video', formatChoiceAsset.filename); } }} variant="outline" className="justify-start">
                 <FontAwesomeIcon icon={faFilm} className="mr-2 h-4 w-4" /> HLS (m3u8)
+              </Button>
+              <Button onClick={() => { if (formatChoiceAsset) { handleSelect(lowQualityVariant(formatChoiceAsset.url), 'video', formatChoiceAsset.filename); } }} variant="outline" className="justify-start">
+                <FontAwesomeIcon icon={faFilm} className="mr-2 h-4 w-4" /> {t('mediaAdmin.lowQuality')}
               </Button>
               <Button onClick={() => { if (formatChoiceAsset) { handleSelect(formatChoiceAsset.url, 'video', formatChoiceAsset.filename); } }} variant="ghost" className="justify-start text-muted-foreground">
                 {t('mediaAdmin.copy.default') || 'Original'}

@@ -32,3 +32,18 @@ export function cleanVideoUrl(input?: string | null): string | undefined {
   // keep HLS (.m3u8) manifests as-is so they can be streamed.
   return (base + cleanPath).replace(/\.(webm|mov)$/i, '.mp4');
 }
+
+export function lowQualityVideoUrl(input?: string | null): string | undefined {
+  if (!input) return undefined;
+
+  const m = input.match(/^(https?:\/\/[^/]+\/[^/]+)\/(image|video|raw)\/upload\/(.*)$/i);
+  if (!m) return input;
+  if (input.includes('.m3u8')) return input;
+  if (input.includes('q_1')) return input;
+
+  const [, base, resourceType] = m;
+  const stripped = input.replace(/^(.*?\/upload\/)(?:[^/]+)?(\/v\d+\/)/, '$1$2');
+  const id = stripped.slice(stripped.indexOf('/upload/') + '/upload/'.length);
+  return `${base}/${resourceType}/upload/f_mp4,w_480,q_1/${id}`
+    .replace(/\.(m3u8|webm|mp4|mov|jpeg|jpg|png|gif|webp|avif)$/i, '.mp4');
+}
