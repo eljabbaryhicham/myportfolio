@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
@@ -13,6 +13,7 @@ import { collection, query, orderBy } from 'firebase/firestore';
 import { useTranslation } from '@/lib/i18n/useTranslation';
 import Preloader from '@/components/preloader';
 import { useMediaProvider } from '@/hooks/use-media-provider';
+import { useUploadProgress } from '@/components/upload-progress-context';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { useDropzone } from 'react-dropzone';
@@ -77,6 +78,20 @@ export default function UnifiedMediaPicker({ isOpen, onOpenChange, onMediaSelect
   const [searchQuery, setSearchQuery] = useState('');
   const [formatChoiceAsset, setFormatChoiceAsset] = useState<{ url: string; resourceType: 'image' | 'video' | 'raw'; filename: string } | null>(null);
   const [isUrlDialogOpen, setIsUrlDialogOpen] = useState(false);
+  const [newlyUploadedId, setNewlyUploadedId] = useState<string | null>(null);
+
+  const { completedUpload, consumeCompletedUpload } = useUploadProgress();
+
+  // Highlight files uploaded from inside this picker, then clear the marker so
+  // we don't re-highlight on subsequent mounts or re-renders.
+  useEffect(() => {
+    if (!completedUpload) return;
+    if (completedUpload.source !== 'media-picker') return;
+    setNewlyUploadedId(completedUpload.docId);
+    consumeCompletedUpload();
+    const t = setTimeout(() => setNewlyUploadedId(null), 3000);
+    return () => clearTimeout(t);
+  }, [completedUpload, consumeCompletedUpload]);
 
   // ---- Inline upload affordance ----
   // Lets the user drop a file (or paste a URL) without leaving the picker.
@@ -92,6 +107,7 @@ export default function UnifiedMediaPicker({ isOpen, onOpenChange, onMediaSelect
     provider: provider as 'cloudinary' | 'vercel',
     libraryId: provider === 'cloudinary' ? activeLibrary : undefined,
     enabled: canUpload,
+    source: 'media-picker',
   });
 
   const handleUploadedFile = useCallback(
@@ -208,8 +224,8 @@ export default function UnifiedMediaPicker({ isOpen, onOpenChange, onMediaSelect
     return (
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
         {filtered.map(file => (
-          <div key={file.id} className="flex flex-col gap-2 group cursor-pointer" onClick={() => handleItemClick({ url: file.url, resourceType: file.resource_type, filename: file.filename }, 'cloudinary')}>
-            <div className="relative aspect-square border rounded-lg overflow-hidden glass-effect p-1 group-hover:ring-2 group-hover:ring-primary transition-all">
+          <div key={file.id} className={cn("flex flex-col gap-2 group cursor-pointer", file.id === newlyUploadedId && "animate-pulse ring-2 ring-primary rounded-lg")} onClick={() => handleItemClick({ url: file.url, resourceType: file.resource_type, filename: file.filename }, 'cloudinary')}>
+            <div className={cn("relative aspect-square border rounded-lg overflow-hidden glass-effect p-1 group-hover:ring-2 group-hover:ring-primary transition-all", file.id === newlyUploadedId && "ring-2 ring-primary")}>
               <div className="relative w-full h-full rounded-md overflow-hidden">
                 {file.resource_type === 'image' ? (
                   <Image src={file.url} alt={file.filename} fill className="object-cover" />
@@ -262,8 +278,8 @@ export default function UnifiedMediaPicker({ isOpen, onOpenChange, onMediaSelect
           const isImage = b.contentType?.startsWith('image/');
           const mappedType: 'image' | 'video' | 'raw' = isImage ? 'image' : b.contentType?.startsWith('video/') ? 'video' : 'raw';
           return (
-            <div key={b.id} className="flex flex-col gap-2 group cursor-pointer" onClick={() => handleItemClick({ url: b.url, resourceType: mappedType, filename: b.filename }, 'vercel')}>
-              <div className="relative aspect-square border rounded-lg overflow-hidden glass-effect p-1 group-hover:ring-2 group-hover:ring-primary transition-all">
+            <div key={b.id} className={cn("flex flex-col gap-2 group cursor-pointer", b.id === newlyUploadedId && "animate-pulse ring-2 ring-primary rounded-lg")} onClick={() => handleItemClick({ url: b.url, resourceType: mappedType, filename: b.filename }, 'vercel')}>
+              <div className={cn("relative aspect-square border rounded-lg overflow-hidden glass-effect p-1 group-hover:ring-2 group-hover:ring-primary transition-all", b.id === newlyUploadedId && "ring-2 ring-primary")}>
                 <div className="relative w-full h-full rounded-md overflow-hidden bg-black/50 flex items-center justify-center">
                   {isImage ? (
                     // eslint-disable-next-line @next/next/no-img-element

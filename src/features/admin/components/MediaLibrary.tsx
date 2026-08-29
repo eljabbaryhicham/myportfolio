@@ -500,6 +500,13 @@ export default forwardRef<MediaLibraryRef, MediaLibraryProps>(function MediaLibr
     if (!completedUpload) return;
     if (provider === 'cloudinary' && completedUpload.libraryId === 'vercel_blob') return;
     if (provider === 'vercel_blob' && completedUpload.libraryId !== 'vercel_blob') return;
+    // When the upload originated from the media picker, don't pop the full
+    // library dialog over the top of it — the picker surfaces the new file
+    // through its own Firestore listener. Just consume the event.
+    if (completedUpload.source === 'media-picker') {
+      consumeCompletedUpload();
+      return;
+    }
     const { docId, resourceType, libraryId } = completedUpload;
     const tab = resourceType === 'video' ? 'videos' : resourceType === 'raw' ? 'files' : 'images';
     if (provider === 'cloudinary') {
@@ -828,7 +835,7 @@ for (const file of files) {
             const resourceType = file.type.startsWith('video/') ? 'video' : file.type.startsWith('image/') ? 'image' : 'raw';
             if (newId && props.onUploadComplete) props.onUploadComplete(newId, resourceType);
             if (newId) { setLocalNewlyUploadedId(newId); setTimeout(() => setLocalNewlyUploadedId(null), 3000); }
-            if (newId) signalCompletedUpload(newId, resourceType, 'vercel_blob', 'vercel', file.name);
+            if (newId) signalCompletedUpload(newId, resourceType, 'vercel_blob', 'vercel', file.name, 'media-library');
           } catch (e) { logger.error('MediaLibrary: Firestore add after Vercel upload failed', e); }
         }
       } catch (e: any) {
@@ -897,7 +904,7 @@ for (const file of files) {
         setLocalNewlyUploadedId(newId);
         setTimeout(() => setLocalNewlyUploadedId(null), 3000);
         const ct = (data.contentType || '').toLowerCase();
-        signalCompletedUpload(newId, ct.startsWith('image/') ? 'image' : ct.startsWith('video/') ? 'video' : 'raw', 'vercel_blob', 'vercel', (data.pathname || '').split('/').pop() || 'file');
+        signalCompletedUpload(newId, ct.startsWith('image/') ? 'image' : ct.startsWith('video/') ? 'video' : 'raw', 'vercel_blob', 'vercel', (data.pathname || '').split('/').pop() || 'file', 'media-library');
       }
       const tab = (data.contentType || '').toLowerCase().startsWith('image/') ? 'images' : (data.contentType || '').toLowerCase().startsWith('video/') ? 'videos' : 'files';
       setActiveTabFn(tab);
@@ -986,7 +993,7 @@ for (const file of files) {
             const docRefPromise = addDocumentNonBlocking(collection(firestore, 'media'), mediaData);
             const docRef = await docRefPromise as DocumentReference | undefined;
             if (docRef && !isDialog && props.onUploadComplete) props.onUploadComplete(docRef.id, response.resource_type, libraryId);
-            if (docRef) signalCompletedUpload(docRef.id, response.resource_type, libraryId, 'cloudinary', file.name);
+            if (docRef) signalCompletedUpload(docRef.id, response.resource_type, libraryId, 'cloudinary', file.name, 'media-library');
           }
         } else {
           const error = JSON.parse(xhr.responseText).error;
@@ -1203,7 +1210,7 @@ for (const file of files) {
   // ---- URL upload complete callback (Cloudinary AddFromUrlDialog) ----
   const handleCloudinaryUrlUploadComplete = (mediaId: string, resourceType: 'image' | 'video' | 'raw', libraryId: 'primary' | 'extented') => {
     if (!isDialog && props.onUploadComplete) props.onUploadComplete(mediaId, resourceType, libraryId);
-    signalCompletedUpload(mediaId, resourceType, libraryId, 'cloudinary');
+    signalCompletedUpload(mediaId, resourceType, libraryId, 'cloudinary', undefined, 'media-library');
   };
 
   // ---- Render: library grid ----

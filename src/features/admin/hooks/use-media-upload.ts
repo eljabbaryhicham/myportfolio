@@ -35,6 +35,12 @@ export interface UseMediaUploadOptions {
   libraryId?: LibraryId;
   /** When false, hides the upload affordance and makes upload() no-op. */
   enabled?: boolean;
+  /**
+   * Where the upload was initiated from. Lets consumers (e.g. MediaLibrary)
+   * decide whether the "completed upload" event should auto-open the full
+   * library dialog or stay inside the originating surface (e.g. media picker).
+   */
+  source?: 'media-library' | 'media-picker';
 }
 
 export interface UseMediaUploadReturn {
@@ -205,7 +211,7 @@ function uploadToVercel(
   });
 }
 
-export function useMediaUpload({ provider, libraryId, enabled = true }: UseMediaUploadOptions): UseMediaUploadReturn {
+export function useMediaUpload({ provider, libraryId, enabled = true, source }: UseMediaUploadOptions): UseMediaUploadReturn {
   const auth = useAuth();
   const firestore = useFirestore();
   const {
@@ -290,7 +296,8 @@ export function useMediaUpload({ provider, libraryId, enabled = true }: UseMedia
           result.resourceType,
           result.provider === 'cloudinary' ? (result.libraryId as 'primary' | 'extented') : 'vercel_blob',
           result.provider,
-          result.filename
+          result.filename,
+          source
         );
 
         return result;
@@ -306,7 +313,7 @@ export function useMediaUpload({ provider, libraryId, enabled = true }: UseMedia
         setIsUploading(false);
       }
     },
-    [auth, firestore, provider, libraryId, enabled, startGlobalUpload, updateGlobalProgress, finishGlobalUpload, signalCompletedUpload]
+    [auth, firestore, provider, libraryId, enabled, source, startGlobalUpload, updateGlobalProgress, finishGlobalUpload, signalCompletedUpload]
   );
 
   const cancel = useCallback(() => {
