@@ -192,7 +192,7 @@ export function AppNav() {
   }
 
   return (
-    <aside className="w-full md:w-auto flex-shrink-0 p-2">
+    <aside className="w-full md:w-auto flex-shrink-0 p-2 nav-slide-in">
       <div className={cn(
         "flex h-full flex-row md:flex-col items-center justify-between rounded-lg border border-border/50 px-2 py-4 md:p-4 glass-effect"
         )}>
