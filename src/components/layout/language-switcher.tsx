@@ -45,11 +45,14 @@ export function useLanguage() {
   return ctx;
 }
 
-export function LanguageSwitcher({ className }: { className?: string }) {
+export function LanguageSwitcher({ className, color }: { className?: string; color?: string }) {
   const { lang, setLang } = useLanguage();
   const t = (key: string) => translations[lang]?.[key] ?? translations.en[key] ?? key;
   const other: Lang = lang === 'en' ? 'fr' : 'en';
   const isEn = lang === 'en';
+  const knobStyle = color
+    ? { backgroundColor: color, boxShadow: `0 0 12px ${color}99` }
+    : undefined;
 
   return (
     <button
@@ -65,7 +68,7 @@ export function LanguageSwitcher({ className }: { className?: string }) {
       {/* Circular knob that slides and shows the active language inside it */}
       <motion.span
         className="absolute z-10 flex h-6 w-6 items-center justify-center rounded-full bg-destructive shadow-[0_0_12px_hsl(var(--primary)/0.6)]"
-        style={{ top: "50%" }}
+        style={{ top: "50%", ...knobStyle }}
         animate={{ left: isEn ? 2 : 28, y: "-50%" }}
         initial={{ left: isEn ? 2 : 28, y: "-50%" }}
         transition={{ type: "spring", stiffness: 500, damping: 30 }}

@@ -185,7 +185,7 @@ export function AppNav() {
           <nav aria-label="Primary" className="flex h-full flex-1 items-center justify-evenly px-2">
             {accessibleNavItems.map(renderNavItem)}
           </nav>
-          <LanguageSwitcher />
+          <LanguageSwitcher color={homeSettings?.languageToggleColor} />
         </div>
       </div>
     );
@@ -220,7 +220,7 @@ export function AppNav() {
         </nav>
         {/* Language switch balances the logo slot on desktop */}
         <div className="flex flex-col items-center gap-2">
-          <LanguageSwitcher />
+          <LanguageSwitcher color={homeSettings?.languageToggleColor} />
         </div>
       </div>
     </aside>

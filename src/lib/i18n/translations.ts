@@ -175,6 +175,8 @@ const en: Record<string, string> = {
   'homeAdmin.faviconUrl': 'Favicon URL',
   'homeAdmin.faviconUrlDescription': 'Icon shown in the browser tab. If empty, the navbar logo is used.',
   'homeAdmin.faviconUrlPlaceholder': 'https://example.com/favicon.png',
+  'homeAdmin.languageToggleColor': 'Language Toggle Color',
+  'homeAdmin.languageToggleColorDescription': 'Color of the language switch knob in the navigation bar. Leave empty for the default red.',
   'pageContent.workTitle': 'Work Page Content',
   'pageContent.workHeadingLabel': 'Page Heading',
   'pageContent.subheadingLabel': 'Page Subtitle',
@@ -804,6 +806,8 @@ const fr: Record<string, string> = {
   'homeAdmin.menubarLogoUrl': 'URL du logo de la barre de navigation',
   'homeAdmin.menubarLogoUrlPlaceholder': 'https://exemple.com/logo-barre.png (vide = logo de l\'accueil)',
   'homeAdmin.menubarLogoUrlDescription': 'Logo séparé facultatif pour la barre de navigation. Laissez vide pour réutiliser le logo de la page d\'accueil.',
+  'homeAdmin.languageToggleColor': 'Couleur du bouton de langue',
+  'homeAdmin.languageToggleColorDescription': 'Couleur du bouton de changement de langue dans la barre de navigation. Laissez vide pour le rouge par défaut.',
 
   /* ContactAdmin */
   'contactAdmin.title': 'Page de contact & Paramètres du site',

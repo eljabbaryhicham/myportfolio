@@ -89,6 +89,7 @@ const settingsSchema = z.object({
   isArrowAnimationEnabled: z.boolean().optional(),
   arrowLottieUrl: z.string().optional(),
   faviconUrl: z.string().optional(),
+  languageToggleColor: z.string().optional(),
   glassOpacity: z.number().min(0).max(100).optional(),
   mediaWidth: z.number().min(10).max(100).optional(),
   showMediaTitles: z.boolean().optional(),
@@ -205,6 +206,7 @@ export default function HomeAdmin() {
       isArrowAnimationEnabled: true,
       arrowLottieUrl: '',
       faviconUrl: '',
+      languageToggleColor: '',
       glassOpacity: 25,
       mediaWidth: 100,
       showMediaTitles: true,
@@ -254,6 +256,7 @@ export default function HomeAdmin() {
         isArrowAnimationEnabled: homeSettings.isArrowAnimationEnabled ?? true,
         arrowLottieUrl: homeSettings.arrowLottieUrl || '',
         faviconUrl: homeSettings.faviconUrl || '',
+        languageToggleColor: homeSettings.languageToggleColor || '',
         glassOpacity: homeSettings.glassOpacity ?? 25,
         mediaWidth: homeSettings.mediaWidth ?? 100,
         showMediaTitles: homeSettings.showMediaTitles ?? true,
@@ -568,6 +571,25 @@ export default function HomeAdmin() {
                                                         onCheckedChange={field.onChange}
                                                     />
                                                 </FormControl>
+</FormItem>
+                                         )}
+                                     />
+                                    <FormField
+                                        control={control}
+                                        name="languageToggleColor"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>{t('homeAdmin.languageToggleColor') || 'Language Toggle Color'}</FormLabel>
+                                                <div className="flex items-center gap-4">
+                                                    <FormControl>
+                                                        <Input type="color" {...field} value={field.value || '#d81e38'} className="p-1 h-10 w-14 cursor-pointer" />
+                                                    </FormControl>
+                                                    <Input type="text" {...field} placeholder="#d81e38" />
+                                                </div>
+                                                <FormDescription>
+                                                    {t('homeAdmin.languageToggleColorDescription') || 'Color of the language switch knob in the navigation bar. Leave empty for the default red.'}
+                                                </FormDescription>
+                                                <FormMessage />
                                             </FormItem>
                                         )}
                                     />

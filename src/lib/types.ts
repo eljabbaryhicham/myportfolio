@@ -21,6 +21,7 @@ export interface HomePageSettings {
   homePageLogoScale?: number;
   homePageLogoColor?: string;
   faviconUrl?: string;
+  languageToggleColor?: string;
 
   // Hero
   heroVideoUrl?: string;
