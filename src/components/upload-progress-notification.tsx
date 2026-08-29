@@ -17,6 +17,12 @@ export default function UploadProgressNotification() {
   const [dismissedActive, setDismissedActive] = useState<Array<'vercel' | 'cloudinary'>>([]);
   const nextId = useRef(0);
   const lastNotifiedId = useRef<string | null>(null);
+  // DocIds the media library or media picker has already surfaced (e.g. via
+  // highlight). The "Uploaded to ..." card for these is suppressed entirely
+  // because the user has already seen the new file in its real location.
+  // Using a ref + filter (instead of a setState race) because the highlight
+  // event can fire in the same render cycle that we add the card.
+  const suppressedDocIds = useRef<Set<string>>(new Set());
 
   // Re-show an active upload's card whenever a fresh upload starts for that
   // provider (dismiss only affects the current run, not future uploads).
@@ -56,6 +62,10 @@ export default function UploadProgressNotification() {
     const handler = (e: Event) => {
       const detail = (e as CustomEvent<{ provider?: 'vercel' | 'cloudinary'; docId?: string }>).detail;
       if (!detail?.provider) return;
+      // Record the docId so the card-creation effect skips it if it hasn't
+      // run yet (handles the case where the highlight event lands in the
+      // same render cycle as `completedUpload`).
+      if (detail.docId) suppressedDocIds.current.add(detail.docId);
       setCompleted(prev => prev.filter((c) => {
         if (c.provider !== detail.provider) return true;
         if (detail.docId) return c.docId !== detail.docId;
@@ -78,6 +88,12 @@ export default function UploadProgressNotification() {
     if (!completedUpload) return;
     if (lastNotifiedId.current === completedUpload.docId) return;
     lastNotifiedId.current = completedUpload.docId;
+    // If the originating surface (library or picker) already surfaced this
+    // upload via its own highlight, don't show a redundant toast here.
+    if (suppressedDocIds.current.has(completedUpload.docId)) {
+      suppressedDocIds.current.delete(completedUpload.docId);
+      return;
+    }
     const fileName =
       completedUpload.fileName ||
       (completedUpload.provider === 'vercel' ? vercel.fileName : cloudinary.fileName) ||
