@@ -113,7 +113,7 @@ function CursorArrow({ targetRef, cursorLottieUrl, tickLottieUrl }: { targetRef:
   return (
     <div
       ref={arrowRef}
-      className="pointer-events-none fixed z-50 w-10 h-10"
+      className="pointer-events-none fixed z-[10000] w-10 h-10"
       style={{ left: -100, top: -100, opacity: 0 }}
     >
       {useGif ? (
