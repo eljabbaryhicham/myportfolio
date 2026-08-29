@@ -113,8 +113,6 @@ export default function AdminManagement() {
   const { data: users, isLoading } = useCollection<AdminUser>(usersQuery);
   
   const typedUser = currentUser as AppUser | null;
-  
-  const typedUser = currentUser as AppUser | null;
   const isSuperAdmin = isSuperAdminCheck(typedUser);
   
   const [selectedUser, setSelectedUser] = useState<AdminUser | null>(null);
