@@ -73,7 +73,7 @@ function PermissionsDialog({ user, isOpen, onOpenChange, onSave }: { user: Admin
         <Dialog open={isOpen} onOpenChange={onOpenChange}>
             <DialogContent className="w-[80vw] glass-effect">
                 <DialogHeader>
-                      <DialogTitle className="font-headline">{t('adminMgmt.editPermissions').replace('{user}', user.username || user.email || 'Unknown')}</DialogTitle>
+                      <DialogTitle className="font-headline">{t('adminMgmt.editPermissions').replace('{user}', user.username || user.email?.split('@')[0] || 'Unknown')}</DialogTitle>
                     <DialogDescription>
                         {t('adminMgmt.editPermissionsDescription')}
                     </DialogDescription>
@@ -161,7 +161,7 @@ export default function AdminManagement() {
     updateDocumentNonBlocking(userDocRef, { permissions });
     toast({
         title: t('adminMgmt.toast.permissionsUpdated.title'),
-        description: t('adminMgmt.toast.permissionsUpdated.description').replace('{user}', selectedUser.username || selectedUser.email || 'Unknown'),
+        description: t('adminMgmt.toast.permissionsUpdated.description').replace('{user}', selectedUser.username || selectedUser.email?.split('@')[0] || 'Unknown'),
     });
   };
 
@@ -239,7 +239,7 @@ export default function AdminManagement() {
                           <div key={user.id} className="p-4 rounded-lg bg-black/10 border border-white/10">
                               <div className='flex justify-between items-start'>
                                   <div>
-                                      <p className="font-bold">{user.username || user.email || 'Unknown'}</p>
+                                      <p className="font-bold">{user.username || user.email?.split('@')[0] || 'Unknown'}</p>
                                       <p className="text-sm text-muted-foreground">{user.email}</p>
                                   </div>
                                   <Badge variant={user.role === 'superadmin' ? 'destructive' : 'secondary'} className="ml-2 whitespace-nowrap">
@@ -255,7 +255,7 @@ export default function AdminManagement() {
                                       </Button>
                                   ) : <div />}
                                   {user.role !== 'superadmin' && (
-                                      <Button variant="ghost" size="icon" onClick={() => handleDeleteUser(user.id, user.username || user.email || 'Unknown')} disabled={!isSuperAdmin}>
+                                      <Button variant="ghost" size="icon" onClick={() => handleDeleteUser(user.id, user.username || user.email?.split('@')[0] || 'Unknown')} disabled={!isSuperAdmin}>
                                           <FontAwesomeIcon icon={faTrash} className="h-4 w-4 text-destructive" />
                                       </Button>
                                   )}
@@ -282,7 +282,7 @@ export default function AdminManagement() {
                       <TableBody>
                       {displayedUsers.map((user) => (
                           <TableRow key={user.id}>
-                          <TableCell className="font-medium">{user.username || user.email || 'Unknown'}</TableCell>
+                          <TableCell className="font-medium">{user.username || user.email?.split('@')[0] || 'Unknown'}</TableCell>
                           <TableCell>{user.email}</TableCell>
                           <TableCell>
                               <Badge variant={user.role === 'superadmin' ? 'destructive' : 'secondary'}>
@@ -301,7 +301,7 @@ export default function AdminManagement() {
                           </TableCell>
                           <TableCell className="text-right">
                               {user.role !== 'superadmin' && (
-                              <Button variant="ghost" size="icon" onClick={() => handleDeleteUser(user.id, user.username || user.email || 'Unknown')} disabled={!isSuperAdmin}>
+                              <Button variant="ghost" size="icon" onClick={() => handleDeleteUser(user.id, user.username || user.email?.split('@')[0] || 'Unknown')} disabled={!isSuperAdmin}>
                                       <FontAwesomeIcon icon={faTrash} className="h-4 w-4 text-destructive" />
                               </Button>
                               )}
