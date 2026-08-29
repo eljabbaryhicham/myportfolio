@@ -486,15 +486,12 @@ export default forwardRef<MediaLibraryRef, MediaLibraryProps>(function MediaLibr
   // file will be highlighted directly inside the dialog.
   useEffect(() => {
     if (!isFullLibraryOpen) return;
-    const providerEvt = provider === 'cloudinary' ? 'cloudinary' : 'vercel';
-    console.log('[MediaLibrary Full] dispatching media-surface-opened', { provider: providerEvt, isFullLibraryOpen });
     window.dispatchEvent(new CustomEvent('media-surface-opened', {
-      detail: { provider: providerEvt },
+      detail: { provider: provider === 'cloudinary' ? 'cloudinary' : 'vercel' },
     }));
     return () => {
-      console.log('[MediaLibrary Full] dispatching media-surface-closed', { provider: providerEvt });
       window.dispatchEvent(new CustomEvent('media-surface-closed', {
-        detail: { provider: providerEvt },
+        detail: { provider: provider === 'cloudinary' ? 'cloudinary' : 'vercel' },
       }));
     };
   }, [isFullLibraryOpen, provider]);
