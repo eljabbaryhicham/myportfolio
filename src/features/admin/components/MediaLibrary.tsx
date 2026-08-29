@@ -1555,9 +1555,6 @@ for (const file of files) {
         <TabsContent value="videos" className="p-4 m-0">{renderLibrary(videoFiles, 'video')}</TabsContent>
         <TabsContent value="files" className="p-4 m-0">{renderLibrary(otherFiles, 'raw')}</TabsContent>
       </ScrollArea>
-      {showBulkSelect && (
-        <BulkActionBar selectedCount={selectedIds.size} onClearSelection={() => setSelectedIds(new Set())} onDelete={() => setIsBulkDeleteOpen(true)} className="!relative !bottom-auto !left-auto !translate-x-0 mx-4 mb-4" />
-      )}
     </Tabs>
   );
 
@@ -1825,7 +1822,6 @@ for (const file of files) {
       {vercelAddFromUrlDialog}
       {cloudinaryUploadFlowDialogs}
       {bulkDeleteDialog}
-      <BulkActionBar selectedCount={selectedIds.size} onClearSelection={() => setSelectedIds(new Set())} onDelete={() => setIsBulkDeleteOpen(true)} />
       <ShareLinkDialog
         isOpen={shareDialogState.isOpen}
         onClose={() => setShareDialogState({ isOpen: false, url: '', filename: '' })}
