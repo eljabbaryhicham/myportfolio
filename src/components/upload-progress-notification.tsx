@@ -32,6 +32,23 @@ export default function UploadProgressNotification() {
     }
   }, [cloudinary.isUploading, cloudinary.fileName]);
 
+  // When the media library is opened for a downloaded file (via the arrow
+  // button OR via direct navigation/notification click), dismiss the matching
+  // completed card so the notification doesn't linger.
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent<{ provider?: 'vercel' | 'cloudinary'; mode?: string; docId?: string; tab?: string }>).detail;
+      if (!detail?.provider) return;
+      setCompleted(prev => prev.filter((c) => {
+        if (c.provider !== detail.provider) return true;
+        if (detail.docId) return c.docId !== detail.docId;
+        return false;
+      }));
+    };
+    window.addEventListener('admin-goto-media', handler);
+    return () => window.removeEventListener('admin-goto-media', handler);
+  }, []);
+
   // Create the "upload finished" card directly from the authoritative
   // `completedUpload` state (which now carries the fileName). The old approach
   // reacted to the isUploading->false transition, but that raced with the async
