@@ -404,7 +404,8 @@ html, body {
 }
 
 /* CSS-only slide-in for the AppNav aside. Animates only the visual transform;
-   the layout slot stays fixed so main content doesn't shift. */
+   the layout slot stays fixed so main content doesn't shift. Desktop slides
+   in from the right; mobile (bottom bar) slides up from below. */
 @keyframes nav-slide-in {
   from {
     transform: translateX(32px);
@@ -416,8 +417,25 @@ html, body {
   }
 }
 
+@keyframes nav-slide-in-mobile {
+  from {
+    transform: translateY(32px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
 .nav-slide-in {
   animation: nav-slide-in 0.55s ease-out both;
+}
+
+@media (max-width: 767px) {
+  .nav-slide-in {
+    animation-name: nav-slide-in-mobile;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
