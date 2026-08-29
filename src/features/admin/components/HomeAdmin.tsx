@@ -334,7 +334,7 @@ export default function HomeAdmin() {
                                         <div className="p-6">
                                             <Form {...form}>
                                                 <fieldset disabled={!canEditHome} className="group">
-                                                    <div className="space-y-8 max-w-2xl mx-auto">
+                                                    <div className="space-y-8">
                                 <TabsContent value="appearance" className="m-0 space-y-4">
 {/* Homepage Appearance */}
                                  <div className="space-y-4">
