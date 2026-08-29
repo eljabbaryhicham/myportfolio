@@ -37,13 +37,14 @@ import { useEffect, useState, useRef, useCallback } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faXmark, faImages } from '@fortawesome/free-solid-svg-icons';
+import { faXmark, faImages, faWandMagicSparkles } from '@fortawesome/free-solid-svg-icons';
 import { useToast } from '@/hooks/use-toast';
 import { Switch } from '@/components/ui/switch';
 import { useTranslation } from '@/lib/i18n/useTranslation';
 import { MultilingualInput } from './MultilingualInput';
 import { ensureMultilingualString } from '@/lib/i18n/multilingual';
 import UnifiedMediaPicker from './UnifiedMediaPicker';
+import { deriveCloudinarySpriteVtt } from '@/lib/cloudinary-vtt';
 
 
 // Pre-filled Details content for NEW projects (existing projects untouched).
@@ -323,6 +324,24 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onCho
         });
     };
 
+    const handleGenerateVttFromSource = () => {
+        const source = form.getValues('sourceUrl');
+        const vtt = deriveCloudinarySpriteVtt(source);
+        if (!vtt) {
+            toast({
+                variant: 'destructive',
+                title: t('portfolioForm.toast.sourceNotSupported.title'),
+                description: t('portfolioForm.toast.sourceNotSupported.description'),
+            });
+            return;
+        }
+        form.setValue('thumbnailVttUrl', vtt, { shouldValidate: true });
+        toast({
+            title: t('portfolioForm.toast.generatedThumbnails.title'),
+            description: t('portfolioForm.toast.generatedThumbnails.description'),
+        });
+    };
+
     return (<>
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
             <DialogContent className="w-[80vw] h-[90vh] flex flex-col glass-effect p-0 rounded-lg">
@@ -442,6 +461,10 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onCho
                                         <Button type="button" variant="outline" onClick={handleChooseVtt}>
                                             <FontAwesomeIcon icon={faImages} className="mr-2 h-4 w-4" />
                                             {t('portfolioForm.library')}
+                                        </Button>
+                                        <Button type="button" variant="outline" onClick={handleGenerateVttFromSource}>
+                                            <FontAwesomeIcon icon={faWandMagicSparkles} className="mr-2 h-4 w-4" />
+                                            {t('portfolioForm.generateThumbnails')}
                                         </Button>
                                     </div>
                                     <FormDescription>{t('portfolioForm.thumbnailsVttUrlDescription')}</FormDescription>

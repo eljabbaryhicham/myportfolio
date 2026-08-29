@@ -331,6 +331,11 @@ const en: Record<string, string> = {
   'portfolioForm.close': 'Close',
   'portfolioForm.toast.invalidThumbnail.title': 'Invalid Thumbnail',
   'portfolioForm.toast.invalidThumbnail.description': 'Thumbnails must be an image file.',
+  'portfolioForm.generateThumbnails': 'Generate from source',
+  'portfolioForm.toast.generatedThumbnails.title': 'Preview thumbnails generated',
+  'portfolioForm.toast.generatedThumbnails.description': 'Preview thumbnails URL generated from the Cloudinary video source.',
+  'portfolioForm.toast.sourceNotSupported.title': 'Source not supported',
+  'portfolioForm.toast.sourceNotSupported.description': 'Preview thumbnails can only be auto-generated for Cloudinary-hosted videos. Add a VTT URL manually if one is available.',
 
   /* MediaAdmin */
   'mediaAdmin.chooseMedia': 'Choose Media',
@@ -907,6 +912,11 @@ const fr: Record<string, string> = {
   'portfolioForm.thumbnailsVttUrl': 'URL du fichier VTT des vignettes',
   'portfolioForm.thumbnailsVttUrlPlaceholder': 'https://exemple.com/vignettes.vtt',
   'portfolioForm.thumbnailsVttUrlDescription': 'L\'URL du fichier WebVTT contenant les vignettes de prévisualisation pour cette vidéo.',
+  'portfolioForm.generateThumbnails': 'Générer depuis la source',
+  'portfolioForm.toast.generatedThumbnails.title': 'Vignettes de prévisualisation générées',
+  'portfolioForm.toast.generatedThumbnails.description': 'URL des vignettes générée depuis la vidéo Cloudinary.',
+  'portfolioForm.toast.sourceNotSupported.title': 'Source non prise en charge',
+  'portfolioForm.toast.sourceNotSupported.description': 'Les vignettes ne peuvent être générées que pour les vidéos hébergées sur Cloudinary. Saisissez manuellement une URL VTT si une est disponible.',
   'portfolioForm.thumbnailHint': 'Indice pour la vignette',
   'portfolioForm.thumbnailHintPlaceholder': 'ex. \'art abstrait\'',
   'portfolioForm.thumbnailHintDescription': 'Indice IA pour la génération d\'images (1-2 mots).',
