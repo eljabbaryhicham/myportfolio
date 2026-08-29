@@ -257,7 +257,7 @@ const FileCard = ({
         onClick={isSelectionMode ? handleSelect : undefined}
       >
         {showCheckbox && !isSelectionMode && (
-          <div className="absolute top-2 left-2 z-30 w-[15%] min-w-5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none group-hover:pointer-events-auto" onClick={(e) => e.stopPropagation()}>
+          <div className={cn("absolute top-2 left-2 z-30 w-[15%] min-w-5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none group-hover:pointer-events-auto", isSelected && "opacity-100 pointer-events-auto")} onClick={(e) => e.stopPropagation()}>
             <Checkbox
               checked={isSelected}
               onCheckedChange={() => onToggleSelect?.(file.id)}
