@@ -407,7 +407,7 @@ html, body {
    the layout slot stays fixed so main content doesn't shift. */
 @keyframes nav-slide-in {
   from {
-    transform: translateX(-32px);
+    transform: translateX(32px);
     opacity: 0;
   }
   to {
@@ -417,7 +417,7 @@ html, body {
 }
 
 .nav-slide-in {
-  animation: nav-slide-in 0.35s ease-out both;
+  animation: nav-slide-in 0.55s ease-out both;
 }
 
 @media (prefers-reduced-motion: reduce) {
