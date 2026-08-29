@@ -9,18 +9,18 @@ import { Button } from '@/components/ui/button';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlay } from '@fortawesome/free-solid-svg-icons';
 import { useUser } from '@/firebase';
-import { useRouter } from 'next/navigation';
+import { notFound } from 'next/navigation';
 import Preloader from '@/components/preloader';
 import PlyrPlayer from '@/components/PlyrPlayer';
 import { useTranslation } from '@/lib/i18n/useTranslation';
 import type { HomePageSettings } from '@/lib/types';
 import { useHomePageSettings } from '@/components/settings/home-page-settings-provider';
+import { isSuperAdmin as isSuperAdminCheck } from '@/lib/constants';
 
 type PlayerChoice = 'plyr' | 'clappr';
 
 export default function TestPage() {
   const { user, isUserLoading } = useUser();
-  const router = useRouter();
   const { t } = useTranslation();
 
   const defaultUrl = 'https://res.cloudinary.com/dsq1lxrqi/video/upload/v1787606668/Showreel_2026_MOD_o9zim0.mp4';
@@ -38,12 +38,6 @@ export default function TestPage() {
     }
   }, [homeSettings?.workPagePlayer]);
 
-  useEffect(() => {
-    if (!isUserLoading && !user) {
-      router.push('/login');
-    }
-  }, [user, isUserLoading, router]);
-
   const handleLoadClick = () => {
     setSource(inputValue);
   };
@@ -57,18 +51,22 @@ export default function TestPage() {
     return null;
   }
 
-  if (!user) {
-    return null;
-  }
+  const isSuperAdmin = isSuperAdminCheck(user);
 
   // Wait for the live settings snapshot before deciding, so a stale SSR seed
-  // can never wrongly show the 404 page.
+  // can never wrongly show the 404 page. When the test page is enabled, anyone
+  // (signed in or not) can open it. When disabled, only the super admin may —
+  // everyone else gets a 404.
   if (!hasLiveData) {
     return (
       <div className="flex items-center justify-center h-full">
         <Preloader />
       </div>
     );
+  }
+
+  if (homeSettings?.isTestPageEnabled === false && !isSuperAdmin) {
+    notFound();
   }
 
   return (
@@ -96,7 +94,7 @@ export default function TestPage() {
 
         <div className="mb-4 inline-flex rounded-md border border-white/10 overflow-hidden">
           <Button
-            variant={localPlayer === 'plyr' ? 'default' : 'outline'}
+            variant={localPlayer === 'plyr' ? 'destructive' : 'outline'}
             size="sm"
             onClick={() => handlePlayerChoice('plyr')}
             className="rounded-none"
@@ -104,7 +102,7 @@ export default function TestPage() {
             Plyr
           </Button>
           <Button
-            variant={localPlayer === 'clappr' ? 'default' : 'outline'}
+            variant={localPlayer === 'clappr' ? 'destructive' : 'outline'}
             size="sm"
             onClick={() => handlePlayerChoice('clappr')}
             className="rounded-none"

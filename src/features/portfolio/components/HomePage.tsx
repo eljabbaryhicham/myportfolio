@@ -148,11 +148,11 @@ export default function HomePageContent() {
   // Only show the full-screen preloader on the very first load (no cached data yet);
   // on client-side navigations Firestore may briefly be isLoading while re-attaching,
   // but we already have data to render so we must not flash a black overlay.
-  const hasReceivedData = useRef(false);
-  if (homeSettings) hasReceivedData.current = true;
-  const isLoading = isLoadingSettings && !hasReceivedData.current && !homeSettings;
-  const hasLoadedOnce = useRef(false);
-  useEffect(() => { if (!isLoading) hasLoadedOnce.current = true; }, [isLoading]);
+  const [hasReceivedData, setHasReceivedData] = useState(Boolean(homeSettings));
+  useEffect(() => {
+    if (homeSettings) setHasReceivedData(true);
+  }, [homeSettings]);
+  const isLoading = isLoadingSettings && !hasReceivedData && !homeSettings;
 
   // Full-page preloader gate: true until the window's `load` event has fired
   // (i.e. all images, fonts, and the hero video metadata are ready) AND a

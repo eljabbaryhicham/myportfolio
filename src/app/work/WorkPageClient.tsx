@@ -176,6 +176,7 @@ function LazyDetailsVideo({
       </Suspense>
       {watermark && hasPlayed && (
         <div className="absolute pointer-events-none z-20" style={{ ...getWatermarkPositionStyle(watermarkPosition || 'bottom-right'), width: `${watermarkSize ?? 12}%`, minWidth: '50px', maxWidth: '250px', textAlign: 'center', opacity: (watermarkOpacity ?? 70) / 100 }}>
+          {/* eslint-disable-next-line @next/next/no-img-element -- watermark URLs are admin-configured and may use arbitrary hosts. */}
           <img src={watermark} alt="watermark" style={{ maxWidth: '100%' }} loading="lazy" />
         </div>
       )}
@@ -300,7 +301,7 @@ const ProjectDetailsContent = memo(function ProjectDetailsContent({
         </div>
       );
     },
-  }), [playerType, onImageFullscreen, widthPercent, showMediaTitles]);
+  }), [playerType, onImageFullscreen, widthPercent, showMediaTitles, watermark, watermarkOpacity, watermarkPosition, watermarkSize]);
 
   return (
     <ReactMarkdown
@@ -407,7 +408,7 @@ const MemoizedPortfolioMedia = memo(({
     const id = setInterval(() => { if (check()) clearInterval(id); }, 200);
     const safety = setTimeout(() => setIsVideoLoading(false), 8000);
     return () => { clearInterval(id); clearTimeout(safety); };
-  }, [item.id, item.type, playerType, autoPlay]);
+  }, [item.id, item.type, playerType, autoPlay, clapprRef, plyrRef]);
 
   if (item.type === 'video') {
     const isVimeo = item.sourceUrl?.includes('vimeo.com');
@@ -465,6 +466,7 @@ const MemoizedPortfolioMedia = memo(({
         )}
         {watermark && !isVideoLoading && (
           <div className="absolute pointer-events-none z-20" style={{ ...getWatermarkPositionStyle(watermarkPosition || 'bottom-right'), width: `${watermarkSize ?? 12}%`, minWidth: '50px', maxWidth: '250px', textAlign: 'center', opacity: (watermarkOpacity ?? 70) / 100 }}>
+            {/* eslint-disable-next-line @next/next/no-img-element -- watermark URLs are admin-configured and may use arbitrary hosts. */}
             <img src={watermark} alt="watermark" style={{ maxWidth: '100%' }} loading="lazy" />
           </div>
         )}
@@ -914,7 +916,7 @@ function WorkPageContent() {
     setDirection(null);
     setSelectedItem(item);
     updateUrl(slugify(getLocalizedString(item.title, lang)));
-  }, [updateUrl]);
+  }, [updateUrl, lang]);
   
   const minOrder = useMemo(() => {
     if (!portfolioItems || portfolioItems.length === 0) return 0;
@@ -937,7 +939,7 @@ function WorkPageContent() {
     } else {
       setIsDescriptionLong(false);
     }
-  }, [selectedItem]);
+  }, [selectedItem, lang]);
 
   const handleNextProject = useCallback(() => {
     if (!selectedItem || !filteredItems) return;

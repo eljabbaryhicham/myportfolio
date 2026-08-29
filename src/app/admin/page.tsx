@@ -196,7 +196,7 @@ function AdminPage() {
     }
     // Both Vercel Blob and Cloudinary: don't consume here — components handle their own popups
     safeTimeout(() => setNewlyUploadedId(null), 3000);
-  }, [completedUpload, activeTab, setActiveTab, consumeCompletedUpload]);
+  }, [completedUpload, activeTab, setActiveTab, consumeCompletedUpload, safeTimeout]);
 
 
   const handleLogout = async (isUnauthorized = false) => {

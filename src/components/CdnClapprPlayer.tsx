@@ -158,7 +158,7 @@ const CdnClapprPlayer = forwardRef(function CdnClapprPlayer({ source, poster, au
       }
       playerRef.current = null;
     };
-  }, [source]);
+  }, [source, autoPlay, poster, toast]);
 
   useEffect(() => {
     const player = playerRef.current;

@@ -187,6 +187,8 @@ interface DialogMediaLibraryProps extends MediaLibraryBaseProps {
 
 type MediaLibraryProps = StandaloneMediaLibraryProps | DialogMediaLibraryProps;
 
+const noopSetActiveTab = (_tab: 'images' | 'videos' | 'files') => {};
+
 export interface MediaLibraryRef {
   openFullLibrary: (tab: 'images' | 'videos' | 'files', library: 'primary' | 'extented') => void;
 }
@@ -443,7 +445,7 @@ const FileCard = ({
 // ---------------------------------------------------------------------------
 
 export default forwardRef<MediaLibraryRef, MediaLibraryProps>(function MediaLibrary(props, ref) {
-  const { provider } = props;
+  const { provider, onUploadComplete } = props;
   const { t } = useTranslation();
   const { toast } = useToast();
   const firestore = useFirestore();
@@ -524,7 +526,7 @@ export default forwardRef<MediaLibraryRef, MediaLibraryProps>(function MediaLibr
   const isDialog = !!(props as DialogMediaLibraryProps).isDialog;
   const dialogProps = isDialog ? (props as DialogMediaLibraryProps) : null;
   const activeTab = isDialog ? dialogProps!.activeTab : 'images';
-  const setActiveTabFn = isDialog ? dialogProps!.setActiveTab : () => {};
+  const setActiveTabFn = isDialog ? dialogProps!.setActiveTab : noopSetActiveTab;
   const activeLibrary = isDialog ? dialogProps!.activeLibrary : fullLibraryActiveLibrary;
   const setActiveLibraryFn = isDialog ? dialogProps!.setActiveLibrary : setFullLibraryActiveLibrary;
   const newlyUploadedId = isDialog ? dialogProps!.newlyUploadedId : localNewlyUploadedId;
@@ -911,7 +913,7 @@ for (const file of files) {
             } as any);
             const newId = (docRef as any)?.id || data.pathname;
             const resourceType = file.type.startsWith('video/') ? 'video' : file.type.startsWith('image/') ? 'image' : 'raw';
-            if (newId && props.onUploadComplete) props.onUploadComplete(newId, resourceType);
+            if (newId && onUploadComplete) onUploadComplete(newId, resourceType);
             if (newId) { setLocalNewlyUploadedId(newId); setTimeout(() => setLocalNewlyUploadedId(null), 3000); }
             if (newId) signalCompletedUpload(newId, resourceType, 'vercel_blob', 'vercel', file.name, 'media-library');
           } catch (e) { logger.error('MediaLibrary: Firestore add after Vercel upload failed', e); }
@@ -947,7 +949,7 @@ for (const file of files) {
         setTimeout(() => finishUpload(), 1000);
       }
     }
-  }, [getToken, toast, firestore, auth, finishUpload, startGlobalUpload, updateGlobalProgress, props.onUploadComplete, setActiveTabFn, signalCompletedUpload]);
+  }, [getToken, toast, firestore, auth, finishUpload, startGlobalUpload, updateGlobalProgress, onUploadComplete, setActiveTabFn, signalCompletedUpload]);
 
   // Update ref for retry logic
   handleVercelUploadRef.current = handleVercelUpload;
@@ -1070,7 +1072,7 @@ for (const file of files) {
             };
             const docRefPromise = addDocumentNonBlocking(collection(firestore, 'media'), mediaData);
             const docRef = await docRefPromise as DocumentReference | undefined;
-            if (docRef && !isDialog && props.onUploadComplete) props.onUploadComplete(docRef.id, response.resource_type, libraryId);
+            if (docRef && !isDialog && onUploadComplete) onUploadComplete(docRef.id, response.resource_type, libraryId);
             if (docRef) signalCompletedUpload(docRef.id, response.resource_type, libraryId, 'cloudinary', file.name, 'media-library');
           }
         } else {
@@ -1086,7 +1088,7 @@ for (const file of files) {
     setUploadingFileName('');
     setUploadProgress(0);
     setFilesToUpload([]);
-  }, [filesToUpload, toast, firestore, props.onUploadComplete, isDialog, uploadVideoFormat, t, startGlobalUpload, updateGlobalProgress, finishGlobalUpload, signalCompletedUpload, canUpload]);
+  }, [filesToUpload, toast, firestore, onUploadComplete, isDialog, uploadVideoFormat, t, startGlobalUpload, updateGlobalProgress, finishGlobalUpload, signalCompletedUpload]);
 
   // ---- Dropzone ----
   const onDrop = provider === 'cloudinary' ? onCloudinaryDrop : (accepted: File[]) => handleVercelUpload(accepted);
@@ -1295,7 +1297,7 @@ for (const file of files) {
 
   // ---- URL upload complete callback (Cloudinary AddFromUrlDialog) ----
   const handleCloudinaryUrlUploadComplete = (mediaId: string, resourceType: 'image' | 'video' | 'raw', libraryId: 'primary' | 'extented') => {
-    if (!isDialog && props.onUploadComplete) props.onUploadComplete(mediaId, resourceType, libraryId);
+    if (!isDialog && onUploadComplete) onUploadComplete(mediaId, resourceType, libraryId);
     signalCompletedUpload(mediaId, resourceType, libraryId, 'cloudinary', undefined, 'media-library');
   };
 

@@ -56,6 +56,7 @@ export async function GET(request: Request) {
         }}
       >
         {thumbnail ? (
+          // eslint-disable-next-line @next/next/no-img-element -- ImageResponse renders HTML directly and does not support next/image.
           <img
             src={thumbnail}
             alt=""
