@@ -102,10 +102,12 @@ export default function UnifiedMediaPicker({ isOpen, onOpenChange, onMediaSelect
   useEffect(() => {
     if (!isOpen) return;
     const providerEvt = provider as 'cloudinary' | 'vercel';
+    console.log('[Picker] dispatching media-surface-opened', { provider: providerEvt, isOpen });
     window.dispatchEvent(new CustomEvent('media-surface-opened', {
       detail: { provider: providerEvt },
     }));
     return () => {
+      console.log('[Picker] dispatching media-surface-closed', { provider: providerEvt });
       window.dispatchEvent(new CustomEvent('media-surface-closed', {
         detail: { provider: providerEvt },
       }));

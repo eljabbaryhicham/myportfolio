@@ -85,10 +85,12 @@ export default function UploadProgressNotification() {
     // surfaced in-place, so the global toast is suppressed for the duration.
     const opened = (e: Event) => {
       const detail = (e as CustomEvent<{ provider?: 'vercel' | 'cloudinary' }>).detail;
+      console.log('[Notification] media-surface-opened', detail?.provider);
       if (detail?.provider) openSurfaces.current.add(detail.provider);
     };
     const closed = (e: Event) => {
       const detail = (e as CustomEvent<{ provider?: 'vercel' | 'cloudinary' }>).detail;
+      console.log('[Notification] media-surface-closed', detail?.provider);
       if (detail?.provider) openSurfaces.current.delete(detail.provider);
     };
     window.addEventListener('media-upload-highlighted', highlighted);
@@ -109,16 +111,28 @@ export default function UploadProgressNotification() {
     if (!completedUpload) return;
     if (lastNotifiedId.current === completedUpload.docId) return;
     lastNotifiedId.current = completedUpload.docId;
+    console.log('[Notification] completedUpload received', {
+      provider: completedUpload.provider,
+      docId: completedUpload.docId,
+      source: completedUpload.source,
+      openSurfaces: Array.from(openSurfaces.current),
+      suppressedDocIds: Array.from(suppressedDocIds.current),
+    });
     // If a media surface (picker or full library dialog) for this provider
     // is already open, the upload will be surfaced directly inside it — no
     // need for a global toast that the user has to dismiss.
-    if (openSurfaces.current.has(completedUpload.provider)) return;
+    if (openSurfaces.current.has(completedUpload.provider)) {
+      console.log('[Notification] SKIPPED: provider is in openSurfaces');
+      return;
+    }
     // If the originating surface (library or picker) already surfaced this
     // upload via its own highlight, don't show a redundant toast here.
     if (suppressedDocIds.current.has(completedUpload.docId)) {
+      console.log('[Notification] SKIPPED: docId is in suppressedDocIds');
       suppressedDocIds.current.delete(completedUpload.docId);
       return;
     }
+    console.log('[Notification] SHOWING card for', completedUpload.docId);
     const fileName =
       completedUpload.fileName ||
       (completedUpload.provider === 'vercel' ? vercel.fileName : cloudinary.fileName) ||
