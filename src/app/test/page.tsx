@@ -29,7 +29,7 @@ export default function TestPage() {
   const [localPlayer, setLocalPlayer] = useState<PlayerChoice>('clappr');
   const userChangedRef = useRef(false);
 
-  const { settings: homeSettings } = useHomePageSettings();
+  const { settings: homeSettings, hasLiveData } = useHomePageSettings();
   const workPagePlayer = (homeSettings?.workPagePlayer as PlayerChoice) || 'clappr';
 
   useEffect(() => {
@@ -44,12 +44,6 @@ export default function TestPage() {
     }
   }, [user, isUserLoading, router]);
 
-  useEffect(() => {
-    if (homeSettings && homeSettings.isTestPageEnabled === false) {
-      notFound();
-    }
-  }, [homeSettings]);
-
   const handleLoadClick = () => {
     setSource(inputValue);
   };
@@ -59,8 +53,26 @@ export default function TestPage() {
     setLocalPlayer(choice);
   };
 
-  if (isUserLoading || !user || (homeSettings && homeSettings.isTestPageEnabled === false)) {
+  if (isUserLoading) {
     return null;
+  }
+
+  if (!user) {
+    return null;
+  }
+
+  // Wait for the live settings snapshot before deciding, so a stale SSR seed
+  // can never wrongly show the 404 page.
+  if (!hasLiveData) {
+    return (
+      <div className="flex items-center justify-center h-full">
+        <Preloader />
+      </div>
+    );
+  }
+
+  if (homeSettings?.isTestPageEnabled === false) {
+    notFound();
   }
 
   return (

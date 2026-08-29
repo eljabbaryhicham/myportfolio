@@ -10,6 +10,8 @@ interface HomePageSettingsContextValue {
   settings: HomePageSettings | null;
   /** True until the first client snapshot resolves; seeded false by SSR. */
   isLoading: boolean;
+  /** True once the value comes from a live Firestore snapshot (not the SSR seed). */
+  hasLiveData: boolean;
 }
 
 const HomePageSettingsContext = createContext<HomePageSettingsContextValue | null>(null);
@@ -54,7 +56,7 @@ export function HomePageSettingsProvider({
   const effectivelyLoading = isLoading && !settings;
 
   return (
-    <HomePageSettingsContext.Provider value={{ settings, isLoading: effectivelyLoading }}>
+    <HomePageSettingsContext.Provider value={{ settings, isLoading: effectivelyLoading, hasLiveData: data !== null }}>
       {children}
     </HomePageSettingsContext.Provider>
   );
