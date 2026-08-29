@@ -151,7 +151,7 @@ export default function AboutAdmin() {
         <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
           <div className="flex flex-col min-h-0">
               <div className="mb-6 flex-shrink-0 flex items-start justify-between">
-                  <div>
+                  <div className="text-left">
                       <h2 className="text-xl font-headline">{t('aboutAdmin.title')}</h2>
                       <p className="text-muted-foreground">{t('aboutAdmin.description')}</p>
                   </div>

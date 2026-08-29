@@ -205,7 +205,7 @@ export default function AdminManagement() {
     <>
       <div className="flex-1 flex flex-col h-full min-h-0">
         <div className="mb-6 flex items-start justify-between">
-            <div>
+            <div className="text-left">
                 <h2 className="text-xl font-headline">{t('adminMgmt.title')}</h2>
                 <p className="text-muted-foreground">{t('adminMgmt.description')}</p>
             </div>
