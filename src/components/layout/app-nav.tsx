@@ -128,7 +128,7 @@ export function AppNav() {
             "text-white",
             isActive ? "" : (isSpecialButton ? "bg-cyan-500/80" : "glass-effect"),
           )}
-          style={!hasMounted || isMobile ? undefined : { width: 'var(--nav-button-size)', height: 'var(--nav-button-size)' }}
+          style={isMobile ? undefined : { width: 'var(--nav-button-size)', height: 'var(--nav-button-size)' }}
         >
           {isActive && (
             <motion.div
