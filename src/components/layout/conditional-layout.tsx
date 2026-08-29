@@ -115,7 +115,7 @@ export function ConditionalLayout({ children }: { children: React.ReactNode }) {
           )}
         </div>
       </main>
-      {!isHomePage && <AppNav />}
+      {!isHomePage && <div suppressHydrationWarning><AppNav /></div>}
     </div>
     </>
   );

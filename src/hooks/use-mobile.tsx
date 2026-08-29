@@ -20,9 +20,15 @@ function detectMobile(): boolean {
 }
 
 export function useIsMobile() {
-  // Initialize with false (server-safe) to avoid hydration mismatch.
-  // The real value is set in useEffect after mount.
-  const [isMobile, setIsMobile] = React.useState<boolean>(false);
+  // Initialize lazily on the client so the first client render matches the
+  // post-hydration value. On the server (no window) we default to false
+  // (desktop). The mismatch between server/desktop and client/mobile is
+  // expected and handled by the AppNav wrapper (which uses
+  // suppressHydrationWarning on the slot that differs).
+  const [isMobile, setIsMobile] = React.useState<boolean>(() => {
+    if (typeof window === "undefined") return false;
+    return detectMobile();
+  });
 
   React.useEffect(() => {
     if (typeof window === "undefined") return;
