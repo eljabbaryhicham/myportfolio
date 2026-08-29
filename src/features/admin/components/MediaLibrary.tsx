@@ -481,6 +481,21 @@ export default forwardRef<MediaLibraryRef, MediaLibraryProps>(function MediaLibr
     },
   }));
 
+  // While the full library dialog is open, tell the global upload
+  // notification not to surface a redundant "Uploaded to ..." toast — the new
+  // file will be highlighted directly inside the dialog.
+  useEffect(() => {
+    if (!isFullLibraryOpen) return;
+    window.dispatchEvent(new CustomEvent('media-surface-opened', {
+      detail: { provider: provider === 'cloudinary' ? 'cloudinary' : 'vercel' },
+    }));
+    return () => {
+      window.dispatchEvent(new CustomEvent('media-surface-closed', {
+        detail: { provider: provider === 'cloudinary' ? 'cloudinary' : 'vercel' },
+      }));
+    };
+  }, [isFullLibraryOpen, provider]);
+
   // ---- Vercel Blob: URL progress fake interval ----
   useEffect(() => {
     let timer: ReturnType<typeof setInterval> | undefined;

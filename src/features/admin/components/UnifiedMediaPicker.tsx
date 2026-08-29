@@ -96,6 +96,22 @@ export default function UnifiedMediaPicker({ isOpen, onOpenChange, onMediaSelect
     return () => clearTimeout(t);
   }, [completedUpload, consumeCompletedUpload]);
 
+  // While this picker is open, tell the global upload notification not to
+  // surface a redundant "Uploaded to ..." toast — the new file will be
+  // highlighted directly in this picker's grid.
+  useEffect(() => {
+    if (!isOpen) return;
+    const providerEvt = provider as 'cloudinary' | 'vercel';
+    window.dispatchEvent(new CustomEvent('media-surface-opened', {
+      detail: { provider: providerEvt },
+    }));
+    return () => {
+      window.dispatchEvent(new CustomEvent('media-surface-closed', {
+        detail: { provider: providerEvt },
+      }));
+    };
+  }, [isOpen, provider]);
+
   // ---- Inline upload affordance ----
   // Lets the user drop a file (or paste a URL) without leaving the picker.
   // Mirrors the permission model from MediaLibrary: superadmin OR a user

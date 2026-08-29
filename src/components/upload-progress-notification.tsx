@@ -23,6 +23,10 @@ export default function UploadProgressNotification() {
   // Using a ref + filter (instead of a setState race) because the highlight
   // event can fire in the same render cycle that we add the card.
   const suppressedDocIds = useRef<Set<string>>(new Set());
+  // Providers whose media surface (picker or full library dialog) is already
+  // open. While open, any completed upload for that provider is surfaced
+  // directly in-place and the global "Uploaded to ..." toast is noise.
+  const openSurfaces = useRef<Set<'vercel' | 'cloudinary'>>(new Set());
 
   // Re-show an active upload's card whenever a fresh upload starts for that
   // provider (dismiss only affects the current run, not future uploads).
@@ -59,7 +63,7 @@ export default function UploadProgressNotification() {
   // finished upload, drop the matching "Uploaded" card so the notification
   // doesn't linger after the user has already seen the new file.
   useEffect(() => {
-    const handler = (e: Event) => {
+    const highlighted = (e: Event) => {
       const detail = (e as CustomEvent<{ provider?: 'vercel' | 'cloudinary'; docId?: string }>).detail;
       if (!detail?.provider) return;
       // Record the docId so the card-creation effect skips it if it hasn't
@@ -76,8 +80,25 @@ export default function UploadProgressNotification() {
       // now visible in the active surface, so the progress toast is noise.
       setDismissedActive(prev => prev.includes(detail.provider as 'vercel' | 'cloudinary') ? prev : [...prev, detail.provider as 'vercel' | 'cloudinary']);
     };
-    window.addEventListener('media-upload-highlighted', handler);
-    return () => window.removeEventListener('media-upload-highlighted', handler);
+    // Track which providers currently have a media surface (picker or full
+    // library dialog) open. While one is open, uploads for that provider are
+    // surfaced in-place, so the global toast is suppressed for the duration.
+    const opened = (e: Event) => {
+      const detail = (e as CustomEvent<{ provider?: 'vercel' | 'cloudinary' }>).detail;
+      if (detail?.provider) openSurfaces.current.add(detail.provider);
+    };
+    const closed = (e: Event) => {
+      const detail = (e as CustomEvent<{ provider?: 'vercel' | 'cloudinary' }>).detail;
+      if (detail?.provider) openSurfaces.current.delete(detail.provider);
+    };
+    window.addEventListener('media-upload-highlighted', highlighted);
+    window.addEventListener('media-surface-opened', opened);
+    window.addEventListener('media-surface-closed', closed);
+    return () => {
+      window.removeEventListener('media-upload-highlighted', highlighted);
+      window.removeEventListener('media-surface-opened', opened);
+      window.removeEventListener('media-surface-closed', closed);
+    };
   }, []);
 
   // Create the "upload finished" card directly from the authoritative
@@ -88,6 +109,10 @@ export default function UploadProgressNotification() {
     if (!completedUpload) return;
     if (lastNotifiedId.current === completedUpload.docId) return;
     lastNotifiedId.current = completedUpload.docId;
+    // If a media surface (picker or full library dialog) for this provider
+    // is already open, the upload will be surfaced directly inside it — no
+    // need for a global toast that the user has to dismiss.
+    if (openSurfaces.current.has(completedUpload.provider)) return;
     // If the originating surface (library or picker) already surfaced this
     // upload via its own highlight, don't show a redundant toast here.
     if (suppressedDocIds.current.has(completedUpload.docId)) {
