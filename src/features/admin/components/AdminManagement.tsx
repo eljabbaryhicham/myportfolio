@@ -100,6 +100,7 @@ function PermissionsDialog({ user, isOpen, onOpenChange, onSave }: { user: Admin
 }
 
 export default function AdminManagement() {
+  console.log('[AdminManagement] Component mounted!');
   const { t } = useTranslation();
   const firestore = useFirestore();
   const { user: currentUser } = useUser();
