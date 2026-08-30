@@ -20,6 +20,7 @@ import { usePortfolioItems } from '@/components/portfolio/portfolio-items-provid
 import { collection, doc } from 'firebase/firestore';
 import { deleteDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { useHomePageSettings } from '@/components/settings/home-page-settings-provider';
+import { usePageReveal } from '@/lib/use-page-reveal';
 import type { PortfolioItem } from '@/features/portfolio/data/portfolio-data';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUpDown, faXmark, faExpand, faPalette, faFilm, faArrowLeft, faArrowRight, faPencilAlt, faArrowDown, faSyncAlt, faCircleExclamation } from '@fortawesome/free-solid-svg-icons';
@@ -670,6 +671,9 @@ function WorkPageContent() {
 
   // homepage/settings is sourced from the shared provider (server-seeded + live).
   const { settings: homeSettings } = useHomePageSettings();
+  // Inline page-reveal gate: while the page is still loading AND a custom
+  // preloader is configured, keep the gallery area behind the preloader.
+  const { ready: revealReady, hasPreloader } = usePageReveal();
   // Local settingsDocRef kept for superadmin write operations (player toggle, etc).
   const settingsDocRef = useMemoFirebase(
     () => (firestore ? doc(firestore, 'homepage', 'settings') : null),
@@ -1053,6 +1057,10 @@ function WorkPageContent() {
   const isLoading =
     isPortfolioLoading || portfolioItems === null || (isProjectListEmpty && !emptyResultConfirmed);
 
+  // Gallery-area gate: show the inline preloader while data loads OR while the
+  // page is still revealing (when a custom preloader is configured).
+  const showGalleryPreloader = isLoading || (hasPreloader && !revealReady);
+
   const variants = {
     enter: (direction: 'next' | 'prev' | null) => ({
       x: direction === 'next' ? '100%' : direction === 'prev' ? '-100%' : '0%',
@@ -1143,7 +1151,7 @@ function WorkPageContent() {
                     initial="hidden"
                     animate="visible"
                   >
-                    {isLoading ? (
+                    {showGalleryPreloader ? (
                       <div className="col-span-full h-full min-h-[50vh] flex items-center justify-center">
                         <Preloader />
                       </div>

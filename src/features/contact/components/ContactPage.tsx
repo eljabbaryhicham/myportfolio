@@ -13,6 +13,7 @@ import { Icon } from '@/components/icon';
 import { faLinkedin, faBehance, faInstagram, faFacebook, faTwitter, faWhatsapp } from '@fortawesome/free-brands-svg-icons';
 import { cn } from '@/lib/utils';
 import Preloader from '@/components/preloader';
+import { usePageReveal } from '@/lib/use-page-reveal';
 import { motion } from 'framer-motion';
 
 import { Button } from '@/components/ui/button';
@@ -75,6 +76,9 @@ export default function ContactPage() {
   );
   const { data: contactInfo, isLoading } = useDoc<ContactInfo>(contactDocRef);
 
+  const { ready: revealReady, hasPreloader } = usePageReveal();
+  const showInlinePreloader = isLoading || (hasPreloader && !revealReady);
+
   // homepage/settings is sourced from the shared provider (server-seeded + live).
   const { settings: pageSettings } = useHomePageSettings();
 
@@ -108,7 +112,7 @@ export default function ContactPage() {
       <div ref={scrollRef} className="flex-1 min-h-0 overflow-y-auto">
         <div className="p-[clamp(1rem,3vh,2rem)] md:p-[clamp(1.5rem,4vh,2rem)] w-full flex items-center justify-center min-h-full">
             <div className="container mx-auto px-0">
-            {isLoading ? (
+            {showInlinePreloader ? (
               <div className="flex justify-center items-center h-[50vh]">
                 <Preloader />
               </div>

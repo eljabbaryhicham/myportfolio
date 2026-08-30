@@ -7,6 +7,7 @@ import Image from 'next/image';
 import { useCollection, useDoc, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection, query, orderBy, doc } from 'firebase/firestore';
 import Preloader from '@/components/preloader';
+import { usePageReveal } from '@/lib/use-page-reveal';
 import Logo from '@/components/logo';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
@@ -116,6 +117,8 @@ export default function AboutPage() {
   const clients = useMemo(() => allClients?.filter(c => c.isVisible !== false) || [], [allClients]);
 
   const isLoading = isLoadingClients || isLoadingContent;
+  const { ready: revealReady, hasPreloader } = usePageReveal();
+  const showInlinePreloader = isLoadingContent || (hasPreloader && !revealReady);
   const logoUrl = aboutContent?.logoUrl;
   const logoScale = aboutContent?.logoScale || 1;
   
@@ -151,7 +154,7 @@ export default function AboutPage() {
       <div ref={scrollRef} className="flex-1 min-h-0 overflow-y-auto">
         <div className="p-[clamp(1rem,3vh,2rem)] md:p-[clamp(1.5rem,4vh,2rem)] flex items-center justify-center min-h-full">
           <div className="container mx-auto px-0 text-center">
-            {isLoadingContent ? (
+            {showInlinePreloader ? (
               <div className="flex justify-center items-center h-[50vh]">
                 <Preloader />
               </div>
