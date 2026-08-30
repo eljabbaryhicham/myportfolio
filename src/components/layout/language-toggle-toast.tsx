@@ -33,23 +33,19 @@ export function LanguageToggleToast({ className }: { className?: string }) {
     }
   }, []);
 
-  // Show the full toast. The very first show (initial load) stays expanded for
-  // INITIAL_SHOW_MS then collapses to the red dot. Subsequent shows stay open
-  // until the user stops hovering (collapses after HOVER_LEAVE_MS).
-  const show = useCallback(
-    (initial = false) => {
-      setVisible(true);
-      setCollapsed(false);
-      clearTimer();
-      if (initial) {
-        collapseTimer.current = setTimeout(() => setCollapsed(true), INITIAL_SHOW_MS);
-      }
-    },
-    [clearTimer]
-  );
+  // Show the full toast. It stays expanded then auto-collapses to the red dot.
+  // On desktop, hovering cancels this timer (see onMouseEnter) so it stays open
+  // while hovered; on mobile (no hover) the timer makes the pill collapse on
+  // its own after INITIAL_SHOW_MS instead of staying open forever.
+  const show = useCallback(() => {
+    setVisible(true);
+    setCollapsed(false);
+    clearTimer();
+    collapseTimer.current = setTimeout(() => setCollapsed(true), INITIAL_SHOW_MS);
+  }, [clearTimer]);
 
   useEffect(() => {
-    if (ready) show(true);
+    if (ready) show();
   }, [ready, show]);
 
   // Collapse to the red dot after HOVER_LEAVE_MS once the user stops hovering
@@ -81,9 +77,9 @@ export function LanguageToggleToast({ className }: { className?: string }) {
           }}
           exit={{ x: '-50%', y: 80, opacity: 0 }}
           transition={{
-            x: { type: 'spring', stiffness: 400, damping: 30 },
-            y: { type: 'spring', stiffness: 400, damping: 30 },
-            opacity: { duration: 0.3 },
+            x: { duration: 0.4, ease: 'easeInOut' },
+            y: { duration: 0.4, ease: 'easeInOut' },
+            opacity: { duration: 0.3, ease: 'easeInOut' },
             width: { duration: 0.5, ease: 'easeInOut' },
             height: { duration: 0.5, ease: 'easeInOut' },
           }}
@@ -111,7 +107,7 @@ export function LanguageToggleToast({ className }: { className?: string }) {
           }
           className={cn(
             "absolute bottom-4 left-1/2 z-[100] flex items-center overflow-hidden rounded-full border border-white/10 bg-white/10 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] backdrop-blur select-none hover:bg-white/15",
-            collapsed ? "justify-center p-0" : "gap-2 px-3 py-1.5",
+            collapsed ? "justify-center p-0" : "gap-3 px-3 py-1.5",
             className
           )}
         >
@@ -171,7 +167,7 @@ export function LanguageToggleToast({ className }: { className?: string }) {
           ref={measureRef}
           aria-hidden="true"
           style={{ visibility: 'hidden', position: 'absolute' }}
-          className="pointer-events-none z-[-1] flex items-center gap-2 whitespace-nowrap px-3 py-1.5"
+          className="pointer-events-none z-[-1] flex items-center gap-3 whitespace-nowrap px-3 py-1.5"
         >
           <span className="text-xs font-medium">{tTarget('layout.toggleLangToast')}</span>
           <span className="flex h-6 w-12 shrink-0 rounded-full border border-white/10 bg-white/10" />
