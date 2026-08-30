@@ -99,7 +99,7 @@ const CLOUDINARY_UPLOAD_RE = /\/(image|video|raw)\/upload\//;
 const withTransform = (url: string, transform: string): string =>
   url.replace(CLOUDINARY_UPLOAD_RE, (m) => `${m}${transform}/`);
 const stripTransforms = (url: string): string =>
-  url.replace(/^(.*?\/upload\/)(?:[^/]+)?(\/v\d+\/)/, '$1$2');
+  url.replace(/^(.*?\/upload)(?:\/[^/]+)?(\/v\d+\/)/, '$1$2');
 const formatVariant = (url: string, fmt: 'mp4' | 'webm' | 'webp' | 'avif' | 'jpg' | 'png'): string => {
   const out = withTransform(stripTransforms(url), `f_${fmt},q_auto,fl_attachment`);
   return out.replace(/\.(m3u8|webm|mp4|mov|jpeg|jpg|png|gif|webp|avif)$/i, `.${fmt}`);
