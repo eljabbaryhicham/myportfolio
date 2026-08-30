@@ -61,26 +61,26 @@ export function LanguageToggleToast({ className }: { className?: string }) {
           }}
           aria-live="polite"
           className={cn(
-            "absolute bottom-4 left-1/2 z-[100] flex items-center gap-3 rounded-full border border-white/10 bg-white/10 backdrop-blur-md shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] px-4 py-2 select-none hover:bg-white/15",
+            "absolute bottom-4 left-1/2 z-[100] flex items-center gap-2 rounded-full border border-white/10 bg-white/10 backdrop-blur-md shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] px-3 py-1.5 select-none hover:bg-white/15",
             className
           )}
         >
-          <span className="text-sm font-medium text-foreground">
+          <span className="text-xs font-medium text-foreground">
             {tTarget('layout.toggleLangToast')}
           </span>
-          {/* Mini pill switch cloned from the nav LanguageSwitcher */}
+          {/* Mini pill switch cloned from the nav LanguageSwitcher (shrunk) */}
           <span
             aria-hidden="true"
-            className="relative flex items-center h-7 w-14 rounded-full border border-white/10 bg-white/10 backdrop-blur-md shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] select-none"
+            className="relative flex items-center h-6 w-12 rounded-full border border-white/10 bg-white/10 backdrop-blur-md shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] select-none"
           >
             <motion.span
-              className="absolute z-10 flex h-6 w-6 items-center justify-center rounded-full bg-destructive shadow-[0_0_12px_hsl(var(--primary)/0.6)]"
+              className="absolute z-10 flex h-5 w-5 items-center justify-center rounded-full bg-destructive shadow-[0_0_12px_hsl(var(--primary)/0.6)]"
               style={{ top: '50%' }}
-              animate={{ left: pillIsEn ? 2 : 28, y: '-50%' }}
+              animate={{ left: pillIsEn ? 2 : 24, y: '-50%' }}
               initial={false}
               transition={{ type: 'spring', stiffness: 500, damping: 30 }}
             >
-              <span className="text-[9px] font-bold leading-none text-white">
+              <span className="text-[8px] font-bold leading-none text-white">
                 {pillIsEn ? 'EN' : 'FR'}
               </span>
             </motion.span>
