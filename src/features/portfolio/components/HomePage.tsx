@@ -367,7 +367,7 @@ export default function HomePageContent() {
             </div>
             {isLogoVisible && homeLogoUrl && (
               <div className="absolute inset-0 flex items-center justify-center" style={{ zIndex: 10 }}>
-                <div className="w-full max-w-sm px-4" style={{ transform: `scale(${logoScale})` }}>
+                <div className="w-full max-w-[min(40vw,250px)] sm:max-w-[min(35vw,300px)] md:max-w-[min(35vw,300px)] lg:max-w-[min(41vw,440px)] xl:max-w-[min(43vw,510px)] px-4" style={{ transform: `scale(${logoScale})` }}>
                   <Logo src={homeLogoUrl} color={logoColor || undefined} />
                 </div>
               </div>
