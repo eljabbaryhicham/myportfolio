@@ -30,6 +30,7 @@ const HERO_VIDEO_POSTER_LCP = "https://res.cloudinary.com/dsq1lxrqi/image/upload
 function CursorArrow({ targetRefs, cursorLottieUrl, tickLottieUrl }: { targetRefs: React.RefObject<HTMLElement | null>[]; cursorLottieUrl?: string; tickLottieUrl?: string }) {
   const arrowRef = useRef<HTMLDivElement>(null);
   const angleRef = useRef(0);
+  const overRef = useRef(false);
   const [isOver, setIsOver] = useState(false);
   const [customCursor, setCustomCursor] = useState<any>(null);
   const [customTick, setCustomTick] = useState<any>(null);
@@ -66,7 +67,10 @@ function CursorArrow({ targetRefs, cursorLottieUrl, tickLottieUrl }: { targetRef
         }
       }
 
-      setIsOver(overAny);
+      if (overRef.current !== overAny) {
+        overRef.current = overAny;
+        setIsOver(overAny);
+      }
 
       if (!nearestEl) {
         el.style.opacity = "0";
@@ -315,7 +319,7 @@ export default function HomePageContent() {
           backgroundImage: `url(${HERO_VIDEO_POSTER})`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
-          filter: 'blur(40px) brightness(0.4)',
+          filter: 'brightness(0.4)',
           transform: 'scale(1.2)',
         }}
       />
@@ -338,17 +342,15 @@ export default function HomePageContent() {
 
         <div className="flex flex-col items-center gap-1 sm:gap-2 md:gap-3 lg:gap-4 xl:gap-5 w-full px-4">
           <div className="translate-y-6 lg:translate-y-10">
-            <motion.div
+            <div
               className="w-[min(80vw,500px)] md:w-[min(70vw,600px)] lg:w-[min(82vw,880px)] xl:w-[min(86vw,1020px)]"
               style={{ aspectRatio: "16/9", position: "relative" }}
-              animate={{ y: [0, -8, 0] }}
-              transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
             >
             <div className="absolute inset-0" style={{
               borderRadius: 24,
               overflow: "hidden",
-              boxShadow: "0 0 60px rgba(0,0,0,0.4)",
-              border: "0.5px solid rgba(255,255,255,0.5)",
+              boxShadow: "0 0 80px rgba(0,0,0,0.6)",
+              border: "1px solid rgba(255,255,255,0.65)",
               maskImage: "linear-gradient(to bottom, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0.8) 8%, black 18%, black 20%, rgba(0,0,0,0.5) 70%, transparent 95%)",
               WebkitMaskImage: "linear-gradient(to bottom, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0.8) 8%, black 18%, black 20%, rgba(0,0,0,0.5) 70%, transparent 95%)",
             }}>
@@ -357,7 +359,6 @@ export default function HomePageContent() {
                 inset: -60,
                 borderRadius: "50%",
                 background: "radial-gradient(ellipse at center, rgba(255,255,255,0.08) 0%, transparent 70%)",
-                filter: "blur(50px)",
               }} />
               <video ref={videoRef} autoPlay muted loop playsInline preload="auto" poster={HERO_VIDEO_POSTER_LCP} className="absolute inset-0 w-full h-full object-cover" style={{ pointerEvents: 'none' }} {...({ fetchPriority: 'high' } as any)} />
               <div className="absolute inset-0 bg-background/60" />
@@ -369,7 +370,7 @@ export default function HomePageContent() {
                 </div>
               </div>
             )}
-          </motion.div>
+          </div>
           </div>
 
           <motion.div

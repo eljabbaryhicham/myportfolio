@@ -5,7 +5,6 @@ import { useState, useEffect, type RefObject, useRef } from 'react';
 import { doc } from 'firebase/firestore';
 import Lottie from 'lottie-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import animationData from '@/lib/arrow-animation.json';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useDoc, useFirestore, useMemoFirebase } from '@/firebase';
 
@@ -118,8 +117,19 @@ export function ScrollIndicator({ scrollRef }: ScrollIndicatorProps) {
             {customGif ? (
               // eslint-disable-next-line @next/next/no-img-element -- admin-supplied arbitrary-host GIF; next/image would require per-domain config
               <img src={customGif} alt="" className="w-full h-full object-contain" />
+            ) : customAnim ? (
+              <Lottie animationData={customAnim} loop={true} />
             ) : (
-              <Lottie animationData={customAnim || animationData} loop={true} />
+              <motion.svg
+                className="w-full h-full text-white/80"
+                viewBox="0 0 24 24"
+                fill="none"
+                animate={{ y: [0, 6, 0] }}
+                transition={{ duration: 1.2, repeat: Infinity, ease: "easeInOut" }}
+                aria-hidden="true"
+              >
+                <path d="M6 9l6 6 6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              </motion.svg>
             )}
           </div>
         </motion.div>

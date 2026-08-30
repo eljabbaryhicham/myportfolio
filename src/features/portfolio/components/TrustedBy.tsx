@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useId } from "react";
+import { useMemo, useId, useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { useTranslation } from "@/lib/i18n/useTranslation";
 import { getLocalizedString } from "@/lib/i18n/multilingual";
@@ -10,6 +10,33 @@ export default function TrustedBy() {
   const { t, lang } = useTranslation();
   const { clients } = useTrustedByClients();
   const uid = useId();
+  const wrapRef = useRef<HTMLDivElement>(null);
+  const [isInView, setIsInView] = useState(false);
+  const [mobileHovered, setMobileHovered] = useState(false);
+  const [desktopHovered, setDesktopHovered] = useState(false);
+
+  useEffect(() => {
+    const el = wrapRef.current;
+    if (!el || typeof IntersectionObserver === 'undefined') {
+      setIsInView(true);
+      return;
+    }
+    const io = new IntersectionObserver(
+      ([entry]) => setIsInView(entry.isIntersecting),
+      { rootMargin: '100px' }
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+
+  useEffect(() => {
+    const setPlay = (id: string, running: boolean) => {
+      const e = document.getElementById(id);
+      if (e) e.style.animationPlayState = running ? 'running' : 'paused';
+    };
+    setPlay(`m-${uid}`, isInView && !mobileHovered);
+    setPlay(`d-${uid}`, isInView && !desktopHovered);
+  }, [isInView, mobileHovered, desktopHovered, uid]);
 
   const visibleClients = useMemo(
     () => (clients || []).filter((c) => c.isVisible !== false),
@@ -20,7 +47,7 @@ export default function TrustedBy() {
   if (names.length === 0) return null;
 
   return (
-    <>
+    <div ref={wrapRef}>
       <style>{`@keyframes r2l{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}`}</style>
 
       <motion.section
@@ -29,8 +56,8 @@ export default function TrustedBy() {
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: "-40px" }}
         transition={{ duration: 0.5, ease: "easeOut" }}
-        onMouseEnter={() => { const e = document.getElementById(`m-${uid}`); if (e) e.style.animationPlayState = 'paused'; }}
-        onMouseLeave={() => { const e = document.getElementById(`m-${uid}`); if (e) e.style.animationPlayState = 'running'; }}
+        onMouseEnter={() => setMobileHovered(true)}
+        onMouseLeave={() => setMobileHovered(false)}
       >
         <p className="text-white/40 text-xs uppercase mb-4 text-center" style={{ letterSpacing: "0.2em" }}>
           {t('home.trustedBy')}
@@ -53,8 +80,8 @@ export default function TrustedBy() {
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: "-40px" }}
         transition={{ duration: 0.5, ease: "easeOut" }}
-        onMouseEnter={() => { const e = document.getElementById(`d-${uid}`); if (e) e.style.animationPlayState = 'paused'; }}
-        onMouseLeave={() => { const e = document.getElementById(`d-${uid}`); if (e) e.style.animationPlayState = 'running'; }}
+        onMouseEnter={() => setDesktopHovered(true)}
+        onMouseLeave={() => setDesktopHovered(false)}
       >
         <div className="max-w-7xl mx-auto px-6">
           <p className="text-white/40 text-xs uppercase mb-4 text-center" style={{ letterSpacing: "0.2em" }}>
@@ -71,6 +98,6 @@ export default function TrustedBy() {
           </div>
         </div>
       </motion.section>
-    </>
+    </div>
   );
 }

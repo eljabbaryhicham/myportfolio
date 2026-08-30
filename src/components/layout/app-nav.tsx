@@ -204,7 +204,21 @@ export function AppNav() {
             return (
                 <Link href="/" className="relative group mt-4 hidden md:block">
                     <div className="relative flex items-center justify-center" style={{ width: 'var(--menubar-logo-size)', height: 'var(--menubar-logo-size)' }}>
-                        <div className="absolute inset-0 rounded-full animate-spinning-circle-border bg-gradient-to-r from-primary via-transparent to-transparent"></div>
+                        <svg
+                          className="absolute inset-0 h-full w-full animate-spinning-circle-border text-primary"
+                          viewBox="0 0 100 100"
+                          fill="none"
+                          aria-hidden="true"
+                        >
+                          <defs>
+                            <linearGradient id="nav-ring-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                              <stop offset="0%" stopColor="currentColor" stopOpacity="1" />
+                              <stop offset="55%" stopColor="currentColor" stopOpacity="0" />
+                              <stop offset="100%" stopColor="currentColor" stopOpacity="0" />
+                            </linearGradient>
+                          </defs>
+                          <circle cx="50" cy="50" r="48" stroke="url(#nav-ring-grad)" strokeWidth="4" />
+                        </svg>
                         <div className="relative bg-transparent rounded-full p-1 flex items-center justify-center" style={{ width: 'calc(var(--menubar-logo-size) - 8px)', height: 'calc(var(--menubar-logo-size) - 8px)' }}>
                             <Logo src={logoUrl} />
                         </div>
