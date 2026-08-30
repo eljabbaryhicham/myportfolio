@@ -7,8 +7,8 @@ import { useLanguage } from '@/components/layout/language-switcher';
 import { useHomeReady } from '@/components/layout/home-ready-context';
 import translations from '@/lib/i18n/translations';
 
-const SHOW_DURATION_MS = 2000;
 const INITIAL_SHOW_MS = 2000;
+const HOVER_LEAVE_MS = 1000;
 
 export function LanguageToggleToast({ className }: { className?: string }) {
   const { lang, setLang } = useLanguage();
@@ -24,18 +24,17 @@ export function LanguageToggleToast({ className }: { className?: string }) {
     }
   }, []);
 
-  // Show the full toast and schedule a collapse to the red dot. The very first
-  // show (initial load) collapses after 1s; subsequent shows (e.g. toggling the
-  // language) stay for 2s.
+  // Show the full toast. The very first show (initial load) stays expanded for
+  // INITIAL_SHOW_MS then collapses to the red dot. Subsequent shows stay open
+  // until the user stops hovering (collapses after HOVER_LEAVE_MS).
   const show = useCallback(
     (initial = false) => {
       setVisible(true);
       setCollapsed(false);
       clearTimer();
-      collapseTimer.current = setTimeout(
-        () => setCollapsed(true),
-        initial ? INITIAL_SHOW_MS : SHOW_DURATION_MS
-      );
+      if (initial) {
+        collapseTimer.current = setTimeout(() => setCollapsed(true), INITIAL_SHOW_MS);
+      }
     },
     [clearTimer]
   );
@@ -43,6 +42,13 @@ export function LanguageToggleToast({ className }: { className?: string }) {
   useEffect(() => {
     if (ready) show(true);
   }, [ready, show]);
+
+  // Collapse to the red dot after HOVER_LEAVE_MS once the user stops hovering
+  // the expanded pill.
+  const scheduleCollapseOnLeave = useCallback(() => {
+    clearTimer();
+    collapseTimer.current = setTimeout(() => setCollapsed(true), HOVER_LEAVE_MS);
+  }, [clearTimer]);
 
   const other: 'fr' | 'en' = lang === 'en' ? 'fr' : 'en';
   const pillIsEn = other === 'en';
@@ -70,21 +76,16 @@ export function LanguageToggleToast({ className }: { className?: string }) {
               show();
             }
           }}
-          onMouseEnter={
-            collapsed
-              ? () => {
-                  clearTimer();
-                  setCollapsed(false);
-                }
-              : undefined
-          }
+          onMouseEnter={() => {
+            // Hovering expands the collapsed dot and always cancels any pending
+            // collapse timer, so a hovered (expanded) pill stays open.
+            if (collapsed) setCollapsed(false);
+            clearTimer();
+          }}
           onMouseLeave={
             collapsed
               ? undefined
-              : () => {
-                  clearTimer();
-                  setCollapsed(true);
-                }
+              : scheduleCollapseOnLeave
           }
           className={cn(
             "absolute bottom-4 left-1/2 z-[100] flex items-center overflow-hidden rounded-full border border-white/10 bg-white/10 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] backdrop-blur select-none hover:bg-white/15 transition-[width,height] duration-300",
