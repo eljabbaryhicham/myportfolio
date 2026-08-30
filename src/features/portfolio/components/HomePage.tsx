@@ -363,7 +363,6 @@ export default function HomePageContent() {
               }} />
               <video ref={videoRef} autoPlay muted loop playsInline preload="auto" poster={HERO_VIDEO_POSTER_LCP} className="absolute inset-0 w-full h-full object-cover" style={{ pointerEvents: 'none' }} {...({ fetchPriority: 'high' } as any)} />
               <div className="absolute inset-0 bg-background/60" />
-              <div className="absolute inset-0" style={{ backdropFilter: "blur(1px)" }} />
             </div>
             {isLogoVisible && homeLogoUrl && (
               <div className="absolute inset-0 flex items-center justify-center" style={{ zIndex: 10 }}>
@@ -403,7 +402,7 @@ export default function HomePageContent() {
               )}
             </motion.div>
             <motion.div variants={itemVariants} className="flex items-center justify-center gap-1.5 sm:gap-2 md:gap-4">
-              <Button ref={aboutRef} asChild className="group transition-shadow duration-300 rounded-full min-h-[36px] h-9 md:h-8 px-2.5 sm:px-3 md:px-4 text-[10px] sm:text-[11px] md:text-sm lg:text-base gap-2 shrink-0 bg-white/10 backdrop-blur-md border border-white/10 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] hover:bg-white/15">
+              <Button ref={aboutRef} asChild className="group transition-shadow duration-300 rounded-full min-h-[36px] h-9 md:h-8 px-2.5 sm:px-3 md:px-4 text-[10px] sm:text-[11px] md:text-sm lg:text-base gap-2 shrink-0 bg-white/10 border border-white/10 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] hover:bg-white/15">
                 <Link href="/about">
                   <FontAwesomeIcon icon={faCircleInfo} className="h-2.5 w-2.5 md:h-3 md:w-3" />
                   {t('nav.about')}
@@ -418,7 +417,7 @@ export default function HomePageContent() {
                   <FontAwesomeIcon icon={faArrowRight} className="ml-1.5 md:ml-2 transition-transform group-hover:translate-x-1" />
                 </Link>
               </Button>
-              <Button ref={contactRef} asChild className="group transition-shadow duration-300 rounded-full min-h-[36px] h-9 md:h-8 px-2.5 sm:px-3 md:px-4 text-[10px] sm:text-[11px] md:text-sm lg:text-base gap-2 shrink-0 bg-white/10 backdrop-blur-md border border-white/10 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] hover:bg-white/15">
+              <Button ref={contactRef} asChild className="group transition-shadow duration-300 rounded-full min-h-[36px] h-9 md:h-8 px-2.5 sm:px-3 md:px-4 text-[10px] sm:text-[11px] md:text-sm lg:text-base gap-2 shrink-0 bg-white/10 border border-white/10 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] hover:bg-white/15">
                 <Link href="/contact">
                   {t('nav.contact')}
                   <FontAwesomeIcon icon={faEnvelope} className="h-2.5 w-2.5 md:h-3 md:w-3" />

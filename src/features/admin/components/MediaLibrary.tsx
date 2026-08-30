@@ -265,7 +265,7 @@ const FileCard = ({
             <Checkbox
               checked={isSelected}
               onCheckedChange={() => onToggleSelect?.(file.id)}
-              className="h-auto aspect-square w-full rounded-full bg-background/80 backdrop-blur-sm [&>span]:absolute [&>span]:inset-0"
+              className="h-auto aspect-square w-full rounded-full bg-background/80 [&>span]:absolute [&>span]:inset-0"
               iconClassName="h-[55%] w-[55%]"
             />
           </div>

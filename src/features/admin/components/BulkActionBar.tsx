@@ -22,7 +22,7 @@ export default function BulkActionBar({ selectedCount, onClearSelection, onDelet
     <div className={cn(
       "fixed bottom-6 left-1/2 -translate-x-1/2 z-50",
       "flex items-center gap-3 px-5 py-3 rounded-xl",
-      "bg-background/95 backdrop-blur-md border border-white/10 shadow-2xl",
+      "bg-background/95 border border-white/10 shadow-2xl",
       "animate-in fade-in slide-in-from-bottom-4 duration-200",
       className
     )}>

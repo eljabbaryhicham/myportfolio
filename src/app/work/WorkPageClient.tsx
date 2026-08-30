@@ -150,7 +150,7 @@ function LazyDetailsVideo({
           <img src={poster} alt="" className="absolute inset-0 h-full w-full object-cover opacity-70" loading="lazy" decoding="async" />
         ) : null}
         <div className="relative z-10 flex flex-col items-center gap-2 text-white/90 pointer-events-none">
-          <span className="flex h-14 w-14 items-center justify-center rounded-full bg-white/15 backdrop-blur-md border border-white/20 shadow-lg">
+          <span className="flex h-14 w-14 items-center justify-center rounded-full bg-white/15 border border-white/20 shadow-lg">
             <FontAwesomeIcon icon={faFilm} className="h-6 w-6" />
           </span>
           <span className="text-xs tracking-wide text-white/70">Tap to play</span>
