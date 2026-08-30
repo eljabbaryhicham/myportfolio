@@ -2,29 +2,14 @@
 
 import { useMemo, useId } from "react";
 import { motion } from "framer-motion";
-import { useFirestore, useMemoFirebase, useCollection } from "@/firebase";
-import { collection, query, orderBy } from "firebase/firestore";
 import { useTranslation } from "@/lib/i18n/useTranslation";
-import { getLocalizedString, type MultilingualString } from "@/lib/i18n/multilingual";
-
-interface Client {
-  id: string;
-  name: MultilingualString;
-  logoUrl: string;
-  order: number;
-  isVisible?: boolean;
-}
+import { getLocalizedString } from "@/lib/i18n/multilingual";
+import { useTrustedByClients } from "@/components/trusted-by/trusted-by-provider";
 
 export default function TrustedBy() {
-  const firestore = useFirestore();
   const { t, lang } = useTranslation();
+  const { clients } = useTrustedByClients();
   const uid = useId();
-
-  const clientsQuery = useMemoFirebase(
-    () => firestore ? query(collection(firestore, 'clients'), orderBy('order')) : null,
-    [firestore]
-  );
-  const { data: clients } = useCollection<Client>(clientsQuery);
 
   const visibleClients = useMemo(
     () => (clients || []).filter((c) => c.isVisible !== false),

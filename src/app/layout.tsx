@@ -8,6 +8,7 @@ import { Analytics } from '@vercel/analytics/react';
 import { bungee, quicksand, dancingScript } from './fonts';
 import AppShell from '@/components/layout/app-shell';
 import { getHomePageSettings } from '@/lib/home-page-settings';
+import { getTrustedByClients } from '@/lib/trusted-by-clients';
 import { getStructuredDataJsonLd } from '@/lib/structured-data';
 
 // Single export: generateMetadata runs at request time, shares the cache()-
@@ -91,6 +92,7 @@ export default async function RootLayout({
   // client-side SettingsProvider; live admin edits still propagate via
   // useDoc after hydration.
   const initialSettings = await getHomePageSettings();
+  const initialClients = await getTrustedByClients();
   const jsonLd = await getStructuredDataJsonLd();
   return (
     <html lang="en" className={cn("dark h-full", bungee.variable, quicksand.variable, dancingScript.variable)} suppressHydrationWarning>
@@ -122,7 +124,7 @@ export default async function RootLayout({
         }} />
       </head>
       <body className={cn('font-body antialiased text-center h-full')} style={{ background: '#000' }} suppressHydrationWarning>
-        <AppShell initialSettings={initialSettings}>
+        <AppShell initialSettings={initialSettings} initialClients={initialClients}>
           {children}
         </AppShell>
         <SpeedInsights />

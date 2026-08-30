@@ -9,6 +9,7 @@ const en: Record<string, string> = {
   'layout.toggleLang': 'Toggle language',
   'layout.fr': 'FR',
   'layout.eng': 'ENG',
+  'layout.toggleLangToast': 'Switch to',
 
   /* HomePage */
   'home.hero.heading': 'From Concept to Screen',
@@ -608,6 +609,7 @@ const fr: Record<string, string> = {
   'layout.toggleLang': 'Changer de langue',
   'layout.fr': 'FR',
   'layout.eng': 'ENG',
+  'layout.toggleLangToast': 'Passer à',
 
   /* HomePage */
   'home.hero.heading': 'Du concept à l\'écran',

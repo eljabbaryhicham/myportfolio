@@ -11,6 +11,8 @@
  */
 import type { MultilingualString } from '@/lib/i18n/multilingual';
 
+export type { MultilingualString } from '@/lib/i18n/multilingual';
+
 export interface HomePageSettings {
   // Theme + branding
   themeColor?: string;
@@ -80,4 +82,17 @@ export interface HomePageSettings {
   // Email templates (contact form)
   emailTemplateHtml?: string;
   autoReplyTemplateHtml?: string;
+}
+
+/**
+ * Canonical view of a document in the public `clients` collection, shown by
+ * the homepage TrustedBy strip. Server-seeded so the first paint already
+ * contains the client list (no Firestore round-trip on the client).
+ */
+export interface TrustedByClient {
+  id: string;
+  name: MultilingualString;
+  logoUrl: string;
+  order: number;
+  isVisible?: boolean;
 }
