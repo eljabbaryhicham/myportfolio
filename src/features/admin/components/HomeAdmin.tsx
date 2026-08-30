@@ -22,7 +22,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { useDoc, useFirestore, useMemoFirebase, setDocumentNonBlocking, useCollection, useUser } from '@/firebase';
+import { useDoc, useFirestore, useMemoFirebase, useCollection, useUser } from '@/firebase';
 import { collection, doc } from 'firebase/firestore';
 import type { PortfolioItem } from '@/features/portfolio/data/portfolio-data';
 import { useEffect, useState } from 'react';
@@ -34,7 +34,6 @@ import { Switch } from '@/components/ui/switch';
 import { Slider } from '@/components/ui/slider';
 import { Separator } from '@/components/ui/separator';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -159,15 +158,14 @@ export default function HomeAdmin() {
   const { data: homeSettings, isLoading: isLoadingSettings } = useDoc<HomePageSettings>(settingsDocRef);
 
   const projectsCollection = useMemoFirebase(() => firestore ? collection(firestore, 'projects') : null, [firestore]);
-  const { data: portfolioItems, isLoading: isLoadingProjects } = useCollection<PortfolioItem>(projectsCollection);
+  const { isLoading: isLoadingProjects } = useCollection<PortfolioItem>(projectsCollection);
   
   const mediaCollection = useMemoFirebase(() => firestore ? collection(firestore, 'media') : null, [firestore]);
-  const { data: mediaAssets, isLoading: isLoadingMedia } = useCollection<MediaAsset>(mediaCollection);
+  const { isLoading: isLoadingMedia } = useCollection<MediaAsset>(mediaCollection);
 
   const [isLibraryOpen, setIsLibraryOpen] = useState(false);
   const [libraryField, setLibraryField] = useState<'homePageLogoUrl' | 'menubarLogoUrl' | 'heroVideoUrl' | 'preloaderUrl' | 'cursorLottieUrl' | 'tickLottieUrl' | 'arrowLottieUrl' | 'faviconUrl' | 'homePageBackgroundUrl' | 'websiteBackgroundUrl' | 'watermarkLogoUrl' | null>(null);
   const [libraryTab, setLibraryTab] = useState<'images' | 'videos' | 'files'>('images');
-  const [libraryCollection, setLibraryCollection] = useState<'primary' | 'extented'>('primary');
   const [isEmailPreviewOpen, setIsEmailPreviewOpen] = useState(false);
   const [emailPreviewField, setEmailPreviewField] = useState<'emailTemplateHtml' | 'autoReplyTemplateHtml'>('emailTemplateHtml');
   const [homeTab, setHomeTab] = useState<'appearance' | 'backgrounds' | 'navigation' | 'player' | 'preloader' | 'email'>('appearance');
@@ -1265,7 +1263,7 @@ export default function HomeAdmin() {
         <UnifiedMediaPicker
           isOpen={isLibraryOpen}
           onOpenChange={setIsLibraryOpen}
-          onMediaSelect={(url, type) => {
+          onMediaSelect={(url) => {
               if (libraryField) {
                   setValue(libraryField as any, url);
               }

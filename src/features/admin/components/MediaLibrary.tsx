@@ -23,7 +23,6 @@ import {
   loadUploadProgress,
   clearUploadProgress,
   getInterruptedUploads,
-  hasInterruptedUploads,
   markUploadCompleted,
   markUploadFailed,
 } from '@/lib/upload-progress-service';
@@ -477,7 +476,6 @@ export default forwardRef<MediaLibraryRef, MediaLibraryProps>(function MediaLibr
 
   // Cloudinary-specific state
   const [isChoosingLibrary, setIsChoosingLibrary] = useState(false);
-  const [isChoosingVideoFormat, setIsChoosingVideoFormat] = useState(false);
   const [filesToUpload, setFilesToUpload] = useState<File[]>([]);
   const [uploadVideoFormat, setUploadVideoFormat] = useState<'mp4' | 'm3u8' | 'webm'>('mp4');
   const [formatChoiceAsset, setFormatChoiceAsset] = useState<UnifiedFile | null>(null);

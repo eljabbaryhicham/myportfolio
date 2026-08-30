@@ -7,7 +7,6 @@ import type { PortfolioItem } from '@/features/portfolio/data/portfolio-data';
 import { usePathname } from 'next/navigation';
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
-import type { HomePageSettings } from '@/lib/types';
 import { cleanVideoUrl } from '@/lib/video';
 import { forceAutoplay } from '@/lib/video-autoplay';
 import { useHomePageSettings } from '@/components/settings/home-page-settings-provider';
@@ -157,7 +156,7 @@ function hexToHsl(hex: string): string | null {
     }
 
     const shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i;
-    hex = hex.replace(shorthandRegex, (m, r, g, b) => r + r + g + g + b + b);
+    hex = hex.replace(shorthandRegex, (_, r, g, b) => r + r + g + g + b + b);
 
     const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
     if (!result) {

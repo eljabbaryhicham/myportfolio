@@ -1,7 +1,7 @@
 
 'use client';
 
-import React, { useEffect, useRef, forwardRef, useImperativeHandle, useState } from 'react';
+import { useEffect, useRef, forwardRef, useImperativeHandle, useState } from 'react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import Preloader from './preloader';
 import 'plyr/dist/plyr.css';
@@ -95,7 +95,7 @@ const PlyrPlayer = forwardRef(({ source, poster, autoPlay = true, thumbnailVttUr
                 // later loadstart/buffering.
                 video.addEventListener('playing', done, { once: true });
                 // Safety: if playing never fires (e.g. autoplay blocked), fallback after delay
-                const safety = setTimeout(done, 4000);
+                setTimeout(done, 4000);
                 element = video;
             }
 
@@ -165,7 +165,7 @@ const PlyrPlayer = forwardRef(({ source, poster, autoPlay = true, thumbnailVttUr
                 });
                 hls.loadSource(source);
 
-                hls.on(Hls.Events.MANIFEST_PARSED, (event, data) => {
+                hls.on(Hls.Events.MANIFEST_PARSED, () => {
                     if (!isMounted) return;
 
                     const availableQualities = hls.levels.map((l) => l.height);

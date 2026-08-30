@@ -20,7 +20,7 @@ const GENERIC_ERROR_MESSAGE = 'Please check if a browser extension (like an ad b
  * Does NOT await the write operation internally.
  */
 export function setDocumentNonBlocking(docRef: DocumentReference, data: any, options: SetOptions) {
-  setDoc(docRef, data, options).catch(error => {
+  setDoc(docRef, data, options).catch(() => {
     const contextualError = new FirestorePermissionError({
       path: docRef.path,
       operation: 'write', // or 'create'/'update' based on options
@@ -42,7 +42,7 @@ export function setDocumentNonBlocking(docRef: DocumentReference, data: any, opt
  * Returns the Promise for the new doc ref, but typically not awaited by caller.
  */
 export function addDocumentNonBlocking(colRef: CollectionReference, data: any) {
-  const promise = addDoc(colRef, data).catch(error => {
+  const promise = addDoc(colRef, data).catch(() => {
     const contextualError = new FirestorePermissionError({
       path: colRef.path,
       operation: 'create',
@@ -63,7 +63,7 @@ export function addDocumentNonBlocking(colRef: CollectionReference, data: any) {
  * Does NOT await the write operation internally.
  */
 export function updateDocumentNonBlocking(docRef: DocumentReference, data: any) {
-  updateDoc(docRef, data).catch(error => {
+  updateDoc(docRef, data).catch(() => {
     const contextualError = new FirestorePermissionError({
       path: docRef.path,
       operation: 'update',
@@ -83,7 +83,7 @@ export function updateDocumentNonBlocking(docRef: DocumentReference, data: any) 
  * Does NOT await the write operation internally.
  */
 export function deleteDocumentNonBlocking(docRef: DocumentReference) {
-  deleteDoc(docRef).catch(error => {
+  deleteDoc(docRef).catch(() => {
     const contextualError = new FirestorePermissionError({
       path: docRef.path,
       operation: 'delete',

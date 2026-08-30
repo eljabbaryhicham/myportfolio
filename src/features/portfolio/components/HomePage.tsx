@@ -10,7 +10,6 @@ import tickAnimationData from "@/lib/tick-animation.json";
 import { Button } from "@/components/ui/button";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowRight, faCircleInfo, faEnvelope } from '@fortawesome/free-solid-svg-icons';
-import { cn } from "@/lib/utils";
 
 import Preloader from "@/components/preloader";
 import Logo from "@/components/logo";
@@ -19,7 +18,6 @@ import { useTranslation } from "@/lib/i18n/useTranslation";
 import { getLocalizedString } from "@/lib/i18n/multilingual";
 import { cleanVideoUrl } from "@/lib/video";
 import { forceAutoplay } from "@/lib/video-autoplay";
-import type { HomePageSettings } from "@/lib/types";
 import { useHomePageSettings } from '@/components/settings/home-page-settings-provider';
 import { useHomeReady } from '@/components/layout/home-ready-context';
 const HERO_VIDEO_URL = "https://res.cloudinary.com/dsq1lxrqi/video/upload/sp_auto/pg_5/v1778867307/Ovi_Motion_Design_v3kfy0.m3u8";

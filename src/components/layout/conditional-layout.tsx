@@ -7,13 +7,11 @@ import { AppNav } from './app-nav';
 import { LanguageToggleToast } from './language-toggle-toast';
 import { HomeReadyProvider } from './home-ready-context';
 import { cn } from '@/lib/utils';
-import { useIsMobile } from '@/hooks/use-mobile';
 import { AboutPrefetch } from '@/components/about-prefetch';
 
 export function ConditionalLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const isHomePage = pathname === '/';
-  const isMobile = useIsMobile();
   const homeScrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {

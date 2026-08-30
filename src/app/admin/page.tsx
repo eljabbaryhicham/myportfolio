@@ -54,8 +54,6 @@ function AdminPage() {
   const [innerMediaTab, setInnerMediaTab] = useState<'cloudinary' | 'vercel'>('cloudinary');
   
   const [newlyUploadedId, setNewlyUploadedId] = useState<string | null>(null);
-  const [dialogActiveTab, setDialogActiveTab] = useState<'images' | 'videos' | 'files'>('images');
-  const [dialogActiveLibrary, setDialogActiveLibrary] = useState<'primary' | 'extented'>('primary');
   const [isVercelLibraryOpen, setIsVercelLibraryOpen] = useState(false);
   const [vercelActiveTab, setVercelActiveTab] = useState<'images' | 'videos' | 'files'>('images');
   const { setActiveMediaTab, completedUpload, consumeCompletedUpload } = useUploadProgress();

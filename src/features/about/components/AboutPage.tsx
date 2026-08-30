@@ -1,8 +1,7 @@
 
 'use client';
 
-import { memo, useState, useEffect, useRef, useMemo } from 'react';
-import { ScrollArea } from '@/components/ui/scroll-area';
+import { memo, useRef, useMemo } from 'react';
 import { Separator } from '@/components/ui/separator';
 import Image from 'next/image';
 import { useCollection, useDoc, useFirestore, useMemoFirebase } from '@/firebase';

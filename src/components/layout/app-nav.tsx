@@ -27,7 +27,6 @@ const navItems = [
   { href: "/admin", key: "nav.admin", icon: faShieldHalved, public: false, adminOnly: true },
 ];
 
-import type { HomePageSettings } from '@/lib/types';
 import { useHomePageSettings } from '@/components/settings/home-page-settings-provider';
 
 const MENUBAR_LOGO_CACHE_KEY = 'menubar-logo-url';

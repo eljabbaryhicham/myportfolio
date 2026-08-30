@@ -18,8 +18,8 @@ import {
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { useMergedAutosave } from '@/hooks/useMergedAutosave';
-import { useDoc, useFirestore, useMemoFirebase, useUser, useCollection } from '@/firebase';
-import { collection, doc } from 'firebase/firestore';
+import { useDoc, useFirestore, useMemoFirebase, useUser } from '@/firebase';
+import { doc } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import Preloader from '@/components/preloader';
@@ -75,14 +75,6 @@ const defaultFormValues: ContactInfo = {
     twitterName: '',
 };
 
-interface MediaAsset {
-    id: string;
-    url: string;
-    filename: string;
-    title?: string;
-    resource_type: string;
-}
-
 export default function ContactAdmin() {
   const { t } = useTranslation();
   const { toast } = useToast();
@@ -98,13 +90,6 @@ export default function ContactAdmin() {
     [firestore]
   );
   const { data: contactInfo, isLoading } = useDoc<ContactInfo>(contactDocRef);
-
-  const mediaCollectionRef = useMemoFirebase(
-    () => (firestore ? collection(firestore, 'media') : null),
-    [firestore]
-  );
-  const { data: mediaAssets } = useCollection<MediaAsset>(mediaCollectionRef);
-  const imageAssets = mediaAssets?.filter(a => a.resource_type === 'image') || [];
 
   const [isLibraryOpen, setIsLibraryOpen] = useState(false);
   const [libraryTab, setLibraryTab] = useState<'images' | 'videos' | 'files'>('images');

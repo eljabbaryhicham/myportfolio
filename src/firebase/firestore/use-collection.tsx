@@ -98,7 +98,7 @@ export function useCollection<T = any>(
         setIsLoading(false);
         hasLoadedRef.current = true;
       },
-      (error: FirestoreError) => {
+      () => {
         // This logic extracts the path from either a ref or a query
         const path: string =
           memoizedTargetRefOrQuery.type === 'collection'

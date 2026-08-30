@@ -12,8 +12,6 @@ interface PreloaderSettings {
 }
 
 let cachedSettings: PreloaderSettings | null = null;
-let cacheTimestamp = 0;
-const CACHE_TTL = 30000;
 
 function usePreloaderSettingsFromContext(): PreloaderSettings | null {
   const ctx = useContext(HomePageSettingsContext);
@@ -42,7 +40,7 @@ const LazyLottie = ({ animationData }: { animationData: any }) => {
 
 const DefaultLottie = ({ url, size }: { url?: string; size?: number }) => {
   const [lottieData, setLottieData] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
+  const [, setLoading] = useState(true);
   const pct = size || 15;
 
   useEffect(() => {

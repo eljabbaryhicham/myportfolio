@@ -4,10 +4,7 @@
 import * as React from "react"
 import * as DialogPrimitive from "@radix-ui/react-dialog"
 import { cn } from "@/lib/utils"
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faXmark } from '@fortawesome/free-solid-svg-icons';
-import { Slot } from "@radix-ui/react-slot";
-import { motion, type HTMLMotionProps } from "framer-motion";
+import { motion } from "framer-motion";
 
 const Dialog = DialogPrimitive.Root
 

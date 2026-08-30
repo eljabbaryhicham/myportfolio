@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import CdnClapprPlayer from '@/components/CdnClapprPlayer';
 import { Separator } from '@/components/ui/separator';
 import { Input } from '@/components/ui/input';
@@ -13,7 +13,6 @@ import { notFound } from 'next/navigation';
 import Preloader from '@/components/preloader';
 import PlyrPlayer from '@/components/PlyrPlayer';
 import { useTranslation } from '@/lib/i18n/useTranslation';
-import type { HomePageSettings } from '@/lib/types';
 import { useHomePageSettings } from '@/components/settings/home-page-settings-provider';
 import { isSuperAdmin as isSuperAdminCheck } from '@/lib/constants';
 
@@ -30,7 +29,6 @@ export default function TestPage() {
   const userChangedRef = useRef(false);
 
   const { settings: homeSettings, hasLiveData } = useHomePageSettings();
-  const workPagePlayer = (homeSettings?.workPagePlayer as PlayerChoice) || 'clappr';
 
   useEffect(() => {
     if (!userChangedRef.current && homeSettings?.workPagePlayer) {

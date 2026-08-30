@@ -106,7 +106,7 @@ export async function POST(req: NextRequest) {
       .replace(/\{\{email\}\}/g, escapeHtml(email))
       .replace(/\{\{message\}\}/g, escapeHtml(message));
 
-    const { data, error } = await resend.emails.send({
+    const { error } = await resend.emails.send({
       from: `MelliVision <${FROM_EMAIL}>`,
       to: TO_EMAILS,
       subject: `New Message from ${name}`,

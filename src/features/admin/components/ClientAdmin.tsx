@@ -5,7 +5,7 @@ import { useTranslation } from '@/lib/i18n/useTranslation';
 import { getLocalizedString, ensureMultilingualString, type MultilingualString } from '@/lib/i18n/multilingual';
 import { MultilingualInput } from './MultilingualInput';
 import { isSuperAdmin as isSuperAdminCheck } from '@/lib/constants';
-import { useMemo, useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   Table,
@@ -336,7 +336,7 @@ export default function ClientAdmin() {
 
     batch.commit().then(() => {
         toast({ title: t('clientAdmin.toast.reordered.title'), description: t('clientAdmin.toast.reordered.description') });
-    }).catch(e => {
+    }).catch(() => {
         if (clients) {
           setSortedClients([...clients].sort((a, b) => (a.order ?? 0) - (b.order ?? 0)));
         }

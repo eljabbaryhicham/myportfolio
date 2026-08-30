@@ -28,7 +28,6 @@ import MediaLibrary from './MediaLibrary';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faImages, faPencilAlt } from '@fortawesome/free-solid-svg-icons';
 import ClientAdmin from './ClientAdmin';
-import { Separator } from '@/components/ui/separator';
 import {
   Dialog,
   DialogContent,

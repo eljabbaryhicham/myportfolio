@@ -39,7 +39,6 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeRaw from 'rehype-raw';
 import rehypeSanitize, { defaultSchema } from 'rehype-sanitize';
-import type { HomePageSettings } from '@/lib/types';
 import CdnClapprPlayer from '@/components/CdnClapprPlayer';
 import PlyrPlayer from '@/components/PlyrPlayer';
 import { getWatermarkPositionStyle, hasDetailsMedia, normalizeSelfClosingMedia, slugify } from '@/features/portfolio/components/work-helpers';
@@ -250,10 +249,6 @@ const ProjectDetailsContent = memo(function ProjectDetailsContent({
       }
       if (!videoSrc) return <video {...rest}>{children}</video>;
       const filename = rest['title'] || null;
-      let frameWidth = widthPercent;
-      const w = typeof width === 'string' ? width.trim() : '';
-      if (/^\d+(\.\d+)?$/.test(w)) frameWidth = `${w}%`;
-      else if (/^\d+(\.\d+)?(px|%)$/.test(w)) frameWidth = w;
       return (
         <div className="my-4 mx-auto rounded-lg border border-border/50 bg-muted/30 p-[2%]" style={{ maxWidth: widthPercent }}>
           {showMediaTitles && filename && (
@@ -726,8 +721,6 @@ function WorkPageContent() {
   
   const [isLibraryOpen, setIsLibraryOpen] = useState(false);
   const [librarySelectionConfig, setLibrarySelectionConfig] = useState<{ onSelect: (url: string, type: 'image' | 'video' | 'raw', filename: string) => void } | null>(null);
-  const [dialogActiveTab, setDialogActiveTab] = useState<'images' | 'videos' | 'files'>('images');
-  const [dialogActiveLibrary, setDialogActiveLibrary] = useState<'primary' | 'extented'>('primary');
   const [direction, setDirection] = useState<'next' | 'prev' | null>(null);
   // Swipe-to-navigate is started MANUALLY from designated areas only
   // (title/description + media content). This keeps the prev/next buttons
@@ -765,9 +758,6 @@ function WorkPageContent() {
     }
 
     if (gridRef.current) {
-        const itemMinWidth = 300; // Corresponds to the grid's item width basis
-        const gridGap = 16; // Corresponds to `gap-4`
-
         const gridWidth = gridRef.current.offsetWidth;
         const columnCount = calcColumnCount(gridWidth);
         setGridColumnCount(columnCount);
@@ -1032,7 +1022,7 @@ function WorkPageContent() {
     setIsLibraryOpen(true);
   };
 
-  const handleDragEnd = (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+  const handleDragEnd = (_event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
     if (!isMobile) return;
     const swipeThreshold = 50;
     const swipeVelocityThreshold = 300;
@@ -1128,7 +1118,6 @@ function WorkPageContent() {
     ? { gridTemplateColumns: `repeat(${gridColumnCount}, minmax(0, 1fr))` }
     : { gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))' };
 
-  const logoUrl = homeSettings?.homePageLogoUrl || contactInfo?.logoUrl;
   const workPagePlayer = homeSettings?.workPagePlayer || 'clappr';
   const watermarkLogoUrl = homeSettings?.watermarkLogoUrl || homeSettings?.homePageLogoUrl || contactInfo?.logoUrl || '';
   const watermarkSize = homeSettings?.watermarkSize ?? 12;

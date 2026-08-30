@@ -19,7 +19,7 @@ interface CdnClapprPlayerProps {
   watermark?: string;
 }
 
-const CdnClapprPlayer = forwardRef(function CdnClapprPlayer({ source, poster, autoPlay = true, watermark }: CdnClapprPlayerProps, ref) {
+const CdnClapprPlayer = forwardRef(function CdnClapprPlayer({ source, poster, autoPlay = true }: CdnClapprPlayerProps, ref) {
   const playerContainerRef = useRef<HTMLDivElement>(null);
   const playerRef = useRef<any>(null);
   const [containerId] = useState(() => `cdn-clappr-player-${Math.random().toString(36).substring(7)}`);
