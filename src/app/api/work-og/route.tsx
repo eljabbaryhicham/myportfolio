@@ -1,14 +1,13 @@
-// Per-item OG image: /api/work-og?id=xyz
+// Per-item OG image: /api/work-og?id=<slug>
 // Returns a 1200x630 PNG generated with next/og ImageResponse. Used as the
 // og:image for /work?id=... deep links.
 import { ImageResponse } from 'next/og';
-import { initializeServerApp } from '@/firebase/server-init';
 import { logger } from '@/lib/logger';
+import { getPortfolioItemBySlug } from '@/lib/portfolio-items';
 
 export const runtime = 'nodejs';
 
 type MinimalItem = {
-  id?: string;
   title?: { en?: string; fr?: string } | string;
   description?: { en?: string; fr?: string } | string;
   thumbnailUrl?: string;
@@ -20,14 +19,19 @@ function pickString(v: { en?: string; fr?: string } | string | undefined, fallba
   return fallback;
 }
 
-async function fetchItem(id: string): Promise<MinimalItem | null> {
+async function fetchItem(slug: string): Promise<MinimalItem | null> {
   try {
-    const app = await initializeServerApp();
-    const snap = await app.firestore().collection('portfolio').doc(id).get();
-    if (!snap.exists) return null;
-    return snap.data() as MinimalItem;
+    // Deep links use /work?id=<slug-of-title>. Resolve through the same server
+    // fetcher /work uses so the OG card matches the project grid.
+    const item = await getPortfolioItemBySlug(slug);
+    if (!item) return null;
+    return {
+      title: item.title,
+      description: item.description,
+      thumbnailUrl: item.thumbnailUrl,
+    };
   } catch (e) {
-    logger.warn(`work-og: failed to read portfolio/${id}`, e);
+    logger.warn(`work-og: failed to resolve slug "${slug}"`, e);
     return null;
   }
 }
@@ -36,10 +40,10 @@ export async function GET(request: Request) {
   const url = new URL(request.url);
   const id = url.searchParams.get('id') ?? '';
   const item = await fetchItem(id);
-  const title = item ? pickString(item.title, 'Selected Work') : 'MelliVision';
-  const subtitle = item
+  const title = pickString(item?.title, 'Selected Work');
+  const subtitle = item?.description
     ? pickString(item.description, 'Selected work from MelliVision')
-    : 'Driven By Detail';
+    : 'Selected work from MelliVision';
   const thumbnail = item?.thumbnailUrl;
 
   return new ImageResponse(

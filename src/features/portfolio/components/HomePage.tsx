@@ -2,7 +2,6 @@
 
 import { useRef, useEffect, useState } from "react";
 import Link from "next/link";
-import Lottie from "lottie-react";
 import { motion, AnimatePresence } from "framer-motion";
 import cursorArrowData from "@/lib/cursor-arrow.json";
 import tickAnimationData from "@/lib/tick-animation.json";
@@ -26,6 +25,21 @@ const HERO_VIDEO_POSTER = "https://res.cloudinary.com/dsq1lxrqi/image/upload/so_
 // The full-res poster above stays as a constant for any future use that
 // needs the unblurred/high-quality version.
 const HERO_VIDEO_POSTER_LCP = "https://res.cloudinary.com/dsq1lxrqi/image/upload/so_0,w_720,q_auto:good/v1778867307/Ovi_Motion_Design_v3kfy0.jpg";
+
+// Lazy-load lottie-react (~300 KB) only when the cursor animation actually
+// renders, keeping it out of the homepage first-load bundle. Until the library
+// arrives the cursor is invisible anyway (it only shows on mousemove), so a
+// brief pop-in on the first move is the accepted tradeoff.
+const LazyCursorLottie = ({ animationData, loop, tick }: { animationData: any; loop: boolean; tick: boolean }) => {
+  const [LottieComp, setLottieComp] = useState<any>(null);
+  useEffect(() => {
+    let cancelled = false;
+    import('lottie-react').then((mod) => { if (!cancelled) setLottieComp(() => mod.default); });
+    return () => { cancelled = true; };
+  }, []);
+  if (!LottieComp) return null;
+  return <LottieComp key={tick ? 'tick' : 'arrow'} animationData={animationData} loop={loop} />;
+};
 
 function CursorArrow({ targetRefs, cursorLottieUrl, tickLottieUrl }: { targetRefs: React.RefObject<HTMLElement | null>[]; cursorLottieUrl?: string; tickLottieUrl?: string }) {
   const arrowRef = useRef<HTMLDivElement>(null);
@@ -151,7 +165,7 @@ function CursorArrow({ targetRefs, cursorLottieUrl, tickLottieUrl }: { targetRef
         // eslint-disable-next-line @next/next/no-img-element -- admin-supplied arbitrary-host GIF; next/image would require per-domain config
         <img key={showTick ? 'tick-gif' : 'cursor-gif'} src={useGif} alt="" className="w-full h-full object-contain" />
       ) : (
-        <Lottie key={showTick ? 'tick' : 'arrow'} animationData={useLottie} loop={!showTick} />
+        <LazyCursorLottie animationData={useLottie} loop={!showTick} tick={showTick} />
       )}
     </div>
   );
@@ -340,10 +354,10 @@ export default function HomePageContent() {
           )}
         </AnimatePresence>
 
-        <div className="flex flex-col items-center gap-1 sm:gap-2 md:gap-3 lg:gap-4 xl:gap-5 w-full px-4">
-          <div className="translate-y-6 lg:translate-y-10">
+        <div className="flex flex-col items-center gap-1 sm:gap-2 md:gap-3 lg:gap-4 xl:gap-5 w-full px-4 -translate-y-4">
+          <div className="translate-y-8 lg:translate-y-14">
             <div
-              className="w-[min(80vw,500px)] md:w-[min(70vw,600px)] lg:w-[min(82vw,880px)] xl:w-[min(86vw,1020px)]"
+              className="w-[min(82vw,540px)] md:w-[min(72vw,640px)] lg:w-[min(84vw,960px)] xl:w-[min(88vw,1100px)]"
               style={{ aspectRatio: "16/9", position: "relative" }}
             >
             <div className="absolute inset-0" style={{

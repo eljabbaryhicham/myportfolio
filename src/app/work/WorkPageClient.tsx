@@ -15,7 +15,8 @@ import { useState, memo, useEffect, useMemo, useRef, useCallback, lazy, Suspense
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { useCollection, useFirestore, useMemoFirebase, useUser, setDocumentNonBlocking, addDocumentNonBlocking, useDoc } from '@/firebase';
+import { useFirestore, useMemoFirebase, useUser, setDocumentNonBlocking, addDocumentNonBlocking, useDoc } from '@/firebase';
+import { usePortfolioItems } from '@/components/portfolio/portfolio-items-provider';
 import { collection, doc } from 'firebase/firestore';
 import { deleteDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { useHomePageSettings } from '@/components/settings/home-page-settings-provider';
@@ -35,10 +36,6 @@ import { useTranslation } from '@/lib/i18n/useTranslation';
 import { getLocalizedString } from '@/lib/i18n/multilingual';
 import { isSuperAdmin as isSuperAdminCheck } from '@/lib/constants';
 import { cleanVideoUrl, webmVideoUrl } from '@/lib/video';
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
-import rehypeRaw from 'rehype-raw';
-import rehypeSanitize, { defaultSchema } from 'rehype-sanitize';
 import CdnClapprPlayer from '@/components/CdnClapprPlayer';
 import PlyrPlayer from '@/components/PlyrPlayer';
 import { getWatermarkPositionStyle, hasDetailsMedia, normalizeSelfClosingMedia, slugify } from '@/features/portfolio/components/work-helpers';
@@ -58,6 +55,10 @@ function preloadPlayers() {
 const PortfolioItemFormSheet = dynamic(() => import('@/features/admin/components/PortfolioItemForm').then((m) => m.PortfolioItemFormSheet), { ssr: false });
 const UnifiedMediaPicker = dynamic(() => import('@/features/admin/components/UnifiedMediaPicker'), { ssr: false });
 const LazyContactForm = lazy(() => import('@/features/contact/components/ContactForm'));
+// Markdown renderer (react-markdown + remark + rehype + parse5 + micromark):
+// code-split out of the /work first-load bundle. Only loads when a project's
+// details dialog is opened.
+const MarkdownRenderer = dynamic(() => import('@/components/work/markdown-renderer'), { ssr: false });
 
 const MemoizedPlyrPlayer = memo(PlyrPlayer);
 const MemoizedCdnClapprPlayer = memo(CdnClapprPlayer);
@@ -299,30 +300,11 @@ const ProjectDetailsContent = memo(function ProjectDetailsContent({
   }), [playerType, onImageFullscreen, widthPercent, showMediaTitles, watermark, watermarkOpacity, watermarkPosition, watermarkSize]);
 
   return (
-    <ReactMarkdown
-      remarkPlugins={[[remarkGfm, { breaks: true }]]}
-      rehypePlugins={[rehypeRaw, [rehypeSanitize, detailsSanitizeSchema]]}
-      components={components}
-    >
-      {normalizedDetails}
-    </ReactMarkdown>
+    <Suspense fallback={null}>
+      <MarkdownRenderer details={normalizedDetails} components={components} />
+    </Suspense>
   );
 });
-
-// GitHub-style sanitize schema doesn't know media tags — extend it so admins
-// can embed <video>/<audio>/<source> in project details. Raw HTML passes
-// through rehype-raw first, then gets sanitized with this schema.
-const detailsSanitizeSchema = {
-  ...defaultSchema,
-  tagNames: [...(defaultSchema.tagNames || []), 'video', 'audio', 'source', 'a'],
-  attributes: {
-    ...defaultSchema.attributes,
-    video: [...(defaultSchema.attributes?.video || []), 'src', 'controls', 'autoplay', 'loop', 'muted', 'playsinline', 'poster', 'preload', 'width', 'height', 'title', 'data-*'],
-    audio: ['src', 'controls', 'loop', 'muted', 'preload'],
-    source: ['src', 'type'],
-    a: [...(defaultSchema.attributes?.a || []), 'href', 'download', 'target', 'rel', 'title', 'data-*'],
-  },
-};
 
 
 const MemoizedPortfolioMedia = memo(({
@@ -673,16 +655,12 @@ function WorkPageContent() {
   const isSuperAdmin = isSuperAdminCheck(typedUser);
   const canEditProjects = isSuperAdmin || (typedUser?.permissions?.canEditProjects ?? true);
 
-  // Projects are publicly readable — no auth needed. Fetch immediately so projects
-  // appear as fast as possible on navigation.
-  const projectsQuery = useMemoFirebase(
-    () => (firestore ? collection(firestore, 'projects') : null),
-    [firestore]
-  );
+  // Projects are publicly readable — no auth needed. Sourced from the shared
+  // provider (server-seeded for first paint + live subscription after hydration).
   const {
-    data: portfolioItems,
+    items: portfolioItems,
     isLoading: isPortfolioLoading,
-  } = useCollection<PortfolioItem>(projectsQuery);
+  } = usePortfolioItems();
 
   const contactDocRef = useMemoFirebase(
     () => (firestore ? doc(firestore, 'contact', 'details') : null),

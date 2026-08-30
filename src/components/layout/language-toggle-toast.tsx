@@ -61,7 +61,7 @@ export function LanguageToggleToast({ className }: { className?: string }) {
           }}
           aria-live="polite"
           className={cn(
-            "absolute bottom-4 left-1/2 z-[100] flex items-center gap-2 rounded-full border border-white/10 bg-white/10 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] px-3 py-1.5 select-none hover:bg-white/15",
+            "absolute bottom-4 left-1/2 z-[100] flex items-center gap-2 rounded-full border border-white/10 bg-white/10 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] px-3 py-1.5 select-none hover:bg-white/15 backdrop-blur",
             className
           )}
         >

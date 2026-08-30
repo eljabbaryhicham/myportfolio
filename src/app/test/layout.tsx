@@ -1,9 +1,9 @@
-
 import type { Metadata } from 'next';
-import RegisterPage from "@/features/auth/components/RegisterPage";
 
 export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-export default RegisterPage;
+export default function TestLayout({ children }: { children: React.ReactNode }) {
+  return <>{children}</>;
+}

@@ -32,7 +32,7 @@ const nextConfig = {
     ],
   },
   experimental: {
-    optimizePackageImports: ['lucide-react', 'recharts', '@radix-ui/react-dialog', '@radix-ui/react-tabs', '@radix-ui/react-select', 'framer-motion', 'embla-carousel-react'],
+    optimizePackageImports: ['lucide-react', '@radix-ui/react-dialog', '@radix-ui/react-tabs', '@radix-ui/react-select', 'framer-motion', 'embla-carousel-react'],
   },
   // NOTE: Vercel will warn if routes set their own Cache-Control, because it
   // overrides Vercel's managed caching for static/ISR content. We intentionally
