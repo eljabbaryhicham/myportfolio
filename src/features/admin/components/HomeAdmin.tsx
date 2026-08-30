@@ -74,7 +74,7 @@ const settingsSchema = z.object({
   isHomePageVideoEnabled: z.boolean().optional(),
   isWebsiteVideoEnabled: z.boolean().optional(),
   heroVideoUrl: z.string().optional(),
-  preloaderType: z.enum(['default', 'lottie', 'gif', 'webm']).optional(),
+  preloaderType: z.enum(['none', 'gif', 'lottie', 'webm']).optional(),
   preloaderUrl: z.string().optional(),
   preloaderSize: z.number().min(5).max(100).optional(),
   cursorLottieUrl: z.string().optional(),
@@ -150,6 +150,9 @@ export default function HomeAdmin() {
   // Track the last-written hero logo so we revalidate the home page only when
   // the logo actually changes, not on every unrelated settings edit.
   const lastLogoRef = useRef<string | null>(null);
+  // Track the last-written preloader config (type|url|size) so a preloader
+  // change revalidates the static home page (no stale preloader flash).
+  const lastPreloaderRef = useRef<string | null>(null);
   const [isMounted, setIsMounted] = useState(false);
 
   const typedUser = user as AppUser | null;
@@ -194,7 +197,7 @@ export default function HomeAdmin() {
       homePageLogoColor: '',
       themeColor: '#d81e38',
       heroVideoUrl: '',
-      preloaderType: 'default',
+      preloaderType: 'none',
       preloaderUrl: '',
       preloaderSize: 15,
       cursorLottieUrl: '',
@@ -244,7 +247,9 @@ export default function HomeAdmin() {
         homePageLogoColor: homeSettings.homePageLogoColor || '',
         themeColor: homeSettings.themeColor || '#d81e38',
         heroVideoUrl: homeSettings.heroVideoUrl || '',
-        preloaderType: homeSettings.preloaderType || 'default',
+        preloaderType: ((homeSettings.preloaderType as string) === 'default'
+          ? 'none'
+          : homeSettings.preloaderType) || 'none',
         preloaderUrl: homeSettings.preloaderUrl || '',
         preloaderSize: homeSettings.preloaderSize || 15,
         cursorLottieUrl: homeSettings.cursorLottieUrl || '',
@@ -305,6 +310,15 @@ export default function HomeAdmin() {
       if (written.homePageLogoUrl !== undefined && written.homePageLogoUrl !== lastLogoRef.current) {
         lastLogoRef.current = written.homePageLogoUrl;
         revalidateHome(auth);
+      }
+      // When the preloader config changes, revalidate the static home page so
+      // the first paint shows the current preloader (no stale-animation flash).
+      if (written.preloaderType !== undefined || written.preloaderUrl !== undefined || written.preloaderSize !== undefined) {
+        const key = `${written.preloaderType ?? ''}|${written.preloaderUrl ?? ''}|${written.preloaderSize ?? ''}`;
+        if (key !== lastPreloaderRef.current) {
+          lastPreloaderRef.current = key;
+          revalidateHome(auth);
+        }
       }
     },
     onSaved: () => {
@@ -1009,16 +1023,16 @@ export default function HomeAdmin() {
                                                         className="flex flex-wrap items-center gap-4"
                                                     >
                                                         <FormItem className="flex items-center space-x-2 space-y-0">
-                                                            <FormControl><RadioGroupItem value="default" /></FormControl>
-                                                            <FormLabel className="font-normal">Default Lottie</FormLabel>
-                                                        </FormItem>
-                                                        <FormItem className="flex items-center space-x-2 space-y-0">
-                                                            <FormControl><RadioGroupItem value="lottie" /></FormControl>
-                                                            <FormLabel className="font-normal">Custom Lottie URL</FormLabel>
+                                                            <FormControl><RadioGroupItem value="none" /></FormControl>
+                                                            <FormLabel className="font-normal">None</FormLabel>
                                                         </FormItem>
                                                         <FormItem className="flex items-center space-x-2 space-y-0">
                                                             <FormControl><RadioGroupItem value="gif" /></FormControl>
                                                             <FormLabel className="font-normal">GIF</FormLabel>
+                                                        </FormItem>
+                                                        <FormItem className="flex items-center space-x-2 space-y-0">
+                                                            <FormControl><RadioGroupItem value="lottie" /></FormControl>
+                                                            <FormLabel className="font-normal">Lottie</FormLabel>
                                                         </FormItem>
                                                         <FormItem className="flex items-center space-x-2 space-y-0">
                                                             <FormControl><RadioGroupItem value="webm" /></FormControl>
@@ -1031,31 +1045,7 @@ export default function HomeAdmin() {
                                         )}
                                     />
 
-                                    {watch('preloaderType') === 'default' && (
-                                        <FormField
-                                            control={control}
-                                            name="preloaderUrl"
-                                            render={({ field }) => (
-                                                    <FormItem>
-                                                        <FormLabel>Custom Default Lottie (optional)</FormLabel>
-                                                        <FormDescription>
-                                                            Upload a Lottie JSON to replace the built-in default. Leave empty to keep the original.
-                                                        </FormDescription>
-                                                        <div className="flex items-center gap-2">
-                                                            <FormControl>
-                                                                <Input placeholder="Leave empty for built-in default" {...field} className="flex-1" />
-                                                            </FormControl>
-                                                            <Button type="button" variant="outline" size="icon" onClick={() => { setLibraryField('preloaderUrl'); setLibraryTab('files'); setIsLibraryOpen(true); }}>
-                                                                <FontAwesomeIcon icon={faImages} />
-                                                            </Button>
-                                                        </div>
-                                                        <FormMessage />
-                                                    </FormItem>
-                                            )}
-                                        />
-                                    )}
-
-                                    {watch('preloaderType') !== 'default' && (
+                                    {watch('preloaderType') !== 'none' && (
                                         <FormField
                                             control={control}
                                             name="preloaderUrl"

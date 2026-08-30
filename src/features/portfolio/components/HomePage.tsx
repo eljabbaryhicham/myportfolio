@@ -242,7 +242,14 @@ export default function HomePageContent() {
   }, []);
   // Show the full-screen preloader while settings are still loading OR the
   // page hasn't fully loaded. After both, fade it out.
-  const showFullPreloader = isLoading || !pageReady;
+  // If no preloader is configured ('none', empty, or the legacy 'default'
+  // type with no URL), skip the overlay entirely and reveal the page.
+  const preloaderType = homeSettings?.preloaderType;
+  const preloaderUrl = homeSettings?.preloaderUrl;
+  const hasPreloader =
+    (preloaderType === 'gif' || preloaderType === 'webm' || preloaderType === 'lottie') &&
+    Boolean(preloaderUrl);
+  const showFullPreloader = hasPreloader && (isLoading || !pageReady);
 
   // Signal the home is ready once the preloader has fully faded out, so
   // the language switch toast can appear right after (not on top of) the

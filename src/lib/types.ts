@@ -34,7 +34,7 @@ export interface HomePageSettings {
   homePageTitleColor?: string;
 
   // Preloader / arrow animation
-  preloaderType?: 'default' | 'lottie' | 'gif' | 'webm';
+  preloaderType?: 'none' | 'gif' | 'lottie' | 'webm';
   preloaderUrl?: string;
   preloaderSize?: number;
   isArrowAnimationEnabled?: boolean;

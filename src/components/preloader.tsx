@@ -1,17 +1,16 @@
 'use client';
 
 import { useEffect, useState, useContext } from 'react';
-const FALLBACK_GIF = 'https://res.cloudinary.com/dsq1lxrqi/image/upload/f_auto,q_auto/v1787348899/honey_badger_alive__gyx22e.gif';
 import { HomePageSettingsContext } from '@/components/settings/home-page-settings-provider';
 import type { HomePageSettings } from '@/lib/types';
 
-interface PreloaderSettings {
-  preloaderType?: 'default' | 'lottie' | 'gif' | 'webm';
+export type PreloaderType = 'none' | 'gif' | 'lottie' | 'webm';
+
+export interface PreloaderSettings {
+  preloaderType?: PreloaderType;
   preloaderUrl?: string;
   preloaderSize?: number;
 }
-
-let cachedSettings: PreloaderSettings | null = null;
 
 function usePreloaderSettingsFromContext(): PreloaderSettings | null {
   const ctx = useContext(HomePageSettingsContext);
@@ -19,14 +18,14 @@ function usePreloaderSettingsFromContext(): PreloaderSettings | null {
   const settings = ctx.settings as (HomePageSettings & PreloaderSettings) | null;
   if (!settings) return null;
   return {
-    preloaderType: settings.preloaderType,
+    preloaderType: settings.preloaderType as PreloaderType | undefined,
     preloaderUrl: settings.preloaderUrl,
     preloaderSize: settings.preloaderSize,
   };
 }
 
 // Lazy-load lottie-react (~300 KB) only when a Lottie animation is actually
-// rendered, keeping the default GIF/preloader path lightweight.
+// rendered, keeping the GIF/WebM/none paths lightweight.
 const LazyLottie = ({ animationData }: { animationData: any }) => {
   const [LottieComp, setLottieComp] = useState<any>(null);
   useEffect(() => {
@@ -39,14 +38,12 @@ const LazyLottie = ({ animationData }: { animationData: any }) => {
 };
 
 // Fixed pixel size used by inline (non-fullscreen) preloaders so the chosen
-// animation renders at the same, clearly-visible size on every page/media
-// loader regardless of how small the containing card is. Without this, the
-// viewport-relative `preloaderSize` (%) collapses to a tiny spinner on cards.
+// animation renders at a consistent, clearly-visible size regardless of how
+// small the containing card is.
 const INLINE_SIZE_PX = 64;
 
-// Resolve the CSS dimensions for the animation element. Fullscreen loaders
-// size relative to the viewport (%) so the homepage loader keeps its
-// prominent size; inline loaders use a fixed pixel size for consistency.
+// Fullscreen loaders size relative to the viewport (%) so the homepage loader
+// keeps its prominent size; inline loaders use a fixed pixel size.
 const resolveDimension = (sizePct: number, fullscreen: boolean): string =>
   fullscreen ? `${sizePct}%` : `${INLINE_SIZE_PX}px`;
 
@@ -57,38 +54,29 @@ const DimensionStyle = ({ dimension }: { dimension: string }) => ({
   maxHeight: dimension,
 });
 
-const DefaultLottie = ({ url, size }: { url?: string; size: string }) => {
+const LottieLoader = ({ url, size }: { url: string; size: string }) => {
   const [lottieData, setLottieData] = useState<any>(null);
-  const [, setLoading] = useState(true);
+  const [failed, setFailed] = useState(false);
 
   useEffect(() => {
-    if (!url) {
-      setLoading(false);
-      return;
-    }
+    if (!url) { setFailed(true); return; }
     let disposed = false;
-    setLoading(true);
+    setFailed(false);
     fetch(url)
-      .then(r => r.json())
-      .then(data => { if (!disposed) { setLottieData(data); setLoading(false); } })
-      .catch(() => { if (!disposed) setLoading(false); });
+      .then(r => { if (!r.ok) throw new Error('bad status'); return r.json(); })
+      .then(data => { if (!disposed) setLottieData(data); })
+      .catch(() => { if (!disposed) setFailed(true); });
     return () => { disposed = true; };
   }, [url]);
 
-  if (lottieData) {
-    return (
-      <div className="flex items-center justify-center w-full h-full">
-        <div style={DimensionStyle({ dimension: size })}>
-          <LazyLottie animationData={lottieData} />
-        </div>
-      </div>
-    );
-  }
+  // On failure render nothing rather than a different (fallback) animation.
+  if (failed || !lottieData) return null;
 
   return (
     <div className="flex items-center justify-center w-full h-full">
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={FALLBACK_GIF} alt="Loading" style={DimensionStyle({ dimension: size })} className="object-contain" />
+      <div style={DimensionStyle({ dimension: size })}>
+        <LazyLottie animationData={lottieData} />
+      </div>
     </div>
   );
 };
@@ -120,16 +108,22 @@ const WebmLoader = ({ url, size }: { url: string; size: string }) => {
 
 const Preloader = ({ settings, fullscreen = false }: { settings?: PreloaderSettings; fullscreen?: boolean }) => {
   const fromContext = usePreloaderSettingsFromContext();
-  const active = settings || fromContext || cachedSettings;
+  const active = settings || fromContext || null;
 
-  const type = active?.preloaderType || 'default';
+  // Legacy 'default' (no/fallback animation) is treated as 'none'.
+  const rawType = active?.preloaderType as PreloaderType | 'default' | undefined;
+  const type = rawType === 'default' ? 'none' : (rawType || 'none');
   const url = active?.preloaderUrl || '';
   const sizePct = active?.preloaderSize || 15;
+
+  if (type === 'none' || !url) return null;
+
   const dimension = resolveDimension(sizePct, fullscreen);
 
-  if (type === 'gif' && url) return <GifLoader url={url} size={dimension} />;
-  if (type === 'webm' && url) return <WebmLoader url={url} size={dimension} />;
-  return <DefaultLottie url={url || undefined} size={dimension} />;
+  if (type === 'gif') return <GifLoader url={url} size={dimension} />;
+  if (type === 'webm') return <WebmLoader url={url} size={dimension} />;
+  // lottie (and any unknown type) use the Lottie loader.
+  return <LottieLoader url={url} size={dimension} />;
 };
 
 export default Preloader;
