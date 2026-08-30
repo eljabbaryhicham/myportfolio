@@ -8,6 +8,7 @@ import { useHomeReady } from '@/components/layout/home-ready-context';
 import translations from '@/lib/i18n/translations';
 
 const SHOW_DURATION_MS = 2000;
+const INITIAL_SHOW_MS = 1000;
 
 export function LanguageToggleToast({ className }: { className?: string }) {
   const { lang, setLang } = useLanguage();
@@ -23,16 +24,24 @@ export function LanguageToggleToast({ className }: { className?: string }) {
     }
   }, []);
 
-  // Show the full toast and schedule a collapse to the red dot.
-  const show = useCallback(() => {
-    setVisible(true);
-    setCollapsed(false);
-    clearTimer();
-    collapseTimer.current = setTimeout(() => setCollapsed(true), SHOW_DURATION_MS);
-  }, [clearTimer]);
+  // Show the full toast and schedule a collapse to the red dot. The very first
+  // show (initial load) collapses after 1s; subsequent shows (e.g. toggling the
+  // language) stay for 2s.
+  const show = useCallback(
+    (initial = false) => {
+      setVisible(true);
+      setCollapsed(false);
+      clearTimer();
+      collapseTimer.current = setTimeout(
+        () => setCollapsed(true),
+        initial ? INITIAL_SHOW_MS : SHOW_DURATION_MS
+      );
+    },
+    [clearTimer]
+  );
 
   useEffect(() => {
-    if (ready) show();
+    if (ready) show(true);
   }, [ready, show]);
 
   const other: 'fr' | 'en' = lang === 'en' ? 'fr' : 'en';
