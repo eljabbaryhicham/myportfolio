@@ -43,9 +43,10 @@ const LazyLottie = ({ animationData }: { animationData: any }) => {
 const INLINE_SIZE_PX = 64;
 
 // Fullscreen loaders size relative to the viewport (%) so the homepage loader
-// keeps its prominent size; inline loaders use a fixed pixel size.
-const resolveDimension = (sizePct: number, fullscreen: boolean): string =>
-  fullscreen ? `${sizePct}%` : `${INLINE_SIZE_PX}px`;
+// keeps its prominent size; inline loaders use a fixed pixel size that can be
+// overridden via the `sizePx` prop (e.g. larger page-content preloaders).
+const resolveDimension = (sizePct: number, fullscreen: boolean, sizePx?: number): string =>
+  fullscreen ? `${sizePct}%` : `${sizePx ?? INLINE_SIZE_PX}px`;
 
 const DimensionStyle = ({ dimension }: { dimension: string }) => ({
   width: dimension,
@@ -106,7 +107,7 @@ const WebmLoader = ({ url, size }: { url: string; size: string }) => {
   );
 };
 
-const Preloader = ({ settings, fullscreen = false }: { settings?: PreloaderSettings; fullscreen?: boolean }) => {
+const Preloader = ({ settings, fullscreen = false, sizePx }: { settings?: PreloaderSettings; fullscreen?: boolean; sizePx?: number }) => {
   const fromContext = usePreloaderSettingsFromContext();
   const active = settings || fromContext || null;
 
@@ -118,7 +119,7 @@ const Preloader = ({ settings, fullscreen = false }: { settings?: PreloaderSetti
 
   if (type === 'none' || !url) return null;
 
-  const dimension = resolveDimension(sizePct, fullscreen);
+  const dimension = resolveDimension(sizePct, fullscreen, sizePx);
 
   if (type === 'gif') return <GifLoader url={url} size={dimension} />;
   if (type === 'webm') return <WebmLoader url={url} size={dimension} />;

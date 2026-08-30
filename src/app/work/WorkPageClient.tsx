@@ -1153,7 +1153,7 @@ function WorkPageContent() {
                   >
                     {showGalleryPreloader ? (
                       <div className="col-span-full h-full min-h-[50vh] flex items-center justify-center">
-                        <Preloader />
+                        <Preloader sizePx={144} />
                       </div>
                     ) : filteredItems.length === 0 ? (
                       <div className="col-span-full h-full min-h-[50vh] flex flex-col items-center justify-center text-center gap-4">

@@ -114,7 +114,7 @@ export default function ContactPage() {
             <div className="container mx-auto px-0">
             {showInlinePreloader ? (
               <div className="flex justify-center items-center h-[50vh]">
-                <Preloader />
+                <Preloader sizePx={144} />
               </div>
             ) : (
             <>
