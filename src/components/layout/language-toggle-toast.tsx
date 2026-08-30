@@ -46,6 +46,7 @@ export function LanguageToggleToast({ className }: { className?: string }) {
 
   const other: 'fr' | 'en' = lang === 'en' ? 'fr' : 'en';
   const pillIsEn = other === 'en';
+  const langIsEn = lang === 'en';
   const tTarget = (key: string) => translations[other]?.[key] ?? translations.en[key] ?? key;
 
   return (
@@ -102,7 +103,7 @@ export function LanguageToggleToast({ className }: { className?: string }) {
               className="flex h-9 w-9 items-center justify-center rounded-full bg-destructive shadow-[0_0_12px_hsl(var(--primary)/0.6)]"
             >
               <span className="text-[12px] font-bold leading-none text-white">
-                {pillIsEn ? 'EN' : 'FR'}
+                {langIsEn ? 'EN' : 'FR'}
               </span>
             </motion.span>
           ) : (
