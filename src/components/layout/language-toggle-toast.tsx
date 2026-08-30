@@ -61,8 +61,14 @@ export function LanguageToggleToast({ className }: { className?: string }) {
           transition={{ type: 'spring', stiffness: 400, damping: 30 }}
           aria-live="polite"
           onClick={() => {
-            setLang(other);
-            show();
+            // When collapsed (the red dot), tapping should expand the toast
+            // rather than toggle the language (no hover on mobile).
+            if (collapsed) {
+              show();
+            } else {
+              setLang(other);
+              show();
+            }
           }}
           onMouseEnter={
             collapsed
