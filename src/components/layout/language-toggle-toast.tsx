@@ -8,7 +8,7 @@ import { useHomeReady } from '@/components/layout/home-ready-context';
 import translations from '@/lib/i18n/translations';
 
 const SHOW_DURATION_MS = 2000;
-const INITIAL_SHOW_MS = 3000;
+const INITIAL_SHOW_MS = 2000;
 
 export function LanguageToggleToast({ className }: { className?: string }) {
   const { lang, setLang } = useLanguage();
