@@ -21,10 +21,15 @@ import { cleanVideoUrl } from "@/lib/video";
 import { forceAutoplay } from "@/lib/video-autoplay";
 import type { HomePageSettings } from "@/lib/types";
 import { useHomePageSettings } from '@/components/settings/home-page-settings-provider';
+import { useHomeReady } from '@/components/layout/home-ready-context';
 const HERO_VIDEO_URL = "https://res.cloudinary.com/dsq1lxrqi/video/upload/sp_auto/pg_5/v1778867307/Ovi_Motion_Design_v3kfy0.m3u8";
 const HERO_VIDEO_POSTER = "https://res.cloudinary.com/dsq1lxrqi/image/upload/so_0,f_auto,q_auto/v1778867307/Ovi_Motion_Design_v3kfy0.jpg";
+// Smaller, faster-loading poster for the LCP image (720w, q_auto:good).
+// The full-res poster above stays as a constant for any future use that
+// needs the unblurred/high-quality version.
+const HERO_VIDEO_POSTER_LCP = "https://res.cloudinary.com/dsq1lxrqi/image/upload/so_0,w_720,q_auto:good/v1778867307/Ovi_Motion_Design_v3kfy0.jpg";
 
-function CursorArrow({ targetRef, cursorLottieUrl, tickLottieUrl }: { targetRef: React.RefObject<HTMLButtonElement | null>; cursorLottieUrl?: string; tickLottieUrl?: string }) {
+function CursorArrow({ targetRefs, cursorLottieUrl, tickLottieUrl }: { targetRefs: React.RefObject<HTMLElement | null>[]; cursorLottieUrl?: string; tickLottieUrl?: string }) {
   const arrowRef = useRef<HTMLDivElement>(null);
   const angleRef = useRef(0);
   const [isOver, setIsOver] = useState(false);
@@ -41,20 +46,44 @@ function CursorArrow({ targetRef, cursorLottieUrl, tickLottieUrl }: { targetRef:
       const cx = e.clientX;
       const cy = e.clientY;
 
-      if (!targetRef.current) return;
-      const rect = targetRef.current.getBoundingClientRect();
+      // Find the nearest target (if any) and whether the cursor is over it.
+      let nearestEl: HTMLElement | null = null;
+      let nearestDist = Infinity;
+      let overAny = false;
+      for (const r of targetRefs) {
+        const t = r.current;
+        if (!t) continue;
+        const rect = t.getBoundingClientRect();
+        if (cx >= rect.left && cx <= rect.right && cy >= rect.top && cy <= rect.bottom) {
+          overAny = true;
+        }
+        const tx = rect.left + rect.width / 2;
+        const ty = rect.top + rect.height / 2;
+        const dx = tx - cx;
+        const dy = ty - cy;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < nearestDist) {
+          nearestDist = dist;
+          nearestEl = t;
+        }
+      }
+
+      setIsOver(overAny);
+
+      if (!nearestEl) {
+        el.style.opacity = "0";
+        return;
+      }
+
+      const rect = nearestEl.getBoundingClientRect();
       const tx = rect.left + rect.width / 2;
       const ty = rect.top + rect.height / 2;
       const dx = tx - cx;
       const dy = ty - cy;
-      const dist = Math.sqrt(dx * dx + dy * dy);
 
-      const over = cx >= rect.left && cx <= rect.right && cy >= rect.top && cy <= rect.bottom;
-      setIsOver(over);
-
-      if (!over) {
+      if (!overAny) {
         angleRef.current = Math.atan2(dy, dx) * (180 / Math.PI) - 90;
-        const scale = Math.min(1.6, 1 + Math.max(0, 1 - dist / 200) * 0.6);
+        const scale = Math.min(1.6, 1 + Math.max(0, 1 - nearestDist / 200) * 0.6);
         el.style.transform = `translate(-50%, -50%) rotate(${angleRef.current}deg) scale(${scale})`;
       } else {
         el.style.transform = `translate(-50%, -50%)`;
@@ -72,7 +101,7 @@ function CursorArrow({ targetRef, cursorLottieUrl, tickLottieUrl }: { targetRef:
       window.removeEventListener("mousemove", update);
       window.removeEventListener("mouseleave", hide);
     };
-  }, [targetRef]);
+  }, [targetRefs]);
 
   useEffect(() => {
     if (!cursorLottieUrl) { setCustomCursor(null); setCursorGif(null); return; }
@@ -139,6 +168,8 @@ const itemVariants = {
 export default function HomePageContent() {
   const { t, lang } = useTranslation();
   const ctaRef = useRef<HTMLButtonElement | null>(null);
+  const aboutRef = useRef<HTMLButtonElement | null>(null);
+  const contactRef = useRef<HTMLButtonElement | null>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
 
   // Read from the shared SettingsProvider (seeded server-side, kept live
@@ -189,21 +220,53 @@ export default function HomePageContent() {
   // page hasn't fully loaded. After both, fade it out.
   const showFullPreloader = isLoading || !pageReady;
 
+  // Signal the home is ready once the preloader has fully faded out, so
+  // the language switch toast can appear right after (not on top of) the
+  // preloader. Guarded so it only fires once per page lifetime.
+  const { notifyReady } = useHomeReady();
+  const readySignaledRef = useRef(false);
+  useEffect(() => {
+    if (showFullPreloader || readySignaledRef.current) return;
+    readySignaledRef.current = true;
+    const t = setTimeout(notifyReady, 400); // matches preloader exit duration (0.35s)
+    return () => clearTimeout(t);
+  }, [showFullPreloader, notifyReady]);
+
   const homeLogoUrl = homeSettings?.homePageLogoUrl;
   const isLogoVisible = homeSettings?.isHomePageLogoVisible ?? true;
   const logoScale = homeSettings?.homePageLogoScale || 1;
   const logoColor = homeSettings?.homePageLogoColor || '';
 
   useEffect(() => {
-    // Preload the default hero poster with high priority for LCP
-    const link = document.createElement('link');
-    link.rel = 'preload';
-    link.as = 'image';
-    link.href = HERO_VIDEO_POSTER;
+    // Preload the default hero poster with high priority for LCP. Use a
+    // smaller 720w/q_auto:good variant so the LCP image paints quickly;
+    // the full-res poster stays blurred behind overlays and the logo.
+    const posterLink = document.createElement('link');
+    posterLink.rel = 'preload';
+    posterLink.as = 'image';
+    posterLink.href = HERO_VIDEO_POSTER_LCP;
     // @ts-ignore - fetchPriority is not in the type but is valid
-    link.fetchPriority = 'high';
-    document.head.appendChild(link);
-    return () => { try { document.head.removeChild(link); } catch {} };
+    posterLink.fetchPriority = 'high';
+    document.head.appendChild(posterLink);
+
+    // Preload the hero video source so the browser starts the request in
+    // parallel with the page render instead of waiting for the <video>
+    // element to mount. `as="fetch"` works for both an HLS manifest and
+    // a direct MP4/WebM file (the browser will reuse the cached response
+    // when the <video> requests the same URL).
+    const sourceLink = document.createElement('link');
+    sourceLink.rel = 'preload';
+    sourceLink.as = 'fetch';
+    sourceLink.href = HERO_VIDEO_URL;
+    sourceLink.crossOrigin = 'anonymous';
+    // @ts-ignore - fetchPriority is not in the type but is valid
+    sourceLink.fetchPriority = 'high';
+    document.head.appendChild(sourceLink);
+
+    return () => {
+      try { document.head.removeChild(posterLink); } catch {}
+      try { document.head.removeChild(sourceLink); } catch {}
+    };
   }, []);
 
   useEffect(() => {
@@ -259,7 +322,7 @@ export default function HomePageContent() {
         }}
       />
       <div className="homepage-viewport-fix-inner relative z-10 flex h-full w-full items-center justify-center overflow-auto transition-opacity duration-1000">
-        <CursorArrow targetRef={ctaRef} cursorLottieUrl={homeSettings?.cursorLottieUrl} tickLottieUrl={homeSettings?.tickLottieUrl} />
+        <CursorArrow targetRefs={[aboutRef, contactRef, ctaRef]} cursorLottieUrl={homeSettings?.cursorLottieUrl} tickLottieUrl={homeSettings?.tickLottieUrl} />
 
         <AnimatePresence>
           {showFullPreloader && (
@@ -275,13 +338,14 @@ export default function HomePageContent() {
           )}
         </AnimatePresence>
 
-        <div className="flex flex-col items-center gap-1 sm:gap-2 md:gap-3 w-full px-4">
-          <motion.div
-            className="w-[min(80vw,500px)] md:w-[min(70vw,600px)]"
-            style={{ aspectRatio: "16/9", position: "relative" }}
-            animate={{ y: [0, -8, 0] }}
-            transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-          >
+        <div className="flex flex-col items-center gap-1 sm:gap-2 md:gap-3 lg:gap-4 xl:gap-5 w-full px-4">
+          <div className="translate-y-6 lg:translate-y-10">
+            <motion.div
+              className="w-[min(80vw,500px)] md:w-[min(70vw,600px)] lg:w-[min(82vw,880px)] xl:w-[min(86vw,1020px)]"
+              style={{ aspectRatio: "16/9", position: "relative" }}
+              animate={{ y: [0, -8, 0] }}
+              transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+            >
             <div className="absolute inset-0" style={{
               borderRadius: 24,
               overflow: "hidden",
@@ -297,7 +361,7 @@ export default function HomePageContent() {
                 background: "radial-gradient(ellipse at center, rgba(255,255,255,0.08) 0%, transparent 70%)",
                 filter: "blur(50px)",
               }} />
-              <video ref={videoRef} autoPlay muted loop playsInline preload="metadata" poster={HERO_VIDEO_POSTER} className="absolute inset-0 w-full h-full object-cover" style={{ pointerEvents: 'none' }} />
+              <video ref={videoRef} autoPlay muted loop playsInline preload="auto" poster={HERO_VIDEO_POSTER_LCP} className="absolute inset-0 w-full h-full object-cover" style={{ pointerEvents: 'none' }} {...({ fetchPriority: 'high' } as any)} />
               <div className="absolute inset-0 bg-background/60" />
               <div className="absolute inset-0" style={{ backdropFilter: "blur(1px)" }} />
             </div>
@@ -309,21 +373,22 @@ export default function HomePageContent() {
               </div>
             )}
           </motion.div>
+          </div>
 
           <motion.div
             data-content
-            className="flex flex-col items-center gap-3 sm:gap-4 md:gap-5 lg:gap-6 w-full"
+            className="-mt-6 lg:-mt-10 flex flex-col items-center gap-3 sm:gap-4 md:gap-5 lg:gap-6 xl:gap-8 w-full"
             variants={contentVariants}
             initial="hidden"
             animate={isLoading ? "hidden" : "visible"}
           >
-            <motion.div variants={itemVariants} className="text-center space-y-2 max-w-lg md:max-w-xl lg:max-w-2xl px-4" style={{ textShadow: "0 2px 12px rgba(0,0,0,0.6)" }}>
+            <motion.div variants={itemVariants} className="text-center space-y-2 max-w-lg md:max-w-xl lg:max-w-3xl px-4" style={{ textShadow: "0 2px 12px rgba(0,0,0,0.6)" }}>
               {isLoading ? (
                 <div className="min-h-[1.5rem] md:min-h-[2.5rem] flex items-center justify-center">
                   <div className="h-4 md:h-6 w-56 sm:w-72 animate-pulse rounded bg-white/10" />
                 </div>
               ) : (
-                <h2 className="text-base sm:text-lg md:text-3xl lg:text-4xl font-headline tracking-tight min-h-[1.5rem] md:min-h-[2.5rem]" style={{ color: homeSettings?.homePageTitleColor || 'rgba(255,255,255,0.9)' }}>
+                <h2 className="text-base sm:text-lg md:text-3xl xl:text-4xl font-headline tracking-tight min-h-[1.5rem] md:min-h-[2.5rem]" style={{ color: homeSettings?.homePageTitleColor || 'rgba(255,255,255,0.9)' }}>
                   {getLocalizedString(homeSettings?.homePageTitle, lang) || t('home.hero.heading')}
                 </h2>
               )}
@@ -338,7 +403,7 @@ export default function HomePageContent() {
               )}
             </motion.div>
             <motion.div variants={itemVariants} className="flex items-center justify-center gap-1.5 sm:gap-2 md:gap-4">
-              <Button asChild className="group transition-shadow duration-300 rounded-full min-h-[36px] h-9 md:h-8 px-2.5 sm:px-3 md:px-4 text-[10px] sm:text-[11px] md:text-sm gap-1 shrink-0" style={{ boxShadow: "0 0 15px rgba(255,255,255,0.1)" }}>
+              <Button ref={aboutRef} asChild className="group transition-shadow duration-300 rounded-full min-h-[36px] h-9 md:h-8 px-2.5 sm:px-3 md:px-4 text-[10px] sm:text-[11px] md:text-sm lg:text-base gap-2 shrink-0 bg-white/10 backdrop-blur-md border border-white/10 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] hover:bg-white/15">
                 <Link href="/about">
                   <FontAwesomeIcon icon={faCircleInfo} className="h-2.5 w-2.5 md:h-3 md:w-3" />
                   {t('nav.about')}
@@ -353,7 +418,7 @@ export default function HomePageContent() {
                   <FontAwesomeIcon icon={faArrowRight} className="ml-1.5 md:ml-2 transition-transform group-hover:translate-x-1" />
                 </Link>
               </Button>
-              <Button asChild className="group transition-shadow duration-300 rounded-full min-h-[36px] h-9 md:h-8 px-2.5 sm:px-3 md:px-4 text-[10px] sm:text-[11px] md:text-sm gap-1 shrink-0" style={{ boxShadow: "0 0 15px rgba(255,255,255,0.1)" }}>
+              <Button ref={contactRef} asChild className="group transition-shadow duration-300 rounded-full min-h-[36px] h-9 md:h-8 px-2.5 sm:px-3 md:px-4 text-[10px] sm:text-[11px] md:text-sm lg:text-base gap-2 shrink-0 bg-white/10 backdrop-blur-md border border-white/10 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] hover:bg-white/15">
                 <Link href="/contact">
                   {t('nav.contact')}
                   <FontAwesomeIcon icon={faEnvelope} className="h-2.5 w-2.5 md:h-3 md:w-3" />
@@ -363,7 +428,7 @@ export default function HomePageContent() {
             <motion.div variants={itemVariants} className="text-foreground/40 text-xs md:text-sm lg:text-base animate-pulse" style={{ textShadow: "0 1px 8px rgba(0,0,0,0.5)" }}>
               {t('home.hero.scroll')}
             </motion.div>
-            <motion.div variants={itemVariants} className="w-full min-h-[88px] md:min-h-[92px]">
+            <motion.div variants={itemVariants} className="w-full min-h-[88px] md:min-h-[92px] lg:min-h-[104px]">
               <TrustedBy />
             </motion.div>
           </motion.div>
