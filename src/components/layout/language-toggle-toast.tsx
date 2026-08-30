@@ -8,7 +8,7 @@ import { useHomeReady } from '@/components/layout/home-ready-context';
 import translations from '@/lib/i18n/translations';
 
 const INITIAL_SHOW_MS = 2000;
-const HOVER_LEAVE_MS = 1000;
+const HOVER_LEAVE_MS = 500;
 
 export function LanguageToggleToast({ className }: { className?: string }) {
   const { lang, setLang } = useLanguage();
@@ -88,7 +88,7 @@ export function LanguageToggleToast({ className }: { className?: string }) {
               : scheduleCollapseOnLeave
           }
           className={cn(
-            "absolute bottom-4 left-1/2 z-[100] flex items-center overflow-hidden rounded-full border border-white/10 bg-white/10 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] backdrop-blur select-none hover:bg-white/15 transition-[width,height] duration-300",
+            "absolute bottom-4 left-1/2 z-[100] flex items-center overflow-hidden rounded-full border border-white/10 bg-white/10 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] backdrop-blur select-none hover:bg-white/15 transition-[width,height] duration-500",
             collapsed
               ? "h-10 w-10 justify-center p-0"
               : "h-9 w-auto gap-2 px-3 py-1.5",
