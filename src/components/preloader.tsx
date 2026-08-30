@@ -38,10 +38,28 @@ const LazyLottie = ({ animationData }: { animationData: any }) => {
   return <LottieComp animationData={animationData} loop={true} />;
 };
 
-const DefaultLottie = ({ url, size }: { url?: string; size?: number }) => {
+// Fixed pixel size used by inline (non-fullscreen) preloaders so the chosen
+// animation renders at the same, clearly-visible size on every page/media
+// loader regardless of how small the containing card is. Without this, the
+// viewport-relative `preloaderSize` (%) collapses to a tiny spinner on cards.
+const INLINE_SIZE_PX = 64;
+
+// Resolve the CSS dimensions for the animation element. Fullscreen loaders
+// size relative to the viewport (%) so the homepage loader keeps its
+// prominent size; inline loaders use a fixed pixel size for consistency.
+const resolveDimension = (sizePct: number, fullscreen: boolean): string =>
+  fullscreen ? `${sizePct}%` : `${INLINE_SIZE_PX}px`;
+
+const DimensionStyle = ({ dimension }: { dimension: string }) => ({
+  width: dimension,
+  height: dimension,
+  maxWidth: dimension,
+  maxHeight: dimension,
+});
+
+const DefaultLottie = ({ url, size }: { url?: string; size: string }) => {
   const [lottieData, setLottieData] = useState<any>(null);
   const [, setLoading] = useState(true);
-  const pct = size || 15;
 
   useEffect(() => {
     if (!url) {
@@ -60,7 +78,7 @@ const DefaultLottie = ({ url, size }: { url?: string; size?: number }) => {
   if (lottieData) {
     return (
       <div className="flex items-center justify-center w-full h-full">
-        <div style={{ width: `${pct}%`, height: `${pct}%` }}>
+        <div style={DimensionStyle({ dimension: size })}>
           <LazyLottie animationData={lottieData} />
         </div>
       </div>
@@ -70,23 +88,21 @@ const DefaultLottie = ({ url, size }: { url?: string; size?: number }) => {
   return (
     <div className="flex items-center justify-center w-full h-full">
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={FALLBACK_GIF} alt="Loading" style={{ width: `${pct}%`, height: `${pct}%`, maxWidth: `${pct}%`, maxHeight: `${pct}%` }} className="object-contain" />
+      <img src={FALLBACK_GIF} alt="Loading" style={DimensionStyle({ dimension: size })} className="object-contain" />
     </div>
   );
 };
 
-const GifLoader = ({ url, size }: { url: string; size?: number }) => {
-  const pct = size || 15;
+const GifLoader = ({ url, size }: { url: string; size: string }) => {
   return (
     <div className="flex items-center justify-center w-full h-full">
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={url} alt="Loading" style={{ width: `${pct}%`, height: `${pct}%`, maxWidth: `${pct}%`, maxHeight: `${pct}%` }} className="object-contain" />
+      <img src={url} alt="Loading" style={DimensionStyle({ dimension: size })} className="object-contain" />
     </div>
   );
 };
 
-const WebmLoader = ({ url, size }: { url: string; size?: number }) => {
-  const pct = size || 15;
+const WebmLoader = ({ url, size }: { url: string; size: string }) => {
   return (
     <div className="flex items-center justify-center w-full h-full">
       <video
@@ -95,25 +111,25 @@ const WebmLoader = ({ url, size }: { url: string; size?: number }) => {
         loop
         muted
         playsInline
-        style={{ width: `${pct}%`, height: `${pct}%`, maxWidth: `${pct}%`, maxHeight: `${pct}%` }}
+        style={DimensionStyle({ dimension: size })}
         className="object-contain"
       />
     </div>
   );
 };
 
-const Preloader = ({ settings }: { settings?: PreloaderSettings }) => {
+const Preloader = ({ settings, fullscreen = false }: { settings?: PreloaderSettings; fullscreen?: boolean }) => {
   const fromContext = usePreloaderSettingsFromContext();
   const active = settings || fromContext || cachedSettings;
 
   const type = active?.preloaderType || 'default';
   const url = active?.preloaderUrl || '';
-  const size = active?.preloaderSize || 15;
+  const sizePct = active?.preloaderSize || 15;
+  const dimension = resolveDimension(sizePct, fullscreen);
 
-  if (type === 'gif' && url) return <GifLoader url={url} size={size} />;
-  if (type === 'webm' && url) return <WebmLoader url={url} size={size} />;
-  if (type === 'lottie') return <DefaultLottie url={url || undefined} size={size} />;
-  return <DefaultLottie url={url || undefined} size={size} />;
+  if (type === 'gif' && url) return <GifLoader url={url} size={dimension} />;
+  if (type === 'webm' && url) return <WebmLoader url={url} size={dimension} />;
+  return <DefaultLottie url={url || undefined} size={dimension} />;
 };
 
 export default Preloader;

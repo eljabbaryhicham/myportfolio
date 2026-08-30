@@ -18,6 +18,7 @@ import { cn } from '@/lib/utils';
 import Preloader from '@/components/preloader';
 import { useCollection, useFirestore, useMemoFirebase, addDocumentNonBlocking, deleteDocumentNonBlocking, useUser, useAuth, setDocumentNonBlocking } from '@/firebase';
 import { logger } from '@/lib/logger';
+import { revalidateHome } from '@/lib/revalidate-home';
 import {
   saveUploadProgress,
   loadUploadProgress,
@@ -1151,6 +1152,8 @@ for (const file of files) {
   const handleSetLogo = (url: string) => {
     if (!firestore || !canEditContact) return;
     setDocumentNonBlocking(doc(firestore, 'homepage', 'settings'), { homePageLogoUrl: url }, { merge: true });
+    // Revalidate the static home page so the new hero logo shows on first paint.
+    revalidateHome(auth);
     toast({ title: t('mediaAdmin.toast.logoUpdated.title'), description: t('mediaAdmin.toast.logoUpdated.description') });
   };
 

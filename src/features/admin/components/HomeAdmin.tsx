@@ -22,10 +22,11 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { useDoc, useFirestore, useMemoFirebase, useCollection, useUser } from '@/firebase';
+import { revalidateHome } from '@/lib/revalidate-home';
+import { useDoc, useFirestore, useMemoFirebase, useCollection, useUser, useAuth } from '@/firebase';
 import { collection, doc } from 'firebase/firestore';
 import type { PortfolioItem } from '@/features/portfolio/data/portfolio-data';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Preloader from '@/components/preloader';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { isSuperAdmin as isSuperAdminCheck } from '@/lib/constants';
@@ -145,6 +146,10 @@ export default function HomeAdmin() {
   const { t } = useTranslation();
   const firestore = useFirestore();
   const { user } = useUser();
+  const auth = useAuth();
+  // Track the last-written hero logo so we revalidate the home page only when
+  // the logo actually changes, not on every unrelated settings edit.
+  const lastLogoRef = useRef<string | null>(null);
   const [isMounted, setIsMounted] = useState(false);
 
   const typedUser = user as AppUser | null;
@@ -294,6 +299,12 @@ export default function HomeAdmin() {
           const hsl = `${Math.round(h * 360)} ${Math.round(s * 100)}% ${Math.round(l * 100)}%`;
           localStorage.setItem('belofted_theme_hsl', hsl);
         } catch {}
+      }
+      // When the hero logo changes, revalidate the static home page so the
+      // SSR HTML no longer serves the old logo URL on first paint.
+      if (written.homePageLogoUrl !== undefined && written.homePageLogoUrl !== lastLogoRef.current) {
+        lastLogoRef.current = written.homePageLogoUrl;
+        revalidateHome(auth);
       }
     },
     onSaved: () => {
