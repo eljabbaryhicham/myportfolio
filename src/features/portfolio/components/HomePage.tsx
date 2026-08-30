@@ -59,6 +59,14 @@ function CursorArrow({ targetRefs, cursorLottieUrl, tickLottieUrl }: { targetRef
       const cx = e.clientX;
       const cy = e.clientY;
 
+      // Don't show the custom cursor over the language toast / collapsed red
+      // dot — the system cursor should remain visible there for interaction.
+      const hit = document.elementFromPoint(cx, cy);
+      if (hit && hit.closest('[data-cursor-hide]')) {
+        el.style.opacity = "0";
+        return;
+      }
+
       // Find the nearest target (if any) and whether the cursor is over it.
       let nearestEl: HTMLElement | null = null;
       let nearestDist = Infinity;

@@ -7,7 +7,7 @@ import { useLanguage } from '@/components/layout/language-switcher';
 import { useHomeReady } from '@/components/layout/home-ready-context';
 import translations from '@/lib/i18n/translations';
 
-const SHOW_DURATION_MS = 1000;
+const SHOW_DURATION_MS = 2000;
 
 export function LanguageToggleToast({ className }: { className?: string }) {
   const { lang, setLang } = useLanguage();
@@ -44,6 +44,7 @@ export function LanguageToggleToast({ className }: { className?: string }) {
       {visible && (
         <motion.button
           type="button"
+          data-cursor-hide="true"
           initial={{ x: '-50%', y: 80, opacity: 0 }}
           animate={{ x: '-50%', y: 0, opacity: 1 }}
           exit={{ x: '-50%', y: 80, opacity: 0 }}
