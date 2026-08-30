@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { useLanguage } from '@/components/layout/language-switcher';
@@ -16,6 +16,15 @@ export function LanguageToggleToast({ className }: { className?: string }) {
   const [visible, setVisible] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
   const collapseTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Measured natural (expanded) width so we can animate between the collapsed
+  // dot (40px) and the full pill numerically (CSS/layout projection can't
+  // reliably animate an `auto` width, causing instant snaps).
+  const measureRef = useRef<HTMLDivElement>(null);
+  const [expandedWidth, setExpandedWidth] = useState(40);
+
+  useLayoutEffect(() => {
+    if (measureRef.current) setExpandedWidth(measureRef.current.offsetWidth);
+  }, [lang, ready, visible]);
 
   const clearTimer = useCallback(() => {
     if (collapseTimer.current) {
@@ -58,13 +67,26 @@ export function LanguageToggleToast({ className }: { className?: string }) {
   return (
     <AnimatePresence>
       {visible && (
+        <>
         <motion.button
           type="button"
           data-cursor-hide="true"
           initial={{ x: '-50%', y: 80, opacity: 0 }}
-          animate={{ x: '-50%', y: 0, opacity: 1 }}
+          animate={{
+            x: '-50%',
+            y: 0,
+            opacity: 1,
+            width: collapsed ? 40 : expandedWidth,
+            height: collapsed ? 40 : 36,
+          }}
           exit={{ x: '-50%', y: 80, opacity: 0 }}
-          transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+          transition={{
+            x: { type: 'spring', stiffness: 400, damping: 30 },
+            y: { type: 'spring', stiffness: 400, damping: 30 },
+            opacity: { duration: 0.3 },
+            width: { duration: 0.5, ease: 'easeInOut' },
+            height: { duration: 0.5, ease: 'easeInOut' },
+          }}
           aria-live="polite"
           onClick={() => {
             // When collapsed (the red dot), tapping should expand the toast
@@ -88,10 +110,8 @@ export function LanguageToggleToast({ className }: { className?: string }) {
               : scheduleCollapseOnLeave
           }
           className={cn(
-            "absolute bottom-4 left-1/2 z-[100] flex items-center overflow-hidden rounded-full border border-white/10 bg-white/10 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] backdrop-blur select-none hover:bg-white/15 transition-[width,height] duration-500",
-            collapsed
-              ? "h-10 w-10 justify-center p-0"
-              : "h-9 w-auto gap-2 px-3 py-1.5",
+            "absolute bottom-4 left-1/2 z-[100] flex items-center overflow-hidden rounded-full border border-white/10 bg-white/10 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] backdrop-blur select-none hover:bg-white/15",
+            collapsed ? "justify-center p-0" : "gap-2 px-3 py-1.5",
             className
           )}
         >
@@ -145,6 +165,18 @@ export function LanguageToggleToast({ className }: { className?: string }) {
             </>
           )}
         </motion.button>
+        {/* Hidden measurement of the expanded pill width so the size can be
+            animated numerically between the dot (40px) and the full pill. */}
+        <div
+          ref={measureRef}
+          aria-hidden="true"
+          style={{ visibility: 'hidden', position: 'absolute' }}
+          className="pointer-events-none z-[-1] flex items-center gap-2 whitespace-nowrap px-3 py-1.5"
+        >
+          <span className="text-xs font-medium">{tTarget('layout.toggleLangToast')}</span>
+          <span className="flex h-6 w-12 shrink-0 rounded-full border border-white/10 bg-white/10" />
+        </div>
+        </>
       )}
     </AnimatePresence>
   );
