@@ -325,6 +325,7 @@ const MemoizedPortfolioMedia = memo(({
   autoPlay,
   plyrRef,
   clapprRef,
+  maximized = false,
 }: {
   item: PortfolioItem;
   onFullscreenClick: (url: string) => void;
@@ -336,6 +337,7 @@ const MemoizedPortfolioMedia = memo(({
   autoPlay: boolean;
   plyrRef: React.Ref<any>;
   clapprRef?: React.Ref<any>;
+  maximized?: boolean;
 }) => {
   const { t, lang } = useTranslation();
   const containerRef = useRef<HTMLDivElement>(null);
@@ -418,7 +420,7 @@ const MemoizedPortfolioMedia = memo(({
       : cleanVideoUrl(item.sourceUrl);
 
     return (
-      <div ref={containerRef} className="relative aspect-video bg-black flex items-center justify-center w-full overflow-hidden">
+      <div ref={containerRef} className={cn("relative bg-black flex items-center justify-center overflow-hidden", maximized ? "w-full h-full" : "aspect-video w-full")}>
         {item.sourceUrl && (
           (isVimeo || isYoutube) ? (
             <MemoizedPlyrPlayer
@@ -459,7 +461,7 @@ const MemoizedPortfolioMedia = memo(({
   }
   
   return (
-      <div ref={containerRef} className="relative aspect-video bg-black flex justify-center items-center group/media w-full">
+      <div ref={containerRef} className={cn("relative bg-black flex justify-center items-center w-full", maximized ? "h-full group/media" : "aspect-video group/media")}>
         {isImageLoading && (
           <div className="absolute inset-0 z-20 flex items-center justify-center">
             <Preloader />
@@ -1298,8 +1300,8 @@ function WorkPageContent() {
                       <Separator className="bg-white/10 my-0" />
                       
                       <ScrollArea className="flex-1 min-h-0">
-                        <div className="relative flex flex-col justify-center h-full" onPointerDown={(e) => { if (hasMounted && isMobile) dragControls.start(e); }}>
-                          <div className="w-full" ref={mainMediaRef}>
+                        <div className={cn("relative flex flex-col h-full", !isProjectMaximized && "justify-center")} onPointerDown={(e) => { if (hasMounted && isMobile) dragControls.start(e); }}>
+                          <div className={cn("w-full", isProjectMaximized && "flex-1 min-h-0")} ref={mainMediaRef}>
                             {isClient && (
                               <Suspense fallback={null}>
                                 <MemoizedPortfolioMedia
@@ -1311,6 +1313,7 @@ function WorkPageContent() {
                                    watermarkPosition={watermarkPosition}
                                    playerType={workPagePlayer}
                                    autoPlay={!isDialogOpen}
+                                   maximized={isProjectMaximized}
                                    plyrRef={plyrRef}
                                    clapprRef={clapprRef}
                                  />
