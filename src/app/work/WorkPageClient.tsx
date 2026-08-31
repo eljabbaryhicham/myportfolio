@@ -25,7 +25,7 @@ import { UploadProgressProvider } from '@/components/upload-progress-context';
 import { usePageReveal } from '@/lib/use-page-reveal';
 import type { PortfolioItem } from '@/features/portfolio/data/portfolio-data';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faUpDown, faXmark, faExpand, faPalette, faFilm, faArrowLeft, faArrowRight, faPencilAlt, faArrowDown, faSyncAlt, faCircleExclamation } from '@fortawesome/free-solid-svg-icons';
+import { faUpDown, faXmark, faExpand, faCompress, faPalette, faFilm, faArrowLeft, faArrowRight, faPencilAlt, faArrowDown, faSyncAlt, faCircleExclamation } from '@fortawesome/free-solid-svg-icons';
 import { Separator } from '@/components/ui/separator';
 import Preloader from '@/components/preloader';
 import { useIsExtraWide } from '@/hooks/use-is-extra-wide';
@@ -715,6 +715,7 @@ function WorkPageContent() {
 
   const [isDetailsModalOpen, setDetailsModalOpen] = useState(false);
   const [isContactFormOpen, setIsContactFormOpen] = useState(false);
+  const [isProjectMaximized, setIsProjectMaximized] = useState(false);
   const isDialogOpen = isDetailsModalOpen || isContactFormOpen;
 
   const allItems = useMemo(() => {
@@ -901,6 +902,7 @@ function WorkPageContent() {
   const handleMainDialogOpenChange = (open: boolean) => {
     if (!open) {
       setSelectedItem(null);
+      setIsProjectMaximized(false);
       updateUrl(null);
     }
   };
@@ -1226,8 +1228,12 @@ function WorkPageContent() {
           <DialogContent
             className={cn(
               "glass-effect p-0 flex flex-col group overflow-hidden",
-              "w-[90vw] max-w-7xl",
-              isExtraWide || isDescriptionLong ? "h-[90dvh]" : "max-h-[90dvh]"
+              isProjectMaximized
+                ? "w-[95vw] h-[95dvh] max-w-none"
+                : cn(
+                    "w-[90vw] max-w-7xl",
+                    isExtraWide || isDescriptionLong ? "h-[90dvh]" : "max-h-[90dvh]"
+                  )
             )}
             onMouseMove={handleDialogMouseMove}
             onMouseEnter={handleDialogMouseEnter}
@@ -1354,6 +1360,16 @@ function WorkPageContent() {
               <FontAwesomeIcon icon={faXmark} className="h-4 w-4" />
               <span className="sr-only">{t('work.details.close')}</span>
             </DialogClose>
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => setIsProjectMaximized(prev => !prev)}
+              className="absolute right-4 top-[3.5rem] z-30 h-10 w-10 rounded-full bg-orange-500 hover:bg-orange-600 text-white hover:text-white border-0 flex items-center justify-center ring-offset-background transition-opacity focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+              title={isProjectMaximized ? t('work.details.restore') : t('work.details.maximize')}
+            >
+              <FontAwesomeIcon icon={isProjectMaximized ? faCompress : faExpand} className="h-4 w-4" />
+              <span className="sr-only">{isProjectMaximized ? t('work.details.restore') : t('work.details.maximize')}</span>
+            </Button>
           </DialogContent>
       </Dialog>
       
