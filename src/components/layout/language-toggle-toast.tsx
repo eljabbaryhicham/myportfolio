@@ -195,7 +195,7 @@ export function LanguageToggleToast({ className }: { className?: string }) {
             <motion.span
               key="collapsed"
               initial={{ scale: 0.6, opacity: 1 }}
-              animate={{ scale: 1, opacity: dimmed ? 0.25 : 1 }}
+              animate={{ scale: 1, opacity: dimmed ? 0.15 : 1 }}
               whileHover={{ opacity: 1 }}
               exit={{ scale: 0.6, opacity: 0 }}
               transition={{
