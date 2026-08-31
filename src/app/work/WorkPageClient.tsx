@@ -1229,9 +1229,9 @@ function WorkPageContent() {
       <Dialog open={!!selectedItem} onOpenChange={handleMainDialogOpenChange}>
           <DialogContent
             className={cn(
-              "glass-effect p-0 flex flex-col group overflow-hidden",
+              "glass-effect p-0 flex flex-col group overflow-hidden transition-all duration-500 ease-in-out",
               isProjectMaximized
-                ? "w-[95vw] h-[95dvh] max-w-none"
+                ? "w-[98vw] h-[98dvh] max-w-none"
                 : cn(
                     "w-[90vw] max-w-7xl",
                     isExtraWide || isDescriptionLong ? "h-[90dvh]" : "max-h-[90dvh]"
@@ -1364,11 +1364,11 @@ function WorkPageContent() {
               <span className="sr-only">{t('work.details.close')}</span>
             </DialogClose>
             <Button
-              variant="success"
+              variant="destructive"
               size="icon"
               onClick={(e) => { e.currentTarget.blur(); setIsProjectMaximized(prev => !prev); }}
               className={cn(
-                "absolute left-4 top-4 z-30 h-10 w-10 rounded-full border-0 flex items-center justify-center ring-offset-background transition-opacity",
+                "absolute left-4 top-4 z-30 h-10 w-10 rounded-full flex items-center justify-center ring-offset-background transition-opacity",
                 hasMounted && isMobile ? "opacity-70" : (isCloseButtonVisible ? "opacity-70" : "opacity-0")
               )}
               title={isProjectMaximized ? t('work.details.restore') : t('work.details.maximize')}
