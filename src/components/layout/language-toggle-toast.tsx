@@ -44,8 +44,8 @@ export function LanguageToggleToast({ className }: { className?: string }) {
 
   const [visible, setVisible] = useState(false);
   const [collapsed, setCollapsed] = useState(true);
-  // The red dot dims to 25% only AFTER the collapse animation completes; it
-  // stays at 100% while expanding/collapsing.
+  // The red dot stays at full opacity while expanding/collapsing, then fades
+  // to black once the collapse animation has finished.
   const [dimmed, setDimmed] = useState(false);
 
   const collapseTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -75,8 +75,7 @@ export function LanguageToggleToast({ className }: { className?: string }) {
     }
   }, []);
 
-  // Collapse to the red dot: keep it at full opacity during the shrink, then
-  // dim it to 25% once the collapse animation has finished.
+  // Collapse to the red dot, then start its black fade once the shrink ends.
   const doCollapse = useCallback(() => {
     clearCollapseTimer();
     clearDimTimer();
@@ -191,7 +190,7 @@ export function LanguageToggleToast({ className }: { className?: string }) {
           )}
         >
           {collapsed ? (
-            // Collapsed state: the red EN/FR knob alone, dimmed after collapse.
+            // Collapsed state: the red EN/FR knob fades to black after collapse.
             <motion.span
               key="collapsed"
               initial={{ scale: 0.6, opacity: 1 }}
@@ -202,14 +201,15 @@ export function LanguageToggleToast({ className }: { className?: string }) {
                 scale: { duration: 0.3, ease: 'easeInOut' },
                 opacity: { duration: 0.3, ease: 'easeInOut' },
               }}
-              className={cn(
-                "flex h-9 w-9 items-center justify-center rounded-full",
-                dimmed
-                  ? "bg-black shadow-[0_0_12px_rgba(0,0,0,0.6)]"
-                  : "bg-destructive shadow-[0_0_12px_hsl(var(--primary)/0.6)]"
-              )}
+              className="relative flex h-9 w-9 items-center justify-center overflow-hidden rounded-full bg-destructive shadow-[0_0_12px_hsl(var(--primary)/0.6)]"
             >
-              <span className="text-[12px] font-bold leading-none text-white">
+              <motion.span
+                aria-hidden="true"
+                animate={{ opacity: dimmed ? 1 : 0 }}
+                transition={{ duration: 0.5, ease: 'easeInOut' }}
+                className="absolute inset-0 bg-black"
+              />
+              <span className="relative z-10 text-[12px] font-bold leading-none text-white">
                 {langIsEn ? 'EN' : 'FR'}
               </span>
             </motion.span>
