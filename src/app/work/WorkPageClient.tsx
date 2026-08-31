@@ -1299,108 +1299,55 @@ function WorkPageContent() {
                       
                       <Separator className="bg-white/10 my-0" />
                       
-                      {isProjectMaximized ? (
-                        <div className="flex-1 min-h-0 flex flex-col">
-                          <div className="flex-1 min-h-0" ref={mainMediaRef}>
-                            {isClient && (
-                              <Suspense fallback={null}>
-                                <MemoizedPortfolioMedia
-                                   item={selectedItem}
-                                   onFullscreenClick={setFullscreenImageUrl}
-                                   watermark={watermarkLogoUrl}
-                                   watermarkSize={watermarkSize}
-                                   watermarkOpacity={watermarkOpacity}
-                                   watermarkPosition={watermarkPosition}
-                                   playerType={workPagePlayer}
-                                   autoPlay={!isDialogOpen}
-                                   maximized={isProjectMaximized}
-                                   plyrRef={plyrRef}
-                                   clapprRef={clapprRef}
-                                 />
-                              </Suspense>
-                            )}
-                          </div>
-                          <div className="p-4 md:p-6 text-center flex flex-wrap justify-center gap-4 flex-shrink-0">
-                            {selectedItem.details && (
-                                <div className="relative">
-                                  <Button
-                                    variant="default"
-                                    onClick={() => setDetailsModalOpen(true)}
-                                  >
-                                    <FontAwesomeIcon icon={faUpDown} className="mr-2" />
-                                    {t('work.details.showDetails')}
-                                  </Button>
-                                  {hasDetailsMedia(getLocalizedString(selectedItem.details, lang)) && (
-                                    <span
-                                      className="absolute -top-1.5 -right-1.5 flex items-center justify-center h-5 w-5 rounded-full bg-primary text-primary-foreground shadow-md"
-                                      title={t('work.details.mediaBadge')}
-                                    >
-                                      <FontAwesomeIcon icon={faCircleExclamation} className="h-3 w-3" />
-                                    </span>
-                                  )}
-                                </div>
-                            )}
-                            <Button
-                              variant="secondary"
-                              onClick={() => setIsContactFormOpen(true)}
-                              className="h-auto py-2 px-4 leading-tight text-center"
-                            >
-                              {t('work.details.askAbout')}
-                            </Button>
-                          </div>
+                      <div className={cn("relative flex flex-col h-full", !isProjectMaximized && "justify-center")} onPointerDown={(e) => { if (hasMounted && isMobile) dragControls.start(e); }}>
+                        <div className={cn("w-full", isProjectMaximized && "flex-1 min-h-0")} ref={mainMediaRef}>
+                          {isClient && (
+                            <Suspense fallback={null}>
+                              <MemoizedPortfolioMedia
+                                 item={selectedItem}
+                                 onFullscreenClick={setFullscreenImageUrl}
+                                 watermark={watermarkLogoUrl}
+                                 watermarkSize={watermarkSize}
+                                 watermarkOpacity={watermarkOpacity}
+                                 watermarkPosition={watermarkPosition}
+                                 playerType={workPagePlayer}
+                                 autoPlay={!isDialogOpen}
+                                 maximized={isProjectMaximized}
+                                 plyrRef={plyrRef}
+                                 clapprRef={clapprRef}
+                               />
+                            </Suspense>
+                          )}
                         </div>
-                      ) : (
-                      <ScrollArea className="flex-1 min-h-0">
-                        <div className="relative flex flex-col justify-center h-full" onPointerDown={(e) => { if (hasMounted && isMobile) dragControls.start(e); }}>
-                          <div className="w-full" ref={mainMediaRef}>
-                            {isClient && (
-                              <Suspense fallback={null}>
-                                <MemoizedPortfolioMedia
-                                   item={selectedItem}
-                                   onFullscreenClick={setFullscreenImageUrl}
-                                   watermark={watermarkLogoUrl}
-                                   watermarkSize={watermarkSize}
-                                   watermarkOpacity={watermarkOpacity}
-                                   watermarkPosition={watermarkPosition}
-                                   playerType={workPagePlayer}
-                                   autoPlay={!isDialogOpen}
-                                   plyrRef={plyrRef}
-                                   clapprRef={clapprRef}
-                                 />
-                              </Suspense>
-                            )}
-                          </div>
-                          <div className="p-4 md:p-6 text-center flex flex-wrap justify-center gap-4 flex-shrink-0">
-                            {selectedItem.details && (
-                                <div className="relative">
-                                  <Button
-                                    variant="default"
-                                    onClick={() => setDetailsModalOpen(true)}
-                                  >
-                                    <FontAwesomeIcon icon={faUpDown} className="mr-2" />
-                                    {t('work.details.showDetails')}
-                                  </Button>
-                                  {hasDetailsMedia(getLocalizedString(selectedItem.details, lang)) && (
-                                    <span
-                                      className="absolute -top-1.5 -right-1.5 flex items-center justify-center h-5 w-5 rounded-full bg-primary text-primary-foreground shadow-md"
-                                      title={t('work.details.mediaBadge')}
-                                    >
-                                      <FontAwesomeIcon icon={faCircleExclamation} className="h-3 w-3" />
-                                    </span>
-                                  )}
-                                </div>
-                            )}
-                            <Button
-                              variant="secondary"
-                              onClick={() => setIsContactFormOpen(true)}
-                              className="h-auto py-2 px-4 leading-tight text-center"
-                            >
-                              {t('work.details.askAbout')}
-                            </Button>
-                          </div>
+                        <div className="p-4 md:p-6 text-center flex flex-wrap justify-center gap-4 flex-shrink-0">
+                          {selectedItem.details && (
+                            <div className="relative">
+                              <Button
+                                variant="default"
+                                onClick={() => setDetailsModalOpen(true)}
+                              >
+                                <FontAwesomeIcon icon={faUpDown} className="mr-2" />
+                                {t('work.details.showDetails')}
+                              </Button>
+                              {hasDetailsMedia(getLocalizedString(selectedItem.details, lang)) && (
+                                <span
+                                  className="absolute -top-1.5 -right-1.5 flex items-center justify-center h-5 w-5 rounded-full bg-primary text-primary-foreground shadow-md"
+                                  title={t('work.details.mediaBadge')}
+                                >
+                                  <FontAwesomeIcon icon={faCircleExclamation} className="h-3 w-3" />
+                                </span>
+                              )}
+                            </div>
+                          )}
+                          <Button
+                            variant="secondary"
+                            onClick={() => setIsContactFormOpen(true)}
+                            className="h-auto py-2 px-4 leading-tight text-center"
+                          >
+                            {t('work.details.askAbout')}
+                          </Button>
                         </div>
-                      </ScrollArea>
-                      )}
+                      </div>
                     </div>
                   </motion.div>
               )}
