@@ -9,6 +9,7 @@ import { UploadProgressProvider } from '@/components/upload-progress-context';
 import UploadProgressNotification from '@/components/upload-progress-notification';
 import { HomePageSettingsProvider } from '@/components/settings/home-page-settings-provider';
 import { TrustedByProvider } from '@/components/trusted-by/trusted-by-provider';
+import SitePreloader from '@/components/site-preloader';
 import type { HomePageSettings, TrustedByClient } from '@/lib/types';
 
 export default function AppShell({
@@ -24,6 +25,7 @@ export default function AppShell({
     <FirebaseClientProvider>
       <HomePageSettingsProvider initialSettings={initialSettings}>
         <TrustedByProvider initialClients={initialClients}>
+          <SitePreloader />
           <LanguageProvider>
             <UploadProgressProvider>
               <DynamicThemeStyles />

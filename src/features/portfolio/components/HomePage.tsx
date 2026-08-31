@@ -2,7 +2,7 @@
 
 import { useRef, useEffect, useState } from "react";
 import Link from "next/link";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import cursorArrowData from "@/lib/cursor-arrow.json";
 import tickAnimationData from "@/lib/tick-animation.json";
 
@@ -10,7 +10,6 @@ import { Button } from "@/components/ui/button";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowRight, faCircleInfo, faEnvelope } from '@fortawesome/free-solid-svg-icons';
 
-import Preloader from "@/components/preloader";
 import Logo from "@/components/logo";
 import TrustedBy from "./TrustedBy";
 import { useTranslation } from "@/lib/i18n/useTranslation";
@@ -273,28 +272,16 @@ export default function HomePageContent() {
       cleanup.forEach((fn) => fn());
     };
   }, []);
-  // Show the full-screen preloader while settings are still loading OR the
-  // page hasn't fully loaded. After both, fade it out.
-  // If no preloader is configured ('none', empty, or the legacy 'default'
-  // type with no URL), skip the overlay entirely and reveal the page.
-  const preloaderType = homeSettings?.preloaderType;
-  const preloaderUrl = homeSettings?.preloaderUrl;
-  const hasPreloader =
-    (preloaderType === 'gif' || preloaderType === 'webm' || preloaderType === 'lottie') &&
-    Boolean(preloaderUrl);
-  const showFullPreloader = hasPreloader && (isLoading || !pageReady);
-
-  // Signal the home is ready once the preloader has fully faded out, so
-  // the language switch toast can appear right after (not on top of) the
-  // preloader. Guarded so it only fires once per page lifetime.
+  // The site-wide preloader lives in AppShell so it can cover every initial
+  // route. Keep this signal for the homepage-only language-toast timing.
   const { notifyReady } = useHomeReady();
   const readySignaledRef = useRef(false);
   useEffect(() => {
-    if (showFullPreloader || readySignaledRef.current) return;
+    if (!pageReady || readySignaledRef.current) return;
     readySignaledRef.current = true;
-    const t = setTimeout(notifyReady, 400); // matches preloader exit duration (0.35s)
+    const t = setTimeout(notifyReady, 400);
     return () => clearTimeout(t);
-  }, [showFullPreloader, notifyReady]);
+  }, [pageReady, notifyReady]);
 
   const homeLogoUrl = homeSettings?.homePageLogoUrl;
   const isLogoVisible = homeSettings?.isHomePageLogoVisible ?? true;
@@ -387,20 +374,6 @@ export default function HomePageContent() {
       />
       <div className="homepage-viewport-fix-inner relative z-10 flex h-full w-full items-center justify-center overflow-auto transition-opacity duration-1000">
         <CursorArrow targetRefs={[aboutRef, contactRef, ctaRef]} cursorLottieUrl={homeSettings?.cursorLottieUrl} tickLottieUrl={homeSettings?.tickLottieUrl} />
-
-        <AnimatePresence>
-          {showFullPreloader && (
-            <motion.div
-              key="home-preloader"
-              className="fixed inset-0 z-[9999] flex items-center justify-center bg-black"
-              initial={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.35 }}
-            >
-              <Preloader />
-            </motion.div>
-          )}
-        </AnimatePresence>
 
         <div className="flex flex-col items-center gap-1 sm:gap-2 md:gap-3 lg:gap-4 xl:gap-5 w-full px-4 -translate-y-4">
           <div className="translate-y-8 lg:translate-y-14">

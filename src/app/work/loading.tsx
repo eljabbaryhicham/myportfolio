@@ -1,3 +1,5 @@
+import Preloader from '@/components/preloader';
+
 /**
  * This boundary lets the shared app shell commit immediately while the Work
  * layout fetches its server-rendered project seed. Without it, navigation
@@ -10,10 +12,7 @@ export default function WorkLoading() {
       aria-busy="true"
       aria-label="Loading work"
     >
-      <span
-        className="h-10 w-10 animate-spin rounded-full border-2 border-white/20 border-t-primary"
-        aria-hidden="true"
-      />
+      <Preloader />
       <span className="sr-only">Loading work</span>
     </div>
   );
