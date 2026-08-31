@@ -33,7 +33,7 @@ const readHomePageSettings = async (): Promise<HomePageSettings | null> => {
 const getCachedHomePageSettings = unstable_cache(
   readHomePageSettings,
   ['homepage-settings-v1'],
-  { revalidate: 300, tags: ['homepage-settings'] }
+  { revalidate: 60, tags: ['homepage-settings'] }
 );
 
 export const getHomePageSettings = cache(getCachedHomePageSettings);

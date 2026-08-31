@@ -45,7 +45,7 @@ const readPortfolioItems = async (): Promise<PortfolioItem[] | null> => {
 const getCachedPortfolioItems = unstable_cache(
   readPortfolioItems,
   ['portfolio-items-v1'],
-  { revalidate: 300, tags: ['portfolio-items'] }
+  { revalidate: 60, tags: ['portfolio-items'] }
 );
 
 export const getPortfolioItems = cache(getCachedPortfolioItems);

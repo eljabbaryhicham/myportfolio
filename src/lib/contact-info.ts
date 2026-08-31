@@ -35,7 +35,7 @@ const readContactInfo = async (): Promise<(ContactInfo & { id: string }) | null>
 const getCachedContactInfo = unstable_cache(
   readContactInfo,
   ['contact-info-v1'],
-  { revalidate: 300, tags: ['contact-details'] }
+  { revalidate: 60, tags: ['contact-details'] }
 );
 
 export const getContactInfo = cache(getCachedContactInfo);

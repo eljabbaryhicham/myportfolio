@@ -38,7 +38,7 @@ const readAboutContent = async (): Promise<(AboutPageContent & { id: string }) |
 const getCachedAboutContent = unstable_cache(
   readAboutContent,
   ['about-content-v1'],
-  { revalidate: 300, tags: ['about-content'] }
+  { revalidate: 60, tags: ['about-content'] }
 );
 
 export const getAboutContent = cache(getCachedAboutContent);

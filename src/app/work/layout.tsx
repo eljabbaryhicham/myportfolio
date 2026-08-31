@@ -4,7 +4,7 @@ import { getPortfolioItems } from '@/lib/portfolio-items';
 
 const SITE_URL = 'https://mellivision.com';
 
-export const revalidate = 300;
+export const revalidate = 60;
 
 export function generateMetadata(): Metadata {
   return {

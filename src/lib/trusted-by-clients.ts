@@ -54,7 +54,7 @@ const readTrustedByClients = async (): Promise<TrustedByClient[] | null> => {
 const getCachedTrustedByClients = unstable_cache(
   readTrustedByClients,
   ['trusted-by-clients-v1'],
-  { revalidate: 300, tags: ['trusted-by-clients'] }
+  { revalidate: 60, tags: ['trusted-by-clients'] }
 );
 
 export const getTrustedByClients = cache(getCachedTrustedByClients);
