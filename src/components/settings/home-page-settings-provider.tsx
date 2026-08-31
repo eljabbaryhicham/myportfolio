@@ -25,13 +25,8 @@ export { HomePageSettingsContext };
  * so the very first render — and therefore the SSR HTML — already contains
  * the admin-configured values, eliminating the FOUC flash on load.
  *
- * Seed-first: when a server seed is present, the provider uses it WITHOUT
- * opening a client Firestore subscription. The server already read the cached
- * `homepage/settings` document (`getHomePageSettings`) — subscribing again
- * would add another Firestore document read per visitor, duplicating that
- * amortized read. A live subscription is only opened as a fallback when there
- * is no seed (e.g. the server read failed), so the page still resolves its
- * settings.
+ * The server seed prevents a loading flash on first paint. A client Firestore
+ * subscription then keeps the value current when an admin saves a change.
  *
  * Server-side rendering note: `useDoc` initializes with `isLoading=true`
  * (per its hook contract), but we suppress the loading state on the first
@@ -46,16 +41,14 @@ export function HomePageSettingsProvider({
   children: React.ReactNode;
 }) {
   const firestore = useFirestore();
-  const hasSeed = initialSettings !== null;
-
   const settingsDocRef = useMemoFirebase(
-    () => (firestore && !hasSeed ? doc(firestore, 'homepage', 'settings') : null),
-    [firestore, hasSeed]
+    () => (firestore ? doc(firestore, 'homepage', 'settings') : null),
+    [firestore]
   );
   const { data, isLoading, error } = useDoc<HomePageSettings>(settingsDocRef);
 
-  // Prefer the live snapshot when it resolves (fallback path); otherwise keep
-  // the SSR seed so the first paint is never empty.
+  // Prefer the live snapshot when it resolves; otherwise keep the SSR seed so
+  // the first paint is never empty.
   const settings = data ?? initialSettings ?? null;
   // Treat the page as "loaded" if we have either the live snapshot OR the
   // server-seeded value. This prevents a brief isLoading flash right after

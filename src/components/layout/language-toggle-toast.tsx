@@ -202,7 +202,12 @@ export function LanguageToggleToast({ className }: { className?: string }) {
                 scale: { duration: 0.3, ease: 'easeInOut' },
                 opacity: { duration: 0.3, ease: 'easeInOut' },
               }}
-              className="flex h-9 w-9 items-center justify-center rounded-full bg-destructive shadow-[0_0_12px_hsl(var(--primary)/0.6)]"
+              className={cn(
+                "flex h-9 w-9 items-center justify-center rounded-full",
+                dimmed
+                  ? "bg-black shadow-[0_0_12px_rgba(0,0,0,0.6)]"
+                  : "bg-destructive shadow-[0_0_12px_hsl(var(--primary)/0.6)]"
+              )}
             >
               <span className="text-[12px] font-bold leading-none text-white">
                 {langIsEn ? 'EN' : 'FR'}

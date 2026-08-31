@@ -1381,7 +1381,7 @@ function WorkPageContent() {
       
       {/* Nested Dialog for Details */}
       <Dialog open={isDetailsModalOpen} onOpenChange={setDetailsModalOpen}>
-        <DialogContent id="work-details-dialog" className="w-[80vw] max-w-[95vw] min-w-0 overflow-hidden h-[80dvh] md:h-[90dvh] glass-effect p-0 flex flex-col group"
+        <DialogContent id="work-details-dialog" className="w-[98vw] max-w-[98vw] min-w-0 overflow-hidden h-[98dvh] glass-effect p-0 flex flex-col group"
           onMouseMove={handleDialogMouseMove}
           onMouseEnter={handleDialogMouseEnter}
           onMouseLeave={handleDialogMouseLeave}

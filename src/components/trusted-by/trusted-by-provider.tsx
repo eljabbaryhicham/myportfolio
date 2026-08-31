@@ -25,12 +25,8 @@ export { TrustedByContext };
  * eliminating the Firestore round-trip wait that previously delayed the
  * TrustedBy strip.
  *
- * Seed-first: when a server seed is present, the provider uses it WITHOUT
- * opening a client Firestore subscription. The server already read the cached
- * `clients` collection (`getTrustedByClients`) — subscribing again would re-bill
- * the whole collection for every visitor, duplicating that amortized read. A
- * live subscription is only opened as a fallback when there is no seed (e.g.
- * the server read failed), so the page can still load its data.
+ * The server seed prevents a loading flash on first paint. A client Firestore
+ * subscription then keeps the value current when an admin saves a change.
  */
 export function TrustedByProvider({
   initialClients,
@@ -40,18 +36,19 @@ export function TrustedByProvider({
   children: React.ReactNode;
 }) {
   const firestore = useFirestore();
-  const hasSeed = Array.isArray(initialClients);
-
   const clientsQuery = useMemoFirebase(
-    () => (firestore && !hasSeed ? query(collection(firestore, 'clients'), orderBy('order', 'asc')) : null),
-    [firestore, hasSeed]
+    () => (firestore ? query(collection(firestore, 'clients'), orderBy('order', 'asc')) : null),
+    [firestore]
   );
   const { data, isLoading, error } = useCollection<TrustedByClient>(clientsQuery);
 
-  // Prefer the live snapshot when it resolves (fallback path); otherwise keep
-  // the SSR seed so the first paint is never empty.
+  // Prefer the live snapshot when it resolves; otherwise keep the SSR seed so
+  // the first paint is never empty.
   const value = useMemo<TrustedByContextValue>(
-    () => ({ clients: data ?? initialClients ?? null, isLoading, error }),
+    () => {
+      const clients = data ?? initialClients ?? null;
+      return { clients, isLoading: isLoading && !clients, error };
+    },
     [data, initialClients, isLoading, error]
   );
 

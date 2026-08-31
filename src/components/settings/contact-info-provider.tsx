@@ -26,12 +26,8 @@ export { ContactInfoContext };
  * listeners on a single page. The provider now performs a single read, shared
  * by all consumers.
  *
- * Seed-first: when a server seed is present, the provider uses it WITHOUT
- * opening a client Firestore subscription. The server already read the cached
- * `contact/details` document (`getContactInfo`) — subscribing again would add
- * another Firestore document read per visitor, duplicating that amortized
- * read. A live subscription is only opened as a fallback when there is no
- * seed (e.g. the server read failed), so the page still resolves its data.
+ * The server seed prevents a loading flash on first paint. A client Firestore
+ * subscription then keeps the value current when an admin saves a change.
  */
 export function ContactInfoProvider({
   initialContact,
@@ -41,16 +37,14 @@ export function ContactInfoProvider({
   children: React.ReactNode;
 }) {
   const firestore = useFirestore();
-  const hasSeed = initialContact !== null;
-
   const contactDocRef = useMemoFirebase(
-    () => (firestore && !hasSeed ? doc(firestore, 'contact', 'details') : null),
-    [firestore, hasSeed]
+    () => (firestore ? doc(firestore, 'contact', 'details') : null),
+    [firestore]
   );
   const { data, isLoading, error } = useDoc<ContactInfo>(contactDocRef);
 
-  // Prefer the live snapshot when it resolves (fallback path); otherwise keep
-  // the SSR seed so the first paint is never empty.
+  // Prefer the live snapshot when it resolves; otherwise keep the SSR seed so
+  // the first paint is never empty.
   const contactInfo = data ?? initialContact ?? null;
   // Treat the page as "loaded" if we have either the live snapshot OR the
   // server-seeded value, so no loading flash occurs after hydration.

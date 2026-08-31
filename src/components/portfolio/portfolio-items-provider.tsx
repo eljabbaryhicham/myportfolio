@@ -28,12 +28,8 @@ export { PortfolioItemsContext };
  * eliminating the Firestore round-trip wait that previously delayed the /work
  * grid.
  *
- * Seed-first: when a server seed is present, the provider uses it WITHOUT
- * opening a client Firestore subscription. The server already read the cached
- * `projects` collection (`getPortfolioItems`) — subscribing again would re-bill
- * the whole collection for every visitor, duplicating that amortized read. A
- * live subscription is only opened as a fallback when there is no seed (e.g.
- * the server read failed), so the grid can still load its data.
+ * The server seed prevents a loading flash on first paint. A client Firestore
+ * subscription then keeps the value current when an admin saves a change.
  *
  * Mirrors HomePageSettingsProvider's loading suppression: whenever a
  * server-seeded value is already present, the first client render is treated as
@@ -47,17 +43,14 @@ export function PortfolioItemsProvider({
   children: React.ReactNode;
 }) {
   const firestore = useFirestore();
-  const hasSeed = Array.isArray(initialItems);
-
   const projectsQuery = useMemoFirebase(
-    () => (firestore && !hasSeed ? collection(firestore, 'projects') : null),
-    [firestore, hasSeed]
+    () => (firestore ? collection(firestore, 'projects') : null),
+    [firestore]
   );
   const { data, isLoading, error } = useCollection<PortfolioItem>(projectsQuery);
 
-  // Once the live client snapshot yields a value (fallback path — may be
-  // fresher than the seed), prefer it; otherwise keep the SSR seed so the grid
-  // is never empty.
+  // Prefer the live snapshot when it resolves; otherwise keep the SSR seed so
+  // the grid is never empty.
   const items = data ?? initialItems ?? null;
   // Treat as "loaded" if we have either the live snapshot OR the server-seeded
   // value, so no loading flash occurs right after hydration when the seed exists.
