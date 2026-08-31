@@ -10,6 +10,8 @@ interface HomePageSettingsContextValue {
   settings: HomePageSettings | null;
   /** True until the first snapshot/seed resolves; seeded false by SSR. */
   isLoading: boolean;
+  /** Non-null when the client read failed (e.g. quota/permissions). */
+  error: Error | null;
 }
 
 const HomePageSettingsContext = createContext<HomePageSettingsContextValue | null>(null);
@@ -50,7 +52,7 @@ export function HomePageSettingsProvider({
     () => (firestore && !hasSeed ? doc(firestore, 'homepage', 'settings') : null),
     [firestore, hasSeed]
   );
-  const { data, isLoading } = useDoc<HomePageSettings>(settingsDocRef);
+  const { data, isLoading, error } = useDoc<HomePageSettings>(settingsDocRef);
 
   // Prefer the live snapshot when it resolves (fallback path); otherwise keep
   // the SSR seed so the first paint is never empty.
@@ -61,7 +63,7 @@ export function HomePageSettingsProvider({
   const effectivelyLoading = isLoading && !settings;
 
   return (
-    <HomePageSettingsContext.Provider value={{ settings, isLoading: effectivelyLoading }}>
+    <HomePageSettingsContext.Provider value={{ settings, isLoading: effectivelyLoading, error }}>
       {children}
     </HomePageSettingsContext.Provider>
   );

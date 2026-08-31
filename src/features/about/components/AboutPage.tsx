@@ -20,18 +20,11 @@ import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { ScrollIndicator } from '@/components/ScrollIndicator';
 import { useTranslation } from '@/lib/i18n/useTranslation';
-import { getLocalizedString, type MultilingualString } from '@/lib/i18n/multilingual';
+import { getLocalizedString } from '@/lib/i18n/multilingual';
+import type { AboutPageContent } from '@/lib/about-content';
 import type { TrustedByClient } from '@/lib/types';
 import { useHomePageSettings } from '@/components/settings/home-page-settings-provider';
 import { useTrustedByClients } from '@/components/trusted-by/trusted-by-provider';
-
-interface AboutPageContent {
-    title: MultilingualString;
-    content: MultilingualString;
-    imageUrl: string;
-    logoUrl?: string;
-    logoScale?: number;
-}
 
 const services = [
     { key: "about.services.brainstorming", icon: BrainCircuit },
@@ -87,29 +80,37 @@ const itemVariants = {
   },
 };
 
-export default function AboutPage() {
+export default function AboutPage({ initialContent }: { initialContent?: (AboutPageContent & { id: string }) | null }) {
   const firestore = useFirestore();
   const scrollRef = useRef<HTMLDivElement>(null);
   const { t, lang } = useTranslation();
 
   // clients comes from the shared TrustedByProvider (server-seeded + live) so
   // the `clients` collection is subscribed exactly once across the app.
-  const { clients: allClients, isLoading: isLoadingClients } = useTrustedByClients();
+  const { clients: allClients, isLoading: isLoadingClients, error: clientsError } = useTrustedByClients();
 
   // homepage/settings is sourced from the shared provider (server-seeded + live).
   const { settings: pageSettings } = useHomePageSettings();
-  
+
+  // Seed-first: when a server seed is present we do NOT open a client Firestore
+  // subscription — the server already read the cached `about/content` document.
+  // A live subscription is only opened as a fallback when there is no seed.
+  const hasSeed = initialContent !== null;
   const aboutContentRef = useMemoFirebase(
-    () => firestore ? doc(firestore, 'about', 'content') : null,
-    [firestore]
+    () => firestore && !hasSeed ? doc(firestore, 'about', 'content') : null,
+    [firestore, hasSeed]
   );
-  const { data: aboutContent, isLoading: isLoadingContent } = useDoc<AboutPageContent>(aboutContentRef);
+  const { data: liveAboutContent, isLoading: isLoadingContent, error: aboutError } = useDoc<AboutPageContent>(aboutContentRef);
+  const aboutContent = liveAboutContent ?? initialContent ?? null;
   
   const clients = useMemo(() => allClients?.filter(c => c.isVisible !== false) || [], [allClients]);
 
-  const isLoading = isLoadingClients || isLoadingContent;
+  const isLoading = isLoadingClients || (isLoadingContent && !aboutContent);
   const { ready: revealReady, hasPreloader } = usePageReveal();
-  const showInlinePreloader = isLoadingContent || (hasPreloader && !revealReady);
+  // A failed read is distinguishable from still-loading (hook reports error +
+  // no data) — show a message instead of an endless preloader.
+  const contentFailed = aboutError !== null && !aboutContent;
+  const showInlinePreloader = !contentFailed && ((isLoadingContent && !aboutContent) || (hasPreloader && !revealReady));
   const logoUrl = aboutContent?.logoUrl;
   const logoScale = aboutContent?.logoScale || 1;
   
@@ -145,7 +146,12 @@ export default function AboutPage() {
       <div ref={scrollRef} className="flex-1 min-h-0 overflow-y-auto">
         <div className="p-[clamp(1rem,3vh,2rem)] md:p-[clamp(1.5rem,4vh,2rem)] flex items-center justify-center min-h-full">
           <div className="container mx-auto px-0 text-center">
-            {showInlinePreloader ? (
+            {contentFailed ? (
+              <div className="flex flex-col items-center justify-center h-[50vh] gap-3 text-center">
+                <div className="text-foreground/40 text-lg">{t('common.error.title')}</div>
+                <p className="text-foreground/30 text-sm max-w-md">{t('common.error.description')}</p>
+              </div>
+            ) : showInlinePreloader ? (
               <div className="flex justify-center items-center h-[50vh]">
                 <Preloader />
               </div>
@@ -212,7 +218,12 @@ export default function AboutPage() {
                     </div>
                   </motion.div>
 
-                {isLoadingClients ? (
+                {clientsError !== null && clients.length === 0 ? (
+                  <motion.div variants={itemVariants} className="flex flex-col items-center justify-center min-h-[20vh] gap-3 text-center">
+                    <div className="text-foreground/40 text-lg">{t('common.error.title')}</div>
+                    <p className="text-foreground/30 text-sm max-w-md">{t('common.error.description')}</p>
+                  </motion.div>
+                ) : isLoadingClients ? (
                   <motion.div variants={itemVariants} className="flex justify-center items-center min-h-[20vh]">
                     <Preloader />
                   </motion.div>

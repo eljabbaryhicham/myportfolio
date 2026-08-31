@@ -2,9 +2,10 @@ import type { MetadataRoute } from 'next';
 import { getPortfolioItems } from '@/lib/portfolio-items';
 import { logger } from '@/lib/logger';
 
-// Regenerate the sitemap on each request so it always reflects the latest
-// published work instead of being locked to what was available at build time.
-export const dynamic = 'force-dynamic';
+// Serve a cached sitemap refreshed every 5 minutes (matching the projects
+// cache) so crawlers never trigger a cold Firestore read per request. The
+// projects seed is invalidated through the same tag as /work.
+export const revalidate = 300;
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const base = 'https://mellivision.com';

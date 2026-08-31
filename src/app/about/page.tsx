@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import AboutPage from "@/features/about/components/AboutPage";
+import { getAboutContent } from '@/lib/about-content';
 
 export const metadata: Metadata = {
   title: 'About',
@@ -15,4 +16,7 @@ export const metadata: Metadata = {
   },
 };
 
-export default AboutPage;
+export default async function AboutPageRoute() {
+  const initialContent = await getAboutContent();
+  return <AboutPage initialContent={initialContent} />;
+}

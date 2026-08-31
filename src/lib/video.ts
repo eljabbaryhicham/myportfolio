@@ -29,9 +29,57 @@ export function cleanVideoUrl(input?: string | null): string | undefined {
 
   const cleanPath = '/' + resourceType + '/upload/' + cleanRest;
 
+  // Cap the resolution/bitrate of full-playback video URLs that carry no
+  // explicit size limit. Admin-configured uploads (e.g. hero showreel, project
+  // clips) are stored at full quality and can ship 10MB+ files to visitors.
+  // Streaming HLS manifests are left untouched — they already adapt per
+  // connection — and an existing w_/h_/br_ transform is respected.
+  if (resourceType === 'video' && !cleanRest.includes('.m3u8')) {
+    return addVideoCap(base + cleanPath);
+  }
+
   // Force a deterministic, universally decodable extension for the <video>, but
   // keep HLS (.m3u8) manifests as-is so they can be streamed.
   return (base + cleanPath).replace(/\.(webm|mov)$/i, '.mp4');
+}
+
+// Injects a width + quality cap into `https://res.cloudinary.com/<c>/video/upload/...`
+// URLs unless they already carry a resolution or bitrate constraint. Parsed
+// segment-by-segment (far more robust than a single regex) because the flag
+// chain and the version stamp are both slash-free adjacent segments:
+//   /upload/v12345/file.mp4         (no transform)
+//   /upload/f_auto,q_auto/v1/file   (transform chain)
+function addVideoCap(url: string): string {
+  const marker = '/video/upload/';
+  const idx = url.indexOf(marker);
+  if (idx === -1) return url;
+
+  const prefix = url.slice(0, idx + marker.length);
+  const after = url.slice(idx + marker.length);
+
+  // Version-first (no transform chain): `v<digits>/...`.
+  const flat = after.match(/^(v\d+\/)(.*)$/);
+  let transforms = '';
+  let rest: string;
+  if (flat) {
+    rest = flat[1] + flat[2];
+  } else {
+    // Transform chain first: everything up to the `/v<digits>/` marker.
+    const transformed = after.match(/^(.*?)\/(v\d+\/.*)$/);
+    if (!transformed) return url;
+    transforms = transformed[1];
+    rest = transformed[2];
+  }
+
+  const flags = transforms ? transforms.split(',') : [];
+  const has = (re: RegExp) => flags.some((f) => re.test(f));
+  if (has(/\bw_\d+\b/) || has(/\bh_\d+\b/) || has(/\bbr_/)) return url;
+
+  // Avoid duplicating an existing q_auto by removing it before re-adding.
+  const capped = [...flags.filter((f) => f !== 'q_auto'), 'w_1280', 'q_auto']
+    .filter(Boolean)
+    .join(',');
+  return prefix + capped + '/' + rest;
 }
 
 export function lowQualityVideoUrl(input?: string | null): string | undefined {

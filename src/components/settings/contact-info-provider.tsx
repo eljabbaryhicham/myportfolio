@@ -10,6 +10,8 @@ interface ContactInfoContextValue {
   contactInfo: (ContactInfo & { id: string }) | null;
   /** True until the first client snapshot resolves. */
   isLoading: boolean;
+  /** Non-null when the client read failed (e.g. quota/permissions). */
+  error: Error | null;
 }
 
 const ContactInfoContext = createContext<ContactInfoContextValue | null>(null);
@@ -45,7 +47,7 @@ export function ContactInfoProvider({
     () => (firestore && !hasSeed ? doc(firestore, 'contact', 'details') : null),
     [firestore, hasSeed]
   );
-  const { data, isLoading } = useDoc<ContactInfo>(contactDocRef);
+  const { data, isLoading, error } = useDoc<ContactInfo>(contactDocRef);
 
   // Prefer the live snapshot when it resolves (fallback path); otherwise keep
   // the SSR seed so the first paint is never empty.
@@ -55,7 +57,7 @@ export function ContactInfoProvider({
   const effectivelyLoading = isLoading && !contactInfo;
 
   return (
-    <ContactInfoContext.Provider value={{ contactInfo, isLoading: effectivelyLoading }}>
+    <ContactInfoContext.Provider value={{ contactInfo, isLoading: effectivelyLoading, error }}>
       {children}
     </ContactInfoContext.Provider>
   );

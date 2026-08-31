@@ -199,6 +199,10 @@ export default function HomePageContent() {
   // by the provider's own useDoc subscription). This avoids a re-fetch
   // and a flash of defaults on first paint.
   const { settings: homeSettings, isLoading: isLoadingSettings } = useHomePageSettings();
+  // Only use the custom animated cursor when one is configured in the admin
+  // panel. When none is set, fall back to the normal system cursor everywhere
+  // (including over the buttons) instead of the default arrow animation.
+  const hasCustomCursor = !!homeSettings?.cursorLottieUrl;
   // Only show the full-screen preloader on the very first load (no cached data yet);
   // on client-side navigations Firestore may briefly be isLoading while re-attaching,
   // but we already have data to render so we must not flash a black overlay.
@@ -361,7 +365,7 @@ export default function HomePageContent() {
   }, [homeSettings?.heroVideoUrl]);
 
   return (
-    <div className="hide-cursor-homepage homepage-viewport-fix relative h-full w-full overflow-hidden">
+    <div className={`hide-cursor-homepage homepage-viewport-fix relative h-full w-full overflow-hidden${hasCustomCursor ? '' : ' home-cursor-default'}`}>
       <div
         className="absolute inset-0 z-0 pointer-events-none"
         style={{
@@ -373,7 +377,7 @@ export default function HomePageContent() {
         }}
       />
       <div className="homepage-viewport-fix-inner relative z-10 flex h-full w-full items-center justify-center overflow-auto transition-opacity duration-1000">
-        <CursorArrow targetRefs={[aboutRef, contactRef, ctaRef]} cursorLottieUrl={homeSettings?.cursorLottieUrl} tickLottieUrl={homeSettings?.tickLottieUrl} />
+        {hasCustomCursor && <CursorArrow targetRefs={[aboutRef, contactRef, ctaRef]} cursorLottieUrl={homeSettings?.cursorLottieUrl} tickLottieUrl={homeSettings?.tickLottieUrl} />}
 
         <div className="flex flex-col items-center gap-1 sm:gap-2 md:gap-3 lg:gap-4 xl:gap-5 w-full px-4 -translate-y-4">
           <div className="translate-y-8 lg:translate-y-14">

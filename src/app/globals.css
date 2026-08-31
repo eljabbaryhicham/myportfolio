@@ -280,10 +280,14 @@ tr.drag-over-bottom {
   border-bottom: 2px solid hsl(var(--primary) / 0.2);
 }
 
-.hide-cursor-homepage,
-.hide-cursor-homepage *,
-.hide-cursor-homepage *::before,
-.hide-cursor-homepage *::after {
+/* Custom animated cursor is only applied when one is configured in the admin
+   panel (the wrapper gets `home-cursor-default` when none is set). Hide the
+   system cursor ONLY in that configured case so the default cursor shows
+   everywhere — including over the homepage buttons — otherwise. */
+.hide-cursor-homepage:not(.home-cursor-default),
+.hide-cursor-homepage:not(.home-cursor-default) *,
+.hide-cursor-homepage:not(.home-cursor-default) *::before,
+.hide-cursor-homepage:not(.home-cursor-default) *::after {
   cursor: none !important;
 }
 

@@ -667,6 +667,7 @@ function WorkPageContent() {
   const {
     items: portfolioItems,
     isLoading: isPortfolioLoading,
+    error: portfolioError,
   } = usePortfolioItems();
 
   const contactInfo = useContactInfo().contactInfo;
@@ -1056,8 +1057,13 @@ function WorkPageContent() {
     return () => clearTimeout(timer);
   }, [isProjectListEmpty]);
 
+  // A failed read is distinguishable from still-loading: the hook reports an
+  // error and no data. Surfaces a message instead of an endless preloader.
+  const hasFailed = portfolioError !== null && portfolioItems === null;
+
   const isLoading =
-    isPortfolioLoading || portfolioItems === null || (isProjectListEmpty && !emptyResultConfirmed);
+    !hasFailed &&
+    (isPortfolioLoading || portfolioItems === null || (isProjectListEmpty && !emptyResultConfirmed));
 
   // Gallery-area gate: show the inline preloader while data loads OR while the
   // page is still revealing (when a custom preloader is configured).
@@ -1153,7 +1159,12 @@ function WorkPageContent() {
                     initial="hidden"
                     animate="visible"
                   >
-                    {showGalleryPreloader ? (
+                    {hasFailed ? (
+                      <div className="col-span-full h-full min-h-[50vh] flex flex-col items-center justify-center text-center gap-3">
+                        <div className="text-foreground/40 text-lg">{t('common.error.title')}</div>
+                        <p className="text-foreground/30 text-sm max-w-md">{t('common.error.description')}</p>
+                      </div>
+                    ) : showGalleryPreloader ? (
                       <div className="col-span-full h-full min-h-[50vh] flex items-center justify-center">
                         <Preloader />
                       </div>

@@ -12,6 +12,8 @@ interface PortfolioItemsContextValue {
   isLoading: boolean;
   /** True once the value comes from a live Firestore snapshot (not the SSR seed). */
   hasLiveData: boolean;
+  /** Non-null when the client read failed (e.g. quota/permissions). */
+  error: Error | null;
 }
 
 const PortfolioItemsContext = createContext<PortfolioItemsContextValue | null>(null);
@@ -51,7 +53,7 @@ export function PortfolioItemsProvider({
     () => (firestore && !hasSeed ? collection(firestore, 'projects') : null),
     [firestore, hasSeed]
   );
-  const { data, isLoading } = useCollection<PortfolioItem>(projectsQuery);
+  const { data, isLoading, error } = useCollection<PortfolioItem>(projectsQuery);
 
   // Once the live client snapshot yields a value (fallback path — may be
   // fresher than the seed), prefer it; otherwise keep the SSR seed so the grid
@@ -63,7 +65,7 @@ export function PortfolioItemsProvider({
 
   return (
     <PortfolioItemsContext.Provider
-      value={{ items, isLoading: effectivelyLoading, hasLiveData: data !== null }}
+      value={{ items, isLoading: effectivelyLoading, hasLiveData: data !== null, error }}
     >
       {children}
     </PortfolioItemsContext.Provider>

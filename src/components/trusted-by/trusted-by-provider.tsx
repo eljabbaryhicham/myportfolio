@@ -9,6 +9,8 @@ interface TrustedByContextValue {
   clients: TrustedByClient[] | null;
   /** True until the first live `clients` snapshot resolves. */
   isLoading: boolean;
+  /** Non-null when the client read failed (e.g. quota/permissions). */
+  error: Error | null;
 }
 
 const TrustedByContext = createContext<TrustedByContextValue | null>(null);
@@ -44,13 +46,13 @@ export function TrustedByProvider({
     () => (firestore && !hasSeed ? query(collection(firestore, 'clients'), orderBy('order', 'asc')) : null),
     [firestore, hasSeed]
   );
-  const { data, isLoading } = useCollection<TrustedByClient>(clientsQuery);
+  const { data, isLoading, error } = useCollection<TrustedByClient>(clientsQuery);
 
   // Prefer the live snapshot when it resolves (fallback path); otherwise keep
   // the SSR seed so the first paint is never empty.
   const value = useMemo<TrustedByContextValue>(
-    () => ({ clients: data ?? initialClients ?? null, isLoading }),
-    [data, initialClients, isLoading]
+    () => ({ clients: data ?? initialClients ?? null, isLoading, error }),
+    [data, initialClients, isLoading, error]
   );
 
   return <TrustedByContext.Provider value={value}>{children}</TrustedByContext.Provider>;

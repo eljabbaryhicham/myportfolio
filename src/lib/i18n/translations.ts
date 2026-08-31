@@ -1,5 +1,7 @@
 const en: Record<string, string> = {
   /* Navigation */
+  'common.error.title': 'Data could not be loaded.',
+  'common.error.description': 'It is temporarily unavailable. Please try again in a moment.',
   'nav.home': 'Home',
   'nav.work': 'Work',
   'nav.about': 'About',
@@ -600,6 +602,8 @@ const en: Record<string, string> = {
 
 const fr: Record<string, string> = {
   /* Navigation */
+  'common.error.title': 'Impossible de charger les données.',
+  'common.error.description': 'Elles sont temporairement indisponibles. Veuillez réessayer dans un instant.',
   'nav.home': 'Accueil',
   'nav.work': 'Projets',
   'nav.about': 'À propos',

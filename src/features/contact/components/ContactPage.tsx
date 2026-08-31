@@ -48,10 +48,13 @@ export default function ContactPage() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const { t, lang } = useTranslation();
 
-  const { contactInfo, isLoading } = useContactInfo();
+  const { contactInfo, isLoading, error: contactError } = useContactInfo();
 
   const { ready: revealReady, hasPreloader } = usePageReveal();
-  const showInlinePreloader = isLoading || (hasPreloader && !revealReady);
+  // A failed read is distinguishable from still-loading (hook reports error +
+  // no data) — show a message instead of an endless preloader.
+  const contactFailed = contactError !== null && !contactInfo;
+  const showInlinePreloader = !contactFailed && (isLoading || (hasPreloader && !revealReady));
 
   // homepage/settings is sourced from the shared provider (server-seeded + live).
   const { settings: pageSettings } = useHomePageSettings();
@@ -154,8 +157,9 @@ export default function ContactPage() {
                         )}
                     </div>
                     ) : (
-                      <div className="text-center py-12 text-muted-foreground">
-                          <p>{t('contact.notAvailable')}</p>
+                      <div className="text-center py-12 text-muted-foreground px-6">
+                          <p className="text-lg">{contactError ? t('common.error.title') : t('contact.notAvailable')}</p>
+                          <p className="text-sm mt-2">{contactError ? t('common.error.description') : ''}</p>
                       </div>
                     )}
                   </motion.div>
