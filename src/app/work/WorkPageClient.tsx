@@ -1406,19 +1406,19 @@ function WorkPageContent() {
               )}
             </AnimatePresence>
             </motion.div>
-            <DialogClose className={cn(
-                "absolute right-4 top-4 z-30 h-10 w-10 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center ring-offset-background transition-opacity focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 md:hover:opacity-100",
+<DialogClose className={cn(
+                "absolute right-4 top-4 z-30 h-10 w-10 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center ring-offset-background transition-opacity",
                 hasMounted && isMobile ? "opacity-70" : (isCloseButtonVisible ? "opacity-70" : "opacity-0 focus:opacity-100 focus-visible:opacity-100")
             )}>
               <FontAwesomeIcon icon={faXmark} className="h-4 w-4" />
               <span className="sr-only">{t('work.details.close')}</span>
             </DialogClose>
-            <Button
+<Button
               variant="orange"
               size="icon"
               onClick={() => setIsProjectMaximized(prev => !prev)}
               className={cn(
-                "absolute left-4 top-[3.5rem] z-30 h-10 w-10 rounded-full border-0 flex items-center justify-center ring-offset-background transition-opacity focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+                "absolute left-4 top-4 z-30 h-10 w-10 rounded-full border-0 flex items-center justify-center ring-offset-background transition-opacity",
                 hasMounted && isMobile ? "opacity-70" : (isCloseButtonVisible ? "opacity-70" : "opacity-0 focus:opacity-100 focus-visible:opacity-100")
               )}
               title={isProjectMaximized ? t('work.details.restore') : t('work.details.maximize')}
