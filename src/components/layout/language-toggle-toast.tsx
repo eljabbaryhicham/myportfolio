@@ -5,55 +5,137 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { useLanguage } from '@/components/layout/language-switcher';
 import { useHomeReady } from '@/components/layout/home-ready-context';
+import { useIsMobile } from '@/hooks/use-mobile';
 import translations from '@/lib/i18n/translations';
 
 const INITIAL_SHOW_MS = 2000;
-const HOVER_LEAVE_MS = 500;
+const HOVER_LEAVE_MS = 100;
+const COLLAPSE_ANIM_MS = 500;
+// Safety margin added to the measured expanded width so the label never gets
+// clipped by the pivot toggle even if fonts/metrics shift slightly.
+const WIDTH_BUFFER = 12;
+
+// Collapse to the red dot: keep it at full opacity during the shrink, then
+// dim it to 25% once the collapse animation has finished.
+const STORAGE_KEY = 'language-toast-auto-shown';
+
+function hasAutoShown(): boolean {
+  if (typeof window === 'undefined') return false;
+  try {
+    return sessionStorage.getItem(STORAGE_KEY) === '1';
+  } catch {
+    return false;
+  }
+}
+
+function markAutoShown(): void {
+  if (typeof window === 'undefined') return;
+  try {
+    sessionStorage.setItem(STORAGE_KEY, '1');
+  } catch {
+    /* ignore */
+  }
+}
 
 export function LanguageToggleToast({ className }: { className?: string }) {
   const { lang, setLang } = useLanguage();
   const { ready } = useHomeReady();
+  const isMobile = useIsMobile();
+
   const [visible, setVisible] = useState(false);
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(true);
+  // The red dot dims to 25% only AFTER the collapse animation completes; it
+  // stays at 100% while expanding/collapsing.
+  const [dimmed, setDimmed] = useState(false);
+
   const collapseTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const dimTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   // Measured natural (expanded) width so we can animate between the collapsed
-  // dot (40px) and the full pill numerically (CSS/layout projection can't
-  // reliably animate an `auto` width, causing instant snaps).
+  // dot (40px) and the full pill numerically (CSS can't animate an `auto`
+  // width, which caused instant snaps).
   const measureRef = useRef<HTMLDivElement>(null);
   const [expandedWidth, setExpandedWidth] = useState(40);
+  const toastRef = useRef<HTMLButtonElement>(null);
 
   useLayoutEffect(() => {
-    if (measureRef.current) setExpandedWidth(measureRef.current.offsetWidth);
+    if (measureRef.current) setExpandedWidth(measureRef.current.offsetWidth + WIDTH_BUFFER);
   }, [lang, ready, visible]);
 
-  const clearTimer = useCallback(() => {
+  const clearCollapseTimer = useCallback(() => {
     if (collapseTimer.current) {
       clearTimeout(collapseTimer.current);
       collapseTimer.current = null;
     }
   }, []);
 
-  // Show the full toast. It stays expanded then auto-collapses to the red dot.
-  // On desktop, hovering cancels this timer (see onMouseEnter) so it stays open
-  // while hovered; on mobile (no hover) the timer makes the pill collapse on
-  // its own after INITIAL_SHOW_MS instead of staying open forever.
-  const show = useCallback(() => {
-    setVisible(true);
+  const clearDimTimer = useCallback(() => {
+    if (dimTimer.current) {
+      clearTimeout(dimTimer.current);
+      dimTimer.current = null;
+    }
+  }, []);
+
+  // Collapse to the red dot: keep it at full opacity during the shrink, then
+  // dim it to 25% once the collapse animation has finished.
+  const doCollapse = useCallback(() => {
+    clearCollapseTimer();
+    clearDimTimer();
+    setDimmed(false);
+    setCollapsed(true);
+    dimTimer.current = setTimeout(() => setDimmed(true), COLLAPSE_ANIM_MS);
+  }, [clearCollapseTimer, clearDimTimer]);
+
+  // Expand to the full pill; hovering/clicking keeps it open (clears timers).
+  const expand = useCallback(() => {
+    clearCollapseTimer();
+    clearDimTimer();
+    setDimmed(false);
     setCollapsed(false);
-    clearTimer();
-    collapseTimer.current = setTimeout(() => setCollapsed(true), INITIAL_SHOW_MS);
-  }, [clearTimer]);
+    setVisible(true);
+  }, [clearCollapseTimer, clearDimTimer]);
 
+  // Schedule a collapse after `delay` ms.
+  const scheduleCollapse = useCallback(
+    (delay: number) => {
+      clearCollapseTimer();
+      collapseTimer.current = setTimeout(() => doCollapse(), delay);
+    },
+    [clearCollapseTimer, doCollapse]
+  );
+
+  // Auto-expand only on the first website load of the session; afterwards just
+  // show the persistent collapsed dot (e.g. when navigating back to home).
   useEffect(() => {
-    if (ready) show();
-  }, [ready, show]);
+    if (!ready) return;
+    if (hasAutoShown()) {
+      setVisible(true);
+      setDimmed(true);
+      return;
+    }
+    markAutoShown();
+    expand();
+    scheduleCollapse(INITIAL_SHOW_MS);
+  }, [ready, expand, scheduleCollapse]);
 
-  // Collapse to the red dot after HOVER_LEAVE_MS once the user stops hovering
-  // the expanded pill.
-  const scheduleCollapseOnLeave = useCallback(() => {
-    clearTimer();
-    collapseTimer.current = setTimeout(() => setCollapsed(true), HOVER_LEAVE_MS);
-  }, [clearTimer]);
+  // On mobile there is no hover; once expanded via a tap, stay expanded until
+  // the user taps/click outside the toast (then collapse + dim).
+  useEffect(() => {
+    if (!isMobile || collapsed) return;
+    const onPointerDown = (e: PointerEvent) => {
+      const el = toastRef.current;
+      if (el && !el.contains(e.target as Node)) doCollapse();
+    };
+    document.addEventListener('pointerdown', onPointerDown);
+    return () => document.removeEventListener('pointerdown', onPointerDown);
+  }, [isMobile, collapsed, doCollapse]);
+
+  // Cleanup timers on unmount (e.g. navigating away from the homepage).
+  useEffect(() => {
+    return () => {
+      clearCollapseTimer();
+      clearDimTimer();
+    };
+  }, [clearCollapseTimer, clearDimTimer]);
 
   const other: 'fr' | 'en' = lang === 'en' ? 'fr' : 'en';
   const pillIsEn = other === 'en';
@@ -65,6 +147,7 @@ export function LanguageToggleToast({ className }: { className?: string }) {
       {visible && (
         <>
         <motion.button
+          ref={toastRef}
           type="button"
           data-cursor-hide="true"
           initial={{ x: '-50%', y: 80, opacity: 0 }}
@@ -85,26 +168,22 @@ export function LanguageToggleToast({ className }: { className?: string }) {
           }}
           aria-live="polite"
           onClick={() => {
-            // When collapsed (the red dot), tapping should expand the toast
-            // rather than toggle the language (no hover on mobile).
+            // Collapsed dot: tapping expands it (on mobile it then stays open
+            // until the user clicks outside). Expanded: toggles the language.
             if (collapsed) {
-              show();
+              expand();
             } else {
               setLang(other);
-              show();
+              expand();
             }
           }}
           onMouseEnter={() => {
-            // Hovering expands the collapsed dot and always cancels any pending
-            // collapse timer, so a hovered (expanded) pill stays open.
-            if (collapsed) setCollapsed(false);
-            clearTimer();
+            // Hovering expands the collapsed dot and cancels any pending
+            // collapse, so a hovered (expanded) pill stays open.
+            if (collapsed) expand();
+            else clearCollapseTimer();
           }}
-          onMouseLeave={
-            collapsed
-              ? undefined
-              : scheduleCollapseOnLeave
-          }
+          onMouseLeave={collapsed ? undefined : () => scheduleCollapse(HOVER_LEAVE_MS)}
           className={cn(
             "absolute bottom-4 left-1/2 z-[100] flex items-center overflow-hidden rounded-full border border-white/10 bg-white/10 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] backdrop-blur select-none hover:bg-white/15",
             collapsed ? "justify-center p-0" : "gap-3 px-3 py-1.5",
@@ -112,16 +191,16 @@ export function LanguageToggleToast({ className }: { className?: string }) {
           )}
         >
           {collapsed ? (
-            // Collapsed state: the red EN/FR knob alone.
+            // Collapsed state: the red EN/FR knob alone, dimmed after collapse.
             <motion.span
               key="collapsed"
               initial={{ scale: 0.6, opacity: 1 }}
-              animate={{ scale: 1, opacity: 0.25 }}
+              animate={{ scale: 1, opacity: dimmed ? 0.25 : 1 }}
               whileHover={{ opacity: 1 }}
               exit={{ scale: 0.6, opacity: 0 }}
               transition={{
-                scale: { type: 'spring', stiffness: 500, damping: 30 },
-                opacity: { duration: 0.5 },
+                scale: { duration: 0.3, ease: 'easeInOut' },
+                opacity: { duration: 0.3, ease: 'easeInOut' },
               }}
               className="flex h-9 w-9 items-center justify-center rounded-full bg-destructive shadow-[0_0_12px_hsl(var(--primary)/0.6)]"
             >
