@@ -201,13 +201,19 @@ export function LanguageToggleToast({ className }: { className?: string }) {
                 scale: { duration: 0.3, ease: 'easeInOut' },
                 opacity: { duration: 0.3, ease: 'easeInOut' },
               }}
-              className="relative flex h-9 w-9 items-center justify-center overflow-hidden rounded-full bg-destructive shadow-[0_0_12px_hsl(var(--primary)/0.6)]"
+              className="relative flex h-9 w-9 items-center justify-center rounded-full"
             >
+              <motion.span
+                aria-hidden="true"
+                animate={{ opacity: dimmed ? 0 : 1 }}
+                transition={{ duration: 0.5, ease: 'easeInOut' }}
+                className="absolute inset-0 rounded-full bg-destructive shadow-[0_0_12px_hsl(var(--primary)/0.6)]"
+              />
               <motion.span
                 aria-hidden="true"
                 animate={{ opacity: dimmed ? 1 : 0 }}
                 transition={{ duration: 0.5, ease: 'easeInOut' }}
-                className="absolute inset-0 bg-black"
+                className="absolute inset-0 rounded-full bg-black shadow-[0_0_12px_rgba(0,0,0,0.6)]"
               />
               <span className="relative z-10 text-[12px] font-bold leading-none text-white">
                 {langIsEn ? 'EN' : 'FR'}
