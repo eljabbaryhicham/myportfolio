@@ -22,10 +22,11 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { useCollection, useFirestore, useMemoFirebase, useUser, errorEmitter, FirestorePermissionError, updateDocumentNonBlocking } from '@/firebase';
+import { useCollection, useFirestore, useMemoFirebase, useUser, errorEmitter, FirestorePermissionError, updateDocumentNonBlocking, useAuth } from '@/firebase';
 import { useToast } from '@/hooks/use-toast';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { deleteDocumentNonBlocking, setDocumentNonBlocking, addDocumentNonBlocking } from '@/firebase/non-blocking-updates';
+import { revalidateHome } from '@/lib/revalidate-home';
 import { collection, doc, query, orderBy, writeBatch } from 'firebase/firestore';
 import { cn } from '@/lib/utils';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -143,6 +144,7 @@ export default function ClientAdmin() {
   const { t, lang } = useTranslation();
   const firestore = useFirestore();
   const { user } = useUser();
+  const auth = useAuth();
   const { toast } = useToast();
 
   const typedUser = user as AppUser | null;
@@ -206,6 +208,7 @@ export default function ClientAdmin() {
   const handleDeleteItem = (id: string) => {
     if (!firestore || !canEdit) return;
     deleteDocumentNonBlocking(doc(firestore, 'clients', id));
+    revalidateHome(auth);
     toast({
       title: t('clientAdmin.toast.deleted.title'),
       description: t('clientAdmin.toast.deleted.description'),
@@ -217,6 +220,7 @@ export default function ClientAdmin() {
     const docRef = doc(firestore, 'clients', item.id);
     const newVisibility = !(item.isVisible ?? true);
     updateDocumentNonBlocking(docRef, { isVisible: newVisibility });
+    revalidateHome(auth);
     toast({
         title: t('clientAdmin.toast.visibilityChanged.title').replace('{visibility}', newVisibility ? 'visible' : 'hidden'),
         description: t('clientAdmin.toast.visibilityChanged.description').replace('{name}', getLocalizedString(item.name, lang)).replace('{visibility}', newVisibility ? 'visible' : 'hidden'),
@@ -249,6 +253,7 @@ export default function ClientAdmin() {
     });
     batch.commit().then(() => {
       toast({ title: t('clientAdmin.toast.deleted.title'), description: `Deleted ${selectedIds.size} items.` });
+      revalidateHome(auth);
     }).catch(() => {
       errorEmitter.emit('permission-error', new FirestorePermissionError({ path: 'clients', operation: 'delete', requestResourceData: { note: `Batch delete ${selectedIds.size} documents.` } }));
     });
@@ -265,6 +270,7 @@ export default function ClientAdmin() {
     });
     batch.commit().then(() => {
       toast({ title: t('clientAdmin.toast.visibilityChanged.title').replace('{visibility}', newVisibility ? 'visible' : 'hidden'), description: `Updated ${selectedIds.size} items.` });
+      revalidateHome(auth);
     }).catch(() => {
       errorEmitter.emit('permission-error', new FirestorePermissionError({ path: 'clients', operation: 'update', requestResourceData: { note: `Batch update ${selectedIds.size} documents.` } }));
     });
@@ -279,12 +285,14 @@ export default function ClientAdmin() {
         // Editing existing client
         const clientRef = doc(firestore, 'clients', selectedClient.id);
         setDocumentNonBlocking(clientRef, { ...submitted, order: selectedClient.order ?? 0, isVisible: selectedClient.isVisible ?? true }, { merge: true });
+        revalidateHome(auth);
         toast({ title: t('clientAdmin.toast.updated.title'), description: t('clientAdmin.toast.updated.description')});
     } else {
         // Adding new client
         const maxOrder = clients ? Math.max(-1, ...clients.map(c => c.order)) : -1;
         const newClient = { ...submitted, order: maxOrder + 1, isVisible: true };
         addDocumentNonBlocking(collection(firestore, 'clients'), newClient);
+        revalidateHome(auth);
         toast({ title: t('clientAdmin.toast.added.title'), description: t('clientAdmin.toast.added.description')});
     }
     setIsFormOpen(false);
@@ -336,6 +344,7 @@ export default function ClientAdmin() {
 
     batch.commit().then(() => {
         toast({ title: t('clientAdmin.toast.reordered.title'), description: t('clientAdmin.toast.reordered.description') });
+        revalidateHome(auth);
     }).catch(() => {
         if (clients) {
           setSortedClients([...clients].sort((a, b) => (a.order ?? 0) - (b.order ?? 0)));

@@ -10,11 +10,12 @@ import { faChevronDown } from '@fortawesome/free-solid-svg-icons';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { doc } from 'firebase/firestore';
 import { Form } from '@/components/ui/form';
-import { useDoc, useFirestore, useMemoFirebase } from '@/firebase';
+import { useDoc, useFirestore, useMemoFirebase, useAuth } from '@/firebase';
 import { useTranslation } from '@/lib/i18n/useTranslation';
 import { ensureMultilingualString } from '@/lib/i18n/multilingual';
 import { MultilingualInput } from './MultilingualInput';
 import { useMergedAutosave } from '@/hooks/useMergedAutosave';
+import { revalidateHome } from '@/lib/revalidate-home';
 
 interface PageTextField {
   /** Field name stored on homepage/settings */
@@ -39,6 +40,7 @@ type TextFormValues = z.infer<typeof textSchema>;
 export default function PageTextEditor({ titleKey, fields }: PageTextEditorProps) {
   const { t } = useTranslation();
   const firestore = useFirestore();
+  const auth = useAuth();
   const settingsDocRef = useMemoFirebase(
     () => (firestore ? doc(firestore, 'homepage', 'settings') : null),
     [firestore]
@@ -66,6 +68,9 @@ export default function PageTextEditor({ titleKey, fields }: PageTextEditorProps
         merged[key] = value ?? { en: '', fr: '' };
       }
       return merged;
+    },
+    onSaved: () => {
+      revalidateHome(auth);
     },
   });
 

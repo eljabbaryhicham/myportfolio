@@ -19,9 +19,10 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
-import { useDoc, useFirestore, useMemoFirebase, setDocumentNonBlocking, useUser } from '@/firebase';
+import { useDoc, useFirestore, useMemoFirebase, setDocumentNonBlocking, useUser, useAuth } from '@/firebase';
 import { doc } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
+import { revalidateHome } from '@/lib/revalidate-home';
 import Preloader from '@/components/preloader';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import MediaLibrary from './MediaLibrary';
@@ -58,6 +59,7 @@ export default function AboutAdmin() {
   const { toast } = useToast();
   const firestore = useFirestore();
   const { user } = useUser();
+  const auth = useAuth();
   
   const typedUser = user as AppUser | null;
   const isSuperAdmin = isSuperAdminCheck(typedUser);
@@ -114,6 +116,7 @@ export default function AboutAdmin() {
       logoScale: values.logoScale || 1,
     };
     setDocumentNonBlocking(aboutContentRef, dataToSave, { merge: true });
+    revalidateHome(auth);
     toast({
       title: t('aboutAdmin.toast.saved.title'),
       description: t('aboutAdmin.toast.saved.description'),

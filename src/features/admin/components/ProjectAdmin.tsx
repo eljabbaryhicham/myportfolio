@@ -19,10 +19,11 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { useCollection, useFirestore, useMemoFirebase, errorEmitter, FirestorePermissionError, useUser, updateDocumentNonBlocking } from '@/firebase';
+import { useCollection, useFirestore, useMemoFirebase, errorEmitter, FirestorePermissionError, useUser, updateDocumentNonBlocking, useAuth } from '@/firebase';
 import { useToast } from '@/hooks/use-toast';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { deleteDocumentNonBlocking } from '@/firebase/non-blocking-updates';
+import { revalidateHome } from '@/lib/revalidate-home';
 import { collection, doc, writeBatch } from 'firebase/firestore';
 import { defaultPortfolioItems, type PortfolioItem } from '@/features/portfolio/data/portfolio-data';
 import { cn } from '@/lib/utils';
@@ -46,6 +47,7 @@ interface ProjectAdminProps {
 function ProjectAdmin({ setSelectedItem, setIsSheetOpen }: ProjectAdminProps) {
   const firestore = useFirestore();
   const { user } = useUser();
+  const auth = useAuth();
   const { toast } = useToast();
   const { t, lang } = useTranslation();
   
@@ -111,6 +113,7 @@ function ProjectAdmin({ setSelectedItem, setIsSheetOpen }: ProjectAdminProps) {
   const handleDeleteItem = (id: string) => {
     if (!firestore || !canEditProjects) return;
     deleteDocumentNonBlocking(doc(firestore, 'projects', id));
+    revalidateHome(auth);
     toast({
       title: t('projectAdmin.toast.deleted.title'),
       description: t('projectAdmin.toast.deleted.description'),
@@ -122,6 +125,7 @@ function ProjectAdmin({ setSelectedItem, setIsSheetOpen }: ProjectAdminProps) {
     const docRef = doc(firestore, 'projects', item.id);
     const newVisibility = !(item.isVisible ?? true);
     updateDocumentNonBlocking(docRef, { isVisible: newVisibility });
+    revalidateHome(auth);
     toast({
         title: t('projectAdmin.toast.visibilityChanged.title').replace('{visibility}', newVisibility ? t('projectAdmin.show') : t('projectAdmin.hide')),
         description: t('projectAdmin.toast.visibilityChanged.description').replace('{title}', getLocalizedString(item.title, lang)).replace('{visibility}', newVisibility ? 'visible' : 'hidden'),
@@ -154,6 +158,7 @@ function ProjectAdmin({ setSelectedItem, setIsSheetOpen }: ProjectAdminProps) {
     });
     batch.commit().then(() => {
       toast({ title: t('projectAdmin.toast.deleted.title'), description: `Deleted ${selectedIds.size} items.` });
+      revalidateHome(auth);
     }).catch(() => {
       errorEmitter.emit('permission-error', new FirestorePermissionError({ path: 'projects', operation: 'delete', requestResourceData: { note: `Batch delete ${selectedIds.size} documents.` } }));
     });
@@ -170,6 +175,7 @@ function ProjectAdmin({ setSelectedItem, setIsSheetOpen }: ProjectAdminProps) {
     });
     batch.commit().then(() => {
       toast({ title: t('projectAdmin.toast.visibilityChanged.title').replace('{visibility}', newVisibility ? t('projectAdmin.show') : t('projectAdmin.hide')), description: `Updated ${selectedIds.size} items.` });
+      revalidateHome(auth);
     }).catch(() => {
       errorEmitter.emit('permission-error', new FirestorePermissionError({ path: 'projects', operation: 'update', requestResourceData: { note: `Batch update ${selectedIds.size} documents.` } }));
     });
@@ -215,6 +221,7 @@ function ProjectAdmin({ setSelectedItem, setIsSheetOpen }: ProjectAdminProps) {
 
     batch.commit().then(() => {
         toast({ title: t('projectAdmin.toast.reordered.title'), description: t('projectAdmin.toast.reordered.description') });
+        revalidateHome(auth);
     }).catch(e => {
         // Reset local state on failure
         if (items) {

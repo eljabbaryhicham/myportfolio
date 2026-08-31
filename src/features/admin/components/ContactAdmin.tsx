@@ -18,9 +18,10 @@ import {
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { useMergedAutosave } from '@/hooks/useMergedAutosave';
-import { useDoc, useFirestore, useMemoFirebase, useUser } from '@/firebase';
+import { useDoc, useFirestore, useMemoFirebase, useUser, useAuth } from '@/firebase';
 import { doc } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
+import { revalidateHome } from '@/lib/revalidate-home';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import Preloader from '@/components/preloader';
 import type { AppUser } from '@/firebase/auth/use-user';
@@ -80,6 +81,7 @@ export default function ContactAdmin() {
   const { toast } = useToast();
   const firestore = useFirestore();
   const { user } = useUser();
+  const auth = useAuth();
 
   const typedUser = user as AppUser | null;
   const isSuperAdmin = isSuperAdminCheck(typedUser);
@@ -147,6 +149,7 @@ export default function ContactAdmin() {
     ref: contactDocRef,
     watch,
     onSaved: () => {
+      revalidateHome(auth);
       toast({
         title: t('homeAdmin.toast.saved.title'),
         description: t('homeAdmin.toast.saved.description'),
