@@ -153,6 +153,11 @@ export default function HomeAdmin() {
   // Track the last-written preloader config (type|url|size) so a preloader
   // change revalidates the static home page (no stale preloader flash).
   const lastPreloaderRef = useRef<string | null>(null);
+  // Track the last-written background config (home+website URLs/types/enabled)
+  // so a background change revalidates the cached settings seed, letting the
+  // site-wide background update on the next page load without a per-visitor
+  // live Firestore listener.
+  const lastBackgroundRef = useRef<string | null>(null);
   const [isMounted, setIsMounted] = useState(false);
 
   const typedUser = user as AppUser | null;
@@ -317,6 +322,22 @@ export default function HomeAdmin() {
         const key = `${written.preloaderType ?? ''}|${written.preloaderUrl ?? ''}|${written.preloaderSize ?? ''}`;
         if (key !== lastPreloaderRef.current) {
           lastPreloaderRef.current = key;
+          revalidateHome(auth);
+        }
+      }
+      // When any background field changes (home or website background URL,
+      // type, media id, or enabled flag), revalidate the cached settings seed
+      // so the site-wide background updates on the next page load.
+      const bgKeys = [
+        'homePageBackgroundType', 'homePageBackgroundMediaId', 'homePageBackgroundUrl',
+        'websiteBackgroundType', 'websiteBackgroundMediaId', 'websiteBackgroundUrl',
+        'isHomePageVideoEnabled', 'isWebsiteVideoEnabled',
+      ];
+      const bgChanged = bgKeys.some((k) => written[k] !== undefined);
+      if (bgChanged) {
+        const key = bgKeys.map((k) => `${k}=${String(written[k] ?? '')}`).join('|');
+        if (key !== lastBackgroundRef.current) {
+          lastBackgroundRef.current = key;
           revalidateHome(auth);
         }
       }
