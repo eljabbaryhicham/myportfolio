@@ -1414,11 +1414,11 @@ function WorkPageContent() {
               <span className="sr-only">{t('work.details.close')}</span>
             </DialogClose>
             <Button
-              variant="outline"
+              variant="orange"
               size="icon"
               onClick={() => setIsProjectMaximized(prev => !prev)}
               className={cn(
-                "absolute left-4 top-[3.5rem] z-30 h-10 w-10 rounded-full bg-orange-500 hover:bg-orange-600 text-white hover:text-white border-0 flex items-center justify-center ring-offset-background transition-opacity focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+                "absolute left-4 top-[3.5rem] z-30 h-10 w-10 rounded-full border-0 flex items-center justify-center ring-offset-background transition-opacity focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
                 hasMounted && isMobile ? "opacity-70" : (isCloseButtonVisible ? "opacity-70" : "opacity-0 focus:opacity-100 focus-visible:opacity-100")
               )}
               title={isProjectMaximized ? t('work.details.restore') : t('work.details.maximize')}
