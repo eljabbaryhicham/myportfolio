@@ -4,8 +4,8 @@
 import { memo, useRef, useMemo } from 'react';
 import { Separator } from '@/components/ui/separator';
 import Image from 'next/image';
-import { useCollection, useDoc, useFirestore, useMemoFirebase } from '@/firebase';
-import { collection, query, orderBy, doc } from 'firebase/firestore';
+import { useDoc, useFirestore, useMemoFirebase } from '@/firebase';
+import { doc } from 'firebase/firestore';
 import Preloader from '@/components/preloader';
 import { usePageReveal } from '@/lib/use-page-reveal';
 import Logo from '@/components/logo';
@@ -21,16 +21,9 @@ import { cn } from '@/lib/utils';
 import { ScrollIndicator } from '@/components/ScrollIndicator';
 import { useTranslation } from '@/lib/i18n/useTranslation';
 import { getLocalizedString, type MultilingualString } from '@/lib/i18n/multilingual';
+import type { TrustedByClient } from '@/lib/types';
 import { useHomePageSettings } from '@/components/settings/home-page-settings-provider';
-
-
-interface Client {
-  id: string;
-  name: MultilingualString;
-  logoUrl: string;
-  order: number;
-  isVisible?: boolean;
-}
+import { useTrustedByClients } from '@/components/trusted-by/trusted-by-provider';
 
 interface AboutPageContent {
     title: MultilingualString;
@@ -57,7 +50,7 @@ function cloudinaryOptimized(url: string) {
   return url.replace('/upload/', '/upload/f_auto,q_auto/');
 }
 
-const ClientLogo = ({ client, alt }: { client: Client; alt: string }) => (
+const ClientLogo = ({ client, alt }: { client: TrustedByClient; alt: string }) => (
     <div 
       className="relative mx-8 flex-shrink-0 basis-1/5 group"
     >
@@ -99,11 +92,9 @@ export default function AboutPage() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const { t, lang } = useTranslation();
 
-  const clientsQuery = useMemoFirebase(
-    () => firestore ? query(collection(firestore, 'clients'), orderBy('order')) : null,
-    [firestore]
-  );
-  const { data: allClients, isLoading: isLoadingClients } = useCollection<Client>(clientsQuery);
+  // clients comes from the shared TrustedByProvider (server-seeded + live) so
+  // the `clients` collection is subscribed exactly once across the app.
+  const { clients: allClients, isLoading: isLoadingClients } = useTrustedByClients();
 
   // homepage/settings is sourced from the shared provider (server-seeded + live).
   const { settings: pageSettings } = useHomePageSettings();

@@ -21,18 +21,13 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faWhatsapp } from '@fortawesome/free-brands-svg-icons';
 import Lottie from 'lottie-react';
 import sentAnimation from '@/lib/sent-animation.json';
-import { useDoc, useFirestore, useMemoFirebase } from '@/firebase';
-import { doc } from 'firebase/firestore';
+import { useContactInfo } from '@/components/settings/contact-info-provider';
 import Link from 'next/link';
 import { useToast } from '@/hooks/use-toast';
 import { useTranslation } from '@/lib/i18n/useTranslation';
 
 const formSchema = ContactFormInputSchema;
 type ContactFormValues = z.infer<typeof formSchema>;
-
-interface ContactInfo {
-    whatsApp?: string;
-}
 
 interface ContactFormProps {
     onSuccess?: () => void;
@@ -42,15 +37,10 @@ interface ContactFormProps {
 export default function ContactForm({ onSuccess, defaultMessage = '' }: ContactFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSent, setIsSent] = useState(false);
-  const firestore = useFirestore();
   const { toast } = useToast();
   const { t } = useTranslation();
 
-  const contactDocRef = useMemoFirebase(
-    () => (firestore ? doc(firestore, 'contact', 'details') : null),
-    [firestore]
-  );
-  const { data: contactInfo } = useDoc<ContactInfo>(contactDocRef);
+  const { contactInfo } = useContactInfo();
 
 
   const form = useForm<ContactFormValues>({

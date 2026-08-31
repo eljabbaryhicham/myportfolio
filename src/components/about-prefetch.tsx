@@ -1,17 +1,20 @@
 'use client';
 
 import { useEffect } from 'react';
-import { collection, query, orderBy, doc, getDocs, getDoc } from 'firebase/firestore';
+import { doc, getDoc } from 'firebase/firestore';
 import { useFirestore } from '@/firebase';
 
 /**
  * Warms Firestore cache for About page on first website load.
- * After initial paint (idle), it fetches `about/content` doc and `clients` collection
- * via getDocs/getDoc — these populate Firestore SDK's memory cache. When user
- * navigates to /about, useCollection/useDoc hooks hit cache instantly then
- * revalidate via onSnapshot, making navigation feel instant.
+ * After initial paint (idle), it fetches the `about/content` doc via getDoc to
+ * populate Firestore SDK's memory cache. When the user navigates to /about, the
+ * useDoc hook hits the cache instantly then revalidates via onSnapshot, making
+ * navigation feel instant.
  * Uses requestIdleCallback (fallback setTimeout 2s) to not compete with critical
- * first paint. One-time fetch, not a persistent listener, so minimal cost (3 reads).
+ * first paint. One-time fetch, not a persistent listener, so minimal cost (1 read).
+ * NOTE: `clients` is deliberately not fetched here — TrustedByProvider already
+ * live-subscribes the `clients` collection globally, so a redundant getDocs would
+ * only duplicate that read on every page load.
  */
 export function AboutPrefetch() {
   const firestore = useFirestore();
@@ -21,10 +24,9 @@ export function AboutPrefetch() {
 
     const run = async () => {
       try {
-        const clientsQ = query(collection(firestore, 'clients'), orderBy('order'));
         const aboutRef = doc(firestore, 'about', 'content');
-        // Run in parallel, ignore errors (e.g., offline)
-        await Promise.allSettled([getDocs(clientsQ), getDoc(aboutRef)]);
+        // Ignore errors (e.g., offline)
+        await getDoc(aboutRef);
       } catch {}
     };
 

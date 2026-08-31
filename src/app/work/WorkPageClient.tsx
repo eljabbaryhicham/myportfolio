@@ -15,11 +15,13 @@ import { useState, memo, useEffect, useMemo, useRef, useCallback, lazy, Suspense
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { useFirestore, useMemoFirebase, useUser, setDocumentNonBlocking, addDocumentNonBlocking, useDoc } from '@/firebase';
+import { useFirestore, useMemoFirebase, useUser, setDocumentNonBlocking, addDocumentNonBlocking } from '@/firebase';
 import { usePortfolioItems } from '@/components/portfolio/portfolio-items-provider';
 import { collection, doc } from 'firebase/firestore';
 import { deleteDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { useHomePageSettings } from '@/components/settings/home-page-settings-provider';
+import { useContactInfo } from '@/components/settings/contact-info-provider';
+import { UploadProgressProvider } from '@/components/upload-progress-context';
 import { usePageReveal } from '@/lib/use-page-reveal';
 import type { PortfolioItem } from '@/features/portfolio/data/portfolio-data';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -667,11 +669,7 @@ function WorkPageContent() {
     isLoading: isPortfolioLoading,
   } = usePortfolioItems();
 
-  const contactDocRef = useMemoFirebase(
-    () => (firestore ? doc(firestore, 'contact', 'details') : null),
-    [firestore]
-  );
-  const { data: contactInfo } = useDoc(contactDocRef);
+  const contactInfo = useContactInfo().contactInfo;
 
   // homepage/settings is sourced from the shared provider (server-seeded + live).
   const { settings: homeSettings } = useHomePageSettings();
@@ -1435,7 +1433,7 @@ function WorkPageContent() {
       </Dialog>
 
       {!!user && (
-        <>
+        <UploadProgressProvider>
           <PortfolioItemFormSheet 
             isOpen={isFormSheetOpen}
             setIsOpen={(isOpen) => {
@@ -1464,7 +1462,7 @@ function WorkPageContent() {
               }
             }}
           />
-        </>
+        </UploadProgressProvider>
       )}
     </>
   );

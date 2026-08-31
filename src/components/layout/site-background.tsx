@@ -198,10 +198,9 @@ export function DynamicThemeStyles() {
     // Apply the last-saved theme HSL from localStorage on first render so the
     // color doesn't flash from the default while Firestore loads. It's only a
     // synchronous hint; the Firestore value below still wins once it resolves.
-    const [storedHsl] = useState<string | null>(() => {
-      if (typeof window === 'undefined') return null;
-      try { return localStorage.getItem(STORAGE_KEY); } catch { return null; }
-    });
+    // Read in an effect (not the useState initializer) so server and first
+    // client render are identical, avoiding a hydration mismatch.
+    const [storedHsl, setStoredHsl] = useState<string | null>(null);
 
     const themeColor = homeSettings?.themeColor;
     const primaryHsl = themeColor ? hexToHsl(themeColor) : null;
@@ -216,6 +215,10 @@ export function DynamicThemeStyles() {
       return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
     };
     const glassRgb = hexToRgb(homeSettings?.glassColor || '#000000') || [0, 0, 0];
+
+    useEffect(() => {
+      try { setStoredHsl(localStorage.getItem(STORAGE_KEY)); } catch {}
+    }, []);
 
     useEffect(() => {
       if (primaryHsl) {

@@ -96,3 +96,29 @@ export interface TrustedByClient {
   order: number;
   isVisible?: boolean;
 }
+
+/**
+ * Canonical view of the public `contact/details` document. Shared by the
+ * nav (logo), contact page (profile/socials) and contact form (WhatsApp)
+ * via the ContactInfoProvider, so the doc is live-subscribed only once.
+ */
+export interface ContactInfo {
+  avatarUrl?: string;
+  name?: MultilingualString;
+  title?: MultilingualString;
+  email?: string;
+  whatsApp?: string;
+  behanceUrl?: string;
+  behanceName?: string;
+  linkedinUrl?: string;
+  linkedinName?: string;
+  fiverrUrl?: string;
+  fiverrName?: string;
+  instagramUrl?: string;
+  instagramName?: string;
+  facebookUrl?: string;
+  facebookName?: string;
+  twitterUrl?: string;
+  twitterName?: string;
+  logoUrl?: string;
+}

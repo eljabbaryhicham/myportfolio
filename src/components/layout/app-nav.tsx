@@ -4,7 +4,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { useUser, useDoc, useFirestore, useMemoFirebase } from "@/firebase";
+import { useUser } from "@/firebase";
 import { motion } from "framer-motion";
 import React from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -12,7 +12,6 @@ import { useHasMounted } from "@/hooks/use-has-mounted";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faHouse, faImage, faCircleInfo, faEnvelope, faShieldHalved, faFlask } from "@fortawesome/free-solid-svg-icons";
 import Logo from "../logo";
-import { doc } from "firebase/firestore";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useLanguage } from "@/components/layout/language-switcher";
 import { LanguageSwitcher } from "@/components/layout/language-switcher";
@@ -28,6 +27,7 @@ const navItems = [
 ];
 
 import { useHomePageSettings } from '@/components/settings/home-page-settings-provider';
+import { useContactInfo } from '@/components/settings/contact-info-provider';
 
 const MENUBAR_LOGO_CACHE_KEY = 'menubar-logo-url';
 const NAV_BUTTON_SIZE_CACHE_KEY = 'menubar-nav-button-size';
@@ -36,31 +36,31 @@ const MENUBAR_LOGO_SIZE_CACHE_KEY = 'menubar-logo-size';
 export function AppNav() {
   const pathname = usePathname();
   const { user } = useUser();
-  const firestore = useFirestore();
   const isMobile = useIsMobile();
   const hasMounted = useHasMounted();
   const { lang } = useLanguage();
   const t = (key: string) => translations[lang]?.[key] ?? translations.en[key] ?? key;
 
-  const contactDocRef = useMemoFirebase(
-    () => (firestore ? doc(firestore, 'contact', 'details') : null),
-    [firestore]
-  );
-  const { data: contactInfo } = useDoc(contactDocRef);
+  const { contactInfo } = useContactInfo();
 
   // homepage/settings comes from the shared provider (server-seeded + live).
   const { settings: homeSettings } = useHomePageSettings();
 
-  // Hydrate the logo instantly from a local cache instead of waiting for the
-  // Firestore settings/contact docs to resolve on every page load.
-  const [cachedLogoUrl, setCachedLogoUrl] = React.useState<string | null>(() => {
-    if (typeof window === 'undefined') return null;
+  // Hydrate the logo from a local cache. Initialized as null so the first
+  // client render matches the server render (no localStorage branch in the
+  // useState initializer, which caused a hydration mismatch when a cached logo
+  // existed but the server seed didn't). The cached value is read once after
+  // mount so the logo still appears immediately for repeat visitors.
+  const [cachedLogoUrl, setCachedLogoUrl] = React.useState<string | null>(null);
+
+  React.useEffect(() => {
     try {
-      return window.localStorage.getItem(MENUBAR_LOGO_CACHE_KEY);
+      const cached = window.localStorage.getItem(MENUBAR_LOGO_CACHE_KEY);
+      if (cached) setCachedLogoUrl(cached);
     } catch {
-      return null;
+      // storage unavailable (e.g. private mode) — cache is best-effort
     }
-  });
+  }, []);
 
   // Keep the button/logo sizes in sync with Firestore live: whenever the
   // settings change (e.g. from the admin panel), update the CSS variable (which

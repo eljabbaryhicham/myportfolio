@@ -2,19 +2,13 @@
 'use client';
 
 import { useState, useEffect, type RefObject, useRef } from 'react';
-import { doc } from 'firebase/firestore';
 import Lottie from 'lottie-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { useDoc, useFirestore, useMemoFirebase } from '@/firebase';
+import { useHomePageSettings } from '@/components/settings/home-page-settings-provider';
 
 interface ScrollIndicatorProps {
     scrollRef: RefObject<HTMLDivElement>;
-}
-
-interface ArrowSettings {
-  isArrowAnimationEnabled?: boolean;
-  arrowLottieUrl?: string;
 }
 
 export function ScrollIndicator({ scrollRef }: ScrollIndicatorProps) {
@@ -22,12 +16,7 @@ export function ScrollIndicator({ scrollRef }: ScrollIndicatorProps) {
   const isMobile = useIsMobile();
   const inactivityTimer = useRef<NodeJS.Timeout | null>(null);
 
-  const firestore = useFirestore();
-  const settingsDocRef = useMemoFirebase(
-    () => (firestore ? doc(firestore, 'homepage', 'settings') : null),
-    [firestore]
-  );
-  const { data: homeSettings } = useDoc<ArrowSettings>(settingsDocRef);
+  const { settings: homeSettings } = useHomePageSettings();
 
   const enabled = homeSettings?.isArrowAnimationEnabled ?? true;
   const animationUrl = homeSettings?.arrowLottieUrl || '';

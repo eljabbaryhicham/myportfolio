@@ -70,6 +70,7 @@ export async function POST(req: NextRequest) {
     revalidateTag('homepage-settings', 'max');
     revalidateTag('trusted-by-clients', 'max');
     revalidateTag('portfolio-items', 'max');
+    revalidateTag('contact-details', 'max');
   } catch (e) {
     logger.error('revalidate-home: revalidatePath failed.', e);
     return NextResponse.json({ error: 'Revalidation failed.' }, { status: 500 });

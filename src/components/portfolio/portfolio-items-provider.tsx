@@ -24,9 +24,14 @@ export { PortfolioItemsContext };
  * Seeded with the server-fetched value (`initialItems`) so the very first
  * render — and therefore the SSR HTML — already contains the project grid,
  * eliminating the Firestore round-trip wait that previously delayed the /work
- * grid. After mount, a `useCollection` subscription keeps the value live, so
- * admin edits made while the public site is open still reflect without a hard
- * refresh.
+ * grid.
+ *
+ * Seed-first: when a server seed is present, the provider uses it WITHOUT
+ * opening a client Firestore subscription. The server already read the cached
+ * `projects` collection (`getPortfolioItems`) — subscribing again would re-bill
+ * the whole collection for every visitor, duplicating that amortized read. A
+ * live subscription is only opened as a fallback when there is no seed (e.g.
+ * the server read failed), so the grid can still load its data.
  *
  * Mirrors HomePageSettingsProvider's loading suppression: whenever a
  * server-seeded value is already present, the first client render is treated as
@@ -40,15 +45,17 @@ export function PortfolioItemsProvider({
   children: React.ReactNode;
 }) {
   const firestore = useFirestore();
+  const hasSeed = Array.isArray(initialItems);
+
   const projectsQuery = useMemoFirebase(
-    () => (firestore ? collection(firestore, 'projects') : null),
-    [firestore]
+    () => (firestore && !hasSeed ? collection(firestore, 'projects') : null),
+    [firestore, hasSeed]
   );
   const { data, isLoading } = useCollection<PortfolioItem>(projectsQuery);
 
-  // Once the client subscription yields a value (at minimum the same as
-  // initialItems, but possibly fresher if the admin edited between SSR and
-  // mount), prefer it; otherwise keep the SSR seed so the grid is never empty.
+  // Once the live client snapshot yields a value (fallback path — may be
+  // fresher than the seed), prefer it; otherwise keep the SSR seed so the grid
+  // is never empty.
   const items = data ?? initialItems ?? null;
   // Treat as "loaded" if we have either the live snapshot OR the server-seeded
   // value, so no loading flash occurs right after hydration when the seed exists.

@@ -45,20 +45,37 @@ function escapeHtml(str: string): string {
     .replace(/'/g, '&#39;');
 }
 
-async function loadEmailTemplate(fieldName: 'emailTemplateHtml' | 'autoReplyTemplateHtml'): Promise<string> {
-  const fallback = fieldName === 'autoReplyTemplateHtml' ? DEFAULT_AUTOREPLY_TEMPLATE_HTML : DEFAULT_EMAIL_TEMPLATE_HTML;
+interface EmailTemplates {
+  emailTemplateHtml: string;
+  autoReplyTemplateHtml: string;
+}
+
+// Fetches the admin-customizable email templates from homepage/settings in a
+// single Firestore REST read per request. Both template fields are read from the
+// same response (previously each field triggered its own read, doubling the cost).
+// `homepage/settings` is publicly readable (the client site loads it
+// anonymously), so no Admin SDK credentials are needed here
+// (docs/service-account.json is not available in deployments).
+async function loadEmailTemplates(): Promise<EmailTemplates> {
+  const fallback = {
+    emailTemplateHtml: DEFAULT_EMAIL_TEMPLATE_HTML,
+    autoReplyTemplateHtml: DEFAULT_AUTOREPLY_TEMPLATE_HTML,
+  };
   try {
-    // Read via Firestore REST API — homepage/settings is publicly readable
-    // (the client site loads it anonymously), so no Admin SDK credentials are
-    // needed here (docs/service-account.json is not available in deployments).
     const url = `https://firestore.googleapis.com/v1/projects/${firebaseConfig.projectId}/databases/(default)/documents/homepage/settings`;
     const res = await fetch(url, { cache: 'no-store' });
     if (!res.ok) throw new Error(`Firestore REST request failed: ${res.status}`);
     const fields = (await res.json()).fields || {};
-    const tpl = fields[fieldName]?.stringValue;
-    return typeof tpl === 'string' && tpl.trim() ? tpl : fallback;
+    const read = (fieldName: keyof EmailTemplates) => {
+      const tpl = fields[fieldName]?.stringValue;
+      return typeof tpl === 'string' && tpl.trim() ? tpl : fallback[fieldName];
+    };
+    return {
+      emailTemplateHtml: read('emailTemplateHtml'),
+      autoReplyTemplateHtml: read('autoReplyTemplateHtml'),
+    };
   } catch (e) {
-    console.error(`Failed to load ${fieldName} from settings, using default.`, e);
+    console.error('Failed to load email templates from settings, using defaults.', e);
     return fallback;
   }
 }
@@ -100,8 +117,9 @@ export async function POST(req: NextRequest) {
 
   try {
     // Admin-customizable template (Admin → Home → Contact Email Template).
-    const template = await loadEmailTemplate('emailTemplateHtml');
-    const html = template
+    // Single Firestore read resolves both the notification and auto-reply templates.
+    const templates = await loadEmailTemplates();
+    const html = templates.emailTemplateHtml
       .replace(/\{\{name\}\}/g, escapeHtml(name))
       .replace(/\{\{email\}\}/g, escapeHtml(email))
       .replace(/\{\{message\}\}/g, escapeHtml(message));
@@ -121,8 +139,7 @@ export async function POST(req: NextRequest) {
 
     // Auto-reply to the visitor — failure here must not fail the submission.
     try {
-      const autoReplyTemplate = await loadEmailTemplate('autoReplyTemplateHtml');
-      const autoReplyHtml = autoReplyTemplate
+      const autoReplyHtml = templates.autoReplyTemplateHtml
         .replace(/\{\{name\}\}/g, escapeHtml(name))
         .replace(/\{\{email\}\}/g, escapeHtml(email))
         .replace(/\{\{message\}\}/g, escapeHtml(message));

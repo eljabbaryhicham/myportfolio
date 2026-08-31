@@ -13,6 +13,7 @@ export const quicksand = localFont({
   src: [
     { path: '../../node_modules/@fontsource/quicksand/files/quicksand-latin-400-normal.woff2', weight: '400' },
     { path: '../../node_modules/@fontsource/quicksand/files/quicksand-latin-500-normal.woff2', weight: '500' },
+    { path: '../../node_modules/@fontsource/quicksand/files/quicksand-latin-600-normal.woff2', weight: '600' },
     { path: '../../node_modules/@fontsource/quicksand/files/quicksand-latin-700-normal.woff2', weight: '700' },
   ],
   display: 'swap',

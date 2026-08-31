@@ -8,13 +8,14 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlay } from '@fortawesome/free-solid-svg-icons';
-import { useUser } from '@/firebase';
+import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
+import { doc } from 'firebase/firestore';
 import { notFound } from 'next/navigation';
 import Preloader from '@/components/preloader';
 import PlyrPlayer from '@/components/PlyrPlayer';
 import { useTranslation } from '@/lib/i18n/useTranslation';
-import { useHomePageSettings } from '@/components/settings/home-page-settings-provider';
 import { isSuperAdmin as isSuperAdminCheck } from '@/lib/constants';
+import type { HomePageSettings } from '@/lib/types';
 
 type PlayerChoice = 'plyr' | 'clappr';
 
@@ -28,13 +29,21 @@ export default function TestPage() {
   const [localPlayer, setLocalPlayer] = useState<PlayerChoice>('clappr');
   const userChangedRef = useRef(false);
 
-  const { settings: homeSettings, hasLiveData } = useHomePageSettings();
+  // The global HomePageSettingsProvider is now seed-first (no live doc), so
+  // this QA page keeps its own live `useDoc` subscription to homepage/settings
+  // to act on the true current Firestore state.
+  const firestore = useFirestore();
+  const settingsDocRef = useMemoFirebase(
+    () => (firestore ? doc(firestore, 'homepage', 'settings') : null),
+    [firestore]
+  );
+  const { data: liveSettings } = useDoc<HomePageSettings>(settingsDocRef);
 
   useEffect(() => {
-    if (!userChangedRef.current && homeSettings?.workPagePlayer) {
-      setLocalPlayer(homeSettings.workPagePlayer as PlayerChoice);
+    if (!userChangedRef.current && liveSettings?.workPagePlayer) {
+      setLocalPlayer(liveSettings.workPagePlayer as PlayerChoice);
     }
-  }, [homeSettings?.workPagePlayer]);
+  }, [liveSettings?.workPagePlayer]);
 
   const handleLoadClick = () => {
     setSource(inputValue);
@@ -55,7 +64,7 @@ export default function TestPage() {
   // can never wrongly show the 404 page. When the test page is enabled, anyone
   // (signed in or not) can open it. When disabled, only the super admin may —
   // everyone else gets a 404.
-  if (!hasLiveData) {
+  if (!liveSettings) {
     return (
       <div className="flex items-center justify-center h-full">
         <Preloader />
@@ -63,7 +72,7 @@ export default function TestPage() {
     );
   }
 
-  if (homeSettings?.isTestPageEnabled === false && !isSuperAdmin) {
+  if (liveSettings?.isTestPageEnabled === false && !isSuperAdmin) {
     notFound();
   }
 

@@ -9,6 +9,7 @@ import { bungee, quicksand, dancingScript } from './fonts';
 import AppShell from '@/components/layout/app-shell';
 import { getHomePageSettings } from '@/lib/home-page-settings';
 import { getTrustedByClients } from '@/lib/trusted-by-clients';
+import { getContactInfo } from '@/lib/contact-info';
 import { getStructuredDataJsonLd } from '@/lib/structured-data';
 
 // Single export: generateMetadata runs at request time, shares the cache()-
@@ -91,9 +92,10 @@ export default async function RootLayout({
   // on first paint. The result is passed to <AppShell> which seeds a
   // client-side SettingsProvider; live admin edits still propagate via
   // useDoc after hydration.
-  const [initialSettings, initialClients] = await Promise.all([
+  const [initialSettings, initialClients, initialContact] = await Promise.all([
     getHomePageSettings(),
     getTrustedByClients(),
+    getContactInfo(),
   ]);
   const jsonLd = await getStructuredDataJsonLd(initialSettings);
   return (
@@ -104,29 +106,17 @@ export default async function RootLayout({
         <link rel="preconnect" href="https://res.cloudinary.com" />
         <link rel="preconnect" href="https://static.cloudflareinsights.com" />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd }} />
-        <script dangerouslySetInnerHTML={{
-          __html: `(function(){try{var h=localStorage.getItem('belofted_theme_hsl');if(h){var r=document.querySelector(':root')||document.documentElement;r.style.setProperty('--primary',h);r.style.setProperty('--accent',h);r.style.setProperty('--destructive',h);r.style.setProperty('--ring',h);}var l=localStorage.getItem('belofted_lang');if(l)document.documentElement.lang=l;var ns=localStorage.getItem('menubar-nav-button-size');if(ns)document.documentElement.style.setProperty('--nav-button-size',ns+'px');var ls=localStorage.getItem('menubar-logo-size');if(ls)document.documentElement.style.setProperty('--menubar-logo-size',ls+'px');}catch(e){}})()`
-        }} />
-        <script dangerouslySetInnerHTML={{
-          __html: `(function(){
-            function setAppHeight(){
-              try{
-                var vv=window.visualViewport;
-                var h=Math.round((vv?vv.height:0)||window.innerHeight||document.documentElement.clientHeight);
-                if(h>0)document.documentElement.style.setProperty('--app-height',h+'px');
-              }catch(e){}
-            }
-            setAppHeight();
-            if(window.visualViewport)window.visualViewport.addEventListener('resize',setAppHeight);
-            window.addEventListener('orientationchange',function(){setTimeout(setAppHeight,150)});
-          })()`
-        }} />
-        <script dangerouslySetInnerHTML={{
-          __html: `(function(){try{var ua=navigator.userAgent||'';if(/Android/i.test(ua))document.documentElement.classList.add('is-android');if(/iPad|iPhone|iPod/.test(ua)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1))document.documentElement.classList.add('is-ios');}catch(e){}})()`
-        }} />
+        {/* Pre-hydration scripts must run synchronously before React renders the
+            theme/height/platform into the DOM, so they bypass next/script. */}
+        {/* eslint-disable-next-line @next/next/no-sync-scripts */}
+        <script src="/inline/theme.js" />
+        {/* eslint-disable-next-line @next/next/no-sync-scripts */}
+        <script src="/inline/app-height.js" />
+        {/* eslint-disable-next-line @next/next/no-sync-scripts */}
+        <script src="/inline/platform.js" />
       </head>
       <body className={cn('font-body antialiased text-center h-full')} style={{ background: '#000' }} suppressHydrationWarning>
-        <AppShell initialSettings={initialSettings} initialClients={initialClients}>
+        <AppShell initialSettings={initialSettings} initialClients={initialClients} initialContact={initialContact}>
           {children}
         </AppShell>
         <SpeedInsights />

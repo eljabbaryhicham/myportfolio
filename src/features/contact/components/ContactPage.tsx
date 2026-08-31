@@ -3,9 +3,8 @@
 
 import Link from 'next/link';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { useDoc, useFirestore, useMemoFirebase } from '@/firebase';
-import { doc } from 'firebase/firestore';
 import { useHomePageSettings } from '@/components/settings/home-page-settings-provider';
+import { useContactInfo } from '@/components/settings/contact-info-provider';
 import { Separator } from '@/components/ui/separator';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEnvelope } from '@fortawesome/free-solid-svg-icons';
@@ -21,27 +20,7 @@ import ContactForm from './ContactForm';
 import { ScrollIndicator } from '@/components/ScrollIndicator';
 import { useRef } from 'react';
 import { useTranslation } from '@/lib/i18n/useTranslation';
-import { getLocalizedString, type MultilingualString } from '@/lib/i18n/multilingual';
-
-interface ContactInfo {
-  avatarUrl?: string;
-  name?: MultilingualString;
-  title?: MultilingualString;
-  email?: string;
-  whatsApp?: string;
-  behanceUrl?: string;
-  behanceName?: string;
-  linkedinUrl?: string;
-  linkedinName?: string;
-  fiverrUrl?: string;
-  fiverrName?: string;
-  instagramUrl?: string;
-  instagramName?: string;
-  facebookUrl?: string;
-  facebookName?: string;
-  twitterUrl?: string;
-  twitterName?: string;
-}
+import { getLocalizedString } from '@/lib/i18n/multilingual';
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -66,15 +45,10 @@ const itemVariants = {
 
 
 export default function ContactPage() {
-  const firestore = useFirestore();
   const scrollRef = useRef<HTMLDivElement>(null);
   const { t, lang } = useTranslation();
 
-  const contactDocRef = useMemoFirebase(
-    () => firestore ? doc(firestore, 'contact', 'details') : null,
-    [firestore]
-  );
-  const { data: contactInfo, isLoading } = useDoc<ContactInfo>(contactDocRef);
+  const { contactInfo, isLoading } = useContactInfo();
 
   const { ready: revealReady, hasPreloader } = usePageReveal();
   const showInlinePreloader = isLoading || (hasPreloader && !revealReady);
