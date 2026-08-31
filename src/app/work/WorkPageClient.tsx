@@ -37,8 +37,6 @@ import { useTranslation } from '@/lib/i18n/useTranslation';
 import { getLocalizedString } from '@/lib/i18n/multilingual';
 import { isSuperAdmin as isSuperAdminCheck } from '@/lib/constants';
 import { cleanVideoUrl, webmVideoUrl } from '@/lib/video';
-import CdnClapprPlayer from '@/components/CdnClapprPlayer';
-import PlyrPlayer from '@/components/PlyrPlayer';
 import { getWatermarkPositionStyle, hasDetailsMedia, normalizeSelfClosingMedia, slugify } from '@/features/portfolio/components/work-helpers';
 import { useWorkUrlSync } from '@/features/portfolio/components/useWorkUrlSync';
 
@@ -61,8 +59,14 @@ const LazyContactForm = lazy(() => import('@/features/contact/components/Contact
 // details dialog is opened.
 const MarkdownRenderer = dynamic(() => import('@/components/work/markdown-renderer'), { ssr: false });
 
-const MemoizedPlyrPlayer = memo(PlyrPlayer);
-const MemoizedCdnClapprPlayer = memo(CdnClapprPlayer);
+// Neither player is needed to render the gallery. Keeping them behind a lazy
+// boundary prevents the /work navigation from downloading Clappr/Plyr until a
+// visitor opens a project's video. `preloadPlayers` above still warms these
+// chunks on intentional hover.
+const LazyPlyrPlayer = lazy(() => import('@/components/PlyrPlayer'));
+const LazyCdnClapprPlayer = lazy(() => import('@/components/CdnClapprPlayer'));
+const MemoizedPlyrPlayer = memo(LazyPlyrPlayer);
+const MemoizedCdnClapprPlayer = memo(LazyCdnClapprPlayer);
 
 const MemoizedImage = memo(Image);
 
