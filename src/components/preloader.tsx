@@ -37,16 +37,10 @@ const LazyLottie = ({ animationData }: { animationData: any }) => {
   return <LottieComp animationData={animationData} loop={true} />;
 };
 
-// Fixed pixel size used by inline (non-fullscreen) preloaders so the chosen
-// animation renders at a consistent, clearly-visible size regardless of how
-// small the containing card is.
-const INLINE_SIZE_PX = 64;
-
-// Fullscreen loaders size relative to the viewport (%) so the homepage loader
-// keeps its prominent size; inline loaders use a fixed pixel size that can be
-// overridden via the `sizePx` prop (e.g. larger page-content preloaders).
-const resolveDimension = (sizePct: number, fullscreen: boolean, sizePx?: number): string =>
-  fullscreen ? `${sizePct}%` : `${sizePx ?? INLINE_SIZE_PX}px`;
+// All loaders size relative to their container (%) so the homepage loader
+// spans the full viewport while inline loaders scale with their card/page
+// area — and the admin `preloaderSize` setting controls both.
+const resolveDimension = (sizePct: number): string => `${sizePct}%`;
 
 const DimensionStyle = ({ dimension }: { dimension: string }) => ({
   width: dimension,
@@ -107,7 +101,7 @@ const WebmLoader = ({ url, size }: { url: string; size: string }) => {
   );
 };
 
-const Preloader = ({ settings, fullscreen = false, sizePx }: { settings?: PreloaderSettings; fullscreen?: boolean; sizePx?: number }) => {
+const Preloader = ({ settings }: { settings?: PreloaderSettings }) => {
   const fromContext = usePreloaderSettingsFromContext();
   const active = settings || fromContext || null;
 
@@ -115,11 +109,11 @@ const Preloader = ({ settings, fullscreen = false, sizePx }: { settings?: Preloa
   const rawType = active?.preloaderType as PreloaderType | 'default' | undefined;
   const type = rawType === 'default' ? 'none' : (rawType || 'none');
   const url = active?.preloaderUrl || '';
-  const sizePct = active?.preloaderSize || 15;
+  const sizePct = active?.preloaderSize || 20;
 
   if (type === 'none' || !url) return null;
 
-  const dimension = resolveDimension(sizePct, fullscreen, sizePx);
+  const dimension = resolveDimension(sizePct);
 
   if (type === 'gif') return <GifLoader url={url} size={dimension} />;
   if (type === 'webm') return <WebmLoader url={url} size={dimension} />;

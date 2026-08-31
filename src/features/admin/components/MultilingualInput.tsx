@@ -91,7 +91,7 @@ export function MultilingualInput({
               value={locale}
               title={LOCALE_NAMES[locale]}
               className={cn(
-                'text-xs font-medium data-[state=active]:bg-destructive data-[state=active]:text-destructive-foreground'
+                'text-xs font-medium data-[state=active]:bg-destructive data-[state=active]:text-destructive-foreground data-[state=active]:border data-[state=active]:border-white/20'
               )}
             >
               {LOCALE_LABELS[locale]}

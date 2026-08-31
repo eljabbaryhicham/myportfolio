@@ -136,7 +136,7 @@ export function AppNav() {
                 "absolute inset-0 rounded-full",
                 isAdminButton
                   ? "bg-green-500 shadow-[0_0_15px_#22c55e80,_0_0_20px_#22c55e60]"
-                  : "bg-destructive shadow-[0_0_15px_hsl(var(--primary)/0.8),_0_0_20px_hsl(var(--primary)/0.6)]"
+                  : "bg-[hsl(var(--primary))] shadow-[0_0_15px_hsl(var(--primary)/0.8),_0_0_20px_hsl(var(--primary)/0.6)]"
               )}
               transition={{ type: "spring", stiffness: 300, damping: 25 }}
             />

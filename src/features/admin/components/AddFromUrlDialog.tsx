@@ -269,7 +269,7 @@ export default function AddFromUrlDialog({ isOpen, onOpenChange, onUploadComplet
                 className={cn(
                     "absolute right-4 top-4 h-8 w-8",
                     "flex items-center justify-center rounded-full transition-opacity",
-                    "bg-primary text-primary-foreground opacity-70 hover:opacity-100",
+                    "bg-primary btn-red-border text-primary-foreground opacity-70 hover:opacity-100",
                     "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
                 )}
             >

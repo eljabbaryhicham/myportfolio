@@ -199,7 +199,7 @@ export default function HomeAdmin() {
       heroVideoUrl: '',
       preloaderType: 'none',
       preloaderUrl: '',
-      preloaderSize: 15,
+      preloaderSize: 20,
       cursorLottieUrl: '',
       tickLottieUrl: '',
       homePageTitle: { en: '', fr: '' },
@@ -251,7 +251,7 @@ export default function HomeAdmin() {
           ? 'none'
           : homeSettings.preloaderType) || 'none',
         preloaderUrl: homeSettings.preloaderUrl || '',
-        preloaderSize: homeSettings.preloaderSize || 15,
+        preloaderSize: homeSettings.preloaderSize || 20,
         cursorLottieUrl: homeSettings.cursorLottieUrl || '',
         tickLottieUrl: homeSettings.tickLottieUrl || '',
         homePageTitle: ensureMultilingualString(homeSettings.homePageTitle),
@@ -1082,7 +1082,7 @@ export default function HomeAdmin() {
                                             <FormItem className="space-y-3">
                                                 <FormLabel>{t('homeAdmin.preloaderSize') || 'Preloader Size'}</FormLabel>
                                                 <FormDescription>
-                                                    {t('homeAdmin.preloaderSizeDescription') || `Size of the loading animation (${field.value || 25}% of screen)`}
+                                                    {t('homeAdmin.preloaderSizeDescription') || `Size of the loading animation (${field.value || 20}% of screen)`}
                                                 </FormDescription>
                                                 <div className="flex items-center gap-3">
                                                     <FormControl>

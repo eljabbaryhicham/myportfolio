@@ -209,36 +209,69 @@ export default function HomePageContent() {
   }, [homeSettings]);
   const isLoading = isLoadingSettings && !hasReceivedData && !homeSettings;
 
-  // Full-page preloader gate: true until the window's `load` event has fired
-  // (i.e. all images, fonts, and the hero video metadata are ready) AND a
-  // short minimum visible time has elapsed so the brand preloader never
-  // blinks on fast connections. On client-side navigations back to home the
-  // document is already fully loaded (`readyState === 'complete'`), so we
-  // reveal immediately and never flash the preloader for in-app navigation.
-  // Replaces the old "settings not loaded" gate that became always-false once
-  // the SettingsProvider seeds SSR data.
+  // Full-page preloader gate: reveal as soon as the hero video has rendered
+  // its first frame (`loadeddata`) — the actual content the preloader covers —
+  // capped at MAX_PRELOADER_MS so it never lingers on slow connections while
+  // background videos/analytics delay `window.load`. A short minimum visible
+  // time keeps the brand preloader from blinking on very fast connections. On
+  // client-side navigations back to home the document is already fully loaded,
+  // so we reveal immediately and never flash the preloader for in-app nav.
+  const MAX_PRELOADER_MS = 2500;
+  const MIN_VISIBLE_MS = 500;
   const [pageReady, setPageReady] = useState(false);
   useEffect(() => {
     if (typeof window === 'undefined') return;
-    const MIN_VISIBLE_MS = 500;
     const startedAt = Date.now();
+    let revealed = false;
+
     const reveal = () => {
+      if (revealed) return;
+      revealed = true;
       const elapsed = Date.now() - startedAt;
       const wait = Math.max(0, MIN_VISIBLE_MS - elapsed);
       setTimeout(() => setPageReady(true), wait);
     };
+
+    // The hero is a video, so the first real content on screen is the video's
+    // first rendered frame (`loadeddata`), not a poster image (the poster can
+    // be a stale 404). Watch the mounted hero <video> for that signal.
+    const observeVideo = () => {
+      const video = videoRef.current;
+      if (!video) return;
+      const onData = () => { video.removeEventListener('loadeddata', onData); reveal(); };
+      video.addEventListener('loadeddata', onData);
+      // If data is already buffered (fast load / cached), reveal immediately.
+      if (video.readyState >= 2) reveal();
+      // Cleanup for this observer run.
+      cleanup.push(() => video.removeEventListener('loadeddata', onData));
+    };
+
+    const cleanup: Array<() => void> = [];
+
+    // Mount timeout so the video ref is available before we attach the listener.
+    const mountTimer = window.setInterval(() => {
+      if (videoRef.current) {
+        window.clearInterval(mountTimer);
+        observeVideo();
+      }
+    }, 30);
+
+    // Hard cap so the preloader never exceeds this even if video/load stall.
+    const cap = setTimeout(reveal, MAX_PRELOADER_MS);
+    cleanup.push(() => { clearTimeout(cap); clearInterval(mountTimer); });
+
     if (document.readyState === 'complete') {
       // Page already fully loaded (in-app navigation/mount after load): no
-      // wait, no preloader flash.
-      setPageReady(true);
-      return;
-    }
-    const onLoad = () => {
-      window.removeEventListener('load', onLoad);
+      // wait, no preloader flash. Still wait for the cap-independent reveal.
       reveal();
+    } else {
+      const onLoad = () => reveal();
+      window.addEventListener('load', onLoad);
+      cleanup.push(() => window.removeEventListener('load', onLoad));
+    }
+    return () => {
+      cleanup.forEach((fn) => fn());
     };
-    window.addEventListener('load', onLoad);
-    return () => window.removeEventListener('load', onLoad);
   }, []);
   // Show the full-screen preloader while settings are still loading OR the
   // page hasn't fully loaded. After both, fade it out.
@@ -364,7 +397,7 @@ export default function HomePageContent() {
               exit={{ opacity: 0 }}
               transition={{ duration: 0.35 }}
             >
-              <Preloader fullscreen />
+              <Preloader />
             </motion.div>
           )}
         </AnimatePresence>

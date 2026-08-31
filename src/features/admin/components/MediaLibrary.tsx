@@ -1747,7 +1747,7 @@ for (const file of files) {
           </div>
         </div>
         {isAddingFromUrl && (
-          <DialogClose className="absolute right-4 top-4 h-8 w-8 flex items-center justify-center rounded-full bg-primary text-primary-foreground opacity-70 hover:opacity-100 transition-opacity">
+          <DialogClose className="absolute right-4 top-4 h-8 w-8 flex items-center justify-center rounded-full bg-primary btn-red-border text-primary-foreground opacity-70 hover:opacity-100 transition-opacity">
             <FontAwesomeIcon icon={faMinus} className="h-4 w-4" />
             <span className="sr-only">Minimize</span>
           </DialogClose>

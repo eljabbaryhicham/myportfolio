@@ -5,7 +5,6 @@ import { useEffect, useRef, forwardRef, useImperativeHandle, useState } from 're
 import { useIsMobile } from '@/hooks/use-mobile';
 import Preloader from './preloader';
 import 'plyr/dist/plyr.css';
-import Hls from 'hls.js';
 import { logger } from '@/lib/logger';
 import { forceAutoplay } from '@/lib/video-autoplay';
 
@@ -23,7 +22,7 @@ interface PlyrPlayerProps {
 const PlyrPlayer = forwardRef(({ source, poster, autoPlay = true, thumbnailVttUrl }: PlyrPlayerProps, ref) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const playerRef = useRef<PlyrInstance | null>(null);
-  const hlsRef = useRef<Hls | null>(null);
+  const hlsRef = useRef<any | null>(null);
   const isMobile = useIsMobile();
   // Latch: hide preloader the moment playback starts; never re-show on
   // later loadstart/buffering.
@@ -154,44 +153,63 @@ const PlyrPlayer = forwardRef(({ source, poster, autoPlay = true, thumbnailVttUr
                 player = new Plyr(element, playerConfig);
                 wireEvents(player);
                 if (isMounted) playerRef.current = player;
-            } else if (source.includes('.m3u8') && Hls.isSupported()) {
-                const hls = new Hls({
-                    startLevel: -1,
-                    capLevelToPlayerSize: true,
-                    maxBufferLength: isMobile ? 30 : 60,
-                    maxMaxBufferLength: isMobile ? 60 : 120,
-                    enableWorker: true,
-                    lowLatencyMode: false,
-                });
-                hls.loadSource(source);
+            } else if (source.includes('.m3u8')) {
+                // hls.js is code-split so the ~500 KB library isn't downloaded
+                // for /work navigation — it loads lazily only when an HLS source
+                // actually plays (mirrors the homepage hero player's pattern).
+                const { default: Hls } = await import('hls.js');
+                if (Hls.isSupported()) {
+                    const hls = new Hls({
+                        startLevel: -1,
+                        capLevelToPlayerSize: true,
+                        maxBufferLength: isMobile ? 30 : 60,
+                        maxMaxBufferLength: isMobile ? 60 : 120,
+                        enableWorker: true,
+                        lowLatencyMode: false,
+                    });
+                    hls.loadSource(source);
 
-                hls.on(Hls.Events.MANIFEST_PARSED, () => {
-                    if (!isMounted) return;
+                    hls.on(Hls.Events.MANIFEST_PARSED, () => {
+                        if (!isMounted) return;
 
-                    const availableQualities = hls.levels.map((l) => l.height);
-                    availableQualities.unshift(0);
+                        const availableQualities = hls.levels.map((l) => l.height);
+                        availableQualities.unshift(0);
 
-                    player = new Plyr(element, {
-                        ...playerConfig,
-                        quality: {
-                            default: 0,
-                            options: availableQualities,
-                            forced: true,
-                            onChange: (quality: number) => {
-                                if (hls) {
-                                    hls.currentLevel = quality === 0 ? -1 : hls.levels.findIndex((level) => level.height === quality);
-                                }
+                        player = new Plyr(element, {
+                            ...playerConfig,
+                            quality: {
+                                default: 0,
+                                options: availableQualities,
+                                forced: true,
+                                onChange: (quality: number) => {
+                                    if (hls) {
+                                        hls.currentLevel = quality === 0 ? -1 : hls.levels.findIndex((level) => level.height === quality);
+                                    }
+                                },
                             },
-                        },
-                        i18n: { qualityLabel: { 0: 'Auto' } },
+                            i18n: { qualityLabel: { 0: 'Auto' } },
+                        });
+
+                        wireEvents(player);
+                        if (isMounted) playerRef.current = player;
                     });
 
+                    hls.attachMedia(element as HTMLVideoElement);
+                    hlsRef.current = hls;
+                } else {
+                    // No hls.js support: fall back to a plain player (native HLS in
+                    // modern browsers handles the manifest itself).
+                    player = new Plyr(element, playerConfig);
+                    (element as HTMLVideoElement).src = source;
                     wireEvents(player);
                     if (isMounted) playerRef.current = player;
-                });
-
-                hls.attachMedia(element as HTMLVideoElement);
-                hlsRef.current = hls;
+                    if (autoPlay && isMounted) {
+                        const v = element as HTMLVideoElement;
+                        v.setAttribute('playsinline', '');
+                        v.setAttribute('webkit-playsinline', '');
+                        try { forceAutoplay(v, { onPlaying: () => { try { player && (player.muted = false); } catch {} } }); } catch {}
+                    }
+                }
             } else {
                 player = new Plyr(element, playerConfig);
                 (element as HTMLVideoElement).src = source;

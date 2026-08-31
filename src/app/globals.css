@@ -90,7 +90,7 @@
     background-image:
       linear-gradient(180deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 30%, transparent 60%),
       linear-gradient(135deg, rgba(255,255,255,0.04) 0%, transparent 50%);
-    border: 1px solid rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.2);
     box-shadow:
       inset 1px 1px 2px -1px rgba(255,255,255,0.15),
       inset 0 0 8px 2px rgba(255,255,255,0.05),
@@ -98,7 +98,7 @@
   }
 
   .dark .glass-effect {
-    border-color: rgba(255,255,255,0.06);
+    border-color: rgba(255,255,255,0.2);
     box-shadow:
       inset 1px 1px 2px -1px rgba(255,255,255,0.5),
       inset 0 0 8px 2px rgba(255,255,255,0.2),
@@ -119,7 +119,17 @@
   background-color: hsl(var(--primary)) !important;
   background-image: none !important;
   color: hsl(var(--primary-foreground)) !important;
-  border-color: hsl(var(--primary)) !important;
+  border-color: rgba(255, 255, 255, 0.2) !important;
+}
+/* Thin white transparent border on every red-background control:
+   destructive utility buttons (admin, work, language knob) — beats
+   call-site border-0 utility merges. bg-primary needs the explicit class
+   because a blanket selector would hit sliders/progress/switch/checkbox. */
+.btn-red-border,
+[class~="bg-destructive"] {
+  border-width: 1px !important;
+  border-style: solid !important;
+  border-color: rgba(255, 255, 255, 0.2) !important;
 }
 
 @layer utilities {
