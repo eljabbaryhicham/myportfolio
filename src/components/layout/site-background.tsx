@@ -10,6 +10,7 @@ import { cn } from '@/lib/utils';
 import { cleanVideoUrl } from '@/lib/video';
 import { forceAutoplay } from '@/lib/video-autoplay';
 import { useHomePageSettings } from '@/components/settings/home-page-settings-provider';
+import type { HomePageSettings } from '@/lib/types';
 
 interface MediaAsset {
     url: string;
@@ -20,9 +21,20 @@ export function SiteBackground() {
     const pathname = usePathname();
     const isHomePage = pathname === '/';
     
-    // homepage/settings is read from the shared provider (server-seeded + live
-    // via the provider's own useDoc) to avoid a redundant fetch and a flash.
-    const { settings: homeSettings } = useHomePageSettings();
+    // Seed from the provider (SSR / initialSettings) prevents a loading flash.
+    const { settings: seededSettings } = useHomePageSettings();
+
+    // Always open a live subscription for the background fields so admin
+    // changes (new URL, type switch, enable/disable) are reflected immediately
+    // without waiting for the server cache to expire.
+    const settingsRef = useMemoFirebase(
+        () => firestore ? doc(firestore, 'homepage', 'settings') : null,
+        [firestore]
+    );
+    const { data: liveSettings } = useDoc<HomePageSettings>(settingsRef);
+
+    // Live data wins once it resolves; seed fills the gap before the snapshot.
+    const homeSettings = liveSettings ?? seededSettings;
 
     const backgroundType = homeSettings ? (isHomePage
         ? homeSettings.homePageBackgroundType
