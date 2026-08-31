@@ -1,6 +1,7 @@
 'use server';
 
 import { cache } from 'react';
+import { unstable_cache } from 'next/cache';
 import { initializeServerApp } from '@/firebase/server-init';
 import { getLocalizedString } from '@/lib/i18n/multilingual';
 import type { TrustedByClient, MultilingualString } from '@/lib/types';
@@ -20,7 +21,7 @@ interface RawClientDoc {
  * `useCollection` subscription. Wrapped in `cache()` so multiple consumers
  * in the same request share a single Firestore read.
  */
-export const getTrustedByClients = cache(async (): Promise<TrustedByClient[] | null> => {
+const readTrustedByClients = async (): Promise<TrustedByClient[] | null> => {
   try {
     const app = await initializeServerApp();
     const snap = await app
@@ -48,4 +49,12 @@ export const getTrustedByClients = cache(async (): Promise<TrustedByClient[] | n
     logger.warn('getTrustedByClients: failed to read clients on the server', e);
     return null;
   }
-});
+};
+
+const getCachedTrustedByClients = unstable_cache(
+  readTrustedByClients,
+  ['trusted-by-clients-v1'],
+  { revalidate: 300, tags: ['trusted-by-clients'] }
+);
+
+export const getTrustedByClients = cache(getCachedTrustedByClients);

@@ -50,8 +50,10 @@ function personLd() {
   };
 }
 
-export async function getStructuredDataJsonLd(): Promise<string> {
-  const settings = await getHomePageSettings();
+export async function getStructuredDataJsonLd(
+  providedSettings?: Awaited<ReturnType<typeof getHomePageSettings>>
+): Promise<string> {
+  const settings = providedSettings ?? await getHomePageSettings();
   const graph = [organizationLd(settings), websiteLd(), personLd()];
   return JSON.stringify({
     '@context': 'https://schema.org',

@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from 'next/server';
-import { revalidatePath } from 'next/cache';
+import { revalidatePath, revalidateTag } from 'next/cache';
 import admin from 'firebase-admin';
 import { initializeServerApp } from '@/firebase/server-init';
 import { logger } from '@/lib/logger';
@@ -63,6 +63,13 @@ export async function POST(req: NextRequest) {
 
   try {
     revalidatePath('/');
+    revalidatePath('/work');
+    // The public SSR seeds are cached independently from route output. Mark
+    // them stale so the next visitor gets fresh data without reintroducing a
+    // blocking Firestore read for every request.
+    revalidateTag('homepage-settings', 'max');
+    revalidateTag('trusted-by-clients', 'max');
+    revalidateTag('portfolio-items', 'max');
   } catch (e) {
     logger.error('revalidate-home: revalidatePath failed.', e);
     return NextResponse.json({ error: 'Revalidation failed.' }, { status: 500 });

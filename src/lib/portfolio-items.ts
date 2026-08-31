@@ -1,6 +1,7 @@
 'use server';
 
 import { cache } from 'react';
+import { unstable_cache } from 'next/cache';
 import { initializeServerApp } from '@/firebase/server-init';
 import type { PortfolioItem } from '@/features/portfolio/data/portfolio-data';
 import { getLocalizedString } from '@/lib/i18n/multilingual';
@@ -17,7 +18,7 @@ import { logger } from '@/lib/logger';
  * fallback contract as getHomePageSettings/getTrustedByClients. Wrapped in
  * `cache()` so multiple consumers in the same request share one Firestore read.
  */
-export const getPortfolioItems = cache(async (): Promise<PortfolioItem[] | null> => {
+const readPortfolioItems = async (): Promise<PortfolioItem[] | null> => {
   try {
     const app = await initializeServerApp();
     const snap = await app.firestore().collection('projects').get();
@@ -35,7 +36,19 @@ export const getPortfolioItems = cache(async (): Promise<PortfolioItem[] | null>
     logger.warn('getPortfolioItems: failed to read projects on the server', e);
     return null;
   }
-});
+};
+
+// Project data is public and also maintained by a live client subscription.
+// A five-minute server cache removes the request-time Firestore bottleneck;
+// authenticated admin updates can invalidate it immediately through the
+// public revalidation endpoint.
+const getCachedPortfolioItems = unstable_cache(
+  readPortfolioItems,
+  ['portfolio-items-v1'],
+  { revalidate: 300, tags: ['portfolio-items'] }
+);
+
+export const getPortfolioItems = cache(getCachedPortfolioItems);
 
 /**
  * Resolve a shareable `/work?id=<slug>` slug to a single public project.

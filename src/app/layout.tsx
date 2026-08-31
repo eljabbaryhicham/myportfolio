@@ -91,9 +91,11 @@ export default async function RootLayout({
   // on first paint. The result is passed to <AppShell> which seeds a
   // client-side SettingsProvider; live admin edits still propagate via
   // useDoc after hydration.
-  const initialSettings = await getHomePageSettings();
-  const initialClients = await getTrustedByClients();
-  const jsonLd = await getStructuredDataJsonLd();
+  const [initialSettings, initialClients] = await Promise.all([
+    getHomePageSettings(),
+    getTrustedByClients(),
+  ]);
+  const jsonLd = await getStructuredDataJsonLd(initialSettings);
   return (
     <html lang="en" className={cn("dark h-full", bungee.variable, quicksand.variable, dancingScript.variable)} suppressHydrationWarning>
       <head>
