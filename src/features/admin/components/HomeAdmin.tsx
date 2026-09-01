@@ -92,6 +92,9 @@ const settingsSchema = z.object({
   arrowLottieUrl: z.string().optional(),
   faviconUrl: z.string().optional(),
   languageToggleColor: z.string().optional(),
+  bodyFontFamily: z.string().max(100).optional(),
+  headlineFontFamily: z.string().max(100).optional(),
+  handwritingFontFamily: z.string().max(100).optional(),
   glassOpacity: z.number().min(0).max(100).optional(),
   mediaWidth: z.number().min(10).max(100).optional(),
   showMediaTitles: z.boolean().optional(),
@@ -111,6 +114,22 @@ interface MediaAsset {
     filename: string;
     resource_type: 'image' | 'video' | 'raw';
     title?: string;
+}
+
+function googleFontsStylesheetHref(families: Array<string | undefined>): string | null {
+  const selected = [...new Set(families.map((family) => family?.trim()).filter(Boolean))] as string[];
+  if (selected.length === 0) return null;
+
+  const query = selected
+    .map((family) => `family=${encodeURIComponent(family).replace(/%20/g, '+')}`)
+    .join('&');
+  return `https://fonts.googleapis.com/css2?${query}&display=swap`;
+}
+
+function fontPreviewStyle(fontFamily?: string): React.CSSProperties {
+  return fontFamily?.trim()
+    ? { fontFamily: `"${fontFamily.replaceAll('"', '')}", sans-serif` }
+    : {};
 }
 
 /**
@@ -184,6 +203,8 @@ export default function HomeAdmin() {
   const [isEmailPreviewOpen, setIsEmailPreviewOpen] = useState(false);
   const [emailPreviewField, setEmailPreviewField] = useState<'emailTemplateHtml' | 'autoReplyTemplateHtml'>('emailTemplateHtml');
   const [homeTab, setHomeTab] = useState<'appearance' | 'backgrounds' | 'navigation' | 'player' | 'preloader' | 'email'>('appearance');
+  const [googleFontFamilies, setGoogleFontFamilies] = useState<string[]>([]);
+  const [googleFontsError, setGoogleFontsError] = useState<string | null>(null);
 
   const form = useForm<SettingsFormValues>({
     resolver: zodResolver(settingsSchema),
@@ -222,6 +243,9 @@ export default function HomeAdmin() {
       arrowLottieUrl: '',
       faviconUrl: '',
       languageToggleColor: '',
+      bodyFontFamily: '',
+      headlineFontFamily: '',
+      handwritingFontFamily: '',
       glassOpacity: 25,
       mediaWidth: 100,
       showMediaTitles: true,
@@ -235,6 +259,14 @@ export default function HomeAdmin() {
   });
 
   const { watch, control, setValue } = form;
+  const bodyFontFamily = watch('bodyFontFamily');
+  const headlineFontFamily = watch('headlineFontFamily');
+  const handwritingFontFamily = watch('handwritingFontFamily');
+  const selectedFontStylesheet = googleFontsStylesheetHref([
+    bodyFontFamily,
+    headlineFontFamily,
+    handwritingFontFamily,
+  ]);
 
   useEffect(() => {
     setIsMounted(true);
@@ -276,6 +308,9 @@ export default function HomeAdmin() {
         arrowLottieUrl: homeSettings.arrowLottieUrl || '',
         faviconUrl: homeSettings.faviconUrl || '',
         languageToggleColor: homeSettings.languageToggleColor || '',
+        bodyFontFamily: homeSettings.bodyFontFamily || '',
+        headlineFontFamily: homeSettings.headlineFontFamily || '',
+        handwritingFontFamily: homeSettings.handwritingFontFamily || '',
         glassOpacity: homeSettings.glassOpacity ?? 25,
         mediaWidth: homeSettings.mediaWidth ?? 100,
         showMediaTitles: homeSettings.showMediaTitles ?? true,
@@ -288,6 +323,31 @@ export default function HomeAdmin() {
       });
     }
   }, [homeSettings, form]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadGoogleFonts = async () => {
+      const token = await auth?.currentUser?.getIdToken();
+      if (!token) return;
+
+      try {
+        const response = await fetch('/api/admin/google-fonts', {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const payload = await response.json() as { families?: string[]; error?: string };
+        if (!response.ok) throw new Error(payload.error || 'Google Fonts could not be loaded.');
+        if (!cancelled) setGoogleFontFamilies(payload.families || []);
+      } catch (error) {
+        if (!cancelled) {
+          setGoogleFontsError(error instanceof Error ? error.message : 'Google Fonts could not be loaded.');
+        }
+      }
+    };
+
+    if (canEditHome) void loadGoogleFonts();
+    return () => { cancelled = true; };
+  }, [auth, canEditHome, user]);
 
   useMergedAutosave({
     enabled: canEditHome && isMounted,
@@ -347,6 +407,10 @@ export default function HomeAdmin() {
           revalidateHome(auth);
         }
       }
+      const fontKeys = ['bodyFontFamily', 'headlineFontFamily', 'handwritingFontFamily'];
+      if (fontKeys.some((key) => written[key] !== undefined)) {
+        revalidateHome(auth);
+      }
     },
     onSaved: () => {
       toast({
@@ -368,6 +432,7 @@ export default function HomeAdmin() {
 
   return (
     <div className="flex-1 flex flex-col h-full">
+        {selectedFontStylesheet && <link rel="stylesheet" href={selectedFontStylesheet} />}
         <div className="mb-6">
             <h2 className="text-xl font-headline">{t('homeAdmin.title')}</h2>
             <p className="text-muted-foreground">
@@ -392,6 +457,64 @@ export default function HomeAdmin() {
 {/* Homepage Appearance */}
                                  <div className="space-y-4">
                                     <h3 className="font-headline text-lg">{t('homeAdmin.homepageHeading')}</h3>
+
+                                    <div className="space-y-4 rounded-lg border p-4">
+                                      <div>
+                                        <h4 className="font-medium">{t('homeAdmin.fontsHeading')}</h4>
+                                        <p className="text-sm text-muted-foreground">{t('homeAdmin.fontsDescription')}</p>
+                                      </div>
+                                      <datalist id="google-font-families">
+                                        {googleFontFamilies.map((family) => <option key={family} value={family} />)}
+                                      </datalist>
+                                      {googleFontsError && (
+                                        <p className="text-sm text-destructive">{googleFontsError}</p>
+                                      )}
+                                      <FormField
+                                        control={control}
+                                        name="bodyFontFamily"
+                                        render={({ field }) => (
+                                          <FormItem>
+                                            <FormLabel>{t('homeAdmin.bodyFont')}</FormLabel>
+                                            <FormControl>
+                                              <Input list="google-font-families" placeholder={t('homeAdmin.fontPlaceholder')} {...field} />
+                                            </FormControl>
+                                            <FormDescription>{t('homeAdmin.bodyFontDescription')}</FormDescription>
+                                            <p className="text-lg" style={fontPreviewStyle(field.value)}>{t('homeAdmin.fontPreview')}</p>
+                                            <FormMessage />
+                                          </FormItem>
+                                        )}
+                                      />
+                                      <FormField
+                                        control={control}
+                                        name="headlineFontFamily"
+                                        render={({ field }) => (
+                                          <FormItem>
+                                            <FormLabel>{t('homeAdmin.headlineFont')}</FormLabel>
+                                            <FormControl>
+                                              <Input list="google-font-families" placeholder={t('homeAdmin.fontPlaceholder')} {...field} />
+                                            </FormControl>
+                                            <FormDescription>{t('homeAdmin.headlineFontDescription')}</FormDescription>
+                                            <p className="text-xl" style={fontPreviewStyle(field.value)}>{t('homeAdmin.fontPreview')}</p>
+                                            <FormMessage />
+                                          </FormItem>
+                                        )}
+                                      />
+                                      <FormField
+                                        control={control}
+                                        name="handwritingFontFamily"
+                                        render={({ field }) => (
+                                          <FormItem>
+                                            <FormLabel>{t('homeAdmin.handwritingFont')}</FormLabel>
+                                            <FormControl>
+                                              <Input list="google-font-families" placeholder={t('homeAdmin.fontPlaceholder')} {...field} />
+                                            </FormControl>
+                                            <FormDescription>{t('homeAdmin.handwritingFontDescription')}</FormDescription>
+                                            <p className="text-2xl" style={fontPreviewStyle(field.value)}>{t('homeAdmin.fontPreview')}</p>
+                                            <FormMessage />
+                                          </FormItem>
+                                        )}
+                                      />
+                                    </div>
                                     
                                     <FormField
                                         control={control}

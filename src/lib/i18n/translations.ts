@@ -222,6 +222,16 @@ const en: Record<string, string> = {
   'homeAdmin.menubarLogoUrl': 'Menubar Logo URL',
   'homeAdmin.menubarLogoUrlPlaceholder': 'https://example.com/menubar-logo.png (empty = homepage logo)',
   'homeAdmin.menubarLogoUrlDescription': 'Optional separate logo for the navigation bar. Leave empty to reuse the homepage logo.',
+  'homeAdmin.fontsHeading': 'Website Fonts',
+  'homeAdmin.fontsDescription': 'Search Google Fonts and choose separate fonts for text, headings, and accent text. Leave a field empty to keep the current font.',
+  'homeAdmin.bodyFont': 'Body Font',
+  'homeAdmin.bodyFontDescription': 'Used for normal text across the website.',
+  'homeAdmin.headlineFont': 'Heading Font',
+  'homeAdmin.headlineFontDescription': 'Used for headings and titles across the website.',
+  'homeAdmin.handwritingFont': 'Accent Font',
+  'homeAdmin.handwritingFontDescription': 'Used for handwritten-style accent text.',
+  'homeAdmin.fontPlaceholder': 'Search Google Fonts',
+  'homeAdmin.fontPreview': 'The quick brown fox jumps over the lazy dog.',
 
   /* ContactAdmin */
   'contactAdmin.title': 'Contact Page & Site Settings',
@@ -828,6 +838,16 @@ const fr: Record<string, string> = {
   'homeAdmin.menubarLogoUrlDescription': 'Logo séparé facultatif pour la barre de navigation. Laissez vide pour réutiliser le logo de la page d\'accueil.',
   'homeAdmin.languageToggleColor': 'Couleur du bouton de langue',
   'homeAdmin.languageToggleColorDescription': 'Couleur du bouton de changement de langue dans la barre de navigation. Laissez vide pour le rouge par défaut.',
+  'homeAdmin.fontsHeading': 'Polices du site',
+  'homeAdmin.fontsDescription': 'Recherchez Google Fonts et choisissez des polices distinctes pour le texte, les titres et le texte d’accent. Laissez un champ vide pour conserver la police actuelle.',
+  'homeAdmin.bodyFont': 'Police du texte',
+  'homeAdmin.bodyFontDescription': 'Utilisée pour le texte normal sur tout le site.',
+  'homeAdmin.headlineFont': 'Police des titres',
+  'homeAdmin.headlineFontDescription': 'Utilisée pour les titres sur tout le site.',
+  'homeAdmin.handwritingFont': 'Police d’accent',
+  'homeAdmin.handwritingFontDescription': 'Utilisée pour le texte d’accent de style manuscrit.',
+  'homeAdmin.fontPlaceholder': 'Rechercher dans Google Fonts',
+  'homeAdmin.fontPreview': 'Portez ce vieux whisky au juge blond qui fume.',
 
   /* ContactAdmin */
   'contactAdmin.title': 'Page de contact & Paramètres du site',

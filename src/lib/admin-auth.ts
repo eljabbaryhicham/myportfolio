@@ -5,7 +5,10 @@ import admin from 'firebase-admin';
 import { logger } from '@/lib/logger';
 import { SUPERADMIN_EMAIL, isSuperAdmin as isSuperAdminCheck } from '@/lib/constants';
 
-export async function verifyAdminRequest(req: NextRequest): Promise<{ uid: string; email?: string } | null> {
+export async function verifyAdminRequest(
+  req: NextRequest,
+  requiredPermission = 'canUploadMedia'
+): Promise<{ uid: string; email?: string } | null> {
   const authHeader = req.headers.get('Authorization') || req.headers.get('authorization');
   if (!authHeader?.startsWith('Bearer ')) return null;
   const token = authHeader.replace('Bearer ', '').trim();
@@ -31,14 +34,15 @@ export async function verifyAdminRequest(req: NextRequest): Promise<{ uid: strin
 
   if (isSuperAdminCheck({ email: decoded.email })) return decoded as any;
 
-  // Non-superadmin: require an existing user doc that explicitly grants
-  // canUploadMedia. No doc or missing permission => deny (fail closed).
+  // Non-superadmin: require an existing user doc that explicitly grants the
+  // permission needed by the calling admin route. No doc or missing permission
+  // => deny (fail closed).
   try {
     const db = admin.firestore(app);
     const snap = await db.collection('users').doc(decoded.uid).get();
     if (snap.exists) {
       const data = snap.data() as any;
-      if (data?.permissions?.canUploadMedia === true) return decoded as any;
+      if (data?.permissions?.[requiredPermission] === true) return decoded as any;
     }
     return null;
   } catch (e) {

@@ -12,6 +12,21 @@ import { getTrustedByClients } from '@/lib/trusted-by-clients';
 import { getContactInfo } from '@/lib/contact-info';
 import { getStructuredDataJsonLd } from '@/lib/structured-data';
 
+function normalizeGoogleFontFamily(fontFamily?: string): string | null {
+  const normalized = fontFamily?.trim().replace(/[^\p{L}\p{N} &'().-]/gu, '').slice(0, 100);
+  return normalized || null;
+}
+
+function googleFontsStylesheetHref(families: Array<string | null>): string | null {
+  const selected = [...new Set(families.filter((family): family is string => Boolean(family)))];
+  if (selected.length === 0) return null;
+
+  const query = selected
+    .map((family) => `family=${encodeURIComponent(family).replace(/%20/g, '+')}`)
+    .join('&');
+  return `https://fonts.googleapis.com/css2?${query}&display=swap`;
+}
+
 // Single export: generateMetadata runs at request time, shares the cache()-
 // wrapped Firestore read with RootLayout via getHomePageSettings(), and
 // injects the admin-configured favicon/logo into the SSR <head>. The static
@@ -98,12 +113,23 @@ export default async function RootLayout({
     getContactInfo(),
   ]);
   const jsonLd = await getStructuredDataJsonLd(initialSettings);
+  const bodyFont = normalizeGoogleFontFamily(initialSettings?.bodyFontFamily);
+  const headlineFont = normalizeGoogleFontFamily(initialSettings?.headlineFontFamily);
+  const handwritingFont = normalizeGoogleFontFamily(initialSettings?.handwritingFontFamily);
+  const googleFontsHref = googleFontsStylesheetHref([bodyFont, headlineFont, handwritingFont]);
+  const fontVariables = {
+    ...(bodyFont ? { '--font-quicksand': `"${bodyFont}", sans-serif` } : {}),
+    ...(headlineFont ? { '--font-bungee': `"${headlineFont}", sans-serif` } : {}),
+    ...(handwritingFont ? { '--font-dancing-script': `"${handwritingFont}", cursive` } : {}),
+  } as React.CSSProperties;
   return (
-    <html lang="en" className={cn("dark h-full", bungee.variable, quicksand.variable, dancingScript.variable)} suppressHydrationWarning>
+    <html lang="en" className={cn("dark h-full", bungee.variable, quicksand.variable, dancingScript.variable)} style={fontVariables} suppressHydrationWarning>
       <head>
         <link rel="preconnect" href="https://firestore.googleapis.com" />
         <link rel="preconnect" href="https://studio-8316917408-a299a.firebaseapp.com" crossOrigin="anonymous" />
         <link rel="preconnect" href="https://res.cloudinary.com" />
+        {googleFontsHref && <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />}
+        {googleFontsHref && <link rel="stylesheet" href={googleFontsHref} />}
         <link rel="preconnect" href="https://static.cloudflareinsights.com" />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd }} />
         {/* Pre-hydration scripts must run synchronously before React renders the
