@@ -83,6 +83,15 @@
   }
 }
 
+/* Remove the focus border/ring on all buttons site-wide. Scope to <button>
+   elements only so inputs, links, and other focusable controls keep their
+   visible focus state. */
+button:focus,
+button:focus-visible {
+  outline: none;
+  box-shadow: none;
+}
+
 @layer components {
   .glass-effect {
     @apply relative;
