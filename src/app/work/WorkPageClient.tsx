@@ -732,6 +732,29 @@ function WorkPageContent() {
   const [isProjectMaximized, setIsProjectMaximized] = useState(false);
   const [isDetailsMaximized, setIsDetailsMaximized] = useState(false);
   const isDialogOpen = isDetailsModalOpen || isContactFormOpen;
+  const projectDialogRef = useRef<HTMLDivElement | null>(null);
+  const [minimizedProjectSize, setMinimizedProjectSize] = useState<{ w: number; h: number } | null>(null);
+
+  // Keep the project popup's actual minimized dimensions. `offsetWidth` and
+  // `offsetHeight` intentionally ignore the dialog's temporary scale-in
+  // animation, so Details restores to the final minimized size.
+  useEffect(() => {
+    if (!selectedItem || isProjectMaximized) return;
+    const project = projectDialogRef.current;
+    if (!project) return;
+
+    const measure = () => {
+      const next = { w: project.offsetWidth, h: project.offsetHeight };
+      setMinimizedProjectSize(prev =>
+        prev && prev.w === next.w && prev.h === next.h ? prev : next
+      );
+    };
+
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(project);
+    return () => observer.disconnect();
+  }, [selectedItem, isProjectMaximized]);
 
   // Both popups use the same standard minimized size, but maximize
   // independently so one popup's current dimensions never affect the other.
@@ -746,8 +769,8 @@ function WorkPageContent() {
     ? "w-[98vw] h-[98dvh] max-w-none"
     : minimizedPopupSizing;
 
-  // The details popup has its own maximize state and always restores to the
-  // standard minimized size, regardless of the project popup's state.
+  // The details popup has its own maximize state. Its inline minimized size
+  // below uses the saved project-popup dimensions when they are available.
   const detailsSizing = isDetailsMaximized
     ? "w-[98vw] h-[98dvh] max-w-none"
     : minimizedPopupSizing;
@@ -1260,6 +1283,7 @@ function WorkPageContent() {
 
       <Dialog open={!!selectedItem} onOpenChange={handleMainDialogOpenChange}>
           <DialogContent
+            ref={projectDialogRef}
             className={cn(
               "glass-effect p-0 flex flex-col group overflow-hidden transition-all duration-500 ease-in-out",
               popupSizing
@@ -1417,7 +1441,9 @@ function WorkPageContent() {
           )}
           style={isDetailsMaximized
               ? { width: '98vw', height: '98dvh', maxWidth: 'none' }
-              : undefined}
+              : minimizedProjectSize
+                ? { width: `${minimizedProjectSize.w}px`, height: `${minimizedProjectSize.h}px` }
+                : undefined}
           onMouseMove={handleDialogMouseMove}
           onMouseEnter={handleDialogMouseEnter}
           onMouseLeave={handleDialogMouseLeave}
