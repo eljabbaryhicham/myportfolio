@@ -17,7 +17,7 @@ import { NextResponse, type NextRequest } from 'next/server';
 const CSP =
   `default-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; object-src 'none'; ` +
   `script-src 'self' 'unsafe-inline' 'unsafe-eval' https://va.vercel-scripts.com https://cdn.jsdelivr.net https://static.cloudflareinsights.com; ` +
-  `style-src 'self' 'unsafe-inline'; font-src 'self' data:; ` +
+  `style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; ` +
   `img-src 'self' data: https:; ` +
   `media-src 'self' https://res.cloudinary.com https://*.public.blob.vercel-storage.com https://*.vercel-storage.com https://portfolio-hicham-ten.vercel.app blob:; ` +
   `frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com https://player.vimeo.com; ` +
