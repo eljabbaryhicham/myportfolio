@@ -1416,7 +1416,10 @@ function WorkPageContent() {
         <DialogContent
           ref={detailsDialogRef}
           id="work-details-dialog"
-          className="glass-effect p-0 flex flex-col group overflow-hidden transition-all duration-500 ease-in-out min-w-0"
+          className={cn(
+            "glass-effect p-0 flex flex-col group overflow-hidden transition-all duration-500 ease-in-out min-w-0 min-h-[90dvh]",
+            popupSizing
+          )}
           onMouseMove={handleDialogMouseMove}
           onMouseEnter={handleDialogMouseEnter}
           onMouseLeave={handleDialogMouseLeave}
