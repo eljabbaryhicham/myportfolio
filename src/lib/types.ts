@@ -21,6 +21,7 @@ export interface HomePageSettings {
   homePageLogoUrl?: string;
   isHomePageLogoVisible?: boolean;
   homePageLogoScale?: number;
+  homePageLogoOpacity?: number;
   homePageLogoColor?: string;
   faviconUrl?: string;
   languageToggleColor?: string;

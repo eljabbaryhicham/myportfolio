@@ -291,6 +291,7 @@ export default function HomePageContent() {
   const isLogoVisible = homeSettings?.isHomePageLogoVisible ?? true;
   const logoScale = homeSettings?.homePageLogoScale || 1;
   const logoColor = homeSettings?.homePageLogoColor || '';
+  const logoOpacity = (homeSettings?.homePageLogoOpacity ?? 100) / 100;
 
   useEffect(() => {
     // Preload the default hero poster with high priority for LCP. Use a
@@ -404,7 +405,7 @@ export default function HomePageContent() {
             </div>
             {isLogoVisible && homeLogoUrl && (
               <div className="absolute inset-0 flex items-center justify-center" style={{ zIndex: 10 }}>
-                <div className="w-full max-w-[min(40vw,250px)] sm:max-w-[min(35vw,300px)] md:max-w-[min(35vw,300px)] lg:max-w-[min(41vw,440px)] xl:max-w-[min(43vw,510px)] px-4" style={{ transform: `scale(${logoScale})` }}>
+                <div className="w-full max-w-[min(40vw,250px)] sm:max-w-[min(35vw,300px)] md:max-w-[min(35vw,300px)] lg:max-w-[min(41vw,440px)] xl:max-w-[min(43vw,510px)] px-4" style={{ transform: `scale(${logoScale})`, opacity: logoOpacity }}>
                   <Logo src={homeLogoUrl} color={logoColor || undefined} />
                 </div>
               </div>

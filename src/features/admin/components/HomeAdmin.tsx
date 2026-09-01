@@ -66,6 +66,7 @@ const settingsSchema = z.object({
   isHomeSocialButtonsVisible: z.boolean().optional(),
   isImageFullscreenButtonVisible: z.boolean().optional(),
                                         homePageLogoScale: z.number().min(0.1).max(5).optional(),
+  homePageLogoOpacity: z.number().min(0).max(100).optional(),
   homePageLogoColor: z.string().optional(),
   themeColor: z.string().optional(),
   homePageBackgroundType: z.enum(['video', 'image']).optional(),
@@ -311,6 +312,7 @@ export default function HomeAdmin() {
       isHomeSocialButtonsVisible: true,
       isImageFullscreenButtonVisible: true,
       homePageLogoScale: 1,
+      homePageLogoOpacity: 100,
       homePageLogoColor: '',
       themeColor: '#d81e38',
       heroVideoUrl: '',
@@ -374,6 +376,7 @@ export default function HomeAdmin() {
         isHomeSocialButtonsVisible: homeSettings.isHomeSocialButtonsVisible ?? true,
         isImageFullscreenButtonVisible: homeSettings.isImageFullscreenButtonVisible ?? true,
         homePageLogoScale: homeSettings.homePageLogoScale || 1,
+        homePageLogoOpacity: homeSettings.homePageLogoOpacity ?? 100,
         homePageLogoColor: homeSettings.homePageLogoColor || '',
         themeColor: homeSettings.themeColor || '#d81e38',
         heroVideoUrl: homeSettings.heroVideoUrl || '',
@@ -759,6 +762,28 @@ export default function HomeAdmin() {
                                                 </FormControl>
                                                 <FormDescription>
                                                     {t('homeAdmin.logoScaleDescription') || 'Adjust the homepage logo size'}
+                                                </FormDescription>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                    <FormField
+                                        control={control}
+                                        name="homePageLogoOpacity"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>{t('homeAdmin.logoOpacity') || 'Logo Opacity'} — {Math.round(field.value ?? 100)}%</FormLabel>
+                                                <FormControl>
+                                                    <Slider
+                                                        value={[field.value ?? 100]}
+                                                        onValueChange={(value) => field.onChange(value[0])}
+                                                        min={0}
+                                                        max={100}
+                                                        step={1}
+                                                    />
+                                                </FormControl>
+                                                <FormDescription>
+                                                    {t('homeAdmin.logoOpacityDescription') || 'Adjust the homepage logo opacity'}
                                                 </FormDescription>
                                                 <FormMessage />
                                             </FormItem>
