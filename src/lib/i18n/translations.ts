@@ -232,6 +232,8 @@ const en: Record<string, string> = {
   'homeAdmin.handwritingFontDescription': 'Used for handwritten-style accent text.',
   'homeAdmin.fontPlaceholder': 'Search Google Fonts',
   'homeAdmin.fontPreview': 'The quick brown fox jumps over the lazy dog.',
+  'homeAdmin.fontKeepCurrent': 'Keep the current font',
+  'homeAdmin.fontNoResults': 'No matching fonts found.',
 
   /* ContactAdmin */
   'contactAdmin.title': 'Contact Page & Site Settings',
@@ -848,6 +850,8 @@ const fr: Record<string, string> = {
   'homeAdmin.handwritingFontDescription': 'Utilisée pour le texte d’accent de style manuscrit.',
   'homeAdmin.fontPlaceholder': 'Rechercher dans Google Fonts',
   'homeAdmin.fontPreview': 'Portez ce vieux whisky au juge blond qui fume.',
+  'homeAdmin.fontKeepCurrent': 'Conserver la police actuelle',
+  'homeAdmin.fontNoResults': 'Aucune police correspondante.',
 
   /* ContactAdmin */
   'contactAdmin.title': 'Page de contact & Paramètres du site',

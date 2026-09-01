@@ -49,6 +49,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import type { HomePageSettings } from '@/lib/types';
 import { useMediaProvider } from '@/hooks/use-media-provider';
 import { useMergedAutosave } from '@/hooks/useMergedAutosave';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 
 function renderEmailPreview(template?: string): string {
   return (template?.trim() ? template : DEFAULT_EMAIL_TEMPLATE_HTML)
@@ -130,6 +131,92 @@ function fontPreviewStyle(fontFamily?: string): React.CSSProperties {
   return fontFamily?.trim()
     ? { fontFamily: `"${fontFamily.replaceAll('"', '')}", sans-serif` }
     : {};
+}
+
+interface GoogleFontPickerProps {
+  value?: string;
+  onChange: (value: string) => void;
+  families: string[];
+  placeholder: string;
+  emptyLabel: string;
+  noResultsLabel: string;
+}
+
+/** Searchable font chooser that previews only the currently visible matches. */
+function GoogleFontPicker({
+  value,
+  onChange,
+  families,
+  placeholder,
+  emptyLabel,
+  noResultsLabel,
+}: GoogleFontPickerProps) {
+  const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState('');
+  const visibleFamilies = families
+    .filter((family) => family.toLocaleLowerCase().includes(query.trim().toLocaleLowerCase()))
+    .slice(0, 30);
+  const previewStylesheet = open ? googleFontsStylesheetHref(visibleFamilies) : null;
+
+  const choose = (family: string) => {
+    onChange(family);
+    setQuery('');
+    setOpen(false);
+  };
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button
+          type="button"
+          variant="outline"
+          role="combobox"
+          aria-expanded={open}
+          className="w-full justify-between font-normal"
+          style={fontPreviewStyle(value)}
+        >
+          {value || placeholder}
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-[min(28rem,calc(100vw-2rem))] p-2" align="start">
+        {previewStylesheet && <link rel="stylesheet" href={previewStylesheet} />}
+        <Input
+          value={query}
+          onChange={(event) => setQuery(event.target.value)}
+          placeholder={placeholder}
+          autoFocus
+          aria-label={placeholder}
+        />
+        <ScrollArea className="mt-2 h-64">
+          <div className="space-y-1 pr-3">
+            <Button
+              type="button"
+              variant="ghost"
+              className="w-full justify-start font-normal"
+              onClick={() => choose('')}
+            >
+              {emptyLabel}
+            </Button>
+            {visibleFamilies.map((family) => (
+              <Button
+                key={family}
+                type="button"
+                variant="ghost"
+                className="w-full justify-start text-left text-base font-normal"
+                style={fontPreviewStyle(family)}
+                onClick={() => choose(family)}
+              >
+                {family}
+              </Button>
+            ))}
+            {visibleFamilies.length === 0 && (
+              <p className="px-3 py-2 text-sm text-muted-foreground">{noResultsLabel}</p>
+            )}
+          </div>
+        </ScrollArea>
+      </PopoverContent>
+    </Popover>
+  );
 }
 
 /**
@@ -463,9 +550,6 @@ export default function HomeAdmin() {
                                         <h4 className="font-medium">{t('homeAdmin.fontsHeading')}</h4>
                                         <p className="text-sm text-muted-foreground">{t('homeAdmin.fontsDescription')}</p>
                                       </div>
-                                      <datalist id="google-font-families">
-                                        {googleFontFamilies.map((family) => <option key={family} value={family} />)}
-                                      </datalist>
                                       {googleFontsError && (
                                         <p className="text-sm text-destructive">{googleFontsError}</p>
                                       )}
@@ -475,9 +559,14 @@ export default function HomeAdmin() {
                                         render={({ field }) => (
                                           <FormItem>
                                             <FormLabel>{t('homeAdmin.bodyFont')}</FormLabel>
-                                            <FormControl>
-                                              <Input list="google-font-families" placeholder={t('homeAdmin.fontPlaceholder')} {...field} />
-                                            </FormControl>
+                                            <GoogleFontPicker
+                                              value={field.value}
+                                              onChange={field.onChange}
+                                              families={googleFontFamilies}
+                                              placeholder={t('homeAdmin.fontPlaceholder')}
+                                              emptyLabel={t('homeAdmin.fontKeepCurrent')}
+                                              noResultsLabel={t('homeAdmin.fontNoResults')}
+                                            />
                                             <FormDescription>{t('homeAdmin.bodyFontDescription')}</FormDescription>
                                             <p className="text-lg" style={fontPreviewStyle(field.value)}>{t('homeAdmin.fontPreview')}</p>
                                             <FormMessage />
@@ -490,9 +579,14 @@ export default function HomeAdmin() {
                                         render={({ field }) => (
                                           <FormItem>
                                             <FormLabel>{t('homeAdmin.headlineFont')}</FormLabel>
-                                            <FormControl>
-                                              <Input list="google-font-families" placeholder={t('homeAdmin.fontPlaceholder')} {...field} />
-                                            </FormControl>
+                                            <GoogleFontPicker
+                                              value={field.value}
+                                              onChange={field.onChange}
+                                              families={googleFontFamilies}
+                                              placeholder={t('homeAdmin.fontPlaceholder')}
+                                              emptyLabel={t('homeAdmin.fontKeepCurrent')}
+                                              noResultsLabel={t('homeAdmin.fontNoResults')}
+                                            />
                                             <FormDescription>{t('homeAdmin.headlineFontDescription')}</FormDescription>
                                             <p className="text-xl" style={fontPreviewStyle(field.value)}>{t('homeAdmin.fontPreview')}</p>
                                             <FormMessage />
@@ -505,9 +599,14 @@ export default function HomeAdmin() {
                                         render={({ field }) => (
                                           <FormItem>
                                             <FormLabel>{t('homeAdmin.handwritingFont')}</FormLabel>
-                                            <FormControl>
-                                              <Input list="google-font-families" placeholder={t('homeAdmin.fontPlaceholder')} {...field} />
-                                            </FormControl>
+                                            <GoogleFontPicker
+                                              value={field.value}
+                                              onChange={field.onChange}
+                                              families={googleFontFamilies}
+                                              placeholder={t('homeAdmin.fontPlaceholder')}
+                                              emptyLabel={t('homeAdmin.fontKeepCurrent')}
+                                              noResultsLabel={t('homeAdmin.fontNoResults')}
+                                            />
                                             <FormDescription>{t('homeAdmin.handwritingFontDescription')}</FormDescription>
                                             <p className="text-2xl" style={fontPreviewStyle(field.value)}>{t('homeAdmin.fontPreview')}</p>
                                             <FormMessage />
