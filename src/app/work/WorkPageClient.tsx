@@ -600,12 +600,12 @@ const PortfolioGridItem = ({ item, onClick, onEditClick, isAdmin, isSuperAdmin, 
           )}
         </div>
         {item.type === 'video' && isLoaded && (
-          <div className="absolute top-4 right-4 w-[20%] h-[20%] flex items-center justify-center rounded-full glass-effect transition-colors">
+          <div className="absolute top-4 right-4 w-[10%] h-[10%] flex items-center justify-center rounded-full glass-effect transition-colors">
             <FontAwesomeIcon icon={faFilm} className="h-1/2 w-1/2 text-white/80" />
           </div>
         )}
         {item.type === 'image' && isLoaded && (
-            <div className="absolute top-4 right-4 w-[20%] h-[20%] flex items-center justify-center rounded-full glass-effect transition-colors">
+            <div className="absolute top-4 right-4 w-[10%] h-[10%] flex items-center justify-center rounded-full glass-effect transition-colors">
                 <FontAwesomeIcon icon={faPalette} className="h-1/2 w-1/2 text-white/80" />
             </div>
         )}
@@ -725,12 +725,13 @@ function WorkPageContent() {
   const isDialogOpen = isDetailsModalOpen || isContactFormOpen;
 
   // Shared sizing for the project popup and the nested details popup so they
-  // stay pixel-identical in both minimized and maximized states.
+  // stay pixel-identical in both minimized and maximized states. The minimized
+  // case uses a fixed height (not max-h) so both dialogs are always the same
+  // size regardless of their content.
   const popupSizing = isProjectMaximized
     ? "w-[98vw] h-[98dvh] max-w-none"
     : cn(
-        "w-[90vw] max-w-7xl",
-        isExtraWide || isDescriptionLong ? "h-[90dvh]" : "max-h-[90dvh]"
+        "w-[90vw] max-w-7xl h-[90dvh]"
       );
 
   const allItems = useMemo(() => {
