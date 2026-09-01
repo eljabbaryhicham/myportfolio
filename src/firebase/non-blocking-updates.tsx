@@ -13,6 +13,13 @@ import { toast } from '@/hooks/use-toast';
 
 const GENERIC_ERROR_MESSAGE = 'Please check if a browser extension (like an ad blocker) is interfering, or if you have the necessary permissions.';
 
+// Include the Firestore error code (permission-denied, resource-exhausted, …)
+// in the toast so the root cause is visible without digging in the console.
+function errorCodeLabel(error: unknown): string {
+  const code = (error as { code?: string })?.code;
+  return code ? ` (Firestore: ${code})` : '';
+}
+
 /**
  * Initiates a setDoc operation for a document reference.
  * Does NOT await the write operation internally.
@@ -26,7 +33,7 @@ export function setDocumentNonBlocking(docRef: DocumentReference, data: any, opt
     toast({
       variant: 'destructive',
       title: 'Save Operation Blocked',
-      description: GENERIC_ERROR_MESSAGE,
+      description: `${GENERIC_ERROR_MESSAGE}${errorCodeLabel(error)}`,
     });
   });
   // Execution continues immediately
@@ -43,7 +50,7 @@ export function addDocumentNonBlocking(colRef: CollectionReference, data: any) {
     toast({
       variant: 'destructive',
       title: 'Save Operation Blocked',
-      description: GENERIC_ERROR_MESSAGE,
+      description: `${GENERIC_ERROR_MESSAGE}${errorCodeLabel(error)}`,
     });
   });
   return promise;
@@ -59,7 +66,7 @@ export function updateDocumentNonBlocking(docRef: DocumentReference, data: any) 
     toast({
       variant: 'destructive',
       title: 'Update Operation Blocked',
-      description: GENERIC_ERROR_MESSAGE,
+      description: `${GENERIC_ERROR_MESSAGE}${errorCodeLabel(error)}`,
     });
   });
 }
@@ -74,7 +81,7 @@ export function deleteDocumentNonBlocking(docRef: DocumentReference) {
     toast({
       variant: 'destructive',
       title: 'Delete Operation Blocked',
-      description: GENERIC_ERROR_MESSAGE,
+      description: `${GENERIC_ERROR_MESSAGE}${errorCodeLabel(error)}`,
     });
   });
 }
