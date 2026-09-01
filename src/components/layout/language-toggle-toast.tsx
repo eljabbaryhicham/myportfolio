@@ -227,8 +227,11 @@ export function LanguageToggleToast({ className }: { className?: string }) {
             layout
             type="button"
             data-cursor-hide="true"
-            animate={{ width: collapsed ? 40 : expandedWidth, height: collapsed ? 40 : 36 }}
-            transition={{ width: { duration: 0.5, ease: 'easeInOut' }, height: { duration: 0.5, ease: 'easeInOut' } }}
+            animate={{ width: collapsed ? (dimmed ? 35 : 45) : expandedWidth, height: collapsed ? (dimmed ? 35 : 45) : 36 }}
+            transition={{
+              width: { duration: collapsed && dimmed ? 1 : 0.5, ease: 'easeInOut' },
+              height: { duration: collapsed && dimmed ? 1 : 0.5, ease: 'easeInOut' },
+            }}
             aria-live="polite"
             onClick={() => {
               // Collapsed dot: tapping expands it (on mobile it then stays open
@@ -255,26 +258,25 @@ export function LanguageToggleToast({ className }: { className?: string }) {
             // Collapsed state: the red EN/FR knob fades to black after collapse.
             <motion.span
               key="collapsed"
-              initial={{ scale: 0.6, opacity: 1 }}
-              animate={{ scale: dimmed ? 32 / 40 : 1, opacity: dimmed ? 0.5 : 1 }}
+              initial={{ opacity: 1 }}
+              animate={{ opacity: dimmed ? 0.5 : 1 }}
               whileHover={{ opacity: 1 }}
-              exit={{ scale: 0.6, opacity: 0 }}
+              exit={{ opacity: 0 }}
               transition={{
-                scale: { duration: dimmed ? 1 : 0.3, ease: 'easeInOut' },
                 opacity: { duration: 0.3, ease: 'easeInOut' },
               }}
-              className="relative flex h-10 w-10 items-center justify-center rounded-full"
+              className="relative flex h-full w-full items-center justify-center rounded-full"
             >
               <motion.span
                 aria-hidden="true"
                 animate={{ opacity: dimmed ? 0 : 1 }}
-                transition={{ duration: dimmed ? 1 : 0, ease: 'easeInOut' }}
+                transition={{ duration: dimmed ? 0.5 : 0, ease: 'ease' }}
                 className="absolute inset-0 rounded-full bg-destructive shadow-[0_0_12px_hsl(var(--primary)/0.6)]"
               />
               <motion.span
                 aria-hidden="true"
                 animate={{ opacity: dimmed ? 1 : 0 }}
-                transition={{ duration: dimmed ? 1 : 0, ease: 'easeInOut' }}
+                transition={{ duration: dimmed ? 0.5 : 0, ease: 'ease' }}
                 className="absolute inset-0 rounded-full bg-[#111237] shadow-[0_0_12px_rgba(0,0,0,0.6)]"
               />
               <span className="relative z-10 text-[12px] font-bold leading-none text-white">
