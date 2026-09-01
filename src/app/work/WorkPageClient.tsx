@@ -729,43 +729,20 @@ function WorkPageContent() {
   const [isDetailsModalOpen, setDetailsModalOpen] = useState(false);
   const [isContactFormOpen, setIsContactFormOpen] = useState(false);
   const [isProjectMaximized, setIsProjectMaximized] = useState(false);
+  const [isDetailsMaximized, setIsDetailsMaximized] = useState(false);
   const isDialogOpen = isDetailsModalOpen || isContactFormOpen;
 
-  // Refs to the project popup and the nested details popup. A callback ref on
-  // the details dialog copies the project's rendered width/height the instant
-  // the details is attached to the DOM, and a ResizeObserver keeps it in sync
-  // when the project resizes (e.g. during the maximize toggle transition).
-  const projectDialogRef = useRef<HTMLDivElement | null>(null);
-  const detailsDialogRef = useRef<HTMLDivElement | null>(null);
-
-  const setDetailsRef = useCallback((el: HTMLDivElement | null) => {
-    detailsDialogRef.current = el;
-    if (el && projectDialogRef.current) {
-      const r = projectDialogRef.current.getBoundingClientRect();
-      el.style.width = `${r.width}px`;
-      el.style.height = `${r.height}px`;
-    }
-  }, []);
-
-  useEffect(() => {
-    const project = projectDialogRef.current;
-    const details = detailsDialogRef.current;
-    if (!project || !details) return;
-
-    const applySize = () => {
-      const r = project.getBoundingClientRect();
-      details.style.width = `${r.width}px`;
-      details.style.height = `${r.height}px`;
-    };
-    applySize();
-    const ro = new ResizeObserver(applySize);
-    ro.observe(project);
-    return () => ro.disconnect();
-  }, [selectedItem, isProjectMaximized, isDetailsModalOpen]);
-
-  // Shared sizing for the project popup and the nested details popup so they
-  // stay pixel-identical in both minimized and maximized states.
+  // Sizing for the project popup. Minimized = 90vw/90dvh (content-fit),
+  // maximized = 98vw/98dvh.
   const popupSizing = isProjectMaximized
+    ? "w-[98vw] h-[98dvh] max-w-none"
+    : cn(
+        "w-[90vw] max-w-7xl",
+        isExtraWide || isDescriptionLong ? "h-[90dvh]" : "max-h-[90dvh]"
+      );
+
+  // Independent sizing for the details popup (its own maximize state).
+  const detailsSizing = isDetailsMaximized
     ? "w-[98vw] h-[98dvh] max-w-none"
     : cn(
         "w-[90vw] max-w-7xl",
@@ -1281,7 +1258,6 @@ function WorkPageContent() {
 
       <Dialog open={!!selectedItem} onOpenChange={handleMainDialogOpenChange}>
           <DialogContent
-            ref={projectDialogRef}
             className={cn(
               "glass-effect p-0 flex flex-col group overflow-hidden transition-all duration-500 ease-in-out",
               popupSizing
@@ -1430,13 +1406,12 @@ function WorkPageContent() {
       </Dialog>
       
       {/* Nested Dialog for Details */}
-      <Dialog open={isDetailsModalOpen} onOpenChange={setDetailsModalOpen}>
+      <Dialog open={isDetailsModalOpen} onOpenChange={(open) => { setDetailsModalOpen(open); if (!open) setIsDetailsMaximized(false); }}>
         <DialogContent
-          ref={setDetailsRef}
           id="work-details-dialog"
           className={cn(
             "glass-effect p-0 flex flex-col group overflow-hidden transition-all duration-500 ease-in-out min-w-0",
-            popupSizing
+            detailsSizing
           )}
           onMouseMove={handleDialogMouseMove}
           onMouseEnter={handleDialogMouseEnter}
@@ -1455,15 +1430,15 @@ function WorkPageContent() {
                  <Button
                     variant="destructive"
                     size="icon"
-                    onClick={(e) => { e.currentTarget.blur(); setIsProjectMaximized(prev => !prev); }}
+                    onClick={(e) => { e.currentTarget.blur(); setIsDetailsMaximized(prev => !prev); }}
                     className={cn(
                       "absolute top-4 left-4 z-[101] h-10 w-10 rounded-full flex items-center justify-center ring-offset-background transition-opacity",
                       hasMounted && isMobile ? "opacity-70" : (isCloseButtonVisible ? "opacity-70" : "opacity-0")
                     )}
-                    title={isProjectMaximized ? t('work.details.restore') : t('work.details.maximize')}
+                    title={isDetailsMaximized ? t('work.details.restore') : t('work.details.maximize')}
                   >
-                    <FontAwesomeIcon icon={isProjectMaximized ? faCompress : faExpand} className="h-4 w-4" />
-                    <span className="sr-only">{isProjectMaximized ? t('work.details.restore') : t('work.details.maximize')}</span>
+                    <FontAwesomeIcon icon={isDetailsMaximized ? faCompress : faExpand} className="h-4 w-4" />
+                    <span className="sr-only">{isDetailsMaximized ? t('work.details.restore') : t('work.details.maximize')}</span>
                   </Button>
                  <DialogClose className={cn(
                     "absolute top-4 right-4 z-[101] h-10 w-10 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center md:hover:!opacity-100 ring-offset-background transition-opacity focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
