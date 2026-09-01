@@ -32,7 +32,7 @@ const AboutAdmin = dynamicImport(() => import('@/features/admin/components/About
 const UnifiedMediaPicker = dynamicImport(() => import('@/features/admin/components/UnifiedMediaPicker'), { ssr: false, loading: () => <Preloader /> });
 import { useTranslation } from '@/lib/i18n/useTranslation';
 import { useUploadProgress } from '@/components/upload-progress-context';
-import { isSuperAdmin as isSuperAdminCheck } from '@/lib/constants';
+import { isSuperAdmin as isSuperAdminCheck, hasMediaAccess } from '@/lib/constants';
 
 
 function AdminPage() {
@@ -72,6 +72,10 @@ function AdminPage() {
   const isSuperAdmin = isSuperAdminCheck(typedUser);
   
   const canEditProjects = isSuperAdmin || (typedUser?.permissions?.canEditProjects ?? true);
+  
+  // Media management is restricted to superadmin/admins (mirrors rules isAdmin()).
+  // Self-registered 'user' accounts get NO media tab, pickers, or listeners.
+  const canManageMedia = hasMediaAccess(typedUser);
   
   useEffect(() => {
     // Read query params from notification navigation (e.g. /admin?tab=media&innerTab=vercel&mediaTab=videos)
@@ -316,6 +320,14 @@ function AdminPage() {
   };
 
   const handleOpenLibraryForSelection = (onSelect: (url: string, type: 'image' | 'video' | 'raw', filename: string) => void) => {
+    if (!canManageMedia) {
+      toast({
+        variant: 'destructive',
+        title: t('admin.toast.accessDenied.title'),
+        description: t('admin.toast.accessDenied.description'),
+      });
+      return;
+    }
     setLibrarySelectionConfig({ onSelect });
     setIsLibraryOpen(true);
   };
@@ -360,6 +372,10 @@ function AdminPage() {
     safeTimeout(() => setNewlyUploadedId(null), 3000);
   };
 
+  // Non-media accounts must never surface the Media tab, even if a stale
+  // 'media' value (localStorage / notification query params) slips in.
+  const effectiveActiveTab = !canManageMedia && activeTab === 'media' ? 'home' : activeTab;
+
   if (isUserLoading || !user) {
     return (
         <div className="fixed inset-0 z-[200] flex items-center justify-center bg-transparent">
@@ -395,7 +411,7 @@ function AdminPage() {
 
           <Separator className="bg-white/10" />
 
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col min-h-0 mt-8">
+          <Tabs value={effectiveActiveTab} onValueChange={setActiveTab} className="flex-1 flex flex-col min-h-0 mt-8">
             <div className="w-full flex flex-wrap justify-center items-center gap-4 md:gap-0">
               <TabsList className="flex-wrap h-auto justify-center">
                 <TabsTrigger value="home" className="glass-effect data-[state=active]:bg-destructive">{t('admin.tabs.home')}</TabsTrigger>
@@ -405,7 +421,7 @@ function AdminPage() {
               </TabsList>
               <div className="md:ml-auto">
                 <TabsList className="flex-wrap h-auto justify-center">
-                  <TabsTrigger value="media" className="glass-effect text-white data-[state=active]:bg-destructive data-[state=active]:animate-glow px-4 py-2">{t('admin.tabs.media')}</TabsTrigger>
+                  {canManageMedia && <TabsTrigger value="media" className="glass-effect text-white data-[state=active]:bg-destructive data-[state=active]:animate-glow px-4 py-2">{t('admin.tabs.media')}</TabsTrigger>}
                   {isSuperAdmin && <TabsTrigger value="admins" className="glass-effect text-white data-[state=active]:bg-destructive data-[state=active]:animate-glow px-4 py-2">{t('admin.tabs.admins')}</TabsTrigger>}
                 </TabsList>
               </div>
@@ -426,7 +442,8 @@ function AdminPage() {
               <TabsContent value="contact" className="flex-1 overflow-auto mt-4">
                   <ContactAdmin />
               </TabsContent>
-              <TabsContent value="media" className="flex-1 overflow-auto mt-4">
+              {canManageMedia && (
+                <TabsContent value="media" className="flex-1 overflow-auto mt-4">
                   <Tabs value={innerMediaTab} onValueChange={(v) => setInnerMediaTab(v as 'cloudinary' | 'vercel')} className="w-full">
                     <TabsList className="mb-4">
                       <TabsTrigger value="cloudinary" className="glass-effect data-[state=active]:bg-destructive">Cloudinary</TabsTrigger>
@@ -440,6 +457,7 @@ function AdminPage() {
                     </TabsContent>
                   </Tabs>
               </TabsContent>
+               )}
                {isSuperAdmin && (
                 <TabsContent value="admins" className="flex-1 overflow-auto mt-4">
                   <AdminManagement />
@@ -457,26 +475,28 @@ function AdminPage() {
         canEdit={canEditProjects}
         onDelete={handleDeletePortfolioItem}
       />
-      <UnifiedMediaPicker
-        isOpen={isLibraryOpen}
-        onOpenChange={(isOpen) => {
-            setIsLibraryOpen(isOpen);
-            if (!isOpen) {
-              setLibrarySelectionConfig(null);
-              setLibraryForceProvider(undefined);
-            }
-        }}
-        onMediaSelect={(url, type, filename) => {
-            const handler = librarySelectionConfig ? librarySelectionConfig.onSelect : handleOpenPortfolioFormWithMedia;
-            handler(url, type, filename);
-            if (librarySelectionConfig) {
-              setIsLibraryOpen(false);
-              setLibrarySelectionConfig(null);
-              setLibraryForceProvider(undefined);
-            }
-        }}
-        forceProvider={libraryForceProvider}
-      />
+      {canManageMedia && (
+        <UnifiedMediaPicker
+          isOpen={isLibraryOpen}
+          onOpenChange={(isOpen) => {
+              setIsLibraryOpen(isOpen);
+              if (!isOpen) {
+                setLibrarySelectionConfig(null);
+                setLibraryForceProvider(undefined);
+              }
+          }}
+          onMediaSelect={(url, type, filename) => {
+              const handler = librarySelectionConfig ? librarySelectionConfig.onSelect : handleOpenPortfolioFormWithMedia;
+              handler(url, type, filename);
+              if (librarySelectionConfig) {
+                setIsLibraryOpen(false);
+                setLibrarySelectionConfig(null);
+                setLibraryForceProvider(undefined);
+              }
+          }}
+          forceProvider={libraryForceProvider}
+        />
+      )}
     </>
   );
 }
