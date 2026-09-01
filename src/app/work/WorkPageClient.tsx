@@ -735,6 +735,17 @@ function WorkPageContent() {
   const projectDialogRef = useRef<HTMLDivElement | null>(null);
   const [minimizedProjectSize, setMinimizedProjectSize] = useState<{ w: number; h: number } | null>(null);
 
+  const captureMinimizedProjectSize = useCallback(() => {
+    if (isProjectMaximized) return;
+    const project = projectDialogRef.current;
+    if (!project) return;
+
+    const next = { w: project.offsetWidth, h: project.offsetHeight };
+    setMinimizedProjectSize(prev =>
+      prev && prev.w === next.w && prev.h === next.h ? prev : next
+    );
+  }, [isProjectMaximized]);
+
   // Keep the project popup's actual minimized dimensions. `offsetWidth` and
   // `offsetHeight` intentionally ignore the dialog's temporary scale-in
   // animation, so Details restores to the final minimized size.
@@ -743,18 +754,11 @@ function WorkPageContent() {
     const project = projectDialogRef.current;
     if (!project) return;
 
-    const measure = () => {
-      const next = { w: project.offsetWidth, h: project.offsetHeight };
-      setMinimizedProjectSize(prev =>
-        prev && prev.w === next.w && prev.h === next.h ? prev : next
-      );
-    };
-
-    measure();
-    const observer = new ResizeObserver(measure);
+    captureMinimizedProjectSize();
+    const observer = new ResizeObserver(captureMinimizedProjectSize);
     observer.observe(project);
     return () => observer.disconnect();
-  }, [selectedItem, isProjectMaximized]);
+  }, [selectedItem, isProjectMaximized, captureMinimizedProjectSize]);
 
   // Both popups use the same standard minimized size, but maximize
   // independently so one popup's current dimensions never affect the other.
@@ -1376,7 +1380,10 @@ function WorkPageContent() {
                             <div className="relative">
                               <Button
                                 variant="default"
-                                onClick={() => setDetailsModalOpen(true)}
+                                onClick={() => {
+                                  captureMinimizedProjectSize();
+                                  setDetailsModalOpen(true);
+                                }}
                               >
                                 <FontAwesomeIcon icon={faUpDown} className="mr-2" />
                                 {t('work.details.showDetails')}
@@ -1418,7 +1425,11 @@ function WorkPageContent() {
             <Button
               variant="destructive"
               size="icon"
-              onClick={(e) => { e.currentTarget.blur(); setIsProjectMaximized(prev => !prev); }}
+              onClick={(e) => {
+                e.currentTarget.blur();
+                if (!isProjectMaximized) captureMinimizedProjectSize();
+                setIsProjectMaximized(prev => !prev);
+              }}
               className={cn(
                 "absolute left-4 top-4 z-30 h-10 w-10 rounded-full flex items-center justify-center ring-offset-background transition-opacity",
                 hasMounted && isMobile ? "opacity-70" : (isCloseButtonVisible ? "opacity-70" : "opacity-0")
@@ -1442,7 +1453,11 @@ function WorkPageContent() {
           style={isDetailsMaximized
               ? { width: '98vw', height: '98dvh', maxWidth: 'none' }
               : minimizedProjectSize
-                ? { width: `${minimizedProjectSize.w}px`, height: `${minimizedProjectSize.h}px` }
+                ? {
+                    width: `${minimizedProjectSize.w}px`,
+                    height: `${minimizedProjectSize.h}px`,
+                    minHeight: `${minimizedProjectSize.h}px`,
+                  }
                 : undefined}
           onMouseMove={handleDialogMouseMove}
           onMouseEnter={handleDialogMouseEnter}
