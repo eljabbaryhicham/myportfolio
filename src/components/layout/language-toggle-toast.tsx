@@ -15,7 +15,7 @@ import translations from '@/lib/i18n/translations';
 const INITIAL_SHOW_MS = 2000;
 const HOVER_LEAVE_MS = 100;
 const COLLAPSE_ANIM_MS = 500;
-const RED_HOLD_MS = 100;
+const RED_HOLD_MS = 50;
 // Safety margin added to the measured expanded width so the label never gets
 // clipped by the pivot toggle even if fonts/metrics shift slightly.
 const WIDTH_BUFFER = 12;
@@ -256,14 +256,14 @@ export function LanguageToggleToast({ className }: { className?: string }) {
             <motion.span
               key="collapsed"
               initial={{ scale: 0.6, opacity: 1 }}
-              animate={{ scale: 1, opacity: dimmed ? 0.5 : 1 }}
+              animate={{ scale: dimmed ? 32 / 40 : 1, opacity: dimmed ? 0.5 : 1 }}
               whileHover={{ opacity: 1 }}
               exit={{ scale: 0.6, opacity: 0 }}
               transition={{
-                scale: { duration: 0.3, ease: 'easeInOut' },
+                scale: { duration: dimmed ? 1 : 0.3, ease: 'easeInOut' },
                 opacity: { duration: 0.3, ease: 'easeInOut' },
               }}
-              className="relative flex h-9 w-9 items-center justify-center rounded-full"
+              className="relative flex h-10 w-10 items-center justify-center rounded-full"
             >
               <motion.span
                 aria-hidden="true"
