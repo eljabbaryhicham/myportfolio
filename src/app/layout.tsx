@@ -114,6 +114,9 @@ export default async function RootLayout({
         <script src="/inline/app-height.js" />
         {/* eslint-disable-next-line @next/next/no-sync-scripts */}
         <script src="/inline/platform.js" />
+        {/* Remove focus ability site-wide before hydration. */}
+        {/* eslint-disable-next-line @next/next/no-sync-scripts */}
+        <script src="/inline/disable-focus.js" />
       </head>
       <body className={cn('font-body antialiased text-center h-full')} style={{ background: '#000' }} suppressHydrationWarning>
         <AppShell initialSettings={initialSettings} initialClients={initialClients} initialContact={initialContact}>
