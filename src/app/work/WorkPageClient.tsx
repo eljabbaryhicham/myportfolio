@@ -721,7 +721,7 @@ function WorkPageContent() {
 
   const [isDetailsModalOpen, setDetailsModalOpen] = useState(false);
   const [isContactFormOpen, setIsContactFormOpen] = useState(false);
-  const [isProjectMaximized, setIsProjectMaximized] = useState(true);
+  const [isProjectMaximized, setIsProjectMaximized] = useState(false);
   const isDialogOpen = isDetailsModalOpen || isContactFormOpen;
 
   const allItems = useMemo(() => {
@@ -897,7 +897,7 @@ function WorkPageContent() {
   const handleItemClick = useCallback((item: PortfolioItem) => {
     setDirection(null);
     setSelectedItem(item);
-    setIsProjectMaximized(true);
+    setIsProjectMaximized(false);
     updateUrl(slugify(getLocalizedString(item.title, lang)));
   }, [updateUrl, lang]);
   
@@ -909,7 +909,7 @@ function WorkPageContent() {
   const handleMainDialogOpenChange = (open: boolean) => {
     if (!open) {
       setSelectedItem(null);
-      setIsProjectMaximized(true);
+      setIsProjectMaximized(false);
       updateUrl(null);
     }
   };
@@ -1386,7 +1386,17 @@ function WorkPageContent() {
       
       {/* Nested Dialog for Details */}
       <Dialog open={isDetailsModalOpen} onOpenChange={setDetailsModalOpen}>
-        <DialogContent id="work-details-dialog" className="w-[90vw] h-[90dvh] max-w-[90vw] min-w-0 overflow-hidden glass-effect p-0 flex flex-col group"
+        <DialogContent
+          id="work-details-dialog"
+          className={cn(
+            "glass-effect p-0 flex flex-col group overflow-hidden transition-all duration-500 ease-in-out min-w-0",
+            isProjectMaximized
+              ? "w-[90vw] h-[90dvh] max-w-none"
+              : cn(
+                  "w-[90vw] max-w-7xl",
+                  isExtraWide || isDescriptionLong ? "h-[90dvh]" : "max-h-[90dvh]"
+                )
+          )}
           onMouseMove={handleDialogMouseMove}
           onMouseEnter={handleDialogMouseEnter}
           onMouseLeave={handleDialogMouseLeave}
