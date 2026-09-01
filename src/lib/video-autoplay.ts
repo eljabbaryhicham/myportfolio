@@ -26,13 +26,18 @@ export function forceAutoplay(
   // Mobile browsers only autoplay a muted video; desktop allows sound. Mute on
   // touch/mobile devices (or when explicitly requested). Decorative autoplay
   // videos (background, hero, card previews) are muted in their JSX regardless.
-  // Force-unmute: playback always attempts with sound. Note that browsers
+  // Default: force-unmute — playback attempts with sound. Note that browsers
   // block unmuted autoplay on mobile (a user gesture is required), so on
   // mobile the initial play() is rejected and the video will NOT autoplay at
   // all until the visitor interacts. Desktop may autoplay with sound if the
   // browser's autoplay policy allows it.
-  video.muted = false;
-  video.removeAttribute('muted');
+  if (forceMuted) {
+    video.muted = true;
+    video.setAttribute('muted', '');
+  } else {
+    video.muted = false;
+    video.removeAttribute('muted');
+  }
   video.playsInline = true;
   video.setAttribute('playsinline', '');
   video.setAttribute('webkit-playsinline', '');

@@ -345,7 +345,7 @@ export default function HomePageContent() {
         if (cancelled || !Hls.isSupported()) {
           if (!Hls.isSupported() && video.canPlayType('application/vnd.apple.mpegurl')) {
             video.src = cleanUrl;
-            forceAutoplay(video);
+            forceAutoplay(video, { forceMuted: true });
           }
           return;
         }
@@ -354,13 +354,13 @@ export default function HomePageContent() {
         hls.loadSource(cleanUrl);
         hls.attachMedia(video);
         hls.on(Hls.Events.MANIFEST_PARSED, () => {
-          if (!cancelled) forceAutoplay(video);
+          if (!cancelled) forceAutoplay(video, { forceMuted: true });
         });
       })();
       return () => { cancelled = true; if (hls) hls.destroy(); };
     } else {
       video.src = cleanUrl;
-      forceAutoplay(video);
+      forceAutoplay(video, { forceMuted: true });
     }
   }, [homeSettings?.heroVideoUrl]);
 
