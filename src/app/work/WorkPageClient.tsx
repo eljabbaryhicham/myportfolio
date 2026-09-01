@@ -1452,6 +1452,19 @@ function WorkPageContent() {
                         <ProjectDetailsContent details={getLocalizedString(selectedItem.details, lang)} playerType={workPagePlayer} onImageFullscreen={setFullscreenImageUrl} mediaWidth={homeSettings?.mediaWidth} showMediaTitles={homeSettings?.showMediaTitles ?? true} watermark={watermarkLogoUrl} watermarkSize={watermarkSize} watermarkOpacity={watermarkOpacity} watermarkPosition={watermarkPosition} />
                     </div>
                 </ScrollArea>
+                 <Button
+                    variant="destructive"
+                    size="icon"
+                    onClick={(e) => { e.currentTarget.blur(); setIsProjectMaximized(prev => !prev); }}
+                    className={cn(
+                      "absolute top-4 left-4 z-[101] h-10 w-10 rounded-full flex items-center justify-center ring-offset-background transition-opacity",
+                      hasMounted && isMobile ? "opacity-70" : (isCloseButtonVisible ? "opacity-70" : "opacity-0")
+                    )}
+                    title={isProjectMaximized ? t('work.details.restore') : t('work.details.maximize')}
+                  >
+                    <FontAwesomeIcon icon={isProjectMaximized ? faCompress : faExpand} className="h-4 w-4" />
+                    <span className="sr-only">{isProjectMaximized ? t('work.details.restore') : t('work.details.maximize')}</span>
+                  </Button>
                  <DialogClose className={cn(
                     "absolute top-4 right-4 z-[101] h-10 w-10 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center md:hover:!opacity-100 ring-offset-background transition-opacity focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
                     hasMounted && isMobile ? "opacity-70" : (isCloseButtonVisible ? "opacity-70" : "opacity-0 focus:opacity-100 focus-visible:opacity-100")
