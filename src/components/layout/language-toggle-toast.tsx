@@ -270,13 +270,13 @@ export function LanguageToggleToast({ className }: { className?: string }) {
               <motion.span
                 aria-hidden="true"
                 animate={{ opacity: dimmed ? 0 : 1 }}
-                transition={{ duration: dimmed ? 0.8 : 0, ease: 'ease' }}
+                transition={{ duration: dimmed ? 1 : 0, ease: 'ease' }}
                 className="absolute inset-0 rounded-full bg-destructive shadow-[0_0_12px_hsl(var(--primary)/0.6)]"
               />
               <motion.span
                 aria-hidden="true"
                 animate={{ opacity: dimmed ? 1 : 0 }}
-                transition={{ duration: dimmed ? 0.8 : 0, ease: 'ease' }}
+                transition={{ duration: dimmed ? 1 : 0, ease: 'ease' }}
                 className="absolute inset-0 rounded-full bg-[#111237] shadow-[0_0_12px_rgba(0,0,0,0.6)]"
               />
               <span className="relative z-10 text-[12px] font-bold leading-none text-white">
