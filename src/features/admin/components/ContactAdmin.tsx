@@ -28,7 +28,7 @@ import type { AppUser } from '@/firebase/auth/use-user';
 import { useTranslation } from '@/lib/i18n/useTranslation';
 import { ensureMultilingualString } from '@/lib/i18n/multilingual';
 import { MultilingualInput } from './MultilingualInput';
-import { isSuperAdmin as isSuperAdminCheck } from '@/lib/constants';
+import { isSuperAdmin as isSuperAdminCheck, hasMediaAccess } from '@/lib/constants';
 import MediaLibrary from './MediaLibrary';
 import { faImages } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -86,6 +86,7 @@ export default function ContactAdmin() {
   const typedUser = user as AppUser | null;
   const isSuperAdmin = isSuperAdminCheck(typedUser);
   const canEditContact = isSuperAdmin || (typedUser?.permissions?.canEditContact ?? true);
+  const canManageMedia = hasMediaAccess(typedUser);
 
   const contactDocRef = useMemoFirebase(
     () => (firestore ? doc(firestore, 'contact', 'details') : null),
@@ -206,7 +207,7 @@ export default function ContactAdmin() {
                                 <FormControl>
                                     <Input placeholder={t('contactAdmin.avatarUrlPlaceholder')} {...field} className="flex-1" />
                                 </FormControl>
-                                <Button type="button" variant="outline" size="icon" onClick={() => setIsLibraryOpen(true)}>
+                                <Button type="button" variant="outline" size="icon" onClick={() => setIsLibraryOpen(true)} disabled={!canManageMedia}>
                                     <FontAwesomeIcon icon={faImages} />
                                 </Button>
                             </div>
@@ -403,6 +404,7 @@ export default function ContactAdmin() {
           </ScrollArea>
       </div>
       </div>
+      {canManageMedia && (
       <MediaLibrary
         provider="cloudinary"
           isDialog={true}
@@ -422,6 +424,7 @@ export default function ContactAdmin() {
           setActiveLibrary={setLibraryCollection}
           newlyUploadedId={null}
       />
+      )}
     </>
   );
 }

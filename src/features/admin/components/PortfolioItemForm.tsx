@@ -95,10 +95,11 @@ interface PortfolioItemFormProps {
   setIsOpen: (isOpen: boolean) => void;
   onChooseFromLibrary: (onSelect: (url: string, type: 'image' | 'video' | 'raw', filename: string) => void) => void;
   canEdit: boolean;
+  canChooseFromLibrary: boolean;
   onDelete?: (id: string) => void;
 }
 
-export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onChooseFromLibrary, canEdit, onDelete}: PortfolioItemFormProps) {
+export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onChooseFromLibrary, canEdit, canChooseFromLibrary, onDelete}: PortfolioItemFormProps) {
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const { t } = useTranslation();
     const { toast } = useToast();
@@ -132,10 +133,11 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onCho
 
     const handleDetailsInsertMedia = useCallback(
       (fieldName: string, locale: 'en' | 'fr', cursorPos: number) => {
+        if (!canChooseFromLibrary) return;
         setMediaInsertTarget({ fieldName, locale, cursorPos });
         setIsMediaInsertPickerOpen(true);
       },
-      []
+      [canChooseFromLibrary]
     );
 
     const handleMediaInserted = useCallback(
@@ -280,6 +282,7 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onCho
     };
 
     const handleChooseThumbnail = () => {
+        if (!canChooseFromLibrary) return;
         onChooseFromLibrary((url, type: 'image' | 'video' | 'raw') => {
             if (type !== 'image') {
               toast({ variant: 'destructive', title: t('portfolioForm.toast.invalidThumbnail.title'), description: t('portfolioForm.toast.invalidThumbnail.description')});
@@ -290,12 +293,14 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onCho
     };
 
     const handleChoosePreview = () => {
+        if (!canChooseFromLibrary) return;
         onChooseFromLibrary((url) => {
             form.setValue('previewUrl', url, { shouldValidate: true });
         });
     };
 
     const handleChooseSource = () => {
+        if (!canChooseFromLibrary) return;
         onChooseFromLibrary((url, type, filename) => {
             form.setValue('sourceUrl', url, { shouldValidate: true });
             form.setValue('type', type === 'raw' ? 'image' : type, { shouldValidate: true });
@@ -314,6 +319,7 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onCho
     };
 
     const handleChooseVtt = () => {
+        if (!canChooseFromLibrary) return;
         onChooseFromLibrary((url, type) => {
             if (type !== 'raw') {
               toast({ variant: 'destructive', title: t('portfolioForm.toast.invalidThumbnail.title'), description: 'Please select a VTT file.'});
@@ -373,7 +379,7 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onCho
                             placeholder={t('portfolioForm.detailsPlaceholder')}
                             description={t('portfolioForm.detailsHelp')}
                             type="textarea"
-                            onInsertMedia={handleDetailsInsertMedia}
+                            onInsertMedia={canChooseFromLibrary ? handleDetailsInsertMedia : undefined}
                           />
                           <FormField
                           control={form.control}
@@ -406,7 +412,7 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onCho
                                   <FormControl>
                                       <Input placeholder={t('portfolioForm.thumbnailUrlPlaceholder')} {...field} disabled={!!useVideoFrame} />
                                   </FormControl>
-                                  <Button type="button" variant="outline" size="sm" onClick={handleChooseThumbnail} disabled={!!useVideoFrame}>
+                                  <Button type="button" variant="outline" size="sm" onClick={handleChooseThumbnail} disabled={!!useVideoFrame || !canChooseFromLibrary}>
                                       <FontAwesomeIcon icon={faImages} />
                                       <span className="ml-2 hidden sm:inline">{t('portfolioForm.library')}</span>
                                   </Button>
@@ -457,7 +463,7 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onCho
                                         <FormControl>
                                             <Input placeholder={t('portfolioForm.thumbnailsVttUrlPlaceholder')} {...field} className="flex-1" />
                                         </FormControl>
-                                        <Button type="button" variant="outline" onClick={handleChooseVtt}>
+                                        <Button type="button" variant="outline" onClick={handleChooseVtt} disabled={!canChooseFromLibrary}>
                                             <FontAwesomeIcon icon={faImages} className="mr-2 h-4 w-4" />
                                             {t('portfolioForm.library')}
                                         </Button>
@@ -499,7 +505,7 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onCho
                                   <FormControl>
                                       <Input placeholder={t('portfolioForm.sourceMediaUrlPlaceholder')} {...field} />
                                   </FormControl>
-                                   <Button type="button" variant="outline" size="sm" onClick={handleChooseSource}>
+                                   <Button type="button" variant="outline" size="sm" onClick={handleChooseSource} disabled={!canChooseFromLibrary}>
                                     <FontAwesomeIcon icon={faImages} />
                                     <span className="ml-2 hidden sm:inline">{t('portfolioForm.library')}</span>
                                   </Button>
@@ -519,7 +525,7 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onCho
                                    <FormControl>
                                        <Input placeholder={t('portfolioForm.previewMediaUrlPlaceholder')} {...field} />
                                    </FormControl>
-                                    <Button type="button" variant="outline" size="sm" onClick={handleChoosePreview}>
+                                    <Button type="button" variant="outline" size="sm" onClick={handleChoosePreview} disabled={!canChooseFromLibrary}>
                                      <FontAwesomeIcon icon={faImages} />
                                      <span className="ml-2 hidden sm:inline">{t('portfolioForm.library')}</span>
                                    </Button>
@@ -617,6 +623,7 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onCho
                 </DialogClose>
             </DialogContent>
         </Dialog>
+        {canChooseFromLibrary && (
         <UnifiedMediaPicker
             isOpen={isMediaInsertPickerOpen}
             onOpenChange={(open) => {
@@ -625,5 +632,6 @@ export function PortfolioItemFormSheet({isOpen, setIsOpen, item, onSubmit, onCho
             }}
             onMediaSelect={handleMediaInserted}
         />
+        )}
     </>)
 }

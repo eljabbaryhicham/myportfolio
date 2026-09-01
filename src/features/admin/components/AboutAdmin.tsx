@@ -2,7 +2,7 @@
 'use client';
 
 import { useTranslation } from '@/lib/i18n/useTranslation';
-import { isSuperAdmin as isSuperAdminCheck } from '@/lib/constants';
+import { isSuperAdmin as isSuperAdminCheck, hasMediaAccess } from '@/lib/constants';
 import PageTextEditor from '@/features/admin/components/PageTextEditor';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
@@ -64,6 +64,7 @@ export default function AboutAdmin() {
   const typedUser = user as AppUser | null;
   const isSuperAdmin = isSuperAdminCheck(typedUser);
   const canEditAbout = isSuperAdmin || (typedUser?.permissions?.canEditAbout ?? true);
+  const canManageMedia = hasMediaAccess(typedUser);
 
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isLibraryOpen, setIsLibraryOpen] = useState(false);
@@ -125,7 +126,7 @@ export default function AboutAdmin() {
   };
 
   const handleChooseImage = (field: 'imageUrl' | 'logoUrl') => {
-    if (!canEditAbout) return;
+    if (!canEditAbout || !canManageMedia) return;
     setLibrarySelectionConfig({
       onSelect: (url, type) => {
         if (type === 'image') {
@@ -195,7 +196,7 @@ export default function AboutAdmin() {
                                     <FormControl>
                                       <Input placeholder={t('aboutAdmin.logoUrlPlaceholder')} {...field} />
                                     </FormControl>
-                                    <Button type="button" variant="outline" size="icon" onClick={() => handleChooseImage('logoUrl')}>
+                                    <Button type="button" variant="outline" size="icon" onClick={() => handleChooseImage('logoUrl')} disabled={!canManageMedia}>
                                       <FontAwesomeIcon icon={faImages} />
                                     </Button>
                                   </div>
@@ -248,7 +249,7 @@ export default function AboutAdmin() {
                                     <FormControl>
                                       <Input placeholder={t('aboutAdmin.imageUrlPlaceholder')} {...field} />
                                     </FormControl>
-                                    <Button type="button" variant="outline" size="icon" onClick={() => handleChooseImage('imageUrl')}>
+                                    <Button type="button" variant="outline" size="icon" onClick={() => handleChooseImage('imageUrl')} disabled={!canManageMedia}>
                                       <FontAwesomeIcon icon={faImages} />
                                     </Button>
                                   </div>
@@ -270,6 +271,7 @@ export default function AboutAdmin() {
           </DialogContent>
         </Dialog>
       </div>
+      {canManageMedia && (
       <MediaLibrary
         provider="cloudinary"
         isDialog={true}
@@ -291,6 +293,7 @@ export default function AboutAdmin() {
         setActiveLibrary={setLibraryCollection}
         newlyUploadedId={null}
       />
+      )}
     </>
   );
 }

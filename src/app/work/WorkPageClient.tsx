@@ -37,7 +37,7 @@ import type { AppUser } from '@/firebase/auth/use-user';
 import dynamic from 'next/dynamic';
 import { useTranslation } from '@/lib/i18n/useTranslation';
 import { getLocalizedString } from '@/lib/i18n/multilingual';
-import { isSuperAdmin as isSuperAdminCheck } from '@/lib/constants';
+import { isSuperAdmin as isSuperAdminCheck, hasMediaAccess } from '@/lib/constants';
 import { cleanVideoUrl, webmVideoUrl } from '@/lib/video';
 import { getWatermarkPositionStyle, hasDetailsMedia, normalizeSelfClosingMedia, slugify } from '@/features/portfolio/components/work-helpers';
 import { useWorkUrlSync } from '@/features/portfolio/components/useWorkUrlSync';
@@ -674,6 +674,7 @@ function WorkPageContent() {
   const typedUser = user as AppUser | null;
   const isSuperAdmin = isSuperAdminCheck(typedUser);
   const canEditProjects = isSuperAdmin || (typedUser?.permissions?.canEditProjects ?? true);
+  const canManageMedia = hasMediaAccess(typedUser);
 
   // Projects are publicly readable — no auth needed. Sourced from the shared
   // provider (server-seeded for first paint + live subscription after hydration).
@@ -1059,6 +1060,7 @@ function WorkPageContent() {
   };
 
   const handleOpenLibraryForSelection = (onSelect: (url: string, type: 'image' | 'video' | 'raw', filename: string) => void) => {
+    if (!canManageMedia) return;
     setLibrarySelectionConfig({ onSelect });
     setIsLibraryOpen(true);
   };
@@ -1551,8 +1553,10 @@ function WorkPageContent() {
             onSubmit={handlePortfolioFormSubmit}
             onChooseFromLibrary={handleOpenLibraryForSelection}
             canEdit={canEditProjects}
+            canChooseFromLibrary={canManageMedia}
             onDelete={handleDeleteItem}
           />
+          {canManageMedia && (
           <UnifiedMediaPicker
             isOpen={isLibraryOpen}
             onOpenChange={(isOpen) => {
@@ -1567,6 +1571,7 @@ function WorkPageContent() {
               }
             }}
           />
+          )}
         </UploadProgressProvider>
       )}
     </>

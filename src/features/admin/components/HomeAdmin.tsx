@@ -29,7 +29,7 @@ import type { PortfolioItem } from '@/features/portfolio/data/portfolio-data';
 import { useEffect, useRef, useState } from 'react';
 import Preloader from '@/components/preloader';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { isSuperAdmin as isSuperAdminCheck } from '@/lib/constants';
+import { isSuperAdmin as isSuperAdminCheck, hasMediaAccess } from '@/lib/constants';
 import type { AppUser } from '@/firebase/auth/use-user';
 import { Switch } from '@/components/ui/switch';
 import { Slider } from '@/components/ui/slider';
@@ -272,6 +272,7 @@ export default function HomeAdmin() {
   const typedUser = user as AppUser | null;
   const isSuperAdmin = isSuperAdminCheck(typedUser);
   const canEditHome = isSuperAdmin || (typedUser?.permissions?.canEditHome ?? true);
+  const canManageMedia = hasMediaAccess(typedUser);
 
   const settingsDocRef = useMemoFirebase(
     () => (firestore ? doc(firestore, 'homepage', 'settings') : null),
@@ -282,7 +283,7 @@ export default function HomeAdmin() {
   const projectsCollection = useMemoFirebase(() => firestore ? collection(firestore, 'projects') : null, [firestore]);
   const { isLoading: isLoadingProjects } = useCollection<PortfolioItem>(projectsCollection);
   
-  const mediaCollection = useMemoFirebase(() => firestore ? collection(firestore, 'media') : null, [firestore]);
+  const mediaCollection = useMemoFirebase(() => (firestore && canManageMedia ? collection(firestore, 'media') : null), [firestore, canManageMedia]);
   const { isLoading: isLoadingMedia } = useCollection<MediaAsset>(mediaCollection);
 
   const [isLibraryOpen, setIsLibraryOpen] = useState(false);
@@ -628,7 +629,7 @@ export default function HomeAdmin() {
                                                     <FormControl>
                                                         <Input placeholder={t('homeAdmin.homepageLogoUrlPlaceholder')} {...field} className="flex-1" />
                                                     </FormControl>
-                                                    <Button type="button" variant="outline" size="icon" onClick={() => { setLibraryField('homePageLogoUrl'); setIsLibraryOpen(true); }}>
+                                                    <Button type="button" variant="outline" size="icon" disabled={!canManageMedia} onClick={() => { setLibraryField('homePageLogoUrl'); setIsLibraryOpen(true); }}>
                                                         <FontAwesomeIcon icon={faImages} />
                                                     </Button>
                                                 </div>
@@ -646,7 +647,7 @@ export default function HomeAdmin() {
                                                     <FormControl>
                                                         <Input placeholder={t('homeAdmin.menubarLogoUrlPlaceholder')} {...field} className="flex-1" />
                                                     </FormControl>
-                                                    <Button type="button" variant="outline" size="icon" onClick={() => { setLibraryField('menubarLogoUrl'); setIsLibraryOpen(true); }}>
+                                                    <Button type="button" variant="outline" size="icon" disabled={!canManageMedia} onClick={() => { setLibraryField('menubarLogoUrl'); setIsLibraryOpen(true); }}>
                                                         <FontAwesomeIcon icon={faImages} />
                                                     </Button>
                                                 </div>
@@ -665,7 +666,7 @@ export default function HomeAdmin() {
                                                     <FormControl>
                                                         <Input placeholder={t('homeAdmin.heroVideoUrlPlaceholder')} {...field} className="flex-1" />
                                                     </FormControl>
-                                                    <Button type="button" variant="outline" size="icon" onClick={() => { setLibraryField('heroVideoUrl'); setLibraryTab('videos'); setIsLibraryOpen(true); }}>
+                                                    <Button type="button" variant="outline" size="icon" disabled={!canManageMedia} onClick={() => { setLibraryField('heroVideoUrl'); setLibraryTab('videos'); setIsLibraryOpen(true); }}>
                                                         <FontAwesomeIcon icon={faImages} />
                                                     </Button>
                                                 </div>
@@ -870,7 +871,7 @@ export default function HomeAdmin() {
                                                     <FormControl>
                                                         <Input placeholder={t('homeAdmin.faviconUrlPlaceholder')} {...field} className="flex-1" />
                                                     </FormControl>
-                                                    <Button type="button" variant="outline" size="icon" onClick={() => { setLibraryField('faviconUrl'); setLibraryTab('images'); setIsLibraryOpen(true); }}>
+                                                    <Button type="button" variant="outline" size="icon" disabled={!canManageMedia} onClick={() => { setLibraryField('faviconUrl'); setLibraryTab('images'); setIsLibraryOpen(true); }}>
                                                         <FontAwesomeIcon icon={faImages} />
                                                     </Button>
                                                 </div>
@@ -967,7 +968,7 @@ export default function HomeAdmin() {
                                                 <FormControl>
                                                     <Input placeholder={t('homeAdmin.backgroundMediaPlaceholder')} {...field} className="flex-1" />
                                                 </FormControl>
-                                                <Button type="button" variant="outline" size="icon" onClick={() => { setLibraryField('homePageBackgroundUrl'); setLibraryTab(watch('homePageBackgroundType') === 'image' ? 'images' : 'videos'); setIsLibraryOpen(true); }}>
+                                                <Button type="button" variant="outline" size="icon" disabled={!canManageMedia} onClick={() => { setLibraryField('homePageBackgroundUrl'); setLibraryTab(watch('homePageBackgroundType') === 'image' ? 'images' : 'videos'); setIsLibraryOpen(true); }}>
                                                     <FontAwesomeIcon icon={faImages} />
                                                 </Button>
                                             </div>
@@ -1035,7 +1036,7 @@ export default function HomeAdmin() {
                                                 <FormControl>
                                                     <Input placeholder={t('homeAdmin.websiteBackgroundMediaPlaceholder')} {...field} className="flex-1" />
                                                 </FormControl>
-                                                <Button type="button" variant="outline" size="icon" onClick={() => { setLibraryField('websiteBackgroundUrl'); setLibraryTab(watch('websiteBackgroundType') === 'image' ? 'images' : 'videos'); setIsLibraryOpen(true); }}>
+                                                <Button type="button" variant="outline" size="icon" disabled={!canManageMedia} onClick={() => { setLibraryField('websiteBackgroundUrl'); setLibraryTab(watch('websiteBackgroundType') === 'image' ? 'images' : 'videos'); setIsLibraryOpen(true); }}>
                                                     <FontAwesomeIcon icon={faImages} />
                                                 </Button>
                                             </div>
@@ -1203,7 +1204,7 @@ export default function HomeAdmin() {
                                                         <FormControl>
                                                             <Input placeholder="https://example.com/watermark.png or pick from library" {...field} className="flex-1" />
                                                         </FormControl>
-                                                        <Button type="button" variant="outline" size="icon" onClick={() => { setLibraryField('watermarkLogoUrl'); setLibraryTab('images'); setIsLibraryOpen(true); }}>
+                                                        <Button type="button" variant="outline" size="icon" disabled={!canManageMedia} onClick={() => { setLibraryField('watermarkLogoUrl'); setLibraryTab('images'); setIsLibraryOpen(true); }}>
                                                             <FontAwesomeIcon icon={faImages} />
                                                         </Button>
                                                     </div>
@@ -1366,7 +1367,7 @@ export default function HomeAdmin() {
                                                                     'https://example.com/loader.webm'
                                                                 } {...field} className="flex-1" />
                                                             </FormControl>
-                                                            <Button type="button" variant="outline" size="icon" onClick={() => { setLibraryField('preloaderUrl'); setLibraryTab(preloaderType === 'webm' ? 'videos' : preloaderType === 'gif' ? 'images' : 'files'); setIsLibraryOpen(true); }}>
+                                                            <Button type="button" variant="outline" size="icon" disabled={!canManageMedia} onClick={() => { setLibraryField('preloaderUrl'); setLibraryTab(preloaderType === 'webm' ? 'videos' : preloaderType === 'gif' ? 'images' : 'files'); setIsLibraryOpen(true); }}>
                                                                 <FontAwesomeIcon icon={faImages} />
                                                             </Button>
                                                         </div>
@@ -1418,7 +1419,7 @@ export default function HomeAdmin() {
                                                         <FormControl>
                                                             <Input placeholder="Leave empty for default cursor" {...field} className="flex-1" />
                                                         </FormControl>
-                                                        <Button type="button" variant="outline" size="icon" onClick={() => { setLibraryField('cursorLottieUrl'); setLibraryTab('files'); setIsLibraryOpen(true); }}>
+                                                        <Button type="button" variant="outline" size="icon" disabled={!canManageMedia} onClick={() => { setLibraryField('cursorLottieUrl'); setLibraryTab('files'); setIsLibraryOpen(true); }}>
                                                             <FontAwesomeIcon icon={faImages} />
                                                         </Button>
                                                     </div>
@@ -1439,7 +1440,7 @@ export default function HomeAdmin() {
                                                         <FormControl>
                                                             <Input placeholder="Leave empty for default hover animation" {...field} className="flex-1" />
                                                         </FormControl>
-                                                        <Button type="button" variant="outline" size="icon" onClick={() => { setLibraryField('tickLottieUrl'); setLibraryTab('files'); setIsLibraryOpen(true); }}>
+                                                        <Button type="button" variant="outline" size="icon" disabled={!canManageMedia} onClick={() => { setLibraryField('tickLottieUrl'); setLibraryTab('files'); setIsLibraryOpen(true); }}>
                                                             <FontAwesomeIcon icon={faImages} />
                                                         </Button>
                                                     </div>
@@ -1478,7 +1479,7 @@ export default function HomeAdmin() {
                                                         <FormControl>
                                                             <Input placeholder={t('homeAdmin.arrowLottieUrlPlaceholder')} {...field} className="flex-1" />
                                                         </FormControl>
-                                                        <Button type="button" variant="outline" size="icon" onClick={() => { setLibraryField('arrowLottieUrl'); setLibraryTab('files'); setIsLibraryOpen(true); }}>
+                                                        <Button type="button" variant="outline" size="icon" disabled={!canManageMedia} onClick={() => { setLibraryField('arrowLottieUrl'); setLibraryTab('files'); setIsLibraryOpen(true); }}>
                                                             <FontAwesomeIcon icon={faImages} />
                                                         </Button>
                                                     </div>
@@ -1563,6 +1564,7 @@ export default function HomeAdmin() {
                     </ScrollArea>
                 </div>
                 </Tabs>
+        {canManageMedia && (
         <UnifiedMediaPicker
           isOpen={isLibraryOpen}
           onOpenChange={setIsLibraryOpen}
@@ -1574,6 +1576,7 @@ export default function HomeAdmin() {
               setLibraryField(null);
           }}
         />
+        )}
         <Dialog open={isEmailPreviewOpen} onOpenChange={setIsEmailPreviewOpen}>
             <DialogContent className="w-[90vw] max-w-3xl glass-effect">
                 <DialogHeader>

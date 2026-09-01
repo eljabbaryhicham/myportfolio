@@ -4,7 +4,7 @@
 import { useTranslation } from '@/lib/i18n/useTranslation';
 import { getLocalizedString, ensureMultilingualString, type MultilingualString } from '@/lib/i18n/multilingual';
 import { MultilingualInput } from './MultilingualInput';
-import { isSuperAdmin as isSuperAdminCheck } from '@/lib/constants';
+import { isSuperAdmin as isSuperAdminCheck, hasMediaAccess } from '@/lib/constants';
 import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import {
@@ -150,6 +150,7 @@ export default function ClientAdmin() {
   const typedUser = user as AppUser | null;
   const isSuperAdmin = isSuperAdminCheck(typedUser);
   const canEdit = isSuperAdmin || (typedUser?.permissions?.canEditAbout ?? true); 
+  const canManageMedia = hasMediaAccess(typedUser); 
 
   const clientsQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'clients'), orderBy('order')) : null, [firestore]);
   const { data: clients, isLoading } = useCollection<Client>(clientsQuery);
@@ -300,7 +301,7 @@ export default function ClientAdmin() {
   };
   
   const handleOpenLibraryForSelection = (onSelect: (url: string, type: 'image' | 'video' | 'raw', filename: string) => void) => {
-    if (!canEdit) return;
+    if (!canEdit || !canManageMedia) return;
     setLibrarySelectionConfig({ onSelect });
     setIsLibraryOpen(true);
   };
@@ -593,6 +594,7 @@ export default function ClientAdmin() {
         </AlertDialogContent>
       </AlertDialog>
       
+      {canManageMedia && (
       <MediaLibrary
         provider="cloudinary"
           isDialog={true}
@@ -615,6 +617,7 @@ export default function ClientAdmin() {
           setActiveLibrary={setLibraryCollection}
           newlyUploadedId={null}
       />
+      )}
     </>
   );
 }

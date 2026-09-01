@@ -473,6 +473,7 @@ function AdminPage() {
         onSubmit={(values) => handlePortfolioFormSubmit(values)}
         onChooseFromLibrary={handleOpenLibraryForSelection}
         canEdit={canEditProjects}
+        canChooseFromLibrary={canManageMedia}
         onDelete={handleDeletePortfolioItem}
       />
       {canManageMedia && (
