@@ -724,11 +724,21 @@ function WorkPageContent() {
   const [isProjectMaximized, setIsProjectMaximized] = useState(false);
   const isDialogOpen = isDetailsModalOpen || isContactFormOpen;
 
-  // Refs to the project popup and the nested details popup. A ResizeObserver
-  // copies the project's rendered width/height onto the details dialog so the
-  // details always matches the project pixel-for-pixel in both states.
-  const projectDialogRef = useRef<HTMLDivElement>(null);
-  const detailsDialogRef = useRef<HTMLDivElement>(null);
+  // Refs to the project popup and the nested details popup. A callback ref on
+  // the details dialog copies the project's rendered width/height the instant
+  // the details is attached to the DOM, and a ResizeObserver keeps it in sync
+  // when the project resizes (e.g. during the maximize toggle transition).
+  const projectDialogRef = useRef<HTMLDivElement | null>(null);
+  const detailsDialogRef = useRef<HTMLDivElement | null>(null);
+
+  const setDetailsRef = useCallback((el: HTMLDivElement | null) => {
+    detailsDialogRef.current = el;
+    if (el && projectDialogRef.current) {
+      const r = projectDialogRef.current.getBoundingClientRect();
+      el.style.width = `${r.width}px`;
+      el.style.height = `${r.height}px`;
+    }
+  }, []);
 
   useEffect(() => {
     const project = projectDialogRef.current;
@@ -736,9 +746,9 @@ function WorkPageContent() {
     if (!project || !details) return;
 
     const applySize = () => {
-      const rect = project.getBoundingClientRect();
-      details.style.width = `${rect.width}px`;
-      details.style.height = `${rect.height}px`;
+      const r = project.getBoundingClientRect();
+      details.style.width = `${r.width}px`;
+      details.style.height = `${r.height}px`;
     };
     applySize();
     const ro = new ResizeObserver(applySize);
@@ -1414,7 +1424,7 @@ function WorkPageContent() {
       {/* Nested Dialog for Details */}
       <Dialog open={isDetailsModalOpen} onOpenChange={setDetailsModalOpen}>
         <DialogContent
-          ref={detailsDialogRef}
+          ref={setDetailsRef}
           id="work-details-dialog"
           className={cn(
             "glass-effect p-0 flex flex-col group overflow-hidden transition-all duration-500 ease-in-out min-w-0 min-h-[90dvh]",
