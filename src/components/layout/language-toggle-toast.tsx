@@ -229,8 +229,8 @@ export function LanguageToggleToast({ className }: { className?: string }) {
             data-cursor-hide="true"
             animate={{ width: collapsed ? (dimmed ? 35 : 45) : expandedWidth, height: collapsed ? (dimmed ? 35 : 45) : 36 }}
             transition={{
-              width: { duration: 0.3, ease: 'easeInOut' },
-              height: { duration: 0.3, ease: 'easeInOut' },
+              width: { duration: 0.5, ease: 'easeInOut' },
+              height: { duration: 0.5, ease: 'easeInOut' },
             }}
             aria-live="polite"
             onClick={() => {
