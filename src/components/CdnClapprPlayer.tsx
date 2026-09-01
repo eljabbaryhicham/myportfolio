@@ -85,16 +85,9 @@ const CdnClapprPlayer = forwardRef(function CdnClapprPlayer({ source, poster, au
 
         // Hide preloader only when video frame is presented (playing), not onReady.
         // This prevents preloader + controls appearing together over black screen.
-        // Autoplay must start muted (browser policy) then unmute for sound.
+        // Keep autoplay muted; iOS requires a visitor gesture before sound.
         const hideOnPlay = () => {
           if (isMounted) setHasPlayed(true);
-          if (autoPlay) {
-            try { newPlayer.setVolume(100); } catch {}
-            try {
-              const v = container.querySelector('video') as HTMLVideoElement | null;
-              if (v) { v.muted = false; v.removeAttribute('muted'); }
-            } catch {}
-          }
         };
         // Ensure reliable autoplay on mobile via forceAutoplay (muted+playsinline+retry)
         const videoEl = container.querySelector('video') as HTMLVideoElement | null;

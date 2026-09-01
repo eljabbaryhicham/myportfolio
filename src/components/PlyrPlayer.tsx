@@ -114,17 +114,11 @@ const PlyrPlayer = forwardRef(({ source, poster, autoPlay = true, thumbnailVttUr
             const wireEvents = (p: PlyrInstance) => {
                 p.on('ready', onPlayerReady);
                 p.on('error', onPlayerError);
-                // Hide preloader and unmute for autoplay-with-sound (start muted for policy, then sound)
+                // Hide the preloader once muted autoplay has started. Sound
+                // remains a visitor choice so iOS does not pause playback.
                 p.on('playing', () => {
                   if (isMounted) {
                     setHasPlayed(true);
-                    if (autoPlay) {
-                      try { p.muted = false; } catch {}
-                      try {
-                        const v = container.querySelector('video') as HTMLVideoElement | null;
-                        if (v) { v.muted = false; v.removeAttribute('muted'); }
-                      } catch {}
-                    }
                   }
                 });
             };
@@ -207,7 +201,7 @@ const PlyrPlayer = forwardRef(({ source, poster, autoPlay = true, thumbnailVttUr
                         const v = element as HTMLVideoElement;
                         v.setAttribute('playsinline', '');
                         v.setAttribute('webkit-playsinline', '');
-                        try { forceAutoplay(v, { onPlaying: () => { try { player && (player.muted = false); } catch {} } }); } catch {}
+                        try { forceAutoplay(v); } catch {}
                     }
                 }
             } else {
@@ -220,7 +214,7 @@ const PlyrPlayer = forwardRef(({ source, poster, autoPlay = true, thumbnailVttUr
                   const v = element as HTMLVideoElement;
                   v.setAttribute('playsinline', '');
                   v.setAttribute('webkit-playsinline', '');
-                  try { forceAutoplay(v, { onPlaying: () => { try { player && (player.muted = false); } catch {} } }); } catch {}
+                  try { forceAutoplay(v); } catch {}
                 }
             }
 
@@ -230,7 +224,7 @@ const PlyrPlayer = forwardRef(({ source, poster, autoPlay = true, thumbnailVttUr
               if (v) {
                 v.setAttribute('playsinline', '');
                 v.setAttribute('webkit-playsinline', '');
-                try { forceAutoplay(v, { onPlaying: () => { try { playerRef.current && (playerRef.current.muted = false); } catch {} } }); } catch {}
+                try { forceAutoplay(v); } catch {}
               }
             }
 
