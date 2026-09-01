@@ -724,6 +724,28 @@ function WorkPageContent() {
   const [isProjectMaximized, setIsProjectMaximized] = useState(false);
   const isDialogOpen = isDetailsModalOpen || isContactFormOpen;
 
+  // Refs to the project popup and the nested details popup. A ResizeObserver
+  // copies the project's rendered width/height onto the details dialog so the
+  // details always matches the project pixel-for-pixel in both states.
+  const projectDialogRef = useRef<HTMLDivElement>(null);
+  const detailsDialogRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const project = projectDialogRef.current;
+    const details = detailsDialogRef.current;
+    if (!project || !details) return;
+
+    const applySize = () => {
+      const rect = project.getBoundingClientRect();
+      details.style.width = `${rect.width}px`;
+      details.style.height = `${rect.height}px`;
+    };
+    applySize();
+    const ro = new ResizeObserver(applySize);
+    ro.observe(project);
+    return () => ro.disconnect();
+  }, [selectedItem, isProjectMaximized, isDetailsModalOpen]);
+
   // Shared sizing for the project popup and the nested details popup so they
   // stay pixel-identical in both minimized and maximized states.
   const popupSizing = isProjectMaximized
@@ -1242,6 +1264,7 @@ function WorkPageContent() {
 
       <Dialog open={!!selectedItem} onOpenChange={handleMainDialogOpenChange}>
           <DialogContent
+            ref={projectDialogRef}
             className={cn(
               "glass-effect p-0 flex flex-col group overflow-hidden transition-all duration-500 ease-in-out",
               popupSizing
@@ -1391,11 +1414,9 @@ function WorkPageContent() {
       {/* Nested Dialog for Details */}
       <Dialog open={isDetailsModalOpen} onOpenChange={setDetailsModalOpen}>
         <DialogContent
+          ref={detailsDialogRef}
           id="work-details-dialog"
-          className={cn(
-            "glass-effect p-0 flex flex-col group overflow-hidden transition-all duration-500 ease-in-out min-w-0 min-h-[90dvh]",
-            popupSizing
-          )}
+          className="glass-effect p-0 flex flex-col group overflow-hidden transition-all duration-500 ease-in-out min-w-0"
           onMouseMove={handleDialogMouseMove}
           onMouseEnter={handleDialogMouseEnter}
           onMouseLeave={handleDialogMouseLeave}
