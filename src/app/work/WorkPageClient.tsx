@@ -733,46 +733,24 @@ function WorkPageContent() {
   const [isDetailsMaximized, setIsDetailsMaximized] = useState(false);
   const isDialogOpen = isDetailsModalOpen || isContactFormOpen;
 
-  // Refs to the project popup plus the measured size used for the details
-  // popup while it is minimized, so the details matches the project exactly.
-  const projectDialogRef = useRef<HTMLDivElement | null>(null);
-  const [detailsSize, setDetailsSize] = useState<{ w: number; h: number } | null>(null);
-
-  useEffect(() => {
-    if (!isDetailsModalOpen || isDetailsMaximized) return;
-    const project = projectDialogRef.current;
-    if (!project) return;
-
-    const measure = () => {
-      const r = project.getBoundingClientRect();
-      setDetailsSize(prev =>
-        prev && Math.abs(prev.w - r.width) < 1 && Math.abs(prev.h - r.height) < 1
-          ? prev
-          : { w: r.width, h: r.height }
-      );
-    };
-    measure();
-    const ro = new ResizeObserver(measure);
-    ro.observe(project);
-    return () => ro.disconnect();
-  }, [selectedItem, isDetailsModalOpen, isDetailsMaximized]);
+  // Both popups use the same standard minimized size, but maximize
+  // independently so one popup's current dimensions never affect the other.
+  const minimizedPopupSizing = cn(
+    "w-[90vw] max-w-7xl",
+    isExtraWide || isDescriptionLong ? "h-[90dvh]" : "max-h-[90dvh]"
+  );
 
   // Sizing for the project popup. Minimized = 90vw/90dvh (content-fit),
   // maximized = 98vw/98dvh.
   const popupSizing = isProjectMaximized
     ? "w-[98vw] h-[98dvh] max-w-none"
-    : cn(
-        "w-[90vw] max-w-7xl",
-        isExtraWide || isDescriptionLong ? "h-[90dvh]" : "max-h-[90dvh]"
-      );
+    : minimizedPopupSizing;
 
-  // The details popup has its own maximize state. When maximized it fills
-  // 98vw/98dvh; when minimized its exact width/height come from `detailsSize`
-  // (mirroring the project popup), and this class only covers the first frame
-  // before the measurement lands.
+  // The details popup has its own maximize state and always restores to the
+  // standard minimized size, regardless of the project popup's state.
   const detailsSizing = isDetailsMaximized
     ? "w-[98vw] h-[98dvh] max-w-none"
-    : "w-[90vw] max-w-7xl";
+    : minimizedPopupSizing;
 
   const allItems = useMemo(() => {
     const visible = (portfolioItems || []).filter(item => item.isVisible !== false);
@@ -1282,7 +1260,6 @@ function WorkPageContent() {
 
       <Dialog open={!!selectedItem} onOpenChange={handleMainDialogOpenChange}>
           <DialogContent
-            ref={projectDialogRef}
             className={cn(
               "glass-effect p-0 flex flex-col group overflow-hidden transition-all duration-500 ease-in-out",
               popupSizing
@@ -1440,9 +1417,7 @@ function WorkPageContent() {
           )}
           style={isDetailsMaximized
               ? { width: '98vw', height: '98dvh', maxWidth: 'none' }
-              : detailsSize
-                ? { width: `${detailsSize.w}px`, height: `${detailsSize.h}px` }
-                : undefined}
+              : undefined}
           onMouseMove={handleDialogMouseMove}
           onMouseEnter={handleDialogMouseEnter}
           onMouseLeave={handleDialogMouseLeave}
