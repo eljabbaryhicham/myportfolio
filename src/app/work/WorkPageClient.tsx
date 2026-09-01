@@ -717,7 +717,7 @@ function WorkPageContent() {
 
   const [isDetailsModalOpen, setDetailsModalOpen] = useState(false);
   const [isContactFormOpen, setIsContactFormOpen] = useState(false);
-  const [isProjectMaximized, setIsProjectMaximized] = useState(false);
+  const [isProjectMaximized, setIsProjectMaximized] = useState(true);
   const isDialogOpen = isDetailsModalOpen || isContactFormOpen;
 
   const allItems = useMemo(() => {
@@ -893,6 +893,7 @@ function WorkPageContent() {
   const handleItemClick = useCallback((item: PortfolioItem) => {
     setDirection(null);
     setSelectedItem(item);
+    setIsProjectMaximized(true);
     updateUrl(slugify(getLocalizedString(item.title, lang)));
   }, [updateUrl, lang]);
   
@@ -904,7 +905,7 @@ function WorkPageContent() {
   const handleMainDialogOpenChange = (open: boolean) => {
     if (!open) {
       setSelectedItem(null);
-      setIsProjectMaximized(false);
+      setIsProjectMaximized(true);
       updateUrl(null);
     }
   };
