@@ -63,6 +63,7 @@ const settingsSchema = z.object({
   homePageLogoUrl: z.string().optional(),
   isHomePageLogoVisible: z.boolean().optional(),
   isHomeSocialButtonsVisible: z.boolean().optional(),
+  isImageFullscreenButtonVisible: z.boolean().optional(),
                                         homePageLogoScale: z.number().min(0.1).max(5).optional(),
   homePageLogoColor: z.string().optional(),
   themeColor: z.string().optional(),
@@ -200,6 +201,7 @@ export default function HomeAdmin() {
       homePageLogoUrl: '',
       isHomePageLogoVisible: true,
       isHomeSocialButtonsVisible: true,
+      isImageFullscreenButtonVisible: true,
       homePageLogoScale: 1,
       homePageLogoColor: '',
       themeColor: '#d81e38',
@@ -251,6 +253,7 @@ export default function HomeAdmin() {
         homePageLogoUrl: homeSettings.homePageLogoUrl || '',
         isHomePageLogoVisible: homeSettings.isHomePageLogoVisible ?? true,
         isHomeSocialButtonsVisible: homeSettings.isHomeSocialButtonsVisible ?? true,
+        isImageFullscreenButtonVisible: homeSettings.isImageFullscreenButtonVisible ?? true,
         homePageLogoScale: homeSettings.homePageLogoScale || 1,
         homePageLogoColor: homeSettings.homePageLogoColor || '',
         themeColor: homeSettings.themeColor || '#d81e38',
@@ -496,6 +499,20 @@ export default function HomeAdmin() {
                                             <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
                                                 <div className="space-y-0.5">
                                                     <FormLabel>{t('homeAdmin.showSocialButtons')}</FormLabel>
+                                                </div>
+                                                <FormControl>
+                                                    <Switch checked={field.value} onCheckedChange={field.onChange} />
+                                                </FormControl>
+                                            </FormItem>
+                                        )}
+                                    />
+                                    <FormField
+                                        control={control}
+                                        name="isImageFullscreenButtonVisible"
+                                        render={({ field }) => (
+                                            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
+                                                <div className="space-y-0.5">
+                                                    <FormLabel>{t('homeAdmin.showImageFullscreenButton')}</FormLabel>
                                                 </div>
                                                 <FormControl>
                                                     <Switch checked={field.value} onCheckedChange={field.onChange} />

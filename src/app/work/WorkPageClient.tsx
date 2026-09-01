@@ -340,6 +340,8 @@ const MemoizedPortfolioMedia = memo(({
   maximized?: boolean;
 }) => {
   const { t, lang } = useTranslation();
+  const { settings: homeSettings } = useHomePageSettings();
+  const isFullscreenButtonVisible = homeSettings?.isImageFullscreenButtonVisible !== false;
   const containerRef = useRef<HTMLDivElement>(null);
   // Images own their preloader here — same principle as the video players:
   // hide it only when the bitmap is actually loaded and painted.
@@ -473,6 +475,7 @@ const MemoizedPortfolioMedia = memo(({
           fill
           className={cn("object-contain", isImageLoading ? 'opacity-0' : 'opacity-100')}
         />
+        {isFullscreenButtonVisible && (
         <Button
             variant="ghost"
             size="icon"
@@ -482,6 +485,7 @@ const MemoizedPortfolioMedia = memo(({
             <FontAwesomeIcon icon={faExpand} className="h-4 w-4 md:h-5 md:w-5" />
             <span className="sr-only">{t('work.details.fullscreen')}</span>
         </Button>
+        )}
       </div>
     );
 });

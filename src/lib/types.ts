@@ -56,6 +56,9 @@ export interface HomePageSettings {
   // Home social media buttons (beside the language toast)
   isHomeSocialButtonsVisible?: boolean;
 
+  // Work page fullscreen button on image project popups
+  isImageFullscreenButtonVisible?: boolean;
+
   // Player + global
   workPagePlayer?: 'plyr' | 'clappr';
 
