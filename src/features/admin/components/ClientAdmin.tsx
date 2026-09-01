@@ -22,7 +22,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { useCollection, useFirestore, useMemoFirebase, useUser, errorEmitter, FirestorePermissionError, updateDocumentNonBlocking, useAuth } from '@/firebase';
+import { useCollection, useFirestore, useMemoFirebase, useUser, updateDocumentNonBlocking, useAuth } from '@/firebase';
 import { useToast } from '@/hooks/use-toast';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { deleteDocumentNonBlocking, setDocumentNonBlocking, addDocumentNonBlocking } from '@/firebase/non-blocking-updates';
@@ -255,8 +255,9 @@ export default function ClientAdmin() {
     batch.commit().then(() => {
       toast({ title: t('clientAdmin.toast.deleted.title'), description: `Deleted ${selectedIds.size} items.` });
       revalidateHome(auth);
-    }).catch(() => {
-      errorEmitter.emit('permission-error', new FirestorePermissionError({ path: 'clients', operation: 'delete', requestResourceData: { note: `Batch delete ${selectedIds.size} documents.` } }));
+    }).catch((error) => {
+      console.error('Batch delete blocked.', error);
+      toast({ variant: 'destructive', title: t('clientAdmin.toast.permissionDenied.title'), description: t('clientAdmin.toast.permissionDenied.description') });
     });
     setSelectedIds(new Set());
     setIsBulkDeleteOpen(false);
@@ -272,8 +273,9 @@ export default function ClientAdmin() {
     batch.commit().then(() => {
       toast({ title: t('clientAdmin.toast.visibilityChanged.title').replace('{visibility}', newVisibility ? 'visible' : 'hidden'), description: `Updated ${selectedIds.size} items.` });
       revalidateHome(auth);
-    }).catch(() => {
-      errorEmitter.emit('permission-error', new FirestorePermissionError({ path: 'clients', operation: 'update', requestResourceData: { note: `Batch update ${selectedIds.size} documents.` } }));
+    }).catch((error) => {
+      console.error('Batch visibility update blocked.', error);
+      toast({ variant: 'destructive', title: t('clientAdmin.toast.permissionDenied.title'), description: t('clientAdmin.toast.permissionDenied.description') });
     });
     setSelectedIds(new Set());
   };
@@ -346,18 +348,12 @@ export default function ClientAdmin() {
     batch.commit().then(() => {
         toast({ title: t('clientAdmin.toast.reordered.title'), description: t('clientAdmin.toast.reordered.description') });
         revalidateHome(auth);
-    }).catch(() => {
+    }).catch((error) => {
         if (clients) {
           setSortedClients([...clients].sort((a, b) => (a.order ?? 0) - (b.order ?? 0)));
         }
-        errorEmitter.emit(
-          'permission-error',
-          new FirestorePermissionError({
-            path: 'clients',
-            operation: 'update',
-            requestResourceData: { note: `Batch update to reorder ${newSortedItems.length} documents.` },
-          })
-        );
+        console.error('Reorder write blocked.', error);
+        toast({ variant: 'destructive', title: t('clientAdmin.toast.permissionDenied.title'), description: t('clientAdmin.toast.permissionDenied.description') });
     });
   };
 

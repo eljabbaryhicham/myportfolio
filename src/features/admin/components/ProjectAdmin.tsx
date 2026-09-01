@@ -19,7 +19,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { useCollection, useFirestore, useMemoFirebase, errorEmitter, FirestorePermissionError, useUser, updateDocumentNonBlocking, useAuth } from '@/firebase';
+import { useCollection, useFirestore, useMemoFirebase, useUser, updateDocumentNonBlocking, useAuth } from '@/firebase';
 import { useToast } from '@/hooks/use-toast';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { deleteDocumentNonBlocking } from '@/firebase/non-blocking-updates';
@@ -89,14 +89,8 @@ function ProjectAdmin({ setSelectedItem, setIsSheetOpen }: ProjectAdminProps) {
         await batch.commit();
         toast({ title: t('projectAdmin.toast.seedSuccess.title'), description: t('projectAdmin.toast.seedSuccess.description') });
     } catch (e: any) {
-        errorEmitter.emit(
-          'permission-error',
-          new FirestorePermissionError({
-            path: 'projects',
-            operation: 'write',
-            requestResourceData: { note: `Batch write for seeding ${defaultPortfolioItems.length} documents.` },
-          })
-        );
+        console.error('Seed data write blocked.', e);
+        toast({ variant: 'destructive', title: t('projectAdmin.toast.permissionDenied.title'), description: t('projectAdmin.toast.permissionDenied.description') });
     }
   }
 
@@ -159,8 +153,9 @@ function ProjectAdmin({ setSelectedItem, setIsSheetOpen }: ProjectAdminProps) {
     batch.commit().then(() => {
       toast({ title: t('projectAdmin.toast.deleted.title'), description: `Deleted ${selectedIds.size} items.` });
       revalidateHome(auth);
-    }).catch(() => {
-      errorEmitter.emit('permission-error', new FirestorePermissionError({ path: 'projects', operation: 'delete', requestResourceData: { note: `Batch delete ${selectedIds.size} documents.` } }));
+    }).catch((error) => {
+      console.error('Batch delete blocked.', error);
+      toast({ variant: 'destructive', title: t('projectAdmin.toast.permissionDenied.title'), description: t('projectAdmin.toast.permissionDenied.description') });
     });
     setSelectedIds(new Set());
     setIsBulkDeleteOpen(false);
@@ -176,8 +171,9 @@ function ProjectAdmin({ setSelectedItem, setIsSheetOpen }: ProjectAdminProps) {
     batch.commit().then(() => {
       toast({ title: t('projectAdmin.toast.visibilityChanged.title').replace('{visibility}', newVisibility ? t('projectAdmin.show') : t('projectAdmin.hide')), description: `Updated ${selectedIds.size} items.` });
       revalidateHome(auth);
-    }).catch(() => {
-      errorEmitter.emit('permission-error', new FirestorePermissionError({ path: 'projects', operation: 'update', requestResourceData: { note: `Batch update ${selectedIds.size} documents.` } }));
+    }).catch((error) => {
+      console.error('Batch visibility update blocked.', error);
+      toast({ variant: 'destructive', title: t('projectAdmin.toast.permissionDenied.title'), description: t('projectAdmin.toast.permissionDenied.description') });
     });
     setSelectedIds(new Set());
   };
@@ -222,22 +218,15 @@ function ProjectAdmin({ setSelectedItem, setIsSheetOpen }: ProjectAdminProps) {
     batch.commit().then(() => {
         toast({ title: t('projectAdmin.toast.reordered.title'), description: t('projectAdmin.toast.reordered.description') });
         revalidateHome(auth);
-    }).catch(e => {
+}).catch(error => {
         // Reset local state on failure
         if (items) {
           setSortedItems([...items].sort((a, b) => (a.order ?? 0) - (b.order ?? 0)));
         }
 
-        // Emit a contextual error for debugging security rules
-        errorEmitter.emit(
-          'permission-error',
-          new FirestorePermissionError({
-            path: 'projects', // The path for a batch write is ambiguous, so we use the collection name.
-            operation: 'update',
-            requestResourceData: { note: `Batch update to reorder ${newSortedItems.length} documents.` },
-          })
-        );
-    });
+        console.error('Reorder write blocked.', error);
+        toast({ variant: 'destructive', title: t('projectAdmin.toast.permissionDenied.title'), description: t('projectAdmin.toast.permissionDenied.description') });
+      });
   };
 
   const handleDragEnter = (e: React.DragEvent<HTMLTableRowElement>, id: string) => {

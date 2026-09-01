@@ -87,22 +87,35 @@ export function useDoc<T = any>(
         setError(null); // Clear any previous error on successful snapshot (even if doc doesn't exist)
         setIsLoading(false);
       },
-      () => {
-        const contextualError = new FirestorePermissionError({
-          operation: 'get',
-          path: memoizedDocRef.path,
-        })
+      (readError) => {
+        // Only a real "permission denied" response is fatal. All other
+        // failures (quota exhaustion, network, offline) are transient: keep
+        // the app alive and keep any already-loaded data instead of crashing
+        // the whole page.
+        if (readError?.code === 'permission-denied') {
+          const contextualError = new FirestorePermissionError({
+            operation: 'get',
+            path: memoizedDocRef.path,
+          })
 
-        setError(contextualError);
-        setData(null);
+          setError(contextualError);
+          setData(null);
+          setIsLoading(false);
+          hasLoadedRef.current = false;
+
+          // trigger global error propagation — surfaced centrally by
+          // FirebaseErrorListener. §4.2: the hook itself does NOT toast here;
+          // a public page reading a missing doc would otherwise fire a confusing
+          // "Data Fetch Blocked" toast on every 404.
+          errorEmitter.emit('permission-error', contextualError);
+          return;
+        }
+
+        setError(readError);
         setIsLoading(false);
-        hasLoadedRef.current = false;
-
-        // trigger global error propagation — surfaced centrally by
-        // FirebaseErrorListener. §4.2: the hook itself does NOT toast here;
-        // a public page reading a missing doc would otherwise fire a confusing
-        // "Data Fetch Blocked" toast on every 404.
-        errorEmitter.emit('permission-error', contextualError);
+        if (!hasLoadedRef.current) {
+          setData(null);
+        }
       }
     );
 

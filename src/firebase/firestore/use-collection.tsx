@@ -98,26 +98,39 @@ export function useCollection<T = any>(
         setIsLoading(false);
         hasLoadedRef.current = true;
       },
-      () => {
+      (readError) => {
         // This logic extracts the path from either a ref or a query
         const path: string =
           memoizedTargetRefOrQuery.type === 'collection'
             ? (memoizedTargetRefOrQuery as CollectionReference).path
             : (memoizedTargetRefOrQuery as unknown as InternalQuery)._query.path.canonicalString()
 
-        const contextualError = new FirestorePermissionError({
-          operation: 'list',
-          path,
-        })
+        // Only a real "permission denied" response is fatal. All other
+        // failures (quota exhaustion, network, offline) are transient: keep
+        // the app alive and keep any already-loaded data instead of crashing
+        // the whole page.
+        if (readError?.code === 'permission-denied') {
+          const contextualError = new FirestorePermissionError({
+            operation: 'list',
+            path,
+          })
 
-        setError(contextualError);
-        setData(null);
+          setError(contextualError);
+          setData(null);
+          setIsLoading(false);
+          hasLoadedRef.current = false;
+
+          // trigger global error propagation — surfaced centrally (§4.2). No
+          // inline toast: public reads would otherwise spam "Data Fetch Blocked".
+          errorEmitter.emit('permission-error', contextualError);
+          return;
+        }
+
+        setError(readError);
         setIsLoading(false);
-        hasLoadedRef.current = false;
-
-        // trigger global error propagation — surfaced centrally (§4.2). No
-        // inline toast: public reads would otherwise spam "Data Fetch Blocked".
-        errorEmitter.emit('permission-error', contextualError);
+        if (!hasLoadedRef.current) {
+          setData(null);
+        }
       }
     );
 
