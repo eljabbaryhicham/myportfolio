@@ -1,11 +1,14 @@
 'use client';
 
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faFacebook, faInstagram, faLinkedin, faTwitter } from '@fortawesome/free-brands-svg-icons';
 import { cn } from '@/lib/utils';
 import { useLanguage } from '@/components/layout/language-switcher';
 import { useHomeReady } from '@/components/layout/home-ready-context';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useContactInfo } from '@/components/settings/contact-info-provider';
 import translations from '@/lib/i18n/translations';
 
 const INITIAL_SHOW_MS = 2000;
@@ -42,6 +45,7 @@ export function LanguageToggleToast({ className }: { className?: string }) {
   const { lang, setLang } = useLanguage();
   const { ready } = useHomeReady();
   const isMobile = useIsMobile();
+  const { contactInfo } = useContactInfo();
 
   const [visible, setVisible] = useState(false);
   const [collapsed, setCollapsed] = useState(true);
@@ -56,11 +60,34 @@ export function LanguageToggleToast({ className }: { className?: string }) {
   // width, which caused instant snaps).
   const measureRef = useRef<HTMLDivElement>(null);
   const [expandedWidth, setExpandedWidth] = useState(40);
-  const toastRef = useRef<HTMLButtonElement>(null);
+  const controlsRef = useRef<HTMLDivElement>(null);
+  const [socialsAboveToast, setSocialsAboveToast] = useState(false);
+
+  const socialLinks = useMemo(() => [
+    { id: 'facebook', label: 'Facebook', href: contactInfo?.facebookUrl, icon: faFacebook },
+    { id: 'instagram', label: 'Instagram', href: contactInfo?.instagramUrl, icon: faInstagram },
+    { id: 'twitter', label: 'Twitter', href: contactInfo?.twitterUrl, icon: faTwitter },
+    { id: 'linkedin', label: 'LinkedIn', href: contactInfo?.linkedinUrl, icon: faLinkedin },
+  ].filter((link) => link.href), [contactInfo?.facebookUrl, contactInfo?.instagramUrl, contactInfo?.twitterUrl, contactInfo?.linkedinUrl]);
 
   useLayoutEffect(() => {
     if (measureRef.current) setExpandedWidth(measureRef.current.offsetWidth + WIDTH_BUFFER);
   }, [lang, ready, visible]);
+
+  // Keep the social controls beside the expanded toast when the full row fits.
+  // On narrow viewports they move above it instead of overflowing horizontally.
+  useEffect(() => {
+    const updateLayout = () => {
+      const socialWidth = socialLinks.length * 40;
+      const innerSocialGaps = Math.max(0, socialLinks.length - 2) * 8;
+      const groupGaps = socialLinks.length > 0 ? 16 : 0;
+      const requiredWidth = expandedWidth + socialWidth + innerSocialGaps + groupGaps + 16;
+      setSocialsAboveToast(window.innerWidth < requiredWidth);
+    };
+    updateLayout();
+    window.addEventListener('resize', updateLayout);
+    return () => window.removeEventListener('resize', updateLayout);
+  }, [expandedWidth, socialLinks.length]);
 
   const clearCollapseTimer = useCallback(() => {
     if (collapseTimer.current) {
@@ -125,7 +152,7 @@ export function LanguageToggleToast({ className }: { className?: string }) {
   useEffect(() => {
     if (!isMobile || collapsed) return;
     const onPointerDown = (e: PointerEvent) => {
-      const el = toastRef.current;
+      const el = controlsRef.current;
       if (el && !el.contains(e.target as Node)) doCollapse();
     };
     document.addEventListener('pointerdown', onPointerDown);
@@ -144,55 +171,79 @@ export function LanguageToggleToast({ className }: { className?: string }) {
   const pillIsEn = other === 'en';
   const langIsEn = lang === 'en';
   const tTarget = (key: string) => translations[other]?.[key] ?? translations.en[key] ?? key;
+  const leftSocialLinks = socialLinks.filter((social) => social.id === 'facebook' || social.id === 'instagram');
+  const rightSocialLinks = socialLinks.filter((social) => social.id === 'twitter' || social.id === 'linkedin');
+
+  const renderSocialButton = (social: typeof socialLinks[number]) => (
+    <motion.a
+      layout
+      key={social.id}
+      href={social.href}
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label={social.label}
+      data-cursor-hide="true"
+      className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-black/90 text-white transition-colors duration-300 hover:bg-destructive focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background"
+    >
+      <FontAwesomeIcon icon={social.icon} className="h-4 w-4" />
+    </motion.a>
+  );
 
   return (
     <AnimatePresence>
       {visible && (
         <>
-        <motion.button
-          ref={toastRef}
-          type="button"
-          data-cursor-hide="true"
+        <motion.div
+          ref={controlsRef}
+          layout
           initial={{ x: '-50%', y: 80, opacity: 0 }}
-          animate={{
-            x: '-50%',
-            y: 0,
-            opacity: 1,
-            width: collapsed ? 40 : expandedWidth,
-            height: collapsed ? 40 : 36,
-          }}
+          animate={{ x: '-50%', y: 0, opacity: 1 }}
           exit={{ x: '-50%', y: 80, opacity: 0 }}
-          transition={{
-            x: { duration: 0.4, ease: 'easeInOut' },
-            y: { duration: 0.4, ease: 'easeInOut' },
-            opacity: { duration: 0.3, ease: 'easeInOut' },
-            width: { duration: 0.5, ease: 'easeInOut' },
-            height: { duration: 0.5, ease: 'easeInOut' },
-          }}
-          aria-live="polite"
-          onClick={() => {
-            // Collapsed dot: tapping expands it (on mobile it then stays open
-            // until the user clicks outside). Expanded: toggles the language.
-            if (collapsed) {
-              expand();
-            } else {
-              setLang(other);
-              expand();
-            }
-          }}
-          onMouseEnter={() => {
-            // Hovering expands the collapsed dot and cancels any pending
-            // collapse, so a hovered (expanded) pill stays open.
-            if (collapsed) expand();
-            else clearCollapseTimer();
-          }}
+          transition={{ layout: { duration: 0.5, ease: 'easeInOut' }, x: { duration: 0.4, ease: 'easeInOut' }, y: { duration: 0.4, ease: 'easeInOut' }, opacity: { duration: 0.3, ease: 'easeInOut' } }}
           onMouseLeave={collapsed ? undefined : () => scheduleCollapse(HOVER_LEAVE_MS)}
           className={cn(
-            "absolute bottom-4 left-1/2 z-[100] flex items-center overflow-hidden rounded-full border border-white/10 bg-white/10 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] backdrop-blur select-none hover:bg-white/15",
-            collapsed ? "justify-center p-0" : "gap-3 px-3 py-1.5",
+            "absolute bottom-4 left-1/2 z-[100] flex items-center justify-center gap-2",
+            socialsAboveToast && "flex-col-reverse",
             className
           )}
         >
+          {socialsAboveToast ? (
+            <motion.div layout className="flex items-center justify-center gap-2">
+              {socialLinks.map(renderSocialButton)}
+            </motion.div>
+          ) : (
+            <motion.div layout className="flex items-center gap-2">
+              {leftSocialLinks.map(renderSocialButton)}
+            </motion.div>
+          )}
+          <motion.button
+            layout
+            type="button"
+            data-cursor-hide="true"
+            animate={{ width: collapsed ? 40 : expandedWidth, height: collapsed ? 40 : 36 }}
+            transition={{ width: { duration: 0.5, ease: 'easeInOut' }, height: { duration: 0.5, ease: 'easeInOut' } }}
+            aria-live="polite"
+            onClick={() => {
+              // Collapsed dot: tapping expands it (on mobile it then stays open
+              // until the user clicks outside). Expanded: toggles the language.
+              if (collapsed) {
+                expand();
+              } else {
+                setLang(other);
+                expand();
+              }
+            }}
+            onMouseEnter={() => {
+              // Hovering expands the collapsed dot and cancels any pending
+              // collapse, so a hovered (expanded) pill stays open.
+              if (collapsed) expand();
+              else clearCollapseTimer();
+            }}
+            className={cn(
+              "flex items-center overflow-hidden rounded-full border border-white/10 bg-white/10 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] backdrop-blur select-none hover:bg-white/15",
+              collapsed ? "justify-center p-0" : "gap-3 px-3 py-1.5"
+            )}
+          >
           {collapsed ? (
             // Collapsed state: the red EN/FR knob fades to black after collapse.
             <motion.span
@@ -254,7 +305,13 @@ export function LanguageToggleToast({ className }: { className?: string }) {
               </span>
             </>
           )}
-        </motion.button>
+          </motion.button>
+          {!socialsAboveToast && (
+            <motion.div layout className="flex items-center gap-2">
+              {rightSocialLinks.map(renderSocialButton)}
+            </motion.div>
+          )}
+        </motion.div>
         {/* Hidden measurement of the expanded pill width so the size can be
             animated numerically between the dot (40px) and the full pill. */}
         <div
