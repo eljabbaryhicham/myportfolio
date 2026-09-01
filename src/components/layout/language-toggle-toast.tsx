@@ -183,7 +183,7 @@ export function LanguageToggleToast({ className }: { className?: string }) {
       rel="noopener noreferrer"
       aria-label={social.label}
       data-cursor-hide="true"
-      className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-black/90 text-white transition-colors duration-300 hover:bg-destructive focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background"
+      className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-black text-white transition-colors duration-300 hover:bg-destructive focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background"
     >
       <FontAwesomeIcon icon={social.icon} className="h-4 w-4" />
     </motion.a>
