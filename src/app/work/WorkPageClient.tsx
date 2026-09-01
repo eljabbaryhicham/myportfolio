@@ -326,6 +326,7 @@ const MemoizedPortfolioMedia = memo(({
   plyrRef,
   clapprRef,
   maximized = false,
+  websiteLogoUrl,
 }: {
   item: PortfolioItem;
   onFullscreenClick: (url: string) => void;
@@ -338,6 +339,7 @@ const MemoizedPortfolioMedia = memo(({
   plyrRef: React.Ref<any>;
   clapprRef?: React.Ref<any>;
   maximized?: boolean;
+  websiteLogoUrl?: string;
 }) => {
   const { t, lang } = useTranslation();
   const { settings: homeSettings } = useHomePageSettings();
@@ -465,8 +467,13 @@ const MemoizedPortfolioMedia = memo(({
   return (
       <div ref={containerRef} className={cn("relative bg-black flex justify-center items-center w-full", maximized ? "h-full min-h-[200px] [&>*]:absolute [&>*]:inset-0 group/media" : "aspect-video group/media")}>
         {isImageLoading && (
-          <div className="absolute inset-0 z-20 flex items-center justify-center">
-            <Preloader />
+          <div className="absolute inset-0 z-20 flex items-center justify-center transition-opacity duration-300">
+            {websiteLogoUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element -- admin-configured logo URL
+              <img src={websiteLogoUrl} alt="" className="h-16 w-16 md:h-24 md:w-24 object-contain opacity-80" />
+            ) : (
+              <Preloader />
+            )}
           </div>
         )}
         <MemoizedImage
@@ -1345,7 +1352,7 @@ function WorkPageContent() {
                         <div className={cn("w-full", isProjectMaximized && "flex-1 min-h-0")} ref={mainMediaRef}>
                           {isClient && (
                             <Suspense fallback={null}>
-                              <MemoizedPortfolioMedia
+                                <MemoizedPortfolioMedia
                                  item={selectedItem}
                                  onFullscreenClick={setFullscreenImageUrl}
                                  watermark={watermarkLogoUrl}
@@ -1357,7 +1364,8 @@ function WorkPageContent() {
                                  maximized={isProjectMaximized}
                                  plyrRef={plyrRef}
                                  clapprRef={clapprRef}
-                               />
+                                 websiteLogoUrl={homeSettings?.menubarLogoUrl || homeSettings?.homePageLogoUrl || homeSettings?.faviconUrl || contactInfo?.logoUrl}
+                                />
                             </Suspense>
                           )}
                         </div>

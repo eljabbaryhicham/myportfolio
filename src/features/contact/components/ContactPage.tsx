@@ -111,7 +111,17 @@ export default function ContactPage() {
                     <div className="glass-effect rounded-lg p-4 sm:p-6 h-full w-full max-w-lg flex flex-col items-center justify-center text-center">
                         <Avatar className="border-2 border-white mb-[clamp(0.75rem,2vh,1.25rem)] w-[clamp(3.5rem,9vh,5rem)] h-[clamp(3.5rem,9vh,5rem)]">
                           <AvatarImage src={contactInfo.avatarUrl} alt={getLocalizedString(contactInfo.name, lang)} />
-                          <AvatarFallback>{getLocalizedString(contactInfo.name, lang)?.substring(0, 2)}</AvatarFallback>
+                          <AvatarFallback>
+                            {(() => {
+                              const logo = pageSettings?.menubarLogoUrl || pageSettings?.homePageLogoUrl || pageSettings?.faviconUrl || contactInfo?.logoUrl;
+                              return logo ? (
+                                // eslint-disable-next-line @next/next/no-img-element -- admin-configured logo URL
+                                <img src={logo} alt="" className="h-full w-full object-contain p-1" />
+                              ) : (
+                                getLocalizedString(contactInfo.name, lang)?.substring(0, 2)
+                              );
+                            })()}
+                          </AvatarFallback>
                         </Avatar>
                         <h3 className="text-[clamp(1.125rem,2.8vh,1.5rem)] font-headline">{getLocalizedString(contactInfo.name, lang)}</h3>
                         <p className="text-[clamp(0.875rem,2.1vh,1.125rem)] text-foreground/70">{getLocalizedString(contactInfo.title, lang)}</p>
