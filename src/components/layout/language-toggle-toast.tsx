@@ -9,6 +9,7 @@ import { useLanguage } from '@/components/layout/language-switcher';
 import { useHomeReady } from '@/components/layout/home-ready-context';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useContactInfo } from '@/components/settings/contact-info-provider';
+import { useHomePageSettings } from '@/components/settings/home-page-settings-provider';
 import translations from '@/lib/i18n/translations';
 
 const INITIAL_SHOW_MS = 2000;
@@ -46,6 +47,9 @@ export function LanguageToggleToast({ className }: { className?: string }) {
   const { ready } = useHomeReady();
   const isMobile = useIsMobile();
   const { contactInfo } = useContactInfo();
+  const { settings: homeSettings } = useHomePageSettings();
+  // Social buttons are hidden when the admin home tab disables them.
+  const showSocials = homeSettings?.isHomeSocialButtonsVisible !== false;
 
   const [visible, setVisible] = useState(false);
   const [collapsed, setCollapsed] = useState(true);
@@ -63,12 +67,15 @@ export function LanguageToggleToast({ className }: { className?: string }) {
   const controlsRef = useRef<HTMLDivElement>(null);
   const [socialsAboveToast, setSocialsAboveToast] = useState(false);
 
-  const socialLinks = useMemo(() => [
-    { id: 'facebook', label: 'Facebook', href: contactInfo?.facebookUrl, icon: faFacebook },
-    { id: 'instagram', label: 'Instagram', href: contactInfo?.instagramUrl, icon: faInstagram },
-    { id: 'twitter', label: 'Twitter', href: contactInfo?.twitterUrl, icon: faTwitter },
-    { id: 'linkedin', label: 'LinkedIn', href: contactInfo?.linkedinUrl, icon: faLinkedin },
-  ].filter((link) => link.href), [contactInfo?.facebookUrl, contactInfo?.instagramUrl, contactInfo?.twitterUrl, contactInfo?.linkedinUrl]);
+  const socialLinks = useMemo(() => {
+    if (!showSocials) return [];
+    return [
+      { id: 'facebook', label: 'Facebook', href: contactInfo?.facebookUrl, icon: faFacebook },
+      { id: 'instagram', label: 'Instagram', href: contactInfo?.instagramUrl, icon: faInstagram },
+      { id: 'twitter', label: 'Twitter', href: contactInfo?.twitterUrl, icon: faTwitter },
+      { id: 'linkedin', label: 'LinkedIn', href: contactInfo?.linkedinUrl, icon: faLinkedin },
+    ].filter((link) => link.href);
+  }, [showSocials, contactInfo?.facebookUrl, contactInfo?.instagramUrl, contactInfo?.twitterUrl, contactInfo?.linkedinUrl]);
 
   useLayoutEffect(() => {
     if (measureRef.current) setExpandedWidth(measureRef.current.offsetWidth + WIDTH_BUFFER);

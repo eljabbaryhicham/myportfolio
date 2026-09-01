@@ -62,6 +62,7 @@ const settingsSchema = z.object({
   isTestPageEnabled: z.boolean().optional(),
   homePageLogoUrl: z.string().optional(),
   isHomePageLogoVisible: z.boolean().optional(),
+  isHomeSocialButtonsVisible: z.boolean().optional(),
                                         homePageLogoScale: z.number().min(0.1).max(5).optional(),
   homePageLogoColor: z.string().optional(),
   themeColor: z.string().optional(),
@@ -198,6 +199,7 @@ export default function HomeAdmin() {
       isTestPageEnabled: false,
       homePageLogoUrl: '',
       isHomePageLogoVisible: true,
+      isHomeSocialButtonsVisible: true,
       homePageLogoScale: 1,
       homePageLogoColor: '',
       themeColor: '#d81e38',
@@ -248,6 +250,7 @@ export default function HomeAdmin() {
         isTestPageEnabled: homeSettings.isTestPageEnabled ?? false,
         homePageLogoUrl: homeSettings.homePageLogoUrl || '',
         isHomePageLogoVisible: homeSettings.isHomePageLogoVisible ?? true,
+        isHomeSocialButtonsVisible: homeSettings.isHomeSocialButtonsVisible ?? true,
         homePageLogoScale: homeSettings.homePageLogoScale || 1,
         homePageLogoColor: homeSettings.homePageLogoColor || '',
         themeColor: homeSettings.themeColor || '#d81e38',
@@ -479,6 +482,20 @@ export default function HomeAdmin() {
                                             <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
                                                 <div className="space-y-0.5">
                                                     <FormLabel>{t('homeAdmin.showLogo')}</FormLabel>
+                                                </div>
+                                                <FormControl>
+                                                    <Switch checked={field.value} onCheckedChange={field.onChange} />
+                                                </FormControl>
+                                            </FormItem>
+                                        )}
+                                    />
+                                    <FormField
+                                        control={control}
+                                        name="isHomeSocialButtonsVisible"
+                                        render={({ field }) => (
+                                            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
+                                                <div className="space-y-0.5">
+                                                    <FormLabel>{t('homeAdmin.showSocialButtons')}</FormLabel>
                                                 </div>
                                                 <FormControl>
                                                     <Switch checked={field.value} onCheckedChange={field.onChange} />

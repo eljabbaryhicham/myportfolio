@@ -53,6 +53,9 @@ export interface HomePageSettings {
   // Navigation
   navButtonSize?: number;
 
+  // Home social media buttons (beside the language toast)
+  isHomeSocialButtonsVisible?: boolean;
+
   // Player + global
   workPagePlayer?: 'plyr' | 'clappr';
 
