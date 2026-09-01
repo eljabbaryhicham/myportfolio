@@ -183,9 +183,9 @@ export function LanguageToggleToast({ className }: { className?: string }) {
       rel="noopener noreferrer"
       aria-label={social.label}
       data-cursor-hide="true"
-      className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-[#11122c] text-white transition-colors duration-300 hover:bg-destructive focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background"
+      className="flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-[#11122c] text-white transition-colors duration-300 hover:bg-destructive focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background"
     >
-      <FontAwesomeIcon icon={social.icon} className="h-4 w-4" />
+      <FontAwesomeIcon icon={social.icon} className="h-3.5 w-3.5" />
     </motion.a>
   );
 
@@ -268,7 +268,7 @@ export function LanguageToggleToast({ className }: { className?: string }) {
                 aria-hidden="true"
                 animate={{ opacity: dimmed ? 1 : 0 }}
                 transition={{ duration: dimmed ? 1 : 0, ease: 'easeInOut' }}
-                className="absolute inset-0 rounded-full bg-black shadow-[0_0_12px_rgba(0,0,0,0.6)]"
+                className="absolute inset-0 rounded-full bg-[#111237] shadow-[0_0_12px_rgba(0,0,0,0.6)]"
               />
               <span className="relative z-10 text-[12px] font-bold leading-none text-white">
                 {langIsEn ? 'EN' : 'FR'}
