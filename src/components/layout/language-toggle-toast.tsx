@@ -14,7 +14,7 @@ import translations from '@/lib/i18n/translations';
 const INITIAL_SHOW_MS = 2000;
 const HOVER_LEAVE_MS = 100;
 const COLLAPSE_ANIM_MS = 500;
-const RED_HOLD_MS = 500;
+const RED_HOLD_MS = 100;
 // Safety margin added to the measured expanded width so the label never gets
 // clipped by the pivot toggle even if fonts/metrics shift slightly.
 const WIDTH_BUFFER = 12;
