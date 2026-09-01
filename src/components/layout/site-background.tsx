@@ -76,6 +76,7 @@ export function SiteBackground() {
       if (!video) return;
       return forceAutoplay(video, {
         onPlaying: () => { video.style.opacity = '1'; },
+        forceMuted: true,
       });
     }, [isVideoShown, cleanUrl]);
 
@@ -94,7 +95,7 @@ export function SiteBackground() {
         if (cancelled || !Hls.isSupported()) {
           if (!Hls.isSupported() && video.canPlayType('application/vnd.apple.mpegurl')) {
             video.src = cleanUrl;
-            forceAutoplay(video);
+            forceAutoplay(video, { forceMuted: true });
           }
           return;
         }
@@ -103,7 +104,7 @@ export function SiteBackground() {
         hls.attachMedia(video);
         setHlsInstance(hls);
         hls.on(Hls.Events.MANIFEST_PARSED, () => {
-          if (!cancelled) forceAutoplay(video);
+          if (!cancelled) forceAutoplay(video, { forceMuted: true });
         });
       })();
       return () => { cancelled = true; if (hls) hls.destroy(); setHlsInstance(null); };
