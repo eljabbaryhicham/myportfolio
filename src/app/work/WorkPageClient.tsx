@@ -732,6 +732,33 @@ function WorkPageContent() {
   const [isDetailsMaximized, setIsDetailsMaximized] = useState(false);
   const isDialogOpen = isDetailsModalOpen || isContactFormOpen;
 
+  // Refs to the project popup and the nested details popup. While the details
+  // is in its minimized state, its size is mirrored from the project popup so
+  // both match exactly.
+  const projectDialogRef = useRef<HTMLDivElement | null>(null);
+  const detailsDialogRef = useRef<HTMLDivElement | null>(null);
+
+  const setDetailsRef = useCallback((el: HTMLDivElement | null) => {
+    detailsDialogRef.current = el;
+  }, []);
+
+  useEffect(() => {
+    if (isDetailsMaximized) return;
+    const project = projectDialogRef.current;
+    const details = detailsDialogRef.current;
+    if (!project || !details) return;
+
+    const applySize = () => {
+      const r = project.getBoundingClientRect();
+      details.style.width = `${r.width}px`;
+      details.style.height = `${r.height}px`;
+    };
+    applySize();
+    const ro = new ResizeObserver(applySize);
+    ro.observe(project);
+    return () => ro.disconnect();
+  }, [selectedItem, isDetailsMaximized, isDetailsModalOpen]);
+
   // Sizing for the project popup. Minimized = 90vw/90dvh (content-fit),
   // maximized = 98vw/98dvh.
   const popupSizing = isProjectMaximized
@@ -741,7 +768,9 @@ function WorkPageContent() {
         isExtraWide || isDescriptionLong ? "h-[90dvh]" : "max-h-[90dvh]"
       );
 
-  // Independent sizing for the details popup (its own maximize state).
+  // The details popup has its own maximize state. When maximized it fills
+  // 98vw/98dvh; when minimized the ResizeObserver above copies the project's
+  // rendered size, and these classes serve as the initial/fallback sizing.
   const detailsSizing = isDetailsMaximized
     ? "w-[98vw] h-[98dvh] max-w-none"
     : cn(
@@ -1258,6 +1287,7 @@ function WorkPageContent() {
 
       <Dialog open={!!selectedItem} onOpenChange={handleMainDialogOpenChange}>
           <DialogContent
+            ref={projectDialogRef}
             className={cn(
               "glass-effect p-0 flex flex-col group overflow-hidden transition-all duration-500 ease-in-out",
               popupSizing
@@ -1409,6 +1439,7 @@ function WorkPageContent() {
       <Dialog open={isDetailsModalOpen} onOpenChange={(open) => { setDetailsModalOpen(open); if (!open) setIsDetailsMaximized(false); }}>
         <DialogContent
           id="work-details-dialog"
+          ref={setDetailsRef}
           className={cn(
             "glass-effect p-0 flex flex-col group overflow-hidden transition-all duration-500 ease-in-out min-w-0",
             detailsSizing
