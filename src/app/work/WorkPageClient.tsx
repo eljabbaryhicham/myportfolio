@@ -724,6 +724,15 @@ function WorkPageContent() {
   const [isProjectMaximized, setIsProjectMaximized] = useState(false);
   const isDialogOpen = isDetailsModalOpen || isContactFormOpen;
 
+  // Shared sizing for the project popup and the nested details popup so they
+  // stay pixel-identical in both minimized and maximized states.
+  const popupSizing = isProjectMaximized
+    ? "w-[98vw] h-[98dvh] max-w-none"
+    : cn(
+        "w-[90vw] max-w-7xl",
+        isExtraWide || isDescriptionLong ? "h-[90dvh]" : "max-h-[90dvh]"
+      );
+
   const allItems = useMemo(() => {
     const visible = (portfolioItems || []).filter(item => item.isVisible !== false);
     return [...visible].sort(
@@ -1235,12 +1244,7 @@ function WorkPageContent() {
           <DialogContent
             className={cn(
               "glass-effect p-0 flex flex-col group overflow-hidden transition-all duration-500 ease-in-out",
-              isProjectMaximized
-                ? "w-[90vw] h-[90dvh] max-w-none"
-                : cn(
-                    "w-[90vw] max-w-7xl",
-                    isExtraWide || isDescriptionLong ? "h-[90dvh]" : "max-h-[90dvh]"
-                  )
+              popupSizing
             )}
             onMouseMove={handleDialogMouseMove}
             onMouseEnter={handleDialogMouseEnter}
@@ -1390,12 +1394,7 @@ function WorkPageContent() {
           id="work-details-dialog"
           className={cn(
             "glass-effect p-0 flex flex-col group overflow-hidden transition-all duration-500 ease-in-out min-w-0",
-            isProjectMaximized
-              ? "w-[90vw] h-[90dvh] max-w-none"
-              : cn(
-                  "w-[90vw] max-w-7xl",
-                  isExtraWide || isDescriptionLong ? "h-[90dvh]" : "max-h-[90dvh]"
-                )
+            popupSizing
           )}
           onMouseMove={handleDialogMouseMove}
           onMouseEnter={handleDialogMouseEnter}
