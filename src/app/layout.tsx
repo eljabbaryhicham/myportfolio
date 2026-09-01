@@ -11,21 +11,7 @@ import { getHomePageSettings } from '@/lib/home-page-settings';
 import { getTrustedByClients } from '@/lib/trusted-by-clients';
 import { getContactInfo } from '@/lib/contact-info';
 import { getStructuredDataJsonLd } from '@/lib/structured-data';
-
-function normalizeGoogleFontFamily(fontFamily?: string): string | null {
-  const normalized = fontFamily?.trim().replace(/[^\p{L}\p{N} &'().-]/gu, '').slice(0, 100);
-  return normalized || null;
-}
-
-function googleFontsStylesheetHref(families: Array<string | null>): string | null {
-  const selected = [...new Set(families.filter((family): family is string => Boolean(family)))];
-  if (selected.length === 0) return null;
-
-  const query = selected
-    .map((family) => `family=${encodeURIComponent(family).replace(/%20/g, '+')}`)
-    .join('&');
-  return `https://fonts.googleapis.com/css2?${query}&display=swap`;
-}
+import { normalizeGoogleFontFamily, googleFontsStylesheetHref, fontCssVariables } from '@/lib/fonts';
 
 // Single export: generateMetadata runs at request time, shares the cache()-
 // wrapped Firestore read with RootLayout via getHomePageSettings(), and
@@ -117,11 +103,7 @@ export default async function RootLayout({
   const headlineFont = normalizeGoogleFontFamily(initialSettings?.headlineFontFamily);
   const handwritingFont = normalizeGoogleFontFamily(initialSettings?.handwritingFontFamily);
   const googleFontsHref = googleFontsStylesheetHref([bodyFont, headlineFont, handwritingFont]);
-  const fontVariables = {
-    ...(bodyFont ? { '--font-quicksand': `"${bodyFont}", sans-serif` } : {}),
-    ...(headlineFont ? { '--font-bungee': `"${headlineFont}", sans-serif` } : {}),
-    ...(handwritingFont ? { '--font-dancing-script': `"${handwritingFont}", cursive` } : {}),
-  } as React.CSSProperties;
+  const fontVariables = fontCssVariables(bodyFont ?? undefined, headlineFont ?? undefined, handwritingFont ?? undefined) as React.CSSProperties;
   return (
     <html lang="en" className={cn("dark h-full", bungee.variable, quicksand.variable, dancingScript.variable)} style={fontVariables} suppressHydrationWarning>
       <head>

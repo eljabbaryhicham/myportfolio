@@ -4,6 +4,7 @@ import { Toaster } from '@/components/ui/toaster';
 import { FirebaseClientProvider } from '@/firebase/client-provider';
 import { LayoutProvider } from '@/components/layout/layout-provider';
 import { DynamicThemeStyles, SiteBackground, DynamicFavicon } from '@/components/layout/site-background';
+import DynamicFontStyles from '@/components/layout/dynamic-font-styles';
 import { LanguageProvider } from '@/components/layout/language-switcher';
 import { HomePageSettingsProvider } from '@/components/settings/home-page-settings-provider';
 import { ContactInfoProvider } from '@/components/settings/contact-info-provider';
@@ -31,6 +32,7 @@ export default function AppShell({
             <LanguageProvider>
               <DynamicThemeStyles />
               <DynamicFavicon />
+              <DynamicFontStyles />
               <SiteBackground />
               <LayoutProvider>
                 {children}
