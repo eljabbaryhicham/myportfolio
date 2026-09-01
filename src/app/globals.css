@@ -85,16 +85,18 @@
 
 /* Remove the focus border/ring on all focusable elements site-wide. Keyboard
    focus ability is also disabled by public/inline/disable-focus.js, but this
-   hides any lingering outline (e.g. programmatic focus) as a safety net. */
+   hides any lingering outline (e.g. programmatic focus) as a safety net. The
+   !important beats Tailwind's focus:ring-*/focus:outline-* utilities which have
+   higher specificity. */
 :focus,
 :focus-visible {
-  outline: none;
-  box-shadow: none;
+  outline: none !important;
+  box-shadow: none !important;
 }
 button:focus,
 button:focus-visible {
-  outline: none;
-  box-shadow: none;
+  outline: none !important;
+  box-shadow: none !important;
 }
 
 @layer components {
