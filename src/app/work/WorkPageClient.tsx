@@ -600,12 +600,12 @@ const PortfolioGridItem = ({ item, onClick, onEditClick, isAdmin, isSuperAdmin, 
           )}
         </div>
         {item.type === 'video' && isLoaded && (
-          <div className="absolute top-4 right-4 w-[10%] h-[10%] flex items-center justify-center rounded-full glass-effect transition-colors">
+          <div className="absolute top-4 right-4 w-[15%] h-[15%] flex items-center justify-center rounded-full glass-effect transition-colors">
             <FontAwesomeIcon icon={faFilm} className="h-1/2 w-1/2 text-white/80" />
           </div>
         )}
         {item.type === 'image' && isLoaded && (
-            <div className="absolute top-4 right-4 w-[10%] h-[10%] flex items-center justify-center rounded-full glass-effect transition-colors">
+            <div className="absolute top-4 right-4 w-[15%] h-[15%] flex items-center justify-center rounded-full glass-effect transition-colors">
                 <FontAwesomeIcon icon={faPalette} className="h-1/2 w-1/2 text-white/80" />
             </div>
         )}
