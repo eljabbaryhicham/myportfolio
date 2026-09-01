@@ -732,32 +732,29 @@ function WorkPageContent() {
   const [isDetailsMaximized, setIsDetailsMaximized] = useState(false);
   const isDialogOpen = isDetailsModalOpen || isContactFormOpen;
 
-  // Refs to the project popup and the nested details popup. While the details
-  // is in its minimized state, its size is mirrored from the project popup so
-  // both match exactly.
+  // Refs to the project popup plus the measured size used for the details
+  // popup while it is minimized, so the details matches the project exactly.
   const projectDialogRef = useRef<HTMLDivElement | null>(null);
-  const detailsDialogRef = useRef<HTMLDivElement | null>(null);
-
-  const setDetailsRef = useCallback((el: HTMLDivElement | null) => {
-    detailsDialogRef.current = el;
-  }, []);
+  const [detailsSize, setDetailsSize] = useState<{ w: number; h: number } | null>(null);
 
   useEffect(() => {
-    if (isDetailsMaximized) return;
+    if (!isDetailsModalOpen || isDetailsMaximized) return;
     const project = projectDialogRef.current;
-    const details = detailsDialogRef.current;
-    if (!project || !details) return;
+    if (!project) return;
 
-    const applySize = () => {
+    const measure = () => {
       const r = project.getBoundingClientRect();
-      details.style.width = `${r.width}px`;
-      details.style.height = `${r.height}px`;
+      setDetailsSize(prev =>
+        prev && Math.abs(prev.w - r.width) < 1 && Math.abs(prev.h - r.height) < 1
+          ? prev
+          : { w: r.width, h: r.height }
+      );
     };
-    applySize();
-    const ro = new ResizeObserver(applySize);
+    measure();
+    const ro = new ResizeObserver(measure);
     ro.observe(project);
     return () => ro.disconnect();
-  }, [selectedItem, isDetailsMaximized, isDetailsModalOpen]);
+  }, [selectedItem, isDetailsModalOpen, isDetailsMaximized]);
 
   // Sizing for the project popup. Minimized = 90vw/90dvh (content-fit),
   // maximized = 98vw/98dvh.
@@ -769,14 +766,12 @@ function WorkPageContent() {
       );
 
   // The details popup has its own maximize state. When maximized it fills
-  // 98vw/98dvh; when minimized the ResizeObserver above copies the project's
-  // rendered size, and these classes serve as the initial/fallback sizing.
+  // 98vw/98dvh; when minimized its exact width/height come from `detailsSize`
+  // (mirroring the project popup), and this class only covers the first frame
+  // before the measurement lands.
   const detailsSizing = isDetailsMaximized
     ? "w-[98vw] h-[98dvh] max-w-none"
-    : cn(
-        "w-[90vw] max-w-7xl",
-        isExtraWide || isDescriptionLong ? "h-[90dvh]" : "max-h-[90dvh]"
-      );
+    : "w-[90vw] max-w-7xl";
 
   const allItems = useMemo(() => {
     const visible = (portfolioItems || []).filter(item => item.isVisible !== false);
@@ -1439,12 +1434,15 @@ function WorkPageContent() {
       <Dialog open={isDetailsModalOpen} onOpenChange={(open) => { setDetailsModalOpen(open); if (!open) setIsDetailsMaximized(false); }}>
         <DialogContent
           id="work-details-dialog"
-          ref={setDetailsRef}
           className={cn(
             "glass-effect p-0 flex flex-col group overflow-hidden transition-all duration-500 ease-in-out min-w-0",
             detailsSizing
           )}
-          style={isDetailsMaximized ? { width: '98vw', height: '98dvh', maxWidth: 'none' } : undefined}
+          style={isDetailsMaximized
+            ? { width: '98vw', height: '98dvh', maxWidth: 'none' }
+            : detailsSize
+              ? { width: `${detailsSize.w}px`, height: `${detailsSize.h}px` }
+              : undefined}
           onMouseMove={handleDialogMouseMove}
           onMouseEnter={handleDialogMouseEnter}
           onMouseLeave={handleDialogMouseLeave}
