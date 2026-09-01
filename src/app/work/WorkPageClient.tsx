@@ -946,7 +946,6 @@ function WorkPageContent() {
   const handleItemClick = useCallback((item: PortfolioItem) => {
     setDirection(null);
     setSelectedItem(item);
-    setIsProjectMaximized(false);
     updateUrl(slugify(getLocalizedString(item.title, lang)));
   }, [updateUrl, lang]);
   
@@ -958,7 +957,6 @@ function WorkPageContent() {
   const handleMainDialogOpenChange = (open: boolean) => {
     if (!open) {
       setSelectedItem(null);
-      setIsProjectMaximized(false);
       updateUrl(null);
     }
   };
