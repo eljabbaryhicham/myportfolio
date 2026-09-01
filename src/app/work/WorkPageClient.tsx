@@ -1236,7 +1236,7 @@ function WorkPageContent() {
             className={cn(
               "glass-effect p-0 flex flex-col group overflow-hidden transition-all duration-500 ease-in-out",
               isProjectMaximized
-                ? "w-[98vw] h-[98dvh] max-w-none"
+                ? "w-[90vw] h-[90dvh] max-w-none"
                 : cn(
                     "w-[90vw] max-w-7xl",
                     isExtraWide || isDescriptionLong ? "h-[90dvh]" : "max-h-[90dvh]"
