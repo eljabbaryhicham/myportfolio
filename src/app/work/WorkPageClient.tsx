@@ -1427,7 +1427,7 @@ function WorkPageContent() {
           ref={setDetailsRef}
           id="work-details-dialog"
           className={cn(
-            "glass-effect p-0 flex flex-col group overflow-hidden transition-all duration-500 ease-in-out min-w-0 min-h-[90dvh]",
+            "glass-effect p-0 flex flex-col group overflow-hidden transition-all duration-500 ease-in-out min-w-0",
             popupSizing
           )}
           onMouseMove={handleDialogMouseMove}
