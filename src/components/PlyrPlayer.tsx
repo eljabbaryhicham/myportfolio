@@ -81,8 +81,8 @@ const PlyrPlayer = forwardRef(({ source, poster, autoPlay = true, thumbnailVttUr
                 video.setAttribute('webkit-playsinline', '');
                 video.setAttribute('controls', '');
                 video.setAttribute('preload', 'auto');
-                // Mobile browsers only allow autoplay when muted.
-                if (autoPlay) video.muted = true;
+                // Force-unmute autoplay: attempt playback with sound. Browsers
+                // block unmuted autoplay on mobile, so it will not start there.
                 if (poster) video.setAttribute('poster', poster);
                 let settled = false;
                 const done = () => {

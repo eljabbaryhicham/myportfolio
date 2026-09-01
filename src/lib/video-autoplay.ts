@@ -1,20 +1,17 @@
-// Robust autoplay for <video> elements, especially on mobile.
+// Robust autoplay for <video> elements.
 //
-// Mobile browsers (iOS Safari, Android Chrome) only allow autoplay when the
-// video is BOTH muted AND playsinline, and they reject a `.play()` call made
-// before the source is ready (the promise resolves/rejects with
-// NotAllowedError). Relying on the HTML `autoplay` attribute or a single
-// immediate `.play()` is unreliable. This helper:
-//   1. sets the muted + playsinline PROPERTIES (not just attributes),
+// This helper:
+//   1. sets the unmuted + playsinline PROPERTIES (not just attributes),
 //   2. calls play() right away,
 //   3. retries on loadedmetadata/canplay/loadeddata and then on a short
-//      interval, because mobile blocks the first attempt until the source
-//      is buffered.
+//      interval, because some browsers block the first attempt until the
+//      source is buffered.
 //
-// To get SOUND on mobile, callers pass an onPlaying callback: playback must
-// begin muted (autoplay policy), and once it's actually running the caller
-// un-mutes through its player's own API (the raw <video>.muted is overridden
-// by player mute state, e.g. Clappr/plyr).
+// NOTE: playback is FORCE-UNMUTED. Browsers (especially iOS Safari and
+// Android Chrome) block unmuted autoplay — a user gesture is required — so
+// on mobile the initial play() is rejected and the video will NOT autoplay
+// until the visitor interacts. Desktop may autoplay with sound if the
+// browser's autoplay policy allows it.
 
 export function forceAutoplay(
   video: HTMLVideoElement | null | undefined,
@@ -29,17 +26,13 @@ export function forceAutoplay(
   // Mobile browsers only autoplay a muted video; desktop allows sound. Mute on
   // touch/mobile devices (or when explicitly requested). Decorative autoplay
   // videos (background, hero, card previews) are muted in their JSX regardless.
-  let isMobile = forceMuted;
-  if (isMobile === undefined && typeof navigator !== 'undefined') {
-    const ua = navigator.userAgent;
-    const hasTouch = typeof window !== 'undefined' && 'ontouchstart' in window;
-    isMobile = hasTouch || /Mobi|Android|iPhone|iPad|iPod/i.test(ua);
-  }
-
-  if (isMobile) {
-    video.muted = true;
-    video.setAttribute('muted', '');
-  }
+  // Force-unmute: playback always attempts with sound. Note that browsers
+  // block unmuted autoplay on mobile (a user gesture is required), so on
+  // mobile the initial play() is rejected and the video will NOT autoplay at
+  // all until the visitor interacts. Desktop may autoplay with sound if the
+  // browser's autoplay policy allows it.
+  video.muted = false;
+  video.removeAttribute('muted');
   video.playsInline = true;
   video.setAttribute('playsinline', '');
   video.setAttribute('webkit-playsinline', '');
