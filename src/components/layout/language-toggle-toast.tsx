@@ -12,7 +12,7 @@ import { useContactInfo } from '@/components/settings/contact-info-provider';
 import { useHomePageSettings } from '@/components/settings/home-page-settings-provider';
 import translations from '@/lib/i18n/translations';
 
-const INITIAL_SHOW_MS = 2000;
+const INITIAL_SHOW_MS = 1000;
 const HOVER_LEAVE_MS = 100;
 const COLLAPSE_ANIM_MS = 500;
 const RED_HOLD_MS = 50;

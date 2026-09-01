@@ -725,13 +725,12 @@ function WorkPageContent() {
   const isDialogOpen = isDetailsModalOpen || isContactFormOpen;
 
   // Shared sizing for the project popup and the nested details popup so they
-  // stay pixel-identical in both minimized and maximized states. The minimized
-  // case uses a fixed height (not max-h) so both dialogs are always the same
-  // size regardless of their content.
+  // stay pixel-identical in both minimized and maximized states.
   const popupSizing = isProjectMaximized
     ? "w-[98vw] h-[98dvh] max-w-none"
     : cn(
-        "w-[90vw] max-w-7xl h-[90dvh]"
+        "w-[90vw] max-w-7xl",
+        isExtraWide || isDescriptionLong ? "h-[90dvh]" : "max-h-[90dvh]"
       );
 
   const allItems = useMemo(() => {
