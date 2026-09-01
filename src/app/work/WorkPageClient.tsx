@@ -1413,6 +1413,7 @@ function WorkPageContent() {
             "glass-effect p-0 flex flex-col group overflow-hidden transition-all duration-500 ease-in-out min-w-0",
             detailsSizing
           )}
+          style={isDetailsMaximized ? { width: '98vw', height: '98dvh', maxWidth: 'none' } : undefined}
           onMouseMove={handleDialogMouseMove}
           onMouseEnter={handleDialogMouseEnter}
           onMouseLeave={handleDialogMouseLeave}
