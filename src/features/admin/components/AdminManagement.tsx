@@ -3,8 +3,8 @@
 
 import { useTranslation } from '@/lib/i18n/useTranslation';
 import { isSuperAdmin as isSuperAdminCheck } from '@/lib/constants';
-import { useCollection, useFirestore, useMemoFirebase, updateDocumentNonBlocking, useUser, useAuth } from '@/firebase';
-import { collection, query, doc } from 'firebase/firestore';
+import { useCollection, useFirestore, useMemoFirebase, useUser, useAuth } from '@/firebase';
+import { collection, query } from 'firebase/firestore';
 import {
   Table,
   TableBody,
@@ -76,6 +76,9 @@ function PermissionsDialog({ user, isOpen, onOpenChange, onSave }: { user: Admin
                       <DialogTitle className="font-headline">{t('adminMgmt.editPermissions').replace('{user}', user.username || user.email?.split('@')[0] || 'Unknown')}</DialogTitle>
                     <DialogDescription>
                         {t('adminMgmt.editPermissionsDescription')}
+                        <span className="block mt-2 text-xs text-muted-foreground">
+                            Save grants the 4 content-edit permissions (Home, Projects, About, Contact). The media toggles above are display-only — media permissions are managed separately by the superadmin via the API and the Firestore console.
+                        </span>
                     </DialogDescription>
                 </DialogHeader>
                 <div className="grid grid-cols-2 gap-4 py-4">
@@ -155,13 +158,59 @@ export default function AdminManagement() {
     setIsPermissionsDialogOpen(true);
   };
 
-  const handleSavePermissions = (permissions: Permissions) => {
-    if (!firestore || !isSuperAdmin || !selectedUser) return;
-    const userDocRef = doc(firestore, 'users', selectedUser.id);
-    updateDocumentNonBlocking(userDocRef, { permissions });
+  const handleSavePermissions = async (_permissions: Permissions) => {
+    if (!isSuperAdmin || !selectedUser) return;
+    const targetEmail = selectedUser.email;
+    if (!targetEmail) {
+      toast({
+        variant: 'destructive',
+        title: t('adminMgmt.toast.grantFailed.title') || 'Grant failed',
+        description: 'The target user has no email on file.',
+      });
+      return;
+    }
+    let idToken: string | null = null;
+    try {
+      idToken = (await auth?.currentUser?.getIdToken()) ?? null;
+    } catch (e) {
+      console.error('Failed to get ID token for grant.', e);
+    }
+    if (!idToken) {
+      toast({
+        variant: 'destructive',
+        title: t('adminMgmt.toast.grantFailed.title') || 'Grant failed',
+        description: 'Not signed in.',
+      });
+      return;
+    }
+    let res: Response;
+    try {
+      res = await fetch('/api/admin/grant-content-permissions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ idToken, email: targetEmail }),
+      });
+    } catch (e) {
+      console.error('Grant content permissions request failed.', e);
+      toast({
+        variant: 'destructive',
+        title: t('adminMgmt.toast.grantFailed.title') || 'Grant failed',
+        description: 'Network error.',
+      });
+      return;
+    }
+    const data: { ok?: boolean; error?: string } = await res.json().catch(() => ({}));
+    if (!res.ok || !data.ok) {
+      toast({
+        variant: 'destructive',
+        title: t('adminMgmt.toast.grantFailed.title') || 'Grant failed',
+        description: typeof data.error === 'string' ? data.error : `Request failed (${res.status}).`,
+      });
+      return;
+    }
     toast({
-        title: t('adminMgmt.toast.permissionsUpdated.title'),
-        description: t('adminMgmt.toast.permissionsUpdated.description').replace('{user}', selectedUser.username || selectedUser.email?.split('@')[0] || 'Unknown'),
+      title: t('adminMgmt.toast.permissionsUpdated.title'),
+      description: t('adminMgmt.toast.permissionsUpdated.description').replace('{user}', selectedUser.username || selectedUser.email?.split('@')[0] || 'Unknown'),
     });
   };
 
