@@ -80,6 +80,36 @@ export function SiteBackground() {
       });
     }, [isVideoShown, cleanUrl]);
 
+    // Resume playback when the page comes back to the foreground. Mobile
+    // browsers pause background videos during inactivity (tab switch, screen
+    // lock) without any user action — forceAutoplay treats that pause as a
+    // user pause and stops retrying, so this effect re-plays the video on
+    // return. The video is muted, so it resumes without a user gesture.
+    useEffect(() => {
+      if (!isVideoShown) return;
+      const video = bgVideoRef.current;
+      if (!video) return;
+
+      const resume = () => {
+        if (video.paused) {
+          video.play().catch(() => {});
+        }
+      };
+      const handleVisibility = () => {
+        if (document.visibilityState === 'visible') resume();
+      };
+      const handleFocus = () => resume();
+
+      document.addEventListener('visibilitychange', handleVisibility);
+      window.addEventListener('focus', handleFocus);
+      window.addEventListener('pageshow', handleFocus);
+      return () => {
+        document.removeEventListener('visibilitychange', handleVisibility);
+        window.removeEventListener('focus', handleFocus);
+        window.removeEventListener('pageshow', handleFocus);
+      };
+    }, [isVideoShown, cleanUrl]);
+
     // Handle HLS streaming for Android background videos
     useEffect(() => {
       // Compute isAndroid inside effect (client-only) to avoid hydration mismatch
