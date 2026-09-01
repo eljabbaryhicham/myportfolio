@@ -110,8 +110,11 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Could not create account.' }, { status: 500 });
   }
 
-  // Create the user doc with role: 'user' and no permissions. Per
-  // firestore.rules, this is the maximum a self-registered user can claim.
+  // Create the user doc with role: 'user' and content-editing permissions
+  // only. Per firestore.rules, role stays 'user' (so media reads via isAdmin()
+  // stay denied) and there are NO canUploadMedia/canDeleteMedia perms (so
+  // media writes stay denied). The superadmin remains the gatekeeper for any
+  // elevated role/permission changes.
   try {
     const db = admin.firestore(app);
     await db.collection('users').doc(userRecord.uid).set({
@@ -119,6 +122,12 @@ export async function POST(req: NextRequest) {
       username,
       email: userRecord.email ?? email,
       role: 'user',
+      permissions: {
+        canEditHome: true,
+        canEditProjects: true,
+        canEditAbout: true,
+        canEditContact: true,
+      },
       createdAt: new Date().toISOString(),
     });
   } catch (e) {

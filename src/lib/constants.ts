@@ -12,3 +12,10 @@ export function isSuperAdmin(user: { email?: string | null } | null | undefined)
   const email = (user?.email ?? '').toLowerCase();
   return email === 'eljabbaryhicham@mellivision.com' || email === 'eljabbaryhicham';
 }
+
+// Media-management access. Mirrors the Firestore rules' isAdmin() (user doc
+// role 'admin' or 'superadmin') plus the superadmin email override.
+// Self-registered accounts (role 'user') have no media read/write access.
+export function hasMediaAccess(user: { email?: string | null; role?: string | null } | null | undefined): boolean {
+  return isSuperAdmin(user) || user?.role === 'admin' || user?.role === 'superadmin';
+}
