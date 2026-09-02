@@ -11,6 +11,20 @@ const bodySchema = z.object({
 
 export async function POST(req: NextRequest) {
   console.log('[delete-media] request received');
+  try {
+    return await handlePost(req);
+  } catch (error) {
+    // An unhandled error here would otherwise surface to the client as a
+    // 500 with an EMPTY body (Next hides route-handler errors in production),
+    // producing a useless toast. Return the real message as JSON instead.
+    console.error('[delete-media] unhandled error:', error);
+    const message =
+      error instanceof Error ? error.message : 'Unexpected server error.';
+    return NextResponse.json({ success: false, message }, { status: 500 });
+  }
+}
+
+async function handlePost(req: NextRequest) {
   // Admin gate: superadmin email OR an existing user doc with
   // `permissions.canDeleteMedia === true`. Fails closed.
   const decoded = await verifyAdminRequest(req, 'canDeleteMedia');
