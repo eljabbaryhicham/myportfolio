@@ -2,24 +2,31 @@
 
 import React, { createContext, useContext, useState, useCallback, useEffect, useMemo, useRef } from 'react';
 
-type ProviderState = { isUploading: boolean; progress: number; fileName: string };
+export type MediaProviderKey = 'vercel' | 'cloudinary' | 'appwrite' | 'gumlet_video' | 'gumlet_image';
+export const MEDIA_PROVIDER_KEYS: MediaProviderKey[] = ['vercel', 'cloudinary', 'appwrite', 'gumlet_video', 'gumlet_image'];
 
-type UploadProgressState = {
-  vercel: ProviderState;
-  cloudinary: ProviderState;
+export type MediaLibraryId = 'primary' | 'extented' | 'vercel_blob' | 'appwrite' | 'gumlet_video' | 'gumlet_image';
+export type MediaResourceType = 'image' | 'video' | 'raw';
+
+export type ProviderState = { isUploading: boolean; progress: number; fileName: string };
+
+type ProviderStates = Record<MediaProviderKey, ProviderState>;
+
+// Back-compat single-upload view (for consumers that expect the old shape).
+// `provider` here is only ever 'vercel' | 'cloudinary' | 'appwrite' | 'gumlet_video' | 'gumlet_image'.
+type UploadProgressState = ProviderStates & {
   activeMediaTab: string | null;
-  // Back-compat single-upload view (for consumers that expect the old shape)
   isUploading: boolean;
   progress: number;
   fileName: string;
-  provider: 'vercel' | 'cloudinary' | null;
+  provider: MediaProviderKey | null;
 };
 
 type CompletedUpload = {
   docId: string;
-  resourceType: 'image' | 'video' | 'raw';
-  libraryId: 'primary' | 'extented' | 'vercel_blob';
-  provider: 'vercel' | 'cloudinary';
+  resourceType: MediaResourceType;
+  libraryId: MediaLibraryId;
+  provider: MediaProviderKey;
   fileName?: string;
   source?: 'media-library' | 'media-picker';
 } | null;
@@ -28,27 +35,32 @@ const COMPLETED_UPLOAD_KEY = 'mv_completed_upload';
 
 type UploadProgressContextType = UploadProgressState & {
   setUploadProgress: (state: Partial<UploadProgressState>) => void;
-  startUpload: (fileName: string, provider: 'vercel' | 'cloudinary') => void;
-  updateProgress: (progress: number, provider?: 'vercel' | 'cloudinary') => void;
-  finishUpload: (provider?: 'vercel' | 'cloudinary') => void;
-  clearFileName: (provider: 'vercel' | 'cloudinary') => void;
+  startUpload: (fileName: string, provider: MediaProviderKey) => void;
+  updateProgress: (progress: number, provider?: MediaProviderKey) => void;
+  finishUpload: (provider?: MediaProviderKey) => void;
+  clearFileName: (provider: MediaProviderKey) => void;
   setActiveMediaTab: (tab: string | null) => void;
   completedUpload: CompletedUpload;
-  signalCompletedUpload: (docId: string, resourceType: 'image' | 'video' | 'raw', libraryId: 'primary' | 'extented' | 'vercel_blob', provider: 'vercel' | 'cloudinary', fileName?: string, source?: 'media-library' | 'media-picker') => void;
+  signalCompletedUpload: (docId: string, resourceType: MediaResourceType, libraryId: MediaLibraryId, provider: MediaProviderKey, fileName?: string, source?: 'media-library' | 'media-picker') => void;
   consumeCompletedUpload: () => void;
 };
+
+const EMPTY_PROVIDER: ProviderState = { isUploading: false, progress: 0, fileName: '' };
 
 const UploadProgressContext = createContext<UploadProgressContextType | null>(null);
 
 export function UploadProgressProvider({ children }: { children: React.ReactNode }) {
-  const [state, setState] = useState<UploadProgressState>({
-    vercel: { isUploading: false, progress: 0, fileName: '' },
-    cloudinary: { isUploading: false, progress: 0, fileName: '' },
-    activeMediaTab: null,
-    isUploading: false,
-    progress: 0,
-    fileName: '',
-    provider: null,
+  const [state, setState] = useState<UploadProgressState>(() => {
+    const slots = {} as ProviderStates;
+    for (const key of MEDIA_PROVIDER_KEYS) slots[key] = { ...EMPTY_PROVIDER };
+    return {
+      ...slots,
+      activeMediaTab: null,
+      isUploading: false,
+      progress: 0,
+      fileName: '',
+      provider: null,
+    };
   });
 
   const [completedUpload, setCompletedUpload] = useState<CompletedUpload>(() => {
@@ -63,10 +75,10 @@ export function UploadProgressProvider({ children }: { children: React.ReactNode
   // every network chunk) doesn't re-render the whole app shell dozens of times
   // per second — that's what made page navigation feel laggy during an upload.
   const lastProgressUpdate = useRef(0);
-  const pendingProgress = useRef<{ progress: number; provider?: 'vercel' | 'cloudinary' } | null>(null);
+  const pendingProgress = useRef<{ progress: number; provider?: MediaProviderKey } | null>(null);
   const trailingTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const applyProgress = useCallback((progress: number, provider?: 'vercel' | 'cloudinary') => {
+  const applyProgress = useCallback((progress: number, provider?: MediaProviderKey) => {
     setState((prev) => {
       const target = provider || prev.provider;
       if (!target) return { ...prev, progress };
@@ -78,7 +90,7 @@ export function UploadProgressProvider({ children }: { children: React.ReactNode
     });
   }, []);
 
-  const updateProgress = useCallback((progress: number, provider?: 'vercel' | 'cloudinary') => {
+  const updateProgress = useCallback((progress: number, provider?: MediaProviderKey) => {
     const now = Date.now();
     const THROTTLE_MS = 250;
     pendingProgress.current = { progress, provider };
@@ -106,7 +118,7 @@ export function UploadProgressProvider({ children }: { children: React.ReactNode
     setState((prev) => ({ ...prev, ...partial }));
   }, []);
 
-  const startUpload = useCallback((fileName: string, provider: 'vercel' | 'cloudinary') => {
+  const startUpload = useCallback((fileName: string, provider: MediaProviderKey) => {
     // Clear any stale "completed" upload from a previous run so a failed upload
     // can never reuse an old success state (which caused a false "Uploaded" card).
     setCompletedUpload(null);
@@ -121,7 +133,7 @@ export function UploadProgressProvider({ children }: { children: React.ReactNode
     }));
   }, []);
 
-  const finishUpload = useCallback((provider?: 'vercel' | 'cloudinary') => {
+  const finishUpload = useCallback((provider?: MediaProviderKey) => {
     setState((prev) => {
       const target = provider || prev.provider;
       if (!target) return { ...prev, isUploading: false, progress: 0, provider: null };
@@ -130,17 +142,17 @@ export function UploadProgressProvider({ children }: { children: React.ReactNode
         [target]: { ...prev[target], isUploading: false, progress: 0 },
       };
       if (prev.provider === target) {
-        next.isUploading = next.vercel.isUploading || next.cloudinary.isUploading;
+        next.isUploading = MEDIA_PROVIDER_KEYS.some((k) => next[k].isUploading);
         if (!next.isUploading) {
           next.progress = 0;
           next.provider = null;
           // Keep fileName — the notification effect needs it to detect completion
         } else {
-          const other = target === 'vercel' ? 'cloudinary' : 'vercel';
-          if (next[other].isUploading) {
-            next.progress = next[other].progress;
-            next.fileName = next[other].fileName;
-            next.provider = other as any;
+          const active = MEDIA_PROVIDER_KEYS.find((k) => next[k].isUploading);
+          if (active) {
+            next.progress = next[active].progress;
+            next.fileName = next[active].fileName;
+            next.provider = active;
           }
         }
       }
@@ -152,7 +164,7 @@ export function UploadProgressProvider({ children }: { children: React.ReactNode
     setState((prev) => ({ ...prev, activeMediaTab: tab }));
   }, []);
 
-  const clearFileName = useCallback((provider: 'vercel' | 'cloudinary') => {
+  const clearFileName = useCallback((provider: MediaProviderKey) => {
     setState((prev) => ({
       ...prev,
       [provider]: { ...prev[provider], fileName: '' },
@@ -160,7 +172,7 @@ export function UploadProgressProvider({ children }: { children: React.ReactNode
     }));
   }, []);
 
-  const signalCompletedUpload = useCallback((docId: string, resourceType: 'image' | 'video' | 'raw', libraryId: 'primary' | 'extented' | 'vercel_blob', provider: 'vercel' | 'cloudinary', fileName?: string, source?: 'media-library' | 'media-picker') => {
+  const signalCompletedUpload = useCallback((docId: string, resourceType: MediaResourceType, libraryId: MediaLibraryId, provider: MediaProviderKey, fileName?: string, source?: 'media-library' | 'media-picker') => {
     const data = { docId, resourceType, libraryId, provider, fileName, source };
     setCompletedUpload(data);
     try { localStorage.setItem(COMPLETED_UPLOAD_KEY, JSON.stringify(data)); } catch {}

@@ -86,22 +86,34 @@ function AdminPage() {
       const qs = new URLSearchParams(window.location.search);
       const tabParam = qs.get('tab');
       const innerTabParam = qs.get('innerTab');
-      if (tabParam === 'media' && (innerTabParam === 'cloudinary' || innerTabParam === 'vercel')) {
+      const validInnerTabs: Array<'cloudinary' | 'vercel' | 'appwrite' | 'gumlet'> = ['cloudinary', 'vercel', 'appwrite', 'gumlet'];
+      if (tabParam === 'media' && innerTabParam && validInnerTabs.includes(innerTabParam as any)) {
         setActiveTab('media');
-        setInnerMediaTab(innerTabParam);
+        setInnerMediaTab(innerTabParam as any);
         // Finished navigation (docId present): open the library + highlight the
         // file. Progress navigation has no docId -> just switch the provider tab.
         const docIdParam = qs.get('docId');
         const mediaTabParam = qs.get('mediaTab') as 'images' | 'videos' | 'files' | null;
+        const mediaProvider = qs.get('mediaProvider') as 'cloudinary' | 'vercel' | 'appwrite' | 'gumlet_video' | 'gumlet_image' | null;
         if (docIdParam && mediaTabParam && ['images', 'videos', 'files'].includes(mediaTabParam)) {
-          window.dispatchEvent(new CustomEvent('media-library-maximize', {
-            detail: {
-              provider: innerTabParam === 'cloudinary' ? 'cloudinary' : 'vercel_blob',
-              tab: mediaTabParam,
-              docId: docIdParam,
-              library: qs.get('library') || undefined,
-            },
-          }));
+          if (mediaProvider === 'appwrite' || mediaProvider === 'gumlet_video' || mediaProvider === 'gumlet_image') {
+            window.dispatchEvent(new CustomEvent('media-managed-highlight', {
+              detail: {
+                provider: mediaProvider,
+                docId: docIdParam,
+                tab: mediaTabParam,
+              },
+            }));
+          } else {
+            window.dispatchEvent(new CustomEvent('media-library-maximize', {
+              detail: {
+                provider: innerTabParam === 'cloudinary' ? 'cloudinary' : 'vercel_blob',
+                tab: mediaTabParam,
+                docId: docIdParam,
+                library: qs.get('library') || undefined,
+              },
+            }));
+          }
         }
         // Clean the URL so a page refresh doesn't keep forcing the media tab.
         window.history.replaceState(null, '', '/admin');
@@ -115,7 +127,7 @@ function AdminPage() {
       setActiveTab(savedTab);
     }
     const savedInnerTab = localStorage.getItem('adminInnerMediaTab');
-    if (savedInnerTab && (savedInnerTab === 'cloudinary' || savedInnerTab === 'vercel')) {
+    if (savedInnerTab && (savedInnerTab === 'cloudinary' || savedInnerTab === 'vercel' || savedInnerTab === 'appwrite' || savedInnerTab === 'gumlet')) {
       setInnerMediaTab(savedInnerTab);
       localStorage.removeItem('adminInnerMediaTab');
     }
@@ -127,22 +139,34 @@ function AdminPage() {
   // media library so it opens on the matching images/videos/files view.
   useEffect(() => {
     const handler = (e: Event) => {
-      const detail = (e as CustomEvent).detail as { provider?: 'vercel' | 'cloudinary'; mode?: string; tab?: string; docId?: string; library?: string } | undefined;
+      const detail = (e as CustomEvent).detail as { provider?: 'vercel' | 'cloudinary' | 'appwrite' | 'gumlet_video' | 'gumlet_image'; mode?: string; tab?: string; docId?: string; library?: string } | undefined;
       if (!detail) return;
       setActiveTab('media');
-      setInnerMediaTab(detail.provider === 'cloudinary' ? 'cloudinary' : 'vercel');
+      if (detail.provider === 'appwrite') {
+        setInnerMediaTab('appwrite');
+      } else if (detail.provider === 'gumlet_video' || detail.provider === 'gumlet_image') {
+        setInnerMediaTab('gumlet');
+      } else {
+        setInnerMediaTab(detail.provider === 'cloudinary' ? 'cloudinary' : 'vercel');
+      }
       // Finished mode only: open the media library and highlight the file.
-      // Progress mode: just switch to the Cloudinary/Vercel provider tab.
+      // Progress mode: just switch to the provider tab.
       if (detail.mode === 'finished' && detail.docId) {
-        const provider = detail.provider === 'cloudinary' ? 'cloudinary' : 'vercel_blob';
-        window.dispatchEvent(new CustomEvent('media-library-maximize', {
-          detail: {
-            provider,
-            tab: detail.tab || 'images',
-            docId: detail.docId,
-            library: detail.library,
-          },
-        }));
+        if (detail.provider === 'appwrite' || detail.provider === 'gumlet_video' || detail.provider === 'gumlet_image') {
+          window.dispatchEvent(new CustomEvent('media-managed-highlight', {
+            detail: { provider: detail.provider, docId: detail.docId, tab: detail.tab || 'images' },
+          }));
+        } else {
+          const provider = detail.provider === 'cloudinary' ? 'cloudinary' : 'vercel_blob';
+          window.dispatchEvent(new CustomEvent('media-library-maximize', {
+            detail: {
+              provider,
+              tab: detail.tab || 'images',
+              docId: detail.docId,
+              library: detail.library,
+            },
+          }));
+        }
       }
     };
     window.addEventListener('admin-goto-media', handler);
@@ -187,18 +211,33 @@ function AdminPage() {
       consumeCompletedUpload();
       return;
     }
-    const { docId, resourceType, libraryId } = completedUpload;
+    const { docId, resourceType, libraryId, provider } = completedUpload;
     setNewlyUploadedId(docId);
     if (activeTab !== 'media') {
       setActiveTab('media');
     }
     // Switch inner media tab to match the provider that just completed
-    if (libraryId === 'vercel_blob') {
+    if (provider === 'appwrite') {
+      setInnerMediaTab('appwrite');
+    } else if (provider === 'gumlet_video' || provider === 'gumlet_image') {
+      setInnerMediaTab('gumlet');
+    } else if (libraryId === 'vercel_blob') {
       setInnerMediaTab('vercel');
     } else {
       setInnerMediaTab('cloudinary');
     }
-    // Both Vercel Blob and Cloudinary: don't consume here — components handle their own popups
+    // Managed providers (Appwrite/Gumlet) open their library and best-effort
+    // highlight the uploaded file via a dedicated event.
+    if (provider === 'appwrite' || provider === 'gumlet_video' || provider === 'gumlet_image') {
+      window.dispatchEvent(new CustomEvent('media-managed-highlight', {
+        detail: {
+          provider,
+          docId,
+          tab: resourceType === 'video' ? 'videos' : resourceType === 'raw' ? 'files' : 'images',
+        },
+      }));
+    }
+    // Cloudinary/Vercel: components handle their own popups
     safeTimeout(() => setNewlyUploadedId(null), 3000);
   }, [completedUpload, activeTab, setActiveTab, consumeCompletedUpload, safeTimeout]);
 

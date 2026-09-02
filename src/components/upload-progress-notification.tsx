@@ -1,32 +1,73 @@
 'use client';
 
 import { usePathname, useRouter } from 'next/navigation';
-import { useUploadProgress } from '@/components/upload-progress-context';
+import { useUploadProgress, type MediaProviderKey, type MediaResourceType, type MediaLibraryId } from '@/components/upload-progress-context';
 import { Progress } from '@/components/ui/progress';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCloudUploadAlt, faArrowUpRightFromSquare, faCheckCircle, faXmark } from '@fortawesome/free-solid-svg-icons';
 import { Button } from '@/components/ui/button';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+
+const PROVIDER_LABEL: Record<MediaProviderKey, string> = {
+  vercel: 'Vercel Blob',
+  cloudinary: 'Cloudinary',
+  appwrite: 'Appwrite',
+  gumlet_video: 'Gumlet Video',
+  gumlet_image: 'Gumlet Image',
+};
+
+// Map each provider to the admin page's media sub-tab it opens.
+// Appwrite and Gumlet open their dedicated sub-tabs; Gumlet additionally
+// picks Video vs Image internally (handled by the media library).
+function providerToInnerTab(provider: MediaProviderKey): string {
+  if (provider === 'appwrite') return 'appwrite';
+  if (provider === 'gumlet_video' || provider === 'gumlet_image') return 'gumlet';
+  return provider; // 'vercel' | 'cloudinary'
+}
 
 export default function UploadProgressNotification() {
-  const { vercel, cloudinary, activeMediaTab, clearFileName, completedUpload } = useUploadProgress();
+  const {
+    vercel, cloudinary, appwrite, gumlet_video, gumlet_image,
+    activeMediaTab, clearFileName, completedUpload,
+  } = useUploadProgress();
   const pathname = usePathname();
   const router = useRouter();
 
-  const [completed, setCompleted] = useState<Array<{ provider: 'vercel' | 'cloudinary'; fileName: string; resourceType?: 'image' | 'video' | 'raw'; docId?: string; libraryId?: 'primary' | 'extented' | 'vercel_blob'; id: number }>>([]);
-  const [dismissedActive, setDismissedActive] = useState<Array<'vercel' | 'cloudinary'>>([]);
+  const [completed, setCompleted] = useState<Array<{ provider: MediaProviderKey; fileName: string; resourceType?: MediaResourceType; docId?: string; libraryId?: MediaLibraryId; id: number }>>([]);
+  const [dismissedActive, setDismissedActive] = useState<Array<MediaProviderKey>>([]);
   const nextId = useRef(0);
   const lastNotifiedId = useRef<string | null>(null);
   // DocIds the media library or media picker has already surfaced (e.g. via
   // highlight). The "Uploaded to ..." card for these is suppressed entirely
   // because the user has already seen the new file in its real location.
-  // Using a ref + filter (instead of a setState race) because the highlight
-  // event can fire in the same render cycle that we add the card.
   const suppressedDocIds = useRef<Set<string>>(new Set());
   // Providers whose media surface (picker or full library dialog) is already
   // open. While open, any completed upload for that provider is surfaced
   // directly in-place and the global "Uploaded to ..." toast is noise.
-  const openSurfaces = useRef<Set<'vercel' | 'cloudinary'>>(new Set());
+  const openSurfaces = useRef<Set<MediaProviderKey>>(new Set());
+
+const providerStates: Record<MediaProviderKey, { isUploading: boolean; progress: number; fileName: string }> = useMemo(() => ({
+  vercel, cloudinary, appwrite, gumlet_video, gumlet_image,
+}), [vercel, cloudinary, appwrite, gumlet_video, gumlet_image]);
+  const providerKeys = Object.keys(PROVIDER_LABEL) as MediaProviderKey[];
+
+  useEffect(() => {
+    if (appwrite.isUploading && appwrite.fileName) {
+      setDismissedActive(prev => prev.filter(p => p !== 'appwrite'));
+    }
+  }, [appwrite.isUploading, appwrite.fileName]);
+
+  useEffect(() => {
+    if (gumlet_video.isUploading && gumlet_video.fileName) {
+      setDismissedActive(prev => prev.filter(p => p !== 'gumlet_video'));
+    }
+  }, [gumlet_video.isUploading, gumlet_video.fileName]);
+
+  useEffect(() => {
+    if (gumlet_image.isUploading && gumlet_image.fileName) {
+      setDismissedActive(prev => prev.filter(p => p !== 'gumlet_image'));
+    }
+  }, [gumlet_image.isUploading, gumlet_image.fileName]);
 
   // Re-show an active upload's card whenever a fresh upload starts for that
   // provider (dismiss only affects the current run, not future uploads).
@@ -47,7 +88,7 @@ export default function UploadProgressNotification() {
   // completed card so the notification doesn't linger.
   useEffect(() => {
     const handler = (e: Event) => {
-      const detail = (e as CustomEvent<{ provider?: 'vercel' | 'cloudinary'; mode?: string; docId?: string; tab?: string }>).detail;
+      const detail = (e as CustomEvent<{ provider?: MediaProviderKey; mode?: string; docId?: string; tab?: string }>).detail;
       if (!detail?.provider) return;
       setCompleted(prev => prev.filter((c) => {
         if (c.provider !== detail.provider) return true;
@@ -64,31 +105,22 @@ export default function UploadProgressNotification() {
   // doesn't linger after the user has already seen the new file.
   useEffect(() => {
     const highlighted = (e: Event) => {
-      const detail = (e as CustomEvent<{ provider?: 'vercel' | 'cloudinary'; docId?: string }>).detail;
+      const detail = (e as CustomEvent<{ provider?: MediaProviderKey; docId?: string }>).detail;
       if (!detail?.provider) return;
-      // Record the docId so the card-creation effect skips it if it hasn't
-      // run yet (handles the case where the highlight event lands in the
-      // same render cycle as `completedUpload`).
       if (detail.docId) suppressedDocIds.current.add(detail.docId);
       setCompleted(prev => prev.filter((c) => {
         if (c.provider !== detail.provider) return true;
         if (detail.docId) return c.docId !== detail.docId;
         return false;
       }));
-      // Also dismiss any lingering "Uploading to ..." progress card for the
-      // same provider — the upload has clearly finished and the new file is
-      // now visible in the active surface, so the progress toast is noise.
-      setDismissedActive(prev => prev.includes(detail.provider as 'vercel' | 'cloudinary') ? prev : [...prev, detail.provider as 'vercel' | 'cloudinary']);
+      setDismissedActive(prev => prev.includes(detail.provider as MediaProviderKey) ? prev : [...prev, detail.provider as MediaProviderKey]);
     };
-    // Track which providers currently have a media surface (picker or full
-    // library dialog) open. While one is open, uploads for that provider are
-    // surfaced in-place, so the global toast is suppressed for the duration.
     const opened = (e: Event) => {
-      const detail = (e as CustomEvent<{ provider?: 'vercel' | 'cloudinary' }>).detail;
+      const detail = (e as CustomEvent<{ provider?: MediaProviderKey }>).detail;
       if (detail?.provider) openSurfaces.current.add(detail.provider);
     };
     const closed = (e: Event) => {
-      const detail = (e as CustomEvent<{ provider?: 'vercel' | 'cloudinary' }>).detail;
+      const detail = (e as CustomEvent<{ provider?: MediaProviderKey }>).detail;
       if (detail?.provider) openSurfaces.current.delete(detail.provider);
     };
     window.addEventListener('media-upload-highlighted', highlighted);
@@ -102,26 +134,20 @@ export default function UploadProgressNotification() {
   }, []);
 
   // Create the "upload finished" card directly from the authoritative
-  // `completedUpload` state (which now carries the fileName). The old approach
-  // reacted to the isUploading->false transition, but that raced with the async
-  // Firestore write + signalCompletedUpload, so the card was never shown.
+  // `completedUpload` state (which now carries the fileName).
   useEffect(() => {
     if (!completedUpload) return;
     if (lastNotifiedId.current === completedUpload.docId) return;
     lastNotifiedId.current = completedUpload.docId;
-    // If a media surface (picker or full library dialog) for this provider
-    // is already open, the upload will be surfaced directly inside it — no
-    // need for a global toast that the user has to dismiss.
     if (openSurfaces.current.has(completedUpload.provider)) return;
-    // If the originating surface (library or picker) already surfaced this
-    // upload via its own highlight, don't show a redundant toast here.
     if (suppressedDocIds.current.has(completedUpload.docId)) {
       suppressedDocIds.current.delete(completedUpload.docId);
       return;
     }
+    const providerState = providerStates[completedUpload.provider];
     const fileName =
       completedUpload.fileName ||
-      (completedUpload.provider === 'vercel' ? vercel.fileName : cloudinary.fileName) ||
+      providerState.fileName ||
       'Uploaded file';
     setCompleted(prev => [...prev, {
       provider: completedUpload.provider,
@@ -132,47 +158,43 @@ export default function UploadProgressNotification() {
       id: nextId.current++,
     }]);
     clearFileName(completedUpload.provider);
-  }, [completedUpload, clearFileName, vercel.fileName, cloudinary.fileName]);
+  }, [completedUpload, clearFileName, providerStates]);
 
   const dismiss = (id: number) => {
     setCompleted(prev => prev.filter(c => c.id !== id));
   };
 
   const goToMediaTab = (
-    provider: 'vercel' | 'cloudinary',
-    opts?: { resourceType?: 'image' | 'video' | 'raw'; docId?: string; libraryId?: string }
+    provider: MediaProviderKey,
+    opts?: { resourceType?: MediaResourceType; docId?: string; libraryId?: MediaLibraryId }
   ) => {
     const tab = opts?.resourceType === 'video' ? 'videos' : opts?.resourceType === 'raw' ? 'files' : 'images';
-    // Progress mode (no docId yet): just switch to the provider tab.
-    // Finished mode (docId present): also open the library and highlight the file.
     const mode = opts?.docId ? 'finished' : 'progress';
+    const innerTab = providerToInnerTab(provider);
     const payload = { provider, mode, tab, docId: opts?.docId, library: opts?.libraryId };
     if (pathname === '/admin') {
-      // Already on the admin page: switch via an event (no full reload), so an
-      // in-flight upload is NOT aborted. The admin page forwards finished ones
-      // to the media library to highlight the downloaded file.
       window.dispatchEvent(new CustomEvent('admin-goto-media', { detail: payload }));
     } else {
-      // Navigate from elsewhere: use query params so the admin page switches on mount.
-      const qs = new URLSearchParams({ tab: 'media', innerTab: provider, mediaTab: tab });
+      const qs = new URLSearchParams({ tab: 'media', innerTab, mediaTab: tab });
       if (mode === 'finished' && opts?.docId) {
         qs.set('docId', opts.docId);
         if (opts.libraryId) qs.set('library', opts.libraryId);
+        qs.set('mediaProvider', provider);
       }
       router.push(`/admin?${qs.toString()}`);
     }
   };
 
-  const activeUploads = [
-    vercel.isUploading && vercel.progress < 100 ? { ...vercel, provider: 'vercel' as const } : null,
-    cloudinary.isUploading && cloudinary.progress < 100 ? { ...cloudinary, provider: 'cloudinary' as const } : null,
-  ].filter(Boolean) as Array<{ isUploading: boolean; progress: number; fileName: string; provider: 'vercel' | 'cloudinary' }>;
+  const activeUploads = providerKeys
+    .map((p) => ({ ...providerStates[p], key: p }))
+    .filter((u) => u.isUploading && u.progress < 100)
+    .map((u) => ({ isUploading: true, progress: u.progress, fileName: u.fileName, provider: u.key })) as Array<{ isUploading: boolean; progress: number; fileName: string; provider: MediaProviderKey }>;
 
   const visibleActiveUploads = activeUploads.filter((u) => {
     if (dismissedActive.includes(u.provider)) return false;
     if (pathname !== '/admin') return true;
-    if (u.provider === 'vercel' && activeMediaTab === 'vercel') return false;
-    if (u.provider === 'cloudinary' && activeMediaTab === 'cloudinary') return false;
+    const tabForProvider = providerToInnerTab(u.provider);
+    if (activeMediaTab === tabForProvider) return false;
     return true;
   });
 
@@ -188,7 +210,7 @@ export default function UploadProgressNotification() {
                 <FontAwesomeIcon icon={faCloudUploadAlt} className="h-5 w-5 text-primary" />
               </div>
               <div className="min-w-0 flex-1">
-                <p className="text-sm font-medium truncate">Uploading to {u.provider === 'vercel' ? 'Vercel Blob' : 'Cloudinary'}</p>
+                <p className="text-sm font-medium truncate">Uploading to {PROVIDER_LABEL[u.provider]}</p>
                 <p className="text-xs text-muted-foreground truncate">{u.fileName}</p>
               </div>
             </div>
@@ -228,7 +250,7 @@ export default function UploadProgressNotification() {
                 <FontAwesomeIcon icon={faCheckCircle} className="h-5 w-5 text-green-500" />
               </div>
               <div className="min-w-0 flex-1">
-                <p className="text-sm font-medium truncate">Uploaded to {c.provider === 'vercel' ? 'Vercel Blob' : 'Cloudinary'}</p>
+                <p className="text-sm font-medium truncate">Uploaded to {PROVIDER_LABEL[c.provider]}</p>
                 <p className="text-xs text-muted-foreground truncate">{c.fileName}</p>
               </div>
             </div>

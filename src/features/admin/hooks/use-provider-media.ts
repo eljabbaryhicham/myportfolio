@@ -7,6 +7,12 @@ import { useMediaMeta } from '@/features/admin/hooks/use-media-meta';
 import { gumletImageDeliveryFormatUrl } from '@/lib/gumlet-image';
 import { type MediaMetaProvider, type MediaMetaTag } from '@/lib/media-meta';
 import type { MediaProvider, ProviderAssetRecord } from '@/lib/media-providers';
+import { useUploadProgress, type MediaProviderKey } from '@/components/upload-progress-context';
+
+// Map the hook's MediaProvider value to the notification system's provider key.
+function toProviderKey(provider: MediaProvider): MediaProviderKey {
+  return provider === 'vercel_blob' ? 'vercel' : (provider as MediaProviderKey);
+}
 
 /**
  * Provider-neutral media hook used by the unified admin media library.
@@ -95,6 +101,7 @@ export function useProviderMedia(provider: MediaProvider): ProviderMediaApi {
   const firestore = useFirestore();
   const auth = useAuth();
   const { getTag, setTag: setMetaTag } = useMediaMeta();
+  const { startUpload: startGlobalUpload, updateProgress: updateGlobalProgress, finishUpload: finishGlobalUpload, signalCompletedUpload } = useUploadProgress();
   const [managedAssets, setManagedAssets] = useState<MediaLibraryAsset[]>([]);
   const [isManagedLoading, setIsManagedLoading] = useState(false);
   const [reloadKey, setReloadKey] = useState(0);
@@ -177,18 +184,34 @@ export function useProviderMedia(provider: MediaProvider): ProviderMediaApi {
       setUploadFileName(file.name);
       setIsUploading(true);
       setUploadProgress(5);
+      startGlobalUpload(file.name, toProviderKey(provider));
       try {
         const token = await getToken();
-        if (!token) return { ok: false, error: 'Not authenticated.' };
+        if (!token) {
+          finishGlobalUpload(toProviderKey(provider));
+          return { ok: false, error: 'Not authenticated.' };
+        }
 
         if (provider === 'gumlet_video') {
-          return await uploadGumletVideo(file, 'ABR', token, (p) => setUploadProgress(p), activeXhrRef);
+          const result = await uploadGumletVideo(
+            file,
+            'ABR',
+            token,
+            (p) => { setUploadProgress(p); updateGlobalProgress(p, toProviderKey(provider)); },
+            activeXhrRef
+          );
+          if (result.ok && result.url) {
+            const assetId = result.url.replace(/^asset:/, '');
+            signalCompletedUpload(assetId, 'video', 'gumlet_video', 'gumlet_video', file.name);
+          }
+          return result;
         }
 
         // Appwrite / Gumlet Image multipart upload.
         if (provider === 'appwrite') {
           const body = new FormData();
           body.append('file', file);
+          updateGlobalProgress(15, toProviderKey(provider));
           const response = await fetch('/api/appwrite/media', {
             method: 'POST',
             headers: { Authorization: `Bearer ${token}` },
@@ -198,7 +221,15 @@ export function useProviderMedia(provider: MediaProvider): ProviderMediaApi {
           if (!response.ok || !data.success) throw new Error(data.message || 'Upload failed.');
           const uploaded = data.file as ProviderAssetRecord;
           setUploadProgress(100);
+          updateGlobalProgress(100, toProviderKey(provider));
           setManagedAssets((current) => [toMediaLibraryAsset('appwrite', uploaded), ...current]);
+          signalCompletedUpload(
+            uploaded.providerAssetId,
+            uploaded.resourceType,
+            'appwrite',
+            'appwrite',
+            file.name
+          );
           return { ok: true, url: uploaded.url };
         }
 
@@ -209,9 +240,10 @@ export function useProviderMedia(provider: MediaProvider): ProviderMediaApi {
         setUploadProgress(0);
         setIsUploading(false);
         setUploadFileName('');
+        finishGlobalUpload(toProviderKey(provider));
       }
     },
-    [getToken, provider]
+    [getToken, provider, startGlobalUpload, updateGlobalProgress, finishGlobalUpload, signalCompletedUpload]
   );
 
   // ---- uploadByLink ----
@@ -220,9 +252,13 @@ export function useProviderMedia(provider: MediaProvider): ProviderMediaApi {
       setUploadFileName(filename || url);
       setIsUploading(true);
       setUploadProgress(10);
+      startGlobalUpload(filename || url, toProviderKey(provider));
       try {
         const token = await getToken();
-        if (!token) return { ok: false, error: 'Not authenticated.' };
+        if (!token) {
+          finishGlobalUpload(toProviderKey(provider));
+          return { ok: false, error: 'Not authenticated.' };
+        }
         let created: MediaLibraryAsset | null = null;
 
         if (provider === 'appwrite') {
@@ -257,6 +293,14 @@ export function useProviderMedia(provider: MediaProvider): ProviderMediaApi {
         if (created) {
           setManagedAssets((current) => [created!, ...current]);
           setUploadProgress(100);
+          updateGlobalProgress(100, toProviderKey(provider));
+          signalCompletedUpload(
+            created.id,
+            created.resourceType,
+            provider === 'gumlet_video' ? 'gumlet_video' : provider === 'gumlet_image' ? 'gumlet_image' : 'appwrite',
+            toProviderKey(provider),
+            created.filename
+          );
           return { ok: true, url: created.url };
         }
         return { ok: false, error: 'Unsupported provider for link import.' };
@@ -266,9 +310,10 @@ export function useProviderMedia(provider: MediaProvider): ProviderMediaApi {
         setUploadProgress(0);
         setIsUploading(false);
         setUploadFileName('');
+        finishGlobalUpload(toProviderKey(provider));
       }
     },
-    [getToken, provider]
+    [getToken, provider, startGlobalUpload, updateGlobalProgress, finishGlobalUpload, signalCompletedUpload]
   );
 
   // ---- deleteAsset ----
