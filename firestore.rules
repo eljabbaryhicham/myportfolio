@@ -91,6 +91,15 @@ service cloud.firestore {
         && (request.resource.data.tag == null || request.resource.data.tag in ['green', 'red', 'orange', 'blue']);
     }
 
+    // Gumlet Image registry: source URLs are admin-only. The Gumlet service
+    // remains the delivery layer; this collection never stores image bytes.
+    match /gumlet_images/{imageId} {
+      allow get, list: if isAdmin();
+      allow create: if hasPerm('canUploadMedia');
+      allow delete: if hasPerm('canDeleteMedia');
+      allow update: if false;
+    }
+
     // Users:
     match /users/{userId} {
       // Users can read their own doc; admins can read any user doc.

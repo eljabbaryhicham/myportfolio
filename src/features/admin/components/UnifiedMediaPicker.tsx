@@ -23,6 +23,9 @@ import { isSuperAdmin as isSuperAdminCheck } from '@/lib/constants';
 import { Progress } from '@/components/ui/progress';
 import AddFromUrlDialog from './AddFromUrlDialog';
 
+type PickerProvider = 'cloudinary' | 'vercel' | 'appwrite' | 'gumlet_video' | 'gumlet_image';
+type PickerAsset = { id: string; url: string; filename: string; resourceType: 'image' | 'video' | 'raw'; thumbnailUrl?: string };
+
 // Cloudinary URL helpers
 const CLOUDINARY_UPLOAD_RE = /\/(image|video|raw)\/upload\//;
 const withTransform = (url: string, transform: string): string =>
@@ -64,7 +67,7 @@ interface UnifiedMediaPickerProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
   onMediaSelect: (url: string, type: 'image' | 'video' | 'raw', filename: string) => void;
-  forceProvider?: 'cloudinary' | 'vercel';
+  forceProvider?: PickerProvider;
 }
 
 export default function UnifiedMediaPicker({ isOpen, onOpenChange, onMediaSelect, forceProvider }: UnifiedMediaPickerProps) {
@@ -72,8 +75,8 @@ export default function UnifiedMediaPicker({ isOpen, onOpenChange, onMediaSelect
   const firestore = useFirestore();
   const [preferredProvider] = useMediaProvider();
 
-  const [provider, setProvider] = useState<'cloudinary' | 'vercel'>(
-    forceProvider || (preferredProvider === 'vercel_blob' ? 'vercel' : 'cloudinary')
+  const [provider, setProvider] = useState<PickerProvider>(
+    forceProvider || (preferredProvider === 'vercel_blob' ? 'vercel' : preferredProvider)
   );
   const [activeTab, setActiveTab] = useState<'images' | 'videos' | 'files'>('images');
   const [activeLibrary, setActiveLibrary] = useState<'primary' | 'extented'>('primary');
@@ -81,6 +84,8 @@ export default function UnifiedMediaPicker({ isOpen, onOpenChange, onMediaSelect
   const [formatChoiceAsset, setFormatChoiceAsset] = useState<{ url: string; resourceType: 'image' | 'video' | 'raw'; filename: string } | null>(null);
   const [isUrlDialogOpen, setIsUrlDialogOpen] = useState(false);
   const [newlyUploadedId, setNewlyUploadedId] = useState<string | null>(null);
+  const [providerAssets, setProviderAssets] = useState<PickerAsset[]>([]);
+  const [isLoadingProviderAssets, setIsLoadingProviderAssets] = useState(false);
 
   const { completedUpload, consumeCompletedUpload } = useUploadProgress();
 
@@ -103,7 +108,8 @@ export default function UnifiedMediaPicker({ isOpen, onOpenChange, onMediaSelect
   // highlighted directly in this picker's grid.
   useEffect(() => {
     if (!isOpen) return;
-    const providerEvt = provider as 'cloudinary' | 'vercel';
+    const providerEvt = provider === 'cloudinary' || provider === 'vercel' ? provider : undefined;
+    if (!providerEvt) return;
     window.dispatchEvent(new CustomEvent('media-surface-opened', {
       detail: { provider: providerEvt },
     }));
@@ -208,6 +214,34 @@ export default function UnifiedMediaPicker({ isOpen, onOpenChange, onMediaSelect
 
   const vercelColRef = useMemoFirebase(() => firestore ? query(collection(firestore, 'vercel_blobs'), orderBy('uploadedAt', 'desc')) : null, [firestore]);
   const { data: vercelBlobs, isLoading: isLoadingVercel } = useCollection<VercelBlobDoc>(vercelColRef as any);
+
+  useEffect(() => {
+    if (!isOpen || !['appwrite', 'gumlet_video', 'gumlet_image'].includes(provider)) return;
+    let cancelled = false;
+    const loadProviderAssets = async () => {
+      const idToken = auth?.currentUser ? await auth.currentUser.getIdToken() : null;
+      if (!idToken) return;
+      setIsLoadingProviderAssets(true);
+      try {
+        const endpoint = provider === 'appwrite' ? '/api/appwrite/media' : provider === 'gumlet_video' ? '/api/gumlet/video' : '/api/gumlet/image';
+        const response = await fetch(`${endpoint}?search=${encodeURIComponent(searchQuery.trim())}`, { headers: { Authorization: `Bearer ${idToken}` } });
+        const data = await response.json();
+        if (!response.ok || !data.success) throw new Error(data.message || 'Could not load media.');
+        const assets: PickerAsset[] = provider === 'appwrite'
+          ? data.files.map((file: any) => ({ id: file.providerAssetId, url: file.url, filename: file.filename, resourceType: file.resourceType }))
+          : provider === 'gumlet_video'
+            ? data.assets.map((asset: any) => ({ id: asset.assetId, url: asset.playbackUrl, filename: asset.title, resourceType: 'video', thumbnailUrl: asset.thumbnailUrl })).filter((asset: PickerAsset) => Boolean(asset.url))
+            : data.images.map((image: any) => ({ id: image.id, url: image.deliveryUrl, filename: image.filename, resourceType: 'image' }));
+        if (!cancelled) setProviderAssets(assets);
+      } catch (error) {
+        if (!cancelled) toast({ variant: 'destructive', title: 'Library unavailable', description: error instanceof Error ? error.message : 'Could not load media.' });
+      } finally {
+        if (!cancelled) setIsLoadingProviderAssets(false);
+      }
+    };
+    void loadProviderAssets();
+    return () => { cancelled = true; };
+  }, [auth, isOpen, provider, searchQuery, toast]);
 
   const handleSelect = (url: string, type: 'image' | 'video' | 'raw', filename: string) => {
     setFormatChoiceAsset(null);
@@ -330,13 +364,27 @@ export default function UnifiedMediaPicker({ isOpen, onOpenChange, onMediaSelect
     );
   };
 
+  const renderProviderGrid = (type: 'image' | 'video' | 'raw') => {
+    if (isLoadingProviderAssets) return <div className="flex justify-center py-12"><Preloader /></div>;
+    const files = providerAssets.filter((asset) => asset.resourceType === type);
+    if (files.length === 0) return <div className="text-center py-12 text-muted-foreground"><FontAwesomeIcon icon={type === 'image' ? faFileImage : type === 'video' ? faFilm : faFileLines} className="h-12 w-12 mb-4" /><p>No {type === 'raw' ? 'files' : `${type}s`} found.</p></div>;
+    return <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">{files.map((file) => <div key={file.id} className="flex flex-col gap-2 group cursor-pointer" onClick={() => handleSelect(file.url, file.resourceType, file.filename)}><div className="relative aspect-square border rounded-lg overflow-hidden glass-effect p-1 group-hover:ring-2 group-hover:ring-primary transition-all"><div className="relative w-full h-full rounded-md overflow-hidden bg-black/50 flex items-center justify-center">{file.resourceType === 'image' ? <>
+      {/* Provider delivery hosts are configured at runtime, so static Next Image allowlisting is not safe here. */}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src={file.url} alt={file.filename} className="w-full h-full object-cover" />
+    </> : file.thumbnailUrl ? <>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src={file.thumbnailUrl} alt="" className="w-full h-full object-cover" />
+    </> : <FontAwesomeIcon icon={type === 'video' ? faFilm : faFileLines} className="h-8 w-8 text-white/70" />}</div><div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"><span className="text-white font-bold text-sm">{t('mediaAdmin.select') || 'Select'}</span></div></div><p className="text-xs text-center text-muted-foreground truncate" title={file.filename}>{file.filename}</p></div>)}</div>;
+  };
+
   return (
     <>
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="w-[90vw] max-w-6xl h-[85vh] glass-effect p-0 flex flex-col">
         <DialogHeader className="p-4 border-b text-center">
           <DialogTitle className="font-headline">{t('mediaAdmin.chooseMedia') || 'Choose Media'}</DialogTitle>
-          <p className="text-sm text-muted-foreground">Select from Cloudinary or Vercel Blob libraries</p>
+          <p className="text-sm text-muted-foreground">Select from your configured media libraries</p>
         </DialogHeader>
 
         {!forceProvider && (
@@ -344,6 +392,9 @@ export default function UnifiedMediaPicker({ isOpen, onOpenChange, onMediaSelect
             <TabsList>
               <TabsTrigger value="cloudinary" className="glass-effect data-[state=active]:bg-destructive">Cloudinary</TabsTrigger>
               <TabsTrigger value="vercel" className="glass-effect data-[state=active]:bg-destructive">Vercel Blob</TabsTrigger>
+              <TabsTrigger value="appwrite" className="glass-effect data-[state=active]:bg-destructive">Appwrite</TabsTrigger>
+              <TabsTrigger value="gumlet_video" className="glass-effect data-[state=active]:bg-destructive">Gumlet Video</TabsTrigger>
+              <TabsTrigger value="gumlet_image" className="glass-effect data-[state=active]:bg-destructive">Gumlet Image</TabsTrigger>
             </TabsList>
           </Tabs>
         )}
@@ -373,7 +424,7 @@ export default function UnifiedMediaPicker({ isOpen, onOpenChange, onMediaSelect
             <Input value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder={t('mediaAdmin.searchPlaceholder')} className="max-w-[200px] ml-auto glass-effect" />
           </div>
 
-          {canUpload && (
+          {canUpload && (provider === 'cloudinary' || provider === 'vercel') && (
             <div className="px-4 pt-2 flex items-center gap-2 flex-wrap">
               <div
                 {...getRootProps()}
@@ -426,11 +477,17 @@ export default function UnifiedMediaPicker({ isOpen, onOpenChange, onMediaSelect
                 <TabsContent value="videos" className="p-4 m-0">{renderCloudinaryGrid('video')}</TabsContent>
                 <TabsContent value="files" className="p-4 m-0">{renderCloudinaryGrid('raw')}</TabsContent>
               </>
-            ) : (
+            ) : provider === 'vercel' ? (
               <>
                 <TabsContent value="images" className="p-4 m-0">{renderVercelGrid('image')}</TabsContent>
                 <TabsContent value="videos" className="p-4 m-0">{renderVercelGrid('video')}</TabsContent>
                 <TabsContent value="files" className="p-4 m-0">{renderVercelGrid('raw')}</TabsContent>
+              </>
+            ) : (
+              <>
+                <TabsContent value="images" className="p-4 m-0">{renderProviderGrid('image')}</TabsContent>
+                <TabsContent value="videos" className="p-4 m-0">{renderProviderGrid('video')}</TabsContent>
+                <TabsContent value="files" className="p-4 m-0">{renderProviderGrid('raw')}</TabsContent>
               </>
             )}
           </ScrollArea>

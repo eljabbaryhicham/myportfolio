@@ -4,13 +4,13 @@ import { useCallback, useEffect, useState } from 'react';
 
 const STORAGE_KEY = 'preferred-media-provider';
 
-export type MediaProvider = 'cloudinary' | 'vercel_blob';
+export type MediaProvider = 'cloudinary' | 'vercel_blob' | 'appwrite' | 'gumlet_video' | 'gumlet_image';
 
 function readStored(): MediaProvider {
   if (typeof window === 'undefined') return 'cloudinary';
   try {
     const v = window.localStorage.getItem(STORAGE_KEY);
-    if (v === 'cloudinary' || v === 'vercel_blob') return v;
+    if (v === 'cloudinary' || v === 'vercel_blob' || v === 'appwrite' || v === 'gumlet_video' || v === 'gumlet_image') return v;
   } catch {
     // storage unavailable
   }

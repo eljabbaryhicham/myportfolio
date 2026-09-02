@@ -19,6 +19,9 @@ import Preloader from '@/components/preloader';
 const ProjectAdmin = dynamicImport(() => import('@/features/admin/components/ProjectAdmin'), { ssr: false, loading: () => <Preloader /> });
 const ContactAdmin = dynamicImport(() => import('@/features/admin/components/ContactAdmin'), { ssr: false, loading: () => <Preloader /> });
 const MediaAdmin = dynamicImport(() => import('@/features/admin/components/MediaLibrary'), { ssr: false, loading: () => <Preloader /> });
+const AppwriteMediaLibrary = dynamicImport(() => import('@/features/admin/components/AppwriteMediaLibrary'), { ssr: false, loading: () => <Preloader /> });
+const GumletVideoLibrary = dynamicImport(() => import('@/features/admin/components/GumletVideoLibrary'), { ssr: false, loading: () => <Preloader /> });
+const GumletImageLibrary = dynamicImport(() => import('@/features/admin/components/GumletImageLibrary'), { ssr: false, loading: () => <Preloader /> });
 const HomeAdmin = dynamicImport(() => import('@/features/admin/components/HomeAdmin'), { ssr: false, loading: () => <Preloader /> });
 import type { PortfolioItem } from '@/features/portfolio/data/portfolio-data';
 import { createMultilingualString } from '@/lib/i18n/multilingual';
@@ -48,10 +51,10 @@ function AdminPage() {
   const [isPortfolioSheetOpen, setIsPortfolioSheetOpen] = useState(false);
   const [isLibraryOpen, setIsLibraryOpen] = useState(false);
   const [librarySelectionConfig, setLibrarySelectionConfig] = useState<{ onSelect: (url: string, type: 'image' | 'video' | 'raw', filename: string) => void } | null>(null);
-  const [libraryForceProvider, setLibraryForceProvider] = useState<'cloudinary' | 'vercel' | undefined>(undefined);
+  const [libraryForceProvider, setLibraryForceProvider] = useState<'cloudinary' | 'vercel' | 'appwrite' | 'gumlet_video' | 'gumlet_image' | undefined>(undefined);
   const [activeTab, setActiveTab] = useState('home');
   const [fromMediaLibrary, setFromMediaLibrary] = useState(false);
-  const [innerMediaTab, setInnerMediaTab] = useState<'cloudinary' | 'vercel'>('cloudinary');
+  const [innerMediaTab, setInnerMediaTab] = useState<'cloudinary' | 'vercel' | 'appwrite' | 'gumlet' | 'gumlet-image'>('cloudinary');
   
   const [newlyUploadedId, setNewlyUploadedId] = useState<string | null>(null);
   const [isVercelLibraryOpen, setIsVercelLibraryOpen] = useState(false);
@@ -444,16 +447,28 @@ function AdminPage() {
               </TabsContent>
               {canManageMedia && (
                 <TabsContent value="media" className="flex-1 overflow-auto mt-4">
-                  <Tabs value={innerMediaTab} onValueChange={(v) => setInnerMediaTab(v as 'cloudinary' | 'vercel')} className="w-full">
+                  <Tabs value={innerMediaTab} onValueChange={(v) => setInnerMediaTab(v as 'cloudinary' | 'vercel' | 'appwrite' | 'gumlet' | 'gumlet-image')} className="w-full">
                     <TabsList className="mb-4">
                       <TabsTrigger value="cloudinary" className="glass-effect data-[state=active]:bg-destructive">Cloudinary</TabsTrigger>
                       <TabsTrigger value="vercel" className="glass-effect data-[state=active]:bg-destructive">Vercel Blob</TabsTrigger>
+                      <TabsTrigger value="appwrite" className="glass-effect data-[state=active]:bg-destructive">Appwrite</TabsTrigger>
+                      <TabsTrigger value="gumlet" className="glass-effect data-[state=active]:bg-destructive">Gumlet Video</TabsTrigger>
+                      <TabsTrigger value="gumlet-image" className="glass-effect data-[state=active]:bg-destructive">Gumlet Image</TabsTrigger>
                     </TabsList>
                     <TabsContent value="cloudinary">
                       <MediaAdmin provider="cloudinary" onUploadComplete={handleUploadComplete} onMediaSelect={handleOpenPortfolioFormWithMedia} />
                     </TabsContent>
                     <TabsContent value="vercel">
                       <MediaAdmin provider="vercel_blob" onUploadComplete={handleVercelUploadComplete} />
+                    </TabsContent>
+                    <TabsContent value="appwrite">
+                      <AppwriteMediaLibrary />
+                    </TabsContent>
+                    <TabsContent value="gumlet">
+                      <GumletVideoLibrary />
+                    </TabsContent>
+                    <TabsContent value="gumlet-image">
+                      <GumletImageLibrary />
                     </TabsContent>
                   </Tabs>
               </TabsContent>

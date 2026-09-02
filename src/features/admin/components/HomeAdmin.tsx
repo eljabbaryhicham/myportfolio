@@ -231,7 +231,7 @@ function ProviderRadioField({ label, description }: { label: string; description
             <FormLabel>{label}</FormLabel>
             <FormControl>
                 <RadioGroup
-                    onValueChange={(v) => setProvider(v as 'cloudinary' | 'vercel_blob')}
+                    onValueChange={(v) => setProvider(v as 'cloudinary' | 'vercel_blob' | 'appwrite' | 'gumlet_video' | 'gumlet_image')}
                     value={provider}
                     className="flex items-center space-x-4"
                 >
@@ -242,6 +242,18 @@ function ProviderRadioField({ label, description }: { label: string; description
                     <FormItem className="flex items-center space-x-2 space-y-0">
                         <FormControl><RadioGroupItem value="vercel_blob" /></FormControl>
                         <FormLabel className="font-normal">Vercel Blob</FormLabel>
+                    </FormItem>
+                    <FormItem className="flex items-center space-x-2 space-y-0">
+                        <FormControl><RadioGroupItem value="appwrite" /></FormControl>
+                        <FormLabel className="font-normal">Appwrite</FormLabel>
+                    </FormItem>
+                    <FormItem className="flex items-center space-x-2 space-y-0">
+                        <FormControl><RadioGroupItem value="gumlet_video" /></FormControl>
+                        <FormLabel className="font-normal">Gumlet Video</FormLabel>
+                    </FormItem>
+                    <FormItem className="flex items-center space-x-2 space-y-0">
+                        <FormControl><RadioGroupItem value="gumlet_image" /></FormControl>
+                        <FormLabel className="font-normal">Gumlet Image</FormLabel>
                     </FormItem>
                 </RadioGroup>
             </FormControl>
