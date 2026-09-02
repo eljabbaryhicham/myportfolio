@@ -1,12 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { verifyAdminRequest } from '@/lib/admin-auth';
-import { createGumletUploadIntent, deleteGumletAsset, listGumletAssets } from '@/lib/gumlet-video';
+import { createGumletAssetFromUrl, createGumletUploadIntent, deleteGumletAsset, listGumletAssets } from '@/lib/gumlet-video';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-const createSchema = z.object({ title: z.string().trim().min(1).max(256), format: z.enum(['ABR', 'MP4']) });
+const createSchema = z.object({
+  title: z.string().trim().max(256).optional(),
+  format: z.enum(['ABR', 'MP4']),
+  sourceUrl: z.string().url().max(2048).optional(),
+});
 const deleteSchema = z.object({ assetId: z.string().trim().min(1).max(128) });
 
 function gumletError(error: unknown) {
@@ -31,9 +35,16 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ success: false, message: 'Unauthorized. Admin authentication required.' }, { status: 401 });
   }
   const parsed = createSchema.safeParse(await req.json().catch(() => null));
-  if (!parsed.success) return NextResponse.json({ success: false, message: 'A video title and ABR or MP4 format are required.' }, { status: 400 });
+  if (!parsed.success) return NextResponse.json({ success: false, message: 'A video title/format or a valid source URL is required.' }, { status: 400 });
+  const { title, format, sourceUrl } = parsed.data;
   try {
-    return NextResponse.json({ success: true, upload: await createGumletUploadIntent(parsed.data.title, parsed.data.format) }, { status: 201 });
+    if (sourceUrl) {
+      // Link-import: Gumlet downloads and transcodes the remote video.
+      const styles = await createGumletAssetFromUrl(sourceUrl, title || '', format);
+      return NextResponse.json({ success: true, asset: styles }, { status: 201 });
+    }
+    if (!title) return NextResponse.json({ success: false, message: 'A video title is required for direct upload.' }, { status: 400 });
+    return NextResponse.json({ success: true, upload: await createGumletUploadIntent(title, format) }, { status: 201 });
   } catch (error) {
     return gumletError(error);
   }

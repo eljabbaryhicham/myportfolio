@@ -515,10 +515,10 @@ export default forwardRef<MediaLibraryRef, MediaLibraryProps>(function MediaLibr
   // ---- Permissions (Cloudinary checks; Vercel implicitly allows all) ----
   const typedUser = user as AppUser | null;
   const isSuperAdmin = isSuperAdminCheck(typedUser);
-  const canUpload = provider === 'cloudinary' ? (isSuperAdmin || (typedUser?.permissions?.canUploadMedia ?? true)) : true;
-  const canDelete = provider === 'cloudinary' ? (isSuperAdmin || (typedUser?.permissions?.canDeleteMedia ?? true)) : true;
-  const canEditHome = provider === 'cloudinary' ? (isSuperAdmin || (typedUser?.permissions?.canEditHome ?? true)) : true;
-  const canEditContact = provider === 'cloudinary' ? (isSuperAdmin || (typedUser?.permissions?.canEditContact ?? true)) : true;
+  const canUpload = isSuperAdmin || (typedUser?.permissions?.canUploadMedia ?? false);
+  const canDelete = isSuperAdmin || (typedUser?.permissions?.canDeleteMedia ?? false);
+  const canEditHome = isSuperAdmin || (typedUser?.permissions?.canEditHome ?? false);
+  const canEditContact = isSuperAdmin || (typedUser?.permissions?.canEditContact ?? false);
 
   // ---- Dialog mode props ----
   const isDialog = !!(props as DialogMediaLibraryProps).isDialog;

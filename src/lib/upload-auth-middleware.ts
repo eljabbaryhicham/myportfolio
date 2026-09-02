@@ -13,7 +13,7 @@ export async function requireUploadAuth(
   req: NextRequest,
   permission: UploadPermission
 ): Promise<AuthResult> {
-  const decoded = await verifyAdminRequest(req);
+  const decoded = await verifyAdminRequest(req, permission);
   if (!decoded) {
     return {
       success: false,

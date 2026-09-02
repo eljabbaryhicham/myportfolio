@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { verifyAdminRequest } from '@/lib/admin-auth';
 import {
   deleteAppwriteFile,
+  linkAppwriteFile,
   listAppwriteFiles,
   MAX_UPLOAD_BYTES,
   uploadAppwriteFile,
@@ -12,6 +13,7 @@ export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 const deleteSchema = z.object({ fileId: z.string().min(1).max(36) });
+const linkSchema = z.object({ sourceUrl: z.string().url().max(2048), filename: z.string().trim().max(240).optional() });
 
 function appwriteError(error: unknown) {
   const message = error instanceof Error ? error.message : 'Appwrite request failed.';
@@ -38,6 +40,23 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ success: false, message: 'Unauthorized. Admin authentication required.' }, { status: 401 });
   }
 
+  const contentType = req.headers.get('content-type') || '';
+
+  // JSON link-import: fetch remote bytes and store them in Appwrite.
+  if (contentType.includes('application/json')) {
+    const parsed = linkSchema.safeParse(await req.json().catch(() => null));
+    if (!parsed.success) {
+      return NextResponse.json({ success: false, message: 'A valid HTTPS file URL is required.' }, { status: 400 });
+    }
+    try {
+      const asset = await linkAppwriteFile(parsed.data.sourceUrl, parsed.data.filename);
+      return NextResponse.json({ success: true, file: asset }, { status: 201 });
+    } catch (error) {
+      return appwriteError(error);
+    }
+  }
+
+  // Multipart file upload.
   try {
     const formData = await req.formData();
     const file = formData.get('file');

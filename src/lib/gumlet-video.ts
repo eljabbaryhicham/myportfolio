@@ -69,6 +69,31 @@ export async function createGumletUploadIntent(title: string, format: GumletOutp
   return { ...normalizeGumletAsset(data), uploadUrl: data.upload_url };
 }
 
+/**
+ * Imports a remote video by URL into a Gumlet collection for processing.
+ * Uses the Create Asset API (`POST /video/assets` with the `input` field set
+ * to the remote URL) so Gumlet downloads and transcodes the source.
+ */
+export async function createGumletAssetFromUrl(
+  sourceUrl: string,
+  title: string,
+  format: GumletOutputFormat
+): Promise<GumletVideoAsset> {
+  const parsed = new URL(sourceUrl);
+  if (parsed.protocol !== 'https:') {
+    throw new Error('Gumlet link import requires an HTTPS video URL.');
+  }
+  const config = gumletConfiguration();
+  const data = await gumletFetch('/video/assets', {
+    method: 'POST',
+    body: JSON.stringify({ input: sourceUrl, collection_id: config.workspaceId, format, title: title || undefined }),
+  });
+  if (!(data.asset_id ?? data.id)) {
+    throw new Error('Gumlet did not create the video asset.');
+  }
+  return normalizeGumletAsset(data);
+}
+
 export async function listGumletAssets(search?: string): Promise<GumletVideoAsset[]> {
   const config = gumletConfiguration();
   const query = new URLSearchParams({ type: 'videos', size: '100', sortBy: 'created_at', orderBy: 'desc' });

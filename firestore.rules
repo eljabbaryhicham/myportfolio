@@ -100,6 +100,19 @@ service cloud.firestore {
       allow update: if false;
     }
 
+    // Color-tag metadata for providers whose assets do not live in Firestore
+    // (Appwrite, Gumlet Video, Gumlet Image). Docs are keyed by
+    // `mediaMetaDocId(provider, providerAssetId)` in src/lib/media-meta.ts.
+    // The only allowed update is the admin color tag field.
+    match /media_meta/{metaId} {
+      allow get, list: if isAdmin();
+      allow create: if hasPerm('canUploadMedia');
+      allow delete: if hasPerm('canDeleteMedia');
+      allow update: if isAdmin()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['tag'])
+        && (request.resource.data.tag == null || request.resource.data.tag in ['green', 'red', 'orange', 'blue']);
+    }
+
     // Users:
     match /users/{userId} {
       // Users can read their own doc; admins can read any user doc.

@@ -31,6 +31,17 @@ export function gumletImageDeliveryUrl(sourceUrl: string) {
   return output.toString();
 }
 
+/**
+ * Gumlet delivery URL for a specific output format. Replaces the default
+ * `format=auto` used by `gumletImageDeliveryUrl` so admins can copy e.g. a
+ * WebP/AVIF variant. Pass the URL produced by `gumletImageDeliveryUrl`.
+ */
+export function gumletImageDeliveryFormatUrl(deliveryUrl: string, format: 'webp' | 'avif' | 'jpg' | 'png' | 'auto') {
+  const output = new URL(deliveryUrl);
+  output.searchParams.set('format', format);
+  return output.toString();
+}
+
 export function gumletImageFilename(sourceUrl: string) {
   return decodeURIComponent(new URL(sourceUrl).pathname.split('/').pop() || 'image');
 }

@@ -76,6 +76,47 @@ export async function uploadAppwriteFile(file: File): Promise<ProviderAssetRecor
   return toProviderAsset(config, uploaded);
 }
 
+/**
+ * Imports a remote file by URL into Appwrite Storage by streaming its bytes
+ * server-side. This enables the same "Add from URL" flow as Cloudinary.
+ */
+export async function linkAppwriteFile(sourceUrl: string, filename?: string): Promise<ProviderAssetRecord> {
+  const parsed = new URL(sourceUrl);
+  if (parsed.protocol !== 'https:') {
+    throw new Error('Appwrite link import requires an HTTPS URL.');
+  }
+
+  const response = await fetch(sourceUrl, {
+    redirect: 'follow',
+    signal: AbortSignal.timeout(60_000),
+  });
+  if (!response.ok) {
+    throw new Error(`Could not fetch the remote file (${response.status}).`);
+  }
+
+  const contentType = response.headers.get('content-type') || 'application/octet-stream';
+  const lengthHeader = response.headers.get('content-length');
+  if (lengthHeader && Number(lengthHeader) > MAX_UPLOAD_BYTES) {
+    throw new Error(`File exceeds the ${MAX_UPLOAD_BYTES / (1024 * 1024)}MB Appwrite upload limit.`);
+  }
+
+  const name = filename?.trim() || parsed.pathname.split('/').pop() || 'imported-file';
+  const buffer = Buffer.from(await response.arrayBuffer());
+  if (buffer.byteLength > MAX_UPLOAD_BYTES) {
+    throw new Error(`File exceeds the ${MAX_UPLOAD_BYTES / (1024 * 1024)}MB Appwrite upload limit.`);
+  }
+
+  const { config, storage } = getAppwriteStorage();
+  const uploaded = await storage.createFile({
+    bucketId: config.bucketId,
+    fileId: ID.unique(),
+    file: InputFile.fromBuffer(buffer, safeFilename(decodeURIComponent(name))),
+    permissions: [Permission.read(Role.any())],
+  });
+
+  return toProviderAsset(config, uploaded);
+}
+
 export async function listAppwriteFiles(search?: string, limit = 100): Promise<ProviderAssetRecord[]> {
   const { config, storage } = getAppwriteStorage();
   const result = await storage.listFiles({
