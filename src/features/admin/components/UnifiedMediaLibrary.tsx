@@ -37,6 +37,7 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
 import Preloader from '@/components/preloader';
+import CdnClapprPlayer from '@/components/CdnClapprPlayer';
 import { useProviderMedia } from '@/features/admin/hooks/use-provider-media';
 import type { MediaLibraryAsset } from '@/features/admin/lib/media-asset';
 import type { MediaMetaTag } from '@/lib/media-meta';
@@ -48,6 +49,7 @@ import BulkActionBar from './BulkActionBar';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faCloudUploadAlt,
+  faCloudArrowUp,
   faCopy,
   faEye,
   faFileImage,
@@ -470,6 +472,23 @@ export default function UnifiedMediaLibrary({ provider }: { provider: ManagedPro
     setIsSetBackgroundOpen(false);
   }, [firestore, backgroundAsset, canEditHome, backgroundTarget, toast]);
 
+  // ---- Send an Appwrite image to the Gumlet Image library (copies by URL) ----
+  const uploadToGumlet = useCallback(
+    async (asset: MediaLibraryAsset) => {
+      if (asset.resourceType !== 'image' || !canUpload) return;
+      const confirmed = window.confirm(`Send "${asset.filename}" to the Gumlet Image library? The original will remain in Appwrite.`);
+      if (!confirmed) return;
+      const result = await gumletImageMedia.uploadByLink(asset.url, asset.filename);
+      if (result.ok) {
+        toast({ title: 'Sent to Gumlet', description: `${asset.filename} copied to the Gumlet Image library.` });
+        gumletImageMedia.refresh();
+      } else if (result.error && result.error !== 'Upload cancelled.') {
+        toast({ variant: 'destructive', title: 'Gumlet import failed', description: result.error });
+      }
+    },
+    [canUpload, gumletImageMedia, toast]
+  );
+
   const grid = useCallback(
     (tab: AssetTab) => {
       const q = search.trim().toLowerCase();
@@ -507,12 +526,13 @@ export default function UnifiedMediaLibrary({ provider }: { provider: ManagedPro
               onSetTag={setTag}
               onDelete={deleteAsset}
               onSetBackground={handleOpenSetBackgroundDialog}
+              onUploadToGumlet={effectiveProvider === 'appwrite' ? uploadToGumlet : undefined}
             />
           ))}
         </div>
       );
     },
-    [media.assets, media.isLoading, search, canDelete, canEditHome, formatOptions, copy, setTag, deleteAsset, highlightId, selectedIds, showBulkSelect, handleToggleSelect, handleOpenSetBackgroundDialog]
+    [media.assets, media.isLoading, search, canDelete, canEditHome, formatOptions, copy, setTag, deleteAsset, highlightId, selectedIds, showBulkSelect, handleToggleSelect, handleOpenSetBackgroundDialog, effectiveProvider, uploadToGumlet]
   );
 
   // ---- Compact upload strip for the popup dialog (mirrors Cloudinary) ----
@@ -800,8 +820,8 @@ export default function UnifiedMediaLibrary({ provider }: { provider: ManagedPro
                     <img src={preview.url} alt={preview.filename} className="w-full h-full object-contain" />
                   </div>
                 ) : preview.url ? (
-                  <div className="w-full h-full flex items-center justify-center">
-                    <video src={preview.url} controls className="max-h-full max-w-full rounded bg-black" />
+                  <div className="relative w-full h-full">
+                    <CdnClapprPlayer source={preview.url} />
                   </div>
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-center text-white/70">
@@ -1073,6 +1093,7 @@ function FileCard({
   onSetTag,
   onDelete,
   onSetBackground,
+  onUploadToGumlet,
 }: {
   asset: MediaLibraryAsset;
   formatOptions: string[];
@@ -1087,6 +1108,7 @@ function FileCard({
   onSetTag: (asset: MediaLibraryAsset, tag: MediaMetaTag | null) => void;
   onDelete: (asset: MediaLibraryAsset) => void;
   onSetBackground?: (asset: MediaLibraryAsset) => void;
+  onUploadToGumlet?: (asset: MediaLibraryAsset) => void;
 }) {
   const fileName = asset.filename || 'Untitled';
 
@@ -1175,6 +1197,11 @@ function FileCard({
             {canEditHome && onSetBackground && (
               <Button size="icon" variant="secondary" onClick={() => onSetBackground(asset)} title="Set as background" className="h-8 w-8 md:h-10 md:w-10 glass-effect">
                 <FontAwesomeIcon icon={faPhotoFilm} />
+              </Button>
+            )}
+            {asset.resourceType === 'image' && onUploadToGumlet && (
+              <Button size="icon" variant="secondary" onClick={() => onUploadToGumlet(asset)} title="Upload to Gumlet" className="h-8 w-8 md:h-10 md:w-10 glass-effect">
+                <FontAwesomeIcon icon={faCloudArrowUp} />
               </Button>
             )}
             {canDelete && (

@@ -492,16 +492,16 @@ function AdminPage() {
                       <TabsTrigger value="appwrite" className="glass-effect data-[state=active]:bg-destructive">Appwrite</TabsTrigger>
                       <TabsTrigger value="gumlet" className="glass-effect data-[state=active]:bg-destructive">Gumlet</TabsTrigger>
                     </TabsList>
-                    <TabsContent value="cloudinary">
+                    <TabsContent value="cloudinary" forceMount>
                       <MediaAdmin provider="cloudinary" onUploadComplete={handleUploadComplete} onMediaSelect={handleOpenPortfolioFormWithMedia} />
                     </TabsContent>
-                    <TabsContent value="vercel">
+                    <TabsContent value="vercel" forceMount>
                       <MediaAdmin provider="vercel_blob" onUploadComplete={handleVercelUploadComplete} />
                     </TabsContent>
-                    <TabsContent value="appwrite">
+                    <TabsContent value="appwrite" forceMount>
                       <AppwriteMediaLibrary provider="appwrite" />
                     </TabsContent>
-                    <TabsContent value="gumlet">
+                    <TabsContent value="gumlet" forceMount>
                       <GumletLibrary provider="gumlet_video" />
                     </TabsContent>
                   </Tabs>
