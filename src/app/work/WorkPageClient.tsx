@@ -41,6 +41,7 @@ import { isSuperAdmin as isSuperAdminCheck, hasMediaAccess } from '@/lib/constan
 import { cleanVideoUrl, webmVideoUrl } from '@/lib/video';
 import { getWatermarkPositionStyle, hasDetailsMedia, normalizeSelfClosingMedia, slugify } from '@/features/portfolio/components/work-helpers';
 import { useWorkUrlSync } from '@/features/portfolio/components/useWorkUrlSync';
+import { getPopupSizing, getDetailsSizing, getDetailsStyle, getMinimizedPopupSizing } from './popup-sizing';
 
 let playersPreloaded = false;
 function preloadPlayers() {
@@ -762,22 +763,17 @@ function WorkPageContent() {
 
   // Both popups use the same standard minimized size, but maximize
   // independently so one popup's current dimensions never affect the other.
-  const minimizedPopupSizing = cn(
-    "w-[90vw] max-w-7xl",
-    isExtraWide || isDescriptionLong ? "h-[90dvh]" : "max-h-[90dvh]"
-  );
+  // The sizing math lives in popup-sizing.ts so it can be unit-tested.
+  const flags = { isExtraWide, isDescriptionLong };
+  const minimizedPopupSizing = getMinimizedPopupSizing(flags);
 
   // Sizing for the project popup. Minimized = 90vw/90dvh (content-fit),
   // maximized = 98vw/98dvh.
-  const popupSizing = isProjectMaximized
-    ? "w-[98vw] h-[98dvh] max-w-none"
-    : minimizedPopupSizing;
+  const popupSizing = getPopupSizing(isProjectMaximized, flags);
 
   // The details popup has its own maximize state. Its inline minimized size
   // below uses the saved project-popup dimensions when they are available.
-  const detailsSizing = isDetailsMaximized
-    ? "w-[98vw] h-[98dvh] max-w-none"
-    : minimizedPopupSizing;
+  const detailsSizing = getDetailsSizing(isDetailsMaximized, flags);
 
   const allItems = useMemo(() => {
     const visible = (portfolioItems || []).filter(item => item.isVisible !== false);
@@ -1450,15 +1446,7 @@ function WorkPageContent() {
             "glass-effect p-0 flex flex-col group overflow-hidden transition-all duration-500 ease-in-out min-w-0",
             detailsSizing
           )}
-          style={isDetailsMaximized
-              ? { width: '98vw', height: '98dvh', maxWidth: 'none' }
-              : minimizedProjectSize
-                ? {
-                    width: `${minimizedProjectSize.w}px`,
-                    height: `${minimizedProjectSize.h}px`,
-                    minHeight: `${minimizedProjectSize.h}px`,
-                  }
-                : undefined}
+          style={getDetailsStyle(isDetailsMaximized, minimizedProjectSize)}
           onMouseMove={handleDialogMouseMove}
           onMouseEnter={handleDialogMouseEnter}
           onMouseLeave={handleDialogMouseLeave}
