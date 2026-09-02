@@ -34,7 +34,6 @@ import { Separator } from '@/components/ui/separator';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import AddFromUrlDialog from './AddFromUrlDialog';
 import ShareLinkDialog from './ShareLinkDialog';
-import { deleteMediaAsset } from '@/ai/flows/delete-media';
 import type { AppUser } from '@/firebase/auth/use-user';
 import CdnClapprPlayer from '@/components/CdnClapprPlayer';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
@@ -1108,18 +1107,27 @@ for (const file of files) {
     const token = await getToken();
     if (!token) { toast({ variant: 'destructive', title: 'Not authenticated' }); return; }
     try {
-      const result = await deleteMediaAsset({
-        publicId: raw.public_id,
-        resourceType: (['image', 'video', 'raw'].includes(raw.resource_type) ? raw.resource_type : 'image') as 'image' | 'video' | 'raw',
-        libraryId: raw.libraryId || 'primary',
-        idToken: token,
+      const res = await fetch('/api/admin/delete-media', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({
+          publicId: raw.public_id,
+          resourceType: (['image', 'video', 'raw'].includes(raw.resource_type) ? raw.resource_type : 'image'),
+          libraryId: raw.libraryId,
+        }),
       });
-      await deleteDocumentNonBlocking(doc(firestore, 'media', file.id));
-      if (result.success) {
+      const data = await res.json();
+      if (res.ok && data.success) {
+        await deleteDocumentNonBlocking(doc(firestore, 'media', file.id));
         toast({ title: t('mediaAdmin.toast.fileRemoved.title'), description: t('mediaAdmin.toast.fileRemoved.description') });
-      } else {
-        toast({ variant: 'destructive', title: t('mediaAdmin.toast.cloudinaryCleanupFailed.title'), description: t('mediaAdmin.toast.cloudinaryCleanupFailed.description').replace('{error}', result.message) });
+        return;
       }
+      if (res.ok) {
+        // Cloudinary processed the request but reported a failure.
+        toast({ variant: 'destructive', title: t('mediaAdmin.toast.cloudinaryCleanupFailed.title'), description: t('mediaAdmin.toast.cloudinaryCleanupFailed.description').replace('{error}', data.message) });
+        return;
+      }
+      throw new Error(data.message || `Delete failed (${res.status})`);
     } catch (e: any) {
       toast({ variant: 'destructive', title: t('mediaAdmin.toast.deletionFailed.title'), description: t('mediaAdmin.toast.deletionFailed.description').replace('{error}', e.message) });
     }
@@ -1245,14 +1253,22 @@ for (const file of files) {
     const token = await getToken();
     if (!token) { toast({ variant: 'destructive', title: 'Not authenticated' }); return; }
     const results = await Promise.allSettled(
-      (cloudinaryAssets || []).filter(a => selectedIds.has(a.id)).map(a => deleteMediaAsset({
-        publicId: a.public_id,
-        resourceType: (['image', 'video', 'raw'].includes(a.resource_type) ? a.resource_type : 'image') as 'image' | 'video' | 'raw',
-        libraryId: a.libraryId || 'primary',
-        idToken: token,
-      }))
+      (cloudinaryAssets || []).filter(a => selectedIds.has(a.id)).map(async a => {
+        const res = await fetch('/api/admin/delete-media', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify({
+            publicId: a.public_id,
+            resourceType: (['image', 'video', 'raw'].includes(a.resource_type) ? a.resource_type : 'image'),
+            libraryId: a.libraryId,
+          }),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok || !data.success) throw new Error(data.message || `Delete failed (${res.status})`);
+        return data;
+      })
     );
-    const failedCount = results.filter(r => r.status === 'rejected' || !(r as any).value.success).length;
+    const failedCount = results.filter(r => r.status === 'rejected').length;
     const batch = writeBatch(firestore);
     selectedIds.forEach(id => { batch.delete(doc(firestore, 'media', id)); });
     await batch.commit();
