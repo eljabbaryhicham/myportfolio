@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
-import { useUser, useFirestore } from '@/firebase';
+import { useUser, useFirestore, useAuth } from '@/firebase';
 import type { AppUser } from '@/firebase/auth/use-user';
 import { isSuperAdmin } from '@/lib/constants';
 import { cn } from '@/lib/utils';
@@ -44,6 +44,7 @@ import type { MediaMetaTag } from '@/lib/media-meta';
 import type { MediaProvider } from '@/lib/media-providers';
 import { DEFAULT_RETRY_CONFIG, shouldRetry, calculateRetryDelay } from '@/lib/upload-retry';
 import { setDocumentNonBlocking } from '@/firebase';
+import { revalidateHome } from '@/lib/revalidate-home';
 import { collection, doc, query, where, getDocs, writeBatch } from 'firebase/firestore';
 import BulkActionBar from './BulkActionBar';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -59,7 +60,9 @@ import {
   faLink,
   faMinus,
   faPhotoFilm,
+  faPlus,
   faSpinner,
+  faStar,
   faTag,
   faTrash,
   faXmark,
@@ -113,8 +116,12 @@ type FailedUpload = {
   retryCount: number;
 };
 
-export default function UnifiedMediaLibrary({ provider }: { provider: ManagedProvider }) {
+export default function UnifiedMediaLibrary({ provider, onMediaSelect }: {
+  provider: ManagedProvider;
+  onMediaSelect?: (url: string, type: 'image' | 'video' | 'raw', filename: string) => void;
+}) {
   const { user } = useUser();
+  const auth = useAuth();
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState<AssetTab>('images');
   const [search, setSearch] = useState('');
@@ -198,6 +205,7 @@ export default function UnifiedMediaLibrary({ provider }: { provider: ManagedPro
   const canUpload = isSuperAdmin(typedUser) || (typedUser?.permissions?.canUploadMedia ?? false);
   const canDelete = isSuperAdmin(typedUser) || (typedUser?.permissions?.canDeleteMedia ?? false);
   const canEditHome = isSuperAdmin(typedUser) || (typedUser?.permissions?.canEditHome ?? false);
+  const canEditContact = isSuperAdmin(typedUser) || (typedUser?.permissions?.canEditContact ?? false);
 
   const showBulkSelect = canDelete;
 
@@ -427,6 +435,14 @@ export default function UnifiedMediaLibrary({ provider }: { provider: ManagedPro
     setIsSetBackgroundOpen(true);
   }, [canEditHome]);
 
+  // ---- Set as logo (mirrors Cloudinary) ----
+  const handleSetLogo = useCallback((url: string) => {
+    if (!firestore || !canEditContact) return;
+    setDocumentNonBlocking(doc(firestore, 'homepage', 'settings'), { homePageLogoUrl: url }, { merge: true });
+    revalidateHome(auth);
+    toast({ title: 'Logo updated', description: 'The logo has been updated.' });
+  }, [firestore, canEditContact, auth, toast]);
+
   const handleConfirmSetBackground = useCallback(async () => {
     if (!firestore || !backgroundAsset || !canEditHome) return;
     let mediaIdForDb = backgroundAsset.id;
@@ -517,6 +533,7 @@ export default function UnifiedMediaLibrary({ provider }: { provider: ManagedPro
               formatOptions={formatOptions}
               canDelete={canDelete}
               canEditHome={canEditHome}
+              canEditContact={canEditContact}
               isHighlighted={highlightId === asset.id}
               isSelected={selectedIds.has(asset.id)}
               showCheckbox={showBulkSelect}
@@ -526,13 +543,15 @@ export default function UnifiedMediaLibrary({ provider }: { provider: ManagedPro
               onSetTag={setTag}
               onDelete={deleteAsset}
               onSetBackground={handleOpenSetBackgroundDialog}
+              onSetLogo={handleSetLogo}
+              onMediaSelect={onMediaSelect}
               onUploadToGumlet={effectiveProvider === 'appwrite' ? uploadToGumlet : undefined}
             />
           ))}
         </div>
       );
     },
-    [media.assets, media.isLoading, search, canDelete, canEditHome, formatOptions, copy, setTag, deleteAsset, highlightId, selectedIds, showBulkSelect, handleToggleSelect, handleOpenSetBackgroundDialog, effectiveProvider, uploadToGumlet]
+    [media.assets, media.isLoading, search, canDelete, canEditHome, canEditContact, formatOptions, copy, setTag, deleteAsset, handleSetLogo, onMediaSelect, highlightId, selectedIds, showBulkSelect, handleToggleSelect, handleOpenSetBackgroundDialog, effectiveProvider, uploadToGumlet]
   );
 
   // ---- Compact upload strip for the popup dialog (mirrors Cloudinary) ----
@@ -803,32 +822,26 @@ export default function UnifiedMediaLibrary({ provider }: { provider: ManagedPro
       />
 
       <Dialog open={!!preview} onOpenChange={(open) => { if (!open) setPreview(null); }}>
-        <DialogContent className="w-[95vw] max-w-5xl h-[90vh] glass-effect p-0 flex flex-col overflow-hidden">
+        <DialogContent className="w-[80vw] h-[90vh] glass-effect p-0 flex flex-col items-center justify-center bg-black/80 border-0">
           {preview && (
             <>
-              <div className="flex items-center justify-between px-4 py-3 border-b bg-black/40">
-                <p className="text-sm font-medium truncate">{preview.filename}</p>
-                <div className="flex items-center gap-2">
-                  <Button size="sm" variant="outline" onClick={() => void copy(preview, 'original')}><FontAwesomeIcon icon={faCopy} className="mr-2" />Copy URL</Button>
-                  {canDelete && <Button size="sm" variant="destructive" onClick={() => void remove(preview)}><FontAwesomeIcon icon={faTrash} className="mr-2" />Delete</Button>}
-                </div>
-              </div>
-              <div className="flex-1 min-h-0 bg-black">
+              <DialogHeader className="absolute top-4 left-4 z-10">
+                <DialogTitle className="text-white/80 font-headline">{preview.filename}</DialogTitle>
+              </DialogHeader>
+              <div className="w-full h-full flex items-center justify-center">
                 {preview.resourceType === 'image' ? (
                   <div className="relative w-full h-full">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img src={preview.url} alt={preview.filename} className="w-full h-full object-contain" />
                   </div>
                 ) : preview.url ? (
-                  <div className="relative w-full h-full">
+                  <div className="relative w-full h-full flex items-center justify-center bg-black">
                     <CdnClapprPlayer source={preview.url} />
                   </div>
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center text-center text-white/70">
-                    <div>
-                      <FontAwesomeIcon icon={faFileLines} className="h-12 w-12 mb-2" />
-                      <p className="text-sm">{preview.filename}</p>
-                    </div>
+                  <div className="text-center text-white/70">
+                    <FontAwesomeIcon icon={faFileLines} className="h-12 w-12 mb-2" />
+                    <p className="text-sm">{preview.filename}</p>
                   </div>
                 )}
               </div>
@@ -838,9 +851,9 @@ export default function UnifiedMediaLibrary({ provider }: { provider: ManagedPro
                   'flex items-center justify-center rounded-full transition-opacity',
                   'bg-destructive text-destructive-foreground opacity-70 hover:opacity-100',
                   'focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2',
-                  'disabled:pointer-events-none bg-transparent'
+                  'disabled:pointer-events-none'
                 )}>
-                  <FontAwesomeIcon icon={faXmark} className="h-5 w-5" />
+                  <FontAwesomeIcon icon={faXmark} className="h-4 w-4" />
                   <span className="sr-only">Close</span>
                 </button>
               </DialogClose>
@@ -1084,6 +1097,7 @@ function FileCard({
   formatOptions,
   canDelete,
   canEditHome,
+  canEditContact,
   isHighlighted,
   isSelected,
   showCheckbox,
@@ -1093,12 +1107,15 @@ function FileCard({
   onSetTag,
   onDelete,
   onSetBackground,
+  onSetLogo,
+  onMediaSelect,
   onUploadToGumlet,
 }: {
   asset: MediaLibraryAsset;
   formatOptions: string[];
   canDelete: boolean;
   canEditHome?: boolean;
+  canEditContact?: boolean;
   isHighlighted?: boolean;
   isSelected?: boolean;
   showCheckbox?: boolean;
@@ -1108,6 +1125,8 @@ function FileCard({
   onSetTag: (asset: MediaLibraryAsset, tag: MediaMetaTag | null) => void;
   onDelete: (asset: MediaLibraryAsset) => void;
   onSetBackground?: (asset: MediaLibraryAsset) => void;
+  onSetLogo?: (url: string) => void;
+  onMediaSelect?: (url: string, type: 'image' | 'video' | 'raw', filename: string) => void;
   onUploadToGumlet?: (asset: MediaLibraryAsset) => void;
 }) {
   const fileName = asset.filename || 'Untitled';
@@ -1179,6 +1198,11 @@ function FileCard({
                 <DropdownMenuItem onClick={() => onSetTag(asset, null)}>Remove tag</DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
+            {asset.resourceType !== 'raw' && onMediaSelect && (
+              <Button size="icon" variant="default" onClick={() => onMediaSelect(asset.url, asset.resourceType, asset.filename)} title="Create / add to project" className="h-8 w-8 md:h-10 md:w-10 glass-effect">
+                <FontAwesomeIcon icon={faPlus} />
+              </Button>
+            )}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button size="icon" variant="secondary" title="Copy url" className="h-8 w-8 md:h-10 md:w-10 glass-effect">
@@ -1202,6 +1226,11 @@ function FileCard({
             {asset.resourceType === 'image' && onUploadToGumlet && (
               <Button size="icon" variant="secondary" onClick={() => onUploadToGumlet(asset)} title="Upload to Gumlet" className="h-8 w-8 md:h-10 md:w-10 glass-effect">
                 <FontAwesomeIcon icon={faCloudArrowUp} />
+              </Button>
+            )}
+            {asset.resourceType === 'image' && canEditContact && onSetLogo && (
+              <Button size="icon" variant="secondary" onClick={() => onSetLogo(asset.url)} title="Set as Logo" className="h-8 w-8 md:h-10 md:w-10 glass-effect">
+                <FontAwesomeIcon icon={faStar} />
               </Button>
             )}
             {canDelete && (

@@ -97,13 +97,15 @@ function AdminPage() {
         const mediaProvider = qs.get('mediaProvider') as 'cloudinary' | 'vercel' | 'appwrite' | 'gumlet_video' | 'gumlet_image' | null;
         if (docIdParam && mediaTabParam && ['images', 'videos', 'files'].includes(mediaTabParam)) {
           if (mediaProvider === 'appwrite' || mediaProvider === 'gumlet_video' || mediaProvider === 'gumlet_image') {
-            window.dispatchEvent(new CustomEvent('media-managed-highlight', {
-              detail: {
-                provider: mediaProvider,
-                docId: docIdParam,
-                tab: mediaTabParam,
-              },
-            }));
+            safeTimeout(() => {
+              window.dispatchEvent(new CustomEvent('media-managed-highlight', {
+                detail: {
+                  provider: mediaProvider,
+                  docId: docIdParam,
+                  tab: mediaTabParam,
+                },
+              }));
+            }, 150);
           } else {
             window.dispatchEvent(new CustomEvent('media-library-maximize', {
               detail: {
@@ -131,7 +133,7 @@ function AdminPage() {
       setInnerMediaTab(savedInnerTab);
       localStorage.removeItem('adminInnerMediaTab');
     }
-  }, []);
+  }, [safeTimeout]);
 
   // Switch to the correct Media + provider tab WITHOUT a page reload when the
   // upload notification's "open in library" is clicked while already on /admin
@@ -153,9 +155,11 @@ function AdminPage() {
       // Progress mode: just switch to the provider tab.
       if (detail.mode === 'finished' && detail.docId) {
         if (detail.provider === 'appwrite' || detail.provider === 'gumlet_video' || detail.provider === 'gumlet_image') {
-          window.dispatchEvent(new CustomEvent('media-managed-highlight', {
-            detail: { provider: detail.provider, docId: detail.docId, tab: detail.tab || 'images' },
-          }));
+          safeTimeout(() => {
+            window.dispatchEvent(new CustomEvent('media-managed-highlight', {
+              detail: { provider: detail.provider, docId: detail.docId, tab: detail.tab || 'images' },
+            }));
+          }, 150);
         } else {
           const provider = detail.provider === 'cloudinary' ? 'cloudinary' : 'vercel_blob';
           window.dispatchEvent(new CustomEvent('media-library-maximize', {
@@ -171,7 +175,7 @@ function AdminPage() {
     };
     window.addEventListener('admin-goto-media', handler);
     return () => window.removeEventListener('admin-goto-media', handler);
-  }, []);
+  }, [safeTimeout]);
   
   useEffect(() => {
     localStorage.setItem('adminActiveTab', activeTab);
@@ -227,15 +231,19 @@ function AdminPage() {
       setInnerMediaTab('cloudinary');
     }
     // Managed providers (Appwrite/Gumlet) open their library and best-effort
-    // highlight the uploaded file via a dedicated event.
+    // highlight the uploaded file via a dedicated event. Defer the event so the
+    // just-switched tab's media library has mounted and registered its listener
+    // (it unmounts when inactive, so a synchronous dispatch would be lost).
     if (provider === 'appwrite' || provider === 'gumlet_video' || provider === 'gumlet_image') {
-      window.dispatchEvent(new CustomEvent('media-managed-highlight', {
-        detail: {
-          provider,
-          docId,
-          tab: resourceType === 'video' ? 'videos' : resourceType === 'raw' ? 'files' : 'images',
-        },
-      }));
+      safeTimeout(() => {
+        window.dispatchEvent(new CustomEvent('media-managed-highlight', {
+          detail: {
+            provider,
+            docId,
+            tab: resourceType === 'video' ? 'videos' : resourceType === 'raw' ? 'files' : 'images',
+          },
+        }));
+      }, 150);
     }
     // Cloudinary/Vercel: components handle their own popups
     safeTimeout(() => setNewlyUploadedId(null), 3000);
@@ -492,17 +500,17 @@ function AdminPage() {
                       <TabsTrigger value="appwrite" className="glass-effect data-[state=active]:bg-destructive">Appwrite</TabsTrigger>
                       <TabsTrigger value="gumlet" className="glass-effect data-[state=active]:bg-destructive">Gumlet</TabsTrigger>
                     </TabsList>
-                    <TabsContent value="cloudinary" forceMount>
+                    <TabsContent value="cloudinary">
                       <MediaAdmin provider="cloudinary" onUploadComplete={handleUploadComplete} onMediaSelect={handleOpenPortfolioFormWithMedia} />
                     </TabsContent>
-                    <TabsContent value="vercel" forceMount>
+                    <TabsContent value="vercel">
                       <MediaAdmin provider="vercel_blob" onUploadComplete={handleVercelUploadComplete} />
                     </TabsContent>
-                    <TabsContent value="appwrite" forceMount>
-                      <AppwriteMediaLibrary provider="appwrite" />
+                    <TabsContent value="appwrite">
+                      <AppwriteMediaLibrary provider="appwrite" onMediaSelect={handleOpenPortfolioFormWithMedia} />
                     </TabsContent>
-                    <TabsContent value="gumlet" forceMount>
-                      <GumletLibrary provider="gumlet_video" />
+                    <TabsContent value="gumlet">
+                      <GumletLibrary provider="gumlet_video" onMediaSelect={handleOpenPortfolioFormWithMedia} />
                     </TabsContent>
                   </Tabs>
               </TabsContent>
