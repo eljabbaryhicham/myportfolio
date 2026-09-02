@@ -2,7 +2,7 @@ import { initializeServerApp } from '@/firebase/server-init';
 import { getAuth } from 'firebase-admin/auth';
 import { getFirestore } from 'firebase-admin/firestore';
 import { createHash } from 'node:crypto';
-import { SUPERADMIN_EMAIL } from '@/lib/constants';
+import { isSuperAdmin } from '@/lib/constants';
 
 export interface DeleteCloudinaryAssetInput {
   publicId?: string;
@@ -24,7 +24,7 @@ async function canDeleteMedia(idToken?: string): Promise<boolean> {
   try {
     const app = await initializeServerApp();
     const decoded = await getAuth(app).verifyIdToken(idToken);
-    if (decoded.email === SUPERADMIN_EMAIL) return true;
+    if (isSuperAdmin({ email: decoded.email })) return true;
     const snap = await getFirestore(app).collection('users').doc(decoded.uid).get();
     if (snap.exists) {
       const data = snap.data() as any;
