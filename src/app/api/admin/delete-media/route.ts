@@ -10,15 +10,18 @@ const bodySchema = z.object({
 });
 
 export async function POST(req: NextRequest) {
+  console.log('[delete-media] request received');
   // Admin gate: superadmin email OR an existing user doc with
   // `permissions.canDeleteMedia === true`. Fails closed.
   const decoded = await verifyAdminRequest(req, 'canDeleteMedia');
   if (!decoded) {
+    console.warn('[delete-media] auth failed');
     return NextResponse.json(
       { success: false, message: 'Unauthorized. Admin authentication required.' },
       { status: 401 }
     );
   }
+  console.log('[delete-media] auth ok for', decoded.uid);
 
   let body: unknown;
   try {
@@ -44,6 +47,7 @@ export async function POST(req: NextRequest) {
     libraryId: parsed.data.libraryId,
     idToken,
   });
+  console.log('[delete-media] result', { success: result.success, status: result.status });
 
   return NextResponse.json(
     { success: result.success, message: result.message },

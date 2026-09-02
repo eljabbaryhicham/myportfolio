@@ -70,8 +70,11 @@ export async function deleteCloudinaryAsset(
 
   if (!cloudName || !apiKey || !apiSecret) {
     const message = `Cloudinary credentials for ${safeLibraryId} library are missing. Please check your .env file for CLOUDINARY_CLOUD_NAME${suffix}, CLOUDINARY_API_KEY${suffix}, and CLOUDINARY_API_SECRET${suffix}.`;
+    console.error('[delete-media] missing credentials:', message);
     return { success: false, message, status: 500 };
   }
+
+  console.log('[delete-media] calling cloudinary destroy', { publicId: safePublicId, resourceType: safeResourceType, library: safeLibraryId });
 
   try {
     const cloudinary = (await import('cloudinary')).v2;

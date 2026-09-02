@@ -1116,7 +1116,12 @@ for (const file of files) {
           libraryId: raw.libraryId,
         }),
       });
-      const data = await res.json();
+      // Read the body as text so a non-JSON/empty response (e.g. a proxy or
+      // platform 5xx with no body) surfaces the raw details instead of a
+      // cryptic "Unexpected end of JSON input" from res.json().
+      const text = await res.text();
+      let data: { success?: boolean; message?: string } = {};
+      try { data = text ? JSON.parse(text) : {}; } catch { /* non-JSON body */ }
       if (res.ok && data.success) {
         await deleteDocumentNonBlocking(doc(firestore, 'media', file.id));
         toast({ title: t('mediaAdmin.toast.fileRemoved.title'), description: t('mediaAdmin.toast.fileRemoved.description') });
@@ -1124,10 +1129,11 @@ for (const file of files) {
       }
       if (res.ok) {
         // Cloudinary processed the request but reported a failure.
-        toast({ variant: 'destructive', title: t('mediaAdmin.toast.cloudinaryCleanupFailed.title'), description: t('mediaAdmin.toast.cloudinaryCleanupFailed.description').replace('{error}', data.message) });
+        toast({ variant: 'destructive', title: t('mediaAdmin.toast.cloudinaryCleanupFailed.title'), description: t('mediaAdmin.toast.cloudinaryCleanupFailed.description').replace('{error}', data.message ?? 'Unknown error') });
         return;
       }
-      throw new Error(data.message || `Delete failed (${res.status})`);
+      const rawBody = text?.slice(0, 200) || '(empty response body)';
+      throw new Error(data.message || `Delete failed (HTTP ${res.status}: ${rawBody})`);
     } catch (e: any) {
       toast({ variant: 'destructive', title: t('mediaAdmin.toast.deletionFailed.title'), description: t('mediaAdmin.toast.deletionFailed.description').replace('{error}', e.message) });
     }
