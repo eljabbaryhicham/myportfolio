@@ -9,6 +9,15 @@ const bodySchema = z.object({
   libraryId: z.string().optional(),
 });
 
+// Diagnostic probe: opening this URL in a browser distinguishes a route that
+// fails to LOAD (GET also returns the empty 500) from a POST handler that
+// crashes. A route chunk that fails at import time crashes before any handler
+// code can run, so no log/handler would ever be reachable.
+export async function GET() {
+  console.log('[delete-media] GET probe hit');
+  return NextResponse.json({ ok: true, route: '/api/admin/delete-media' });
+}
+
 export async function POST(req: NextRequest) {
   console.log('[delete-media] request received');
   try {
