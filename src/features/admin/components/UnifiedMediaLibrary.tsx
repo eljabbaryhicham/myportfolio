@@ -201,6 +201,20 @@ export default function UnifiedMediaLibrary({ provider, onMediaSelect }: {
     ? gumletMode === 'image' ? 'gumlet_image' : 'gumlet_video'
     : provider;
 
+  // For Gumlet the Video/Image selector drives the media source, so the active
+  // content tab must follow the selected mode (keeps highlight + content in sync).
+  const gumletTab: AssetTab = gumletMode === 'image' ? 'images' : 'videos';
+  const activeTabValue: AssetTab = isGumlet ? gumletTab : activeTab;
+  const handleTabChange = (value: string) => {
+    const tab = value as AssetTab;
+    if (isGumlet) {
+      setGumletMode(tab === 'videos' ? 'video' : 'image');
+      setActiveTab(tab);
+    } else {
+      setActiveTab(tab);
+    }
+  };
+
   const typedUser = user as AppUser | null;
   const canUpload = isSuperAdmin(typedUser) || (typedUser?.permissions?.canUploadMedia ?? false);
   const canDelete = isSuperAdmin(typedUser) || (typedUser?.permissions?.canDeleteMedia ?? false);
@@ -721,21 +735,20 @@ export default function UnifiedMediaLibrary({ provider, onMediaSelect }: {
               {provider === 'appwrite' ? 'Appwrite storage media.' : provider === 'gumlet_video' ? 'Gumlet video media.' : 'Gumlet image media.'}
             </DialogDescription>
           </DialogHeader>
-          <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as AssetTab)} className="flex-1 flex flex-col min-h-0">
-            {isGumlet && (
-              <Tabs value={gumletMode} onValueChange={(v) => setGumletMode(v as 'video' | 'image')} className="px-4 pt-4">
-                <TabsList>
-                  <TabsTrigger value="video" className="py-2 px-4 text-base glass-effect data-[state=active]:bg-destructive"><FontAwesomeIcon icon={faFilm} className="mr-2" />Video</TabsTrigger>
-                  <TabsTrigger value="image" className="py-2 px-4 text-base glass-effect data-[state=active]:bg-destructive"><FontAwesomeIcon icon={faFileImage} className="mr-2" />Image</TabsTrigger>
-                </TabsList>
-              </Tabs>
-            )}
+          <Tabs value={activeTabValue} onValueChange={handleTabChange} className="flex-1 flex flex-col min-h-0">
             <div className="px-4 pt-4 flex items-center gap-2 flex-wrap">
-              <TabsList>
-                <TabsTrigger value="images" className="py-2 px-4 text-base glass-effect data-[state=active]:bg-destructive"><FontAwesomeIcon icon={faFileImage} className="mr-2" />Images</TabsTrigger>
-                <TabsTrigger value="videos" className="py-2 px-4 text-base glass-effect data-[state=active]:bg-destructive"><FontAwesomeIcon icon={faFilm} className="mr-2" />Videos</TabsTrigger>
-                <TabsTrigger value="files" className="py-2 px-4 text-base glass-effect data-[state=active]:bg-destructive"><FontAwesomeIcon icon={faFileLines} className="mr-2" />Files</TabsTrigger>
-              </TabsList>
+              {isGumlet ? (
+                <TabsList>
+                  <TabsTrigger value="videos" className="py-2 px-4 text-base glass-effect data-[state=active]:bg-destructive"><FontAwesomeIcon icon={faFilm} className="mr-2" />Video</TabsTrigger>
+                  <TabsTrigger value="images" className="py-2 px-4 text-base glass-effect data-[state=active]:bg-destructive"><FontAwesomeIcon icon={faFileImage} className="mr-2" />Image</TabsTrigger>
+                </TabsList>
+              ) : (
+                <TabsList>
+                  <TabsTrigger value="images" className="py-2 px-4 text-base glass-effect data-[state=active]:bg-destructive"><FontAwesomeIcon icon={faFileImage} className="mr-2" />Images</TabsTrigger>
+                  <TabsTrigger value="videos" className="py-2 px-4 text-base glass-effect data-[state=active]:bg-destructive"><FontAwesomeIcon icon={faFilm} className="mr-2" />Videos</TabsTrigger>
+                  <TabsTrigger value="files" className="py-2 px-4 text-base glass-effect data-[state=active]:bg-destructive"><FontAwesomeIcon icon={faFileLines} className="mr-2" />Files</TabsTrigger>
+                </TabsList>
+              )}
               <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search" className="max-w-[220px] md:max-w-xs ml-auto glass-effect" />
             </div>
             {dialogUploadStrip}
