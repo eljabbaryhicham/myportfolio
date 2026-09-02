@@ -14,10 +14,16 @@ import { getAuth } from 'firebase-admin/auth';
 import { getFirestore } from 'firebase-admin/firestore';
 import { SUPERADMIN_EMAIL } from '@/lib/constants';
 
+// Input validation is intentionally lenient: media documents written by older
+// versions of the app may carry unexpected `libraryId`/`resource_type` values
+// or a missing `public_id`. Rejecting them at the flow boundary throws a
+// schema error that surfaces to the client as "Minified React error #441"
+// (an opaque Server Components render error). The handler normalizes the
+// values instead, so no stored-data anomaly can crash the action.
 const DeleteMediaInputSchema = z.object({
-  publicId: z.string().min(1),
-  resourceType: z.enum(['image', 'video', 'raw']),
-  libraryId: z.enum(['primary', 'extented']),
+  publicId: z.string().optional(),
+  resourceType: z.string().optional(),
+  libraryId: z.string().optional(),
   idToken: z.string().optional(),
 });
 export type DeleteMediaInput = z.infer<typeof DeleteMediaInputSchema>;
@@ -67,14 +73,25 @@ const deleteMediaFlow = ai.defineFlow(
       return { success: false, message: 'Unauthorized. You are not allowed to delete media.' };
     }
 
-    const suffix = libraryId === 'primary' ? '_1' : '_2';
+    // Normalize defensive values from legacy/anomalous documents instead of
+    // rejecting them at the schema boundary (see DeleteMediaInputSchema).
+    const safePublicId = publicId?.trim() ?? '';
+    if (!safePublicId) {
+      return { success: false, message: 'Missing Cloudinary public id; cannot delete this asset.' };
+    }
+    const safeResourceType = (['image', 'video', 'raw'].includes(resourceType ?? '')
+      ? resourceType
+      : 'image') as 'image' | 'video' | 'raw';
+    const safeLibraryId = libraryId === 'extented' ? 'extented' : 'primary';
+
+    const suffix = safeLibraryId === 'primary' ? '_1' : '_2';
 
     const cloudName = process.env[`CLOUDINARY_CLOUD_NAME${suffix}`];
     const apiKey = process.env[`CLOUDINARY_API_KEY${suffix}`];
     const apiSecret = process.env[`CLOUDINARY_API_SECRET${suffix}`];
 
     if (!cloudName || !apiKey || !apiSecret) {
-      const errorMessage = `Cloudinary credentials for ${libraryId} library are missing. Please check your .env file for CLOUDINARY_CLOUD_NAME${suffix}, CLOUDINARY_API_KEY${suffix}, and CLOUDINARY_API_SECRET${suffix}.`;
+      const errorMessage = `Cloudinary credentials for ${safeLibraryId} library are missing. Please check your .env file for CLOUDINARY_CLOUD_NAME${suffix}, CLOUDINARY_API_KEY${suffix}, and CLOUDINARY_API_SECRET${suffix}.`;
       console.error('Error in deleteMediaFlow:', errorMessage);
       return { success: false, message: errorMessage };
     }
@@ -89,16 +106,16 @@ const deleteMediaFlow = ai.defineFlow(
       });
 
       // invalidate: purge CDN-cached derivatives so the asset stops being served.
-      const result = await cloudinary.uploader.destroy(publicId, {
-        resource_type: resourceType,
+      const result = await cloudinary.uploader.destroy(safePublicId, {
+        resource_type: safeResourceType,
         invalidate: true,
       });
 
       // "not found" counts as success — the asset is gone either way.
       if (result.result === 'ok' || result.result === 'not found') {
-        return { success: true, message: `Cloudinary asset ${publicId} deleted.` };
+        return { success: true, message: `Cloudinary asset ${safePublicId} deleted.` };
       }
-      return { success: false, message: `Cloudinary returned "${result.result}" for ${publicId}.` };
+      return { success: false, message: `Cloudinary returned "${result.result}" for ${safePublicId}.` };
     } catch (error: any) {
       console.error('Error in deleteMediaFlow:', error);
       return { success: false, message: error?.message || 'Cloudinary deletion failed.' };
