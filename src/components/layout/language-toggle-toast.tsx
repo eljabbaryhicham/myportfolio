@@ -14,7 +14,7 @@ import translations from '@/lib/i18n/translations';
 
 const INITIAL_SHOW_MS = 1000;
 const HOVER_LEAVE_MS = 100;
-const COLLAPSE_ANIM_MS = 500;
+const COLLAPSE_ANIM_MS = 250;
 const RED_HOLD_MS = 50;
 // Safety margin added to the measured expanded width so the label never gets
 // clipped by the pivot toggle even if fonts/metrics shift slightly.
@@ -206,7 +206,7 @@ export function LanguageToggleToast({ className }: { className?: string }) {
           initial={{ x: '-50%', y: 80, opacity: 0 }}
           animate={{ x: '-50%', y: 0, opacity: 1 }}
           exit={{ x: '-50%', y: 80, opacity: 0 }}
-          transition={{ layout: { duration: 0.5, ease: 'easeInOut' }, x: { duration: 0.4, ease: 'easeInOut' }, y: { duration: 0.4, ease: 'easeInOut' }, opacity: { duration: 0.3, ease: 'easeInOut' } }}
+          transition={{ layout: { duration: 0.25, ease: 'easeInOut' }, x: { duration: 0.4, ease: 'easeInOut' }, y: { duration: 0.4, ease: 'easeInOut' }, opacity: { duration: 0.3, ease: 'easeInOut' } }}
           onMouseLeave={collapsed ? undefined : () => scheduleCollapse(HOVER_LEAVE_MS)}
           className={cn(
             "absolute bottom-4 left-1/2 z-[100] flex items-center justify-center gap-2",
@@ -229,8 +229,8 @@ export function LanguageToggleToast({ className }: { className?: string }) {
             data-cursor-hide="true"
             animate={{ width: collapsed ? (dimmed ? 35 : 45) : expandedWidth, height: collapsed ? (dimmed ? 35 : 45) : 36 }}
             transition={{
-              width: { duration: 0.5, ease: 'easeInOut' },
-              height: { duration: 0.5, ease: 'easeInOut' },
+              width: { duration: 0.25, ease: 'easeInOut' },
+              height: { duration: 0.25, ease: 'easeInOut' },
             }}
             aria-live="polite"
             onClick={() => {
