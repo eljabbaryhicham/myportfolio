@@ -5,6 +5,9 @@
   "engines": {
     "node": ">=22.12 <25"
   },
+  "overrides": {
+    "jose": "^5.9.6"
+  },
   "browserslist": {
     "production": [
       ">0.5%",
