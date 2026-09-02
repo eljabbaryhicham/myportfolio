@@ -1,6 +1,7 @@
 import { initializeServerApp } from '@/firebase/server-init';
 import { getAuth } from 'firebase-admin/auth';
 import { getFirestore } from 'firebase-admin/firestore';
+import { createHash } from 'node:crypto';
 import { SUPERADMIN_EMAIL } from '@/lib/constants';
 
 export interface DeleteCloudinaryAssetInput {
@@ -36,11 +37,29 @@ async function canDeleteMedia(idToken?: string): Promise<boolean> {
 }
 
 /**
+ * Cloudinary API signature: sort params alphabetically, serialize as
+ * `key=value&...` (no header/`&` separators), append the API secret, SHA-1 hex.
+ * https://cloudinary.com/documentation/signature_calculation
+ */
+function cloudinarySignature(params: Record<string, string>, apiSecret: string): string {
+  const body = Object.keys(params)
+    .sort()
+    .map((k) => `${k}=${params[k]}`)
+    .join('&');
+  return createHash('sha1').update(body + apiSecret).digest('hex');
+}
+
+/**
  * Permanently deletes a Cloudinary asset using the signed server-side API
  * (the API secret must never reach the browser). This helper intentionally
  * does NOT import Genkit: it is used by the HTTP route handler so the delete
  * path avoids the Server-Action/Flight layer entirely and surfaces real
  * error messages instead of an opaque "Minified React error #441".
+ *
+ * The delete call goes through the global `fetch` against Cloudinary's REST
+ * API — the same mechanism the browser upload path already uses — instead of
+ * the `cloudinary` npm package, whose HTTPS/TLS path has been observed to
+ * kill the serverless process mid-request (empty-bodied 500).
  *
  * Normalizes defensive values from legacy/anomalous documents (unexpected
  * `libraryId`, `resource_type`, empty `public_id`) instead of rejecting them,
@@ -77,27 +96,50 @@ export async function deleteCloudinaryAsset(
   console.log('[delete-media] calling cloudinary destroy', { publicId: safePublicId, resourceType: safeResourceType, library: safeLibraryId });
 
   try {
-    const cloudinary = (await import('cloudinary')).v2;
-    cloudinary.config({
-      cloud_name: cloudName,
+    const timestamp = Math.floor(Date.now() / 1000).toString();
+    const signParams: Record<string, string> = {
+      public_id: safePublicId,
+      timestamp,
+      invalidate: 'true',
+    };
+    const signature = cloudinarySignature(signParams, apiSecret);
+
+    const form = new URLSearchParams({
+      ...signParams,
       api_key: apiKey,
-      api_secret: apiSecret,
-      secure: true,
+      signature,
     });
 
-    // invalidate: purge CDN-cached derivatives so the asset stops being served.
-    const result = await cloudinary.uploader.destroy(safePublicId, {
-      resource_type: safeResourceType,
-      invalidate: true,
-    });
+    // AbortSignal.timeout guards against a hanging Cloudinary connection,
+    // which would otherwise kill the serverless function mid-request and
+    // surface as an opaque empty-bodied 500 instead of a readable error.
+    const res = await fetch(
+      `https://api.cloudinary.com/v1_1/${cloudName}/${safeResourceType}/destroy`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: form,
+        signal: AbortSignal.timeout(15000),
+      }
+    );
+
+    const data = (await res.json()) as {
+      result?: string;
+      error?: { message?: string };
+    };
+    const result = data.result;
 
     // "not found" counts as success — the asset is gone either way.
-    if (result.result === 'ok' || result.result === 'not found') {
+    if (result === 'ok' || result === 'not found') {
       return { success: true, message: `Cloudinary asset ${safePublicId} deleted.`, status: 200 };
     }
     return {
       success: false,
-      message: `Cloudinary returned "${result.result}" for ${safePublicId}.`,
+      message:
+        data.error?.message ||
+        (result
+          ? `Cloudinary returned "${result}" for ${safePublicId}.`
+          : `Cloudinary returned HTTP ${res.status} for ${safePublicId}.`),
       status: 502,
     };
   } catch (error: any) {
