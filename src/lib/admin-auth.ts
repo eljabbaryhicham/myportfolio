@@ -1,9 +1,11 @@
 import { NextRequest } from 'next/server';
 import { initializeServerApp } from '@/firebase/server-init';
-import admin from 'firebase-admin';
+import { type App } from 'firebase-admin/app';
+import { getAuth } from 'firebase-admin/auth';
+import { getFirestore } from 'firebase-admin/firestore';
 
 import { logger } from '@/lib/logger';
-import { SUPERADMIN_EMAIL, isSuperAdmin as isSuperAdminCheck } from '@/lib/constants';
+import { isSuperAdmin as isSuperAdminCheck } from '@/lib/constants';
 
 export async function verifyAdminRequest(
   req: NextRequest,
@@ -16,7 +18,7 @@ export async function verifyAdminRequest(
 
   // Only path: strict verification via the Admin SDK. A token that cannot be
   // cryptographically verified is NEVER honored — no unverified-decode fallback.
-  let app: admin.app.App;
+  let app: App;
   try {
     app = await initializeServerApp();
   } catch (e) {
@@ -26,7 +28,7 @@ export async function verifyAdminRequest(
 
   let decoded;
   try {
-    decoded = await admin.auth(app).verifyIdToken(token);
+    decoded = await getAuth(app).verifyIdToken(token);
   } catch (e) {
     logger.warn('verifyAdminRequest: token verification failed, denying access.', e);
     return null;
@@ -38,7 +40,7 @@ export async function verifyAdminRequest(
   // permission needed by the calling admin route. No doc or missing permission
   // => deny (fail closed).
   try {
-    const db = admin.firestore(app);
+    const db = getFirestore(app);
     const snap = await db.collection('users').doc(decoded.uid).get();
     if (snap.exists) {
       const data = snap.data() as any;

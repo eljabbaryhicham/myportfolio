@@ -3,6 +3,7 @@
 import { cache } from 'react';
 import { unstable_cache } from 'next/cache';
 import { initializeServerApp } from '@/firebase/server-init';
+import { getFirestore } from 'firebase-admin/firestore';
 import type { ContactInfo } from '@/lib/types';
 import { logger } from '@/lib/logger';
 
@@ -23,7 +24,7 @@ import { logger } from '@/lib/logger';
 const readContactInfo = async (): Promise<(ContactInfo & { id: string }) | null> => {
   try {
     const app = await initializeServerApp();
-    const snap = await app.firestore().doc('contact/details').get();
+    const snap = await getFirestore(app).doc('contact/details').get();
     if (!snap.exists) return null;
     return { ...(snap.data() as ContactInfo), id: snap.id };
   } catch (e) {

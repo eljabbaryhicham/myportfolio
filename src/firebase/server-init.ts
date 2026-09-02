@@ -1,17 +1,17 @@
 
 'use server';
 
-import admin from 'firebase-admin';
+import { initializeApp, getApps, getApp, cert, type App } from 'firebase-admin/app';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 
-let cachedApp: admin.app.App | null = null;
+let cachedApp: App | null = null;
 
-export async function initializeServerApp(): Promise<admin.app.App> {
+export async function initializeServerApp(): Promise<App> {
   if (cachedApp) return cachedApp;
 
-  if (admin.apps.length > 0) {
-    cachedApp = admin.app();
+  if (getApps().length > 0) {
+    cachedApp = getApp();
     return cachedApp;
   }
 
@@ -22,8 +22,8 @@ export async function initializeServerApp(): Promise<admin.app.App> {
       if (serviceAccount.private_key) {
         serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, '\n');
       }
-      cachedApp = admin.initializeApp({
-        credential: admin.credential.cert(serviceAccount),
+      cachedApp = initializeApp({
+        credential: cert(serviceAccount),
       });
       console.log('Firebase Admin SDK initialized from FIREBASE_SERVICE_ACCOUNT_KEY env var.');
       return cachedApp;
@@ -38,8 +38,8 @@ export async function initializeServerApp(): Promise<admin.app.App> {
   const privateKey = process.env.FIREBASE_PRIVATE_KEY;
   if (projectId && clientEmail && privateKey) {
     try {
-      cachedApp = admin.initializeApp({
-        credential: admin.credential.cert({
+      cachedApp = initializeApp({
+        credential: cert({
           projectId,
           clientEmail,
           privateKey: privateKey.replace(/\\n/g, '\n'),
@@ -58,8 +58,8 @@ export async function initializeServerApp(): Promise<admin.app.App> {
     const serviceAccountString = await fs.readFile(serviceAccountPath, 'utf-8');
     if (serviceAccountString && !serviceAccountString.includes('PASTE_YOUR_PRIVATE_KEY_HERE')) {
       const serviceAccount = JSON.parse(serviceAccountString);
-      cachedApp = admin.initializeApp({
-        credential: admin.credential.cert(serviceAccount),
+      cachedApp = initializeApp({
+        credential: cert(serviceAccount),
       });
       console.log('Firebase Admin SDK initialized successfully from service account file.');
       return cachedApp;
@@ -71,7 +71,7 @@ export async function initializeServerApp(): Promise<admin.app.App> {
   }
 
   try {
-    cachedApp = admin.initializeApp();
+    cachedApp = initializeApp();
     console.log('Firebase Admin SDK initialized with Application Default Credentials.');
     return cachedApp;
   } catch (error) {

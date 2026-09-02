@@ -3,6 +3,7 @@
 import { cache } from 'react';
 import { unstable_cache } from 'next/cache';
 import { initializeServerApp } from '@/firebase/server-init';
+import { getFirestore } from 'firebase-admin/firestore';
 import { getLocalizedString } from '@/lib/i18n/multilingual';
 import type { TrustedByClient, MultilingualString } from '@/lib/types';
 import { logger } from '@/lib/logger';
@@ -18,14 +19,13 @@ interface RawClientDoc {
  * Server-side fetcher for the public `clients` collection, used by the
  * homepage TrustedBy strip. Returns the visible clients ordered by `order`
  * (ascending), or `null` on failure so the client can fall back to its own
- * `useCollection` subscription. Wrapped in `cache()` so multiple consumers
- * in the same request share a single Firestore read.
+ * `useCollection` subscription. Wrapped in `cache()` so multiple consumers in
+ * the same request share a single Firestore read.
  */
 const readTrustedByClients = async (): Promise<TrustedByClient[] | null> => {
   try {
     const app = await initializeServerApp();
-    const snap = await app
-      .firestore()
+    const snap = await getFirestore(app)
       .collection('clients')
       .orderBy('order', 'asc')
       .get();

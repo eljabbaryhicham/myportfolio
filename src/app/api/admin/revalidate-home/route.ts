@@ -1,6 +1,7 @@
 import { type NextRequest, NextResponse } from 'next/server';
 import { revalidatePath, revalidateTag } from 'next/cache';
-import admin from 'firebase-admin';
+import { type App } from 'firebase-admin/app';
+import { getAuth } from 'firebase-admin/auth';
 import { initializeServerApp } from '@/firebase/server-init';
 import { logger } from '@/lib/logger';
 
@@ -46,7 +47,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Missing ID token.' }, { status: 400 });
   }
 
-  let app: admin.app.App;
+  let app: App;
   try {
     app = await initializeServerApp();
   } catch (e) {
@@ -55,7 +56,7 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    await admin.auth(app).verifyIdToken(idToken);
+    await getAuth(app).verifyIdToken(idToken);
   } catch (e) {
     logger.warn('revalidate-home: token verification failed, denying.', e);
     return NextResponse.json({ error: 'Unauthorized.' }, { status: 401 });

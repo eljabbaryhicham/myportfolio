@@ -3,6 +3,7 @@
 import { cache } from 'react';
 import { unstable_cache } from 'next/cache';
 import { initializeServerApp } from '@/firebase/server-init';
+import { getFirestore } from 'firebase-admin/firestore';
 import type { PortfolioItem } from '@/features/portfolio/data/portfolio-data';
 import { getLocalizedString } from '@/lib/i18n/multilingual';
 import { slugify } from '@/features/portfolio/components/work-helpers';
@@ -21,7 +22,7 @@ import { logger } from '@/lib/logger';
 const readPortfolioItems = async (): Promise<PortfolioItem[] | null> => {
   try {
     const app = await initializeServerApp();
-    const snap = await app.firestore().collection('projects').get();
+    const snap = await getFirestore(app).collection('projects').get();
     const items: PortfolioItem[] = [];
     snap.forEach((doc) => {
       const data = doc.data() as PortfolioItem;

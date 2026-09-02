@@ -8,7 +8,8 @@
 import { ai } from '@/ai/genkit';
 import { z } from 'zod';
 import { initializeServerApp } from '@/firebase/server-init';
-import admin from 'firebase-admin';
+import { getAuth } from 'firebase-admin/auth';
+import { getFirestore } from 'firebase-admin/firestore';
 import { SUPERADMIN_EMAIL } from '@/lib/constants';
 import { isInternalUrl } from '@/lib/ssrf';
 
@@ -56,9 +57,9 @@ async function canUploadFromUrl(idToken?: string): Promise<boolean> {
   if (!idToken) return false;
   try {
     const app = await initializeServerApp();
-    const decoded = await admin.auth(app).verifyIdToken(idToken);
+    const decoded = await getAuth(app).verifyIdToken(idToken);
     if (decoded.email === SUPERADMIN_EMAIL) return true;
-    const snap = await admin.firestore(app).collection('users').doc(decoded.uid).get();
+    const snap = await getFirestore(app).collection('users').doc(decoded.uid).get();
     if (snap.exists) {
       const data = snap.data() as any;
       if (data?.permissions?.canUploadMedia === true) return true;

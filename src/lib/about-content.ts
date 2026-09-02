@@ -3,6 +3,7 @@
 import { cache } from 'react';
 import { unstable_cache } from 'next/cache';
 import { initializeServerApp } from '@/firebase/server-init';
+import { getFirestore } from 'firebase-admin/firestore';
 import type { MultilingualString } from '@/lib/i18n/multilingual';
 import { logger } from '@/lib/logger';
 
@@ -26,7 +27,7 @@ export interface AboutPageContent {
 const readAboutContent = async (): Promise<(AboutPageContent & { id: string }) | null> => {
   try {
     const app = await initializeServerApp();
-    const snap = await app.firestore().doc('about/content').get();
+    const snap = await getFirestore(app).doc('about/content').get();
     if (!snap.exists) return null;
     return { ...(snap.data() as AboutPageContent), id: snap.id };
   } catch (e) {

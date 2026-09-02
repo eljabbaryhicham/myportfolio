@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { put } from '@vercel/blob';
 import { requireUploadAuth } from '@/lib/upload-auth-middleware';
 import { initializeServerApp } from '@/firebase/server-init';
-import admin from 'firebase-admin';
+import { getFirestore, FieldValue } from 'firebase-admin/firestore';
 import { isInternalUrl } from '@/lib/ssrf';
 import { logger } from '@/lib/logger';
 
@@ -109,7 +109,7 @@ export async function POST(req: NextRequest) {
 
     try {
       const app = await initializeServerApp();
-      const db = admin.firestore(app);
+      const db = getFirestore(app);
       await db.collection('vercel_blobs').add({
         provider: 'vercel_blob',
         url: blob.url,
@@ -117,7 +117,7 @@ export async function POST(req: NextRequest) {
         size,
         contentType,
         filename: originalName,
-        uploadedAt: admin.firestore.FieldValue.serverTimestamp(),
+        uploadedAt: FieldValue.serverTimestamp(),
         uploadedBy: decoded.uid,
         sourceUrl: url,
       });

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { del } from '@vercel/blob';
 import { initializeServerApp } from '@/firebase/server-init';
-import admin from 'firebase-admin';
+import { getFirestore } from 'firebase-admin/firestore';
 import { requireUploadAuth } from '@/lib/upload-auth-middleware';
 
 export async function POST(req: NextRequest) {
@@ -43,11 +43,11 @@ export async function POST(req: NextRequest) {
   // Always clean Firestore — ensures library and Vercel stay in sync for all file types
   try {
     const app = await initializeServerApp();
-    const db = admin.firestore(app);
+    const db = getFirestore(app);
     const snap = await db.collection('vercel_blobs').where('url', '==', url).get();
     if (!snap.empty) {
       const batch = db.batch();
-      snap.forEach((d) => batch.delete(d.ref));
+      snap.forEach((d: any) => batch.delete(d.ref));
       await batch.commit();
     } else {
       // Fallback: try pathname match
@@ -55,7 +55,7 @@ export async function POST(req: NextRequest) {
       const snap2 = await db.collection('vercel_blobs').where('pathname', '==', pathname).get();
       if (!snap2.empty) {
         const batch2 = db.batch();
-        snap2.forEach((d) => batch2.delete(d.ref));
+        snap2.forEach((d: any) => batch2.delete(d.ref));
         await batch2.commit();
       }
     }

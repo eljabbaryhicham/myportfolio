@@ -1,7 +1,9 @@
 import { type NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { initializeServerApp } from '@/firebase/server-init';
-import admin from 'firebase-admin';
+import { type App } from 'firebase-admin/app';
+import { getAuth, type UserRecord } from 'firebase-admin/auth';
+import { getFirestore } from 'firebase-admin/firestore';
 import { logger } from '@/lib/logger';
 
 // Invitation codes are server-side only. Never accept a code from the client
@@ -84,7 +86,7 @@ export async function POST(req: NextRequest) {
 
   const email = `${username.toLowerCase()}@${EMAIL_DOMAIN}`;
 
-  let app: admin.app.App;
+  let app: App;
   try {
     app = await initializeServerApp();
   } catch (e) {
@@ -92,9 +94,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Server is not configured for registration.' }, { status: 503 });
   }
 
-  let userRecord: admin.auth.UserRecord;
+  let userRecord: UserRecord;
   try {
-    userRecord = await admin.auth(app).createUser({
+    userRecord = await getAuth(app).createUser({
       email,
       password,
       displayName: username,
@@ -116,7 +118,7 @@ export async function POST(req: NextRequest) {
   // media writes stay denied). The superadmin remains the gatekeeper for any
   // elevated role/permission changes.
   try {
-    const db = admin.firestore(app);
+    const db = getFirestore(app);
     await db.collection('users').doc(userRecord.uid).set({
       uid: userRecord.uid,
       username,
@@ -136,7 +138,7 @@ export async function POST(req: NextRequest) {
     // sign in later and the next sign-in flow would have no role to gate on).
     logger.error('register-claim: Firestore user doc write failed; rolling back Auth user.', e);
     try {
-      await admin.auth(app).deleteUser(userRecord.uid);
+      await getAuth(app).deleteUser(userRecord.uid);
     } catch (delErr) {
       logger.error('register-claim: rollback deleteUser failed.', delErr);
     }

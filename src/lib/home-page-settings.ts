@@ -3,6 +3,7 @@
 import { cache } from 'react';
 import { unstable_cache } from 'next/cache';
 import { initializeServerApp } from '@/firebase/server-init';
+import { getFirestore } from 'firebase-admin/firestore';
 import type { HomePageSettings } from '@/lib/types';
 import { logger } from '@/lib/logger';
 
@@ -18,7 +19,7 @@ import { logger } from '@/lib/logger';
 const readHomePageSettings = async (): Promise<HomePageSettings | null> => {
   try {
     const app = await initializeServerApp();
-    const snap = await app.firestore().doc('homepage/settings').get();
+    const snap = await getFirestore(app).doc('homepage/settings').get();
     if (!snap.exists) return null;
     return snap.data() as HomePageSettings;
   } catch (e) {

@@ -1,6 +1,8 @@
 import { type NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
-import admin from 'firebase-admin';
+import { type App } from 'firebase-admin/app';
+import { getAuth, type DecodedIdToken, type UserRecord } from 'firebase-admin/auth';
+import { getFirestore } from 'firebase-admin/firestore';
 import { initializeServerApp } from '@/firebase/server-init';
 import { SUPERADMIN_EMAIL } from '@/lib/constants';
 import { logger } from '@/lib/logger';
@@ -62,7 +64,7 @@ export async function POST(req: NextRequest) {
   // Superadmin gate: verify the caller's ID token cryptographically and
   // require the SUPERADMIN_EMAIL. Mirrors requireSuperAdmin in
   // src/app/admin/actions.ts.
-  let app: admin.app.App;
+  let app: App;
   try {
     app = await initializeServerApp();
   } catch (e) {
@@ -70,9 +72,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Server is not configured.' }, { status: 503 });
   }
 
-  let decoded: admin.auth.DecodedIdToken;
+  let decoded: DecodedIdToken;
   try {
-    decoded = await admin.auth(app).verifyIdToken(idToken);
+    decoded = await getAuth(app).verifyIdToken(idToken);
   } catch (e) {
     logger.warn('rename-user-email: token verification failed, denying.', e);
     return NextResponse.json({ error: 'Unauthorized.' }, { status: 401 });
@@ -82,9 +84,9 @@ export async function POST(req: NextRequest) {
   }
 
   // Find the target user by current email.
-  let userRecord: admin.auth.UserRecord;
+  let userRecord: UserRecord;
   try {
-    userRecord = await admin.auth(app).getUserByEmail(currentEmail);
+    userRecord = await getAuth(app).getUserByEmail(currentEmail);
   } catch (e: any) {
     if (e?.code === 'auth/user-not-found') {
       return NextResponse.json({ error: `No user found with email ${currentEmail}.` }, { status: 404 });
@@ -95,7 +97,7 @@ export async function POST(req: NextRequest) {
 
   // Rename in Firebase Auth.
   try {
-    await admin.auth(app).updateUser(userRecord.uid, { email: newEmail });
+    await getAuth(app).updateUser(userRecord.uid, { email: newEmail });
   } catch (e: any) {
     if (e?.code === 'auth/email-already-exists') {
       return NextResponse.json({ error: `Email ${newEmail} is already in use.` }, { status: 409 });
@@ -111,7 +113,7 @@ export async function POST(req: NextRequest) {
   // (The /register-claim and NewAdminForm both write email at create time; if
   // we leave the doc stale, future admin pages will show the old address.)
   try {
-    const db = admin.firestore(app);
+    const db = getFirestore(app);
     await db.collection('users').doc(userRecord.uid).update({ email: newEmail });
   } catch (e) {
     // Non-fatal: Auth rename already succeeded. Log and continue.

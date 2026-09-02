@@ -1,7 +1,7 @@
 'use server';
 
 import { initializeServerApp } from '@/firebase/server-init';
-import admin from 'firebase-admin';
+import { getFirestore, FieldValue } from 'firebase-admin/firestore';
 import type { MultilingualString } from '@/lib/i18n/multilingual';
 
 interface MigrationResult {
@@ -31,7 +31,7 @@ export async function migrateToMultilingual(): Promise<MigrationResult> {
 
   try {
     const app = await initializeServerApp();
-    const db = admin.firestore(app);
+    const db = getFirestore(app);
 
     // 1. Migrate projects collection
     try {
@@ -173,7 +173,7 @@ export async function migrateToMultilingual(): Promise<MigrationResult> {
 export async function runMigrationIfNeeded(): Promise<MigrationResult> {
   try {
     const app = await initializeServerApp();
-    const db = admin.firestore(app);
+    const db = getFirestore(app);
     
     // Check if migration already ran by looking for a marker document
     const markerRef = db.collection('_migrations').doc('multilingual_v1');
@@ -191,7 +191,7 @@ export async function runMigrationIfNeeded(): Promise<MigrationResult> {
     
     if (result.success) {
       // Mark migration as complete
-      await markerRef.set({ completedAt: admin.firestore.FieldValue.serverTimestamp() });
+      await markerRef.set({ completedAt: FieldValue.serverTimestamp() });
     }
     
     return result;

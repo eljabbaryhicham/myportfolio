@@ -1,8 +1,10 @@
 'use server';
 
-import admin from 'firebase-admin';
+import { type App } from 'firebase-admin/app';
+import { getAuth } from 'firebase-admin/auth';
+import { getFirestore } from 'firebase-admin/firestore';
 import { initializeServerApp } from '@/firebase/server-init';
-import { SUPERADMIN_EMAIL, isSuperAdmin as isSuperAdminCheck } from '@/lib/constants';
+import { isSuperAdmin as isSuperAdminCheck } from '@/lib/constants';
 
 function friendlyError(error: any): string {
   const msg = error?.message || 'Unknown error';
@@ -23,11 +25,11 @@ const DEFAULT_PERMISSIONS = {
 
 // Server-side gate: only the superadmin may run admin-management actions.
 // Accepts the caller's Firebase ID token and verifies it cryptographically.
-async function requireSuperAdmin(idToken: string): Promise<admin.app.App | null> {
+async function requireSuperAdmin(idToken: string): Promise<App | null> {
   if (!idToken) return null;
   try {
     const app = await initializeServerApp();
-    const decoded = await admin.auth(app).verifyIdToken(idToken);
+    const decoded = await getAuth(app).verifyIdToken(idToken);
     if (isSuperAdminCheck({ email: decoded.email })) return app;
     return null;
   } catch (e) {
@@ -44,8 +46,8 @@ export async function syncAuthUsersToFirestore(idToken: string): Promise<{
   try {
     const app = await requireSuperAdmin(idToken);
     if (!app) return { synced: 0, users: [], error: 'Unauthorized. Only the superadmin can sync users.' };
-    const auth = admin.auth(app);
-    const db = admin.firestore(app);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
 
     // Fetch all Firebase Auth users (handles pagination automatically)
     const authUsers: Array<{ uid: string; email: string }> = [];
@@ -62,7 +64,7 @@ export async function syncAuthUsersToFirestore(idToken: string): Promise<{
 
     // Fetch existing Firestore user doc IDs
     const snapshot = await db.collection('users').select().get();
-    const existingUids = new Set(snapshot.docs.map((doc) => doc.id));
+    const existingUids = new Set(snapshot.docs.map((doc: any) => doc.id));
 
     // Find Auth users missing from Firestore
     const missing = authUsers.filter((u) => !existingUids.has(u.uid));
@@ -106,8 +108,8 @@ export async function deleteAdminUser(uid: string, idToken: string): Promise<{ s
   try {
     const app = await requireSuperAdmin(idToken);
     if (!app) return { success: false, error: 'Unauthorized. Only the superadmin can delete users.' };
-    const auth = admin.auth(app);
-    const db = admin.firestore(app);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
 
     // Delete from Firebase Auth
     await auth.deleteUser(uid);

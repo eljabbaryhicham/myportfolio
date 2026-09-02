@@ -1,6 +1,8 @@
 import { type NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
-import admin from 'firebase-admin';
+import { type App } from 'firebase-admin/app';
+import { getAuth, type DecodedIdToken, type UserRecord } from 'firebase-admin/auth';
+import { getFirestore } from 'firebase-admin/firestore';
 import { initializeServerApp } from '@/firebase/server-init';
 import { isSuperAdmin } from '@/lib/constants';
 import { logger } from '@/lib/logger';
@@ -64,7 +66,7 @@ export async function POST(req: NextRequest) {
 
   const { idToken, email } = parsed.data;
 
-  let app: admin.app.App;
+  let app: App;
   try {
     app = await initializeServerApp();
   } catch (e) {
@@ -74,9 +76,9 @@ export async function POST(req: NextRequest) {
 
   // Superadmin gate: verify the caller's ID token cryptographically and
   // require the superadmin email (case-insensitive, mirrors isSuperAdmin).
-  let decoded: admin.auth.DecodedIdToken;
+  let decoded: DecodedIdToken;
   try {
-    decoded = await admin.auth(app).verifyIdToken(idToken);
+    decoded = await getAuth(app).verifyIdToken(idToken);
   } catch (e) {
     logger.warn('grant-content-permissions: token verification failed, denying.', e);
     return NextResponse.json({ error: 'Unauthorized.' }, { status: 401 });
@@ -86,9 +88,9 @@ export async function POST(req: NextRequest) {
   }
 
   // Find the target user by email.
-  let userRecord: admin.auth.UserRecord;
+  let userRecord: UserRecord;
   try {
-    userRecord = await admin.auth(app).getUserByEmail(email);
+    userRecord = await getAuth(app).getUserByEmail(email);
   } catch (e: any) {
     if (e?.code === 'auth/user-not-found') {
       return NextResponse.json({ error: `No user found with email ${email}.` }, { status: 404 });
@@ -100,7 +102,7 @@ export async function POST(req: NextRequest) {
   // Only elevate existing admin-class accounts. Self-registered (role 'user')
   // accounts already get content permissions at signup via register-claim;
   // granting here would bypass that path.
-  const db = admin.firestore(app);
+  const db = getFirestore(app);
   const userDocSnap = await db.collection('users').doc(userRecord.uid).get().catch((e) => {
     logger.error('grant-content-permissions: users doc read failed.', e);
     return null;
