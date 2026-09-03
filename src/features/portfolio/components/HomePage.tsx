@@ -377,7 +377,7 @@ export default function HomePageContent() {
         }}
       />
       <div className="absolute inset-0 z-0 pointer-events-none bg-black/60" />
-      <div className="homepage-viewport-fix-inner relative z-10 flex h-full w-full items-center justify-center overflow-auto transition-opacity duration-1000">
+      <div className="homepage-viewport-fix-inner relative z-10 flex h-full w-full items-center justify-center overflow-auto">
         {hasCustomCursor && <CursorArrow targetRefs={[aboutRef, contactRef, ctaRef]} cursorLottieUrl={homeSettings?.cursorLottieUrl} tickLottieUrl={homeSettings?.tickLottieUrl} />}
 
         <div className="flex flex-col items-center gap-1 sm:gap-2 md:gap-3 lg:gap-4 xl:gap-5 w-full px-4 -translate-y-4">
@@ -403,13 +403,17 @@ export default function HomePageContent() {
               <video ref={videoRef} autoPlay muted loop playsInline preload="auto" poster={HERO_VIDEO_POSTER_LCP} className="absolute inset-0 w-full h-full object-cover" style={{ pointerEvents: 'none' }} {...({ fetchPriority: 'high' } as any)} />
               <div className="absolute inset-0 bg-background/60" />
             </div>
-            {isLogoVisible && homeLogoUrl && (
-              <div className="absolute inset-0 flex items-center justify-center" style={{ zIndex: 10 }}>
-                <div className="w-full max-w-[min(40vw,250px)] sm:max-w-[min(35vw,300px)] md:max-w-[min(35vw,300px)] lg:max-w-[min(41vw,440px)] xl:max-w-[min(43vw,510px)] px-4" style={{ transform: `translateY(${homeSettings?.homePageLogoOffset || 0}px) scale(${logoScale})`, opacity: logoOpacity }}>
-                  <Logo src={homeLogoUrl} color={logoColor || undefined} />
-                </div>
-              </div>
-            )}
+            {isLogoVisible && homeLogoUrl && (() => {
+                const offset = homeSettings?.homePageLogoOffset || 0;
+                const transform = offset ? `translateY(${offset}px) scale(${logoScale})` : `scale(${logoScale})`;
+                return (
+                  <div className="absolute inset-0 flex items-center justify-center" style={{ zIndex: 10 }}>
+                    <div className="w-full max-w-[min(40vw,250px)] sm:max-w-[min(35vw,300px)] md:max-w-[min(35vw,300px)] lg:max-w-[min(41vw,440px)] xl:max-w-[min(43vw,510px)] px-4" style={{ transform, opacity: logoOpacity }}>
+                      <Logo src={homeLogoUrl} color={logoColor || undefined} />
+                    </div>
+                  </div>
+                );
+              })()}
           </div>
           </div>
 
