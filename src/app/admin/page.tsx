@@ -60,6 +60,7 @@ function AdminPage() {
   const [vercelActiveTab, setVercelActiveTab] = useState<'images' | 'videos' | 'files'>('images');
   const { setActiveMediaTab, completedUpload, consumeCompletedUpload } = useUploadProgress();
 
+  const initialCompletedUploadRef = useRef(true);
   const timeoutsRef = useRef<ReturnType<typeof setTimeout>[]>([]);
   const safeTimeout = useCallback((fn: () => void, delay: number) => {
     const id = setTimeout(() => {
@@ -207,6 +208,13 @@ function AdminPage() {
 
   useEffect(() => {
     if (!completedUpload) return;
+    // Skip the restored value from localStorage on mount to prevent the media
+    // library popup from opening unexpectedly on page reload.
+    if (initialCompletedUploadRef.current) {
+      initialCompletedUploadRef.current = false;
+      consumeCompletedUpload();
+      return;
+    }
     // Uploads from inside the unified media picker stay inside the picker —
     // don't yank the user out of their current form by switching tabs. The
     // picker surfaces the new file via its own Firestore listener and
