@@ -373,10 +373,10 @@ export default function HomePageContent() {
           backgroundImage: `url(${HERO_VIDEO_POSTER})`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
-          filter: 'brightness(0.4)',
           transform: 'scale(1.2)',
         }}
       />
+      <div className="absolute inset-0 z-0 pointer-events-none bg-black/60" />
       <div className="homepage-viewport-fix-inner relative z-10 flex h-full w-full items-center justify-center overflow-auto transition-opacity duration-1000">
         {hasCustomCursor && <CursorArrow targetRefs={[aboutRef, contactRef, ctaRef]} cursorLottieUrl={homeSettings?.cursorLottieUrl} tickLottieUrl={homeSettings?.tickLottieUrl} />}
 

@@ -350,8 +350,6 @@ html, body {
   align-items: center !important;
   justify-content: center !important;
   box-sizing: border-box;
-  will-change: transform;
-  transform: translateZ(0);
 }
 
 /* Embedded media inside project details (Markdown + raw HTML).
