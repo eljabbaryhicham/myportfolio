@@ -207,9 +207,9 @@ export function useProviderMedia(provider: MediaProvider): ProviderMediaApi {
         if (provider === 'imagekit') {
           if (!firestore) throw new Error('Firestore is unavailable.');
           const uploaded = await uploadImageKitAsset(file, file.name, token, (progress) => { setUploadProgress(progress); updateGlobalProgress(progress, 'imagekit'); }, activeXhrRef);
-          const record = imageKitRecord(uploaded);
+          const record = imageKitRecord(uploaded, resourceTypeFromName(file.name, file.type));
           const ref = await registerImageKitAsset(record, token);
-          signalCompletedUpload(ref, record.fileType === 'image' ? 'image' : record.fileType === 'video' ? 'video' : 'raw', 'imagekit', 'imagekit', file.name);
+          signalCompletedUpload(ref, record.resourceType!, 'imagekit', 'imagekit', file.name);
           return { ok: true, url: record.url };
         }
 
@@ -285,7 +285,7 @@ export function useProviderMedia(provider: MediaProvider): ProviderMediaApi {
         if (provider === 'imagekit') {
           if (!firestore) throw new Error('Firestore is unavailable.');
           const imported = await uploadImageKitAsset(url, filename || filenameFromUrl(url), token, (progress) => { setUploadProgress(progress); updateGlobalProgress(progress, 'imagekit'); }, activeXhrRef);
-          const record = imageKitRecord(imported);
+          const record = imageKitRecord(imported, resourceTypeFromName(imported.name || filename || url));
           const ref = await registerImageKitAsset(record, token);
           created = imageKitToAsset({ id: ref, ...record });
           signalCompletedUpload(ref, created.resourceType, 'imagekit', 'imagekit', created.filename);
@@ -478,12 +478,20 @@ function filenameFromUrl(url: string): string {
   try { return new URL(url).pathname.split('/').pop() || 'imported-file'; } catch { return 'imported-file'; }
 }
 
-function imageKitRecord(asset: ImageKitUploadResponse): ImageKitMediaAsset {
-  return { provider: 'imagekit', fileId: asset.fileId, url: asset.url, name: asset.name, fileType: asset.fileType, filePath: asset.filePath, thumbnailUrl: asset.thumbnailUrl, size: asset.size, createdAt: new Date().toISOString() };
+function resourceTypeFromName(name: string, mimeType?: string): 'image' | 'video' | 'raw' {
+  if (mimeType?.startsWith('video/')) return 'video';
+  if (mimeType?.startsWith('image/')) return 'image';
+  if (/\.(mp4|webm|mov|m4v|avi|mkv|m3u8)$/i.test(name)) return 'video';
+  if (/\.(avif|gif|heic|jpe?g|png|svg|webp)$/i.test(name)) return 'image';
+  return 'raw';
+}
+
+function imageKitRecord(asset: ImageKitUploadResponse, resourceType: 'image' | 'video' | 'raw'): ImageKitMediaAsset {
+  return { provider: 'imagekit', fileId: asset.fileId, url: asset.url, name: asset.name, fileType: asset.fileType, resourceType, filePath: asset.filePath, thumbnailUrl: asset.thumbnailUrl, size: asset.size, createdAt: new Date().toISOString() };
 }
 
 function imageKitToAsset(asset: ImageKitAssetDoc): MediaLibraryAsset {
-  return { id: asset.id, provider: 'imagekit', providerAssetKey: asset.fileId, url: asset.url, filename: asset.name, resourceType: asset.fileType === 'image' ? 'image' : asset.fileType === 'video' ? 'video' : 'raw', size: asset.size, createdAt: asset.createdAt, tag: asset.tag };
+  return { id: asset.id, provider: 'imagekit', providerAssetKey: asset.fileId, url: asset.url, filename: asset.name, resourceType: asset.resourceType || resourceTypeFromName(asset.name || asset.url), size: asset.size, createdAt: asset.createdAt, tag: asset.tag };
 }
 
 async function uploadImageKitAsset(file: File | string, fileName: string, token: string, onProgress: (percent: number) => void, activeXhrRef: { current: XMLHttpRequest | null }): Promise<ImageKitUploadResponse> {

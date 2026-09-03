@@ -14,6 +14,7 @@ const createSchema = z.object({
   url: z.string().url().max(4096),
   name: z.string().trim().min(1).max(512),
   fileType: z.enum(['image', 'video', 'non-image']),
+  resourceType: z.enum(['image', 'video', 'raw']),
   filePath: z.string().max(1024).optional(),
   thumbnailUrl: z.string().url().max(4096).optional(),
   size: z.number().int().nonnegative().optional(),

@@ -15,6 +15,7 @@ export interface ImageKitMediaAsset {
   url: string;
   name: string;
   fileType: 'image' | 'video' | 'non-image';
+  resourceType?: 'image' | 'video' | 'raw';
   filePath?: string;
   thumbnailUrl?: string;
   size?: number;

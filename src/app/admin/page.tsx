@@ -249,6 +249,9 @@ function AdminPage() {
         }));
       }, 150);
     }
+    // Completion is a one-shot navigation signal. Once its highlight has been
+    // queued, clear it so later Admin tab changes cannot replay the popup.
+    consumeCompletedUpload();
     // Cloudinary/Vercel: components handle their own popups
     safeTimeout(() => setNewlyUploadedId(null), 3000);
   }, [completedUpload, activeTab, setActiveTab, consumeCompletedUpload, safeTimeout]);
