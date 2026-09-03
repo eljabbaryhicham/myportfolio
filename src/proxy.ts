@@ -16,12 +16,12 @@ import { NextResponse, type NextRequest } from 'next/server';
 // symptom. Media and embeds must be explicitly allowlisted.
 const CSP =
   `default-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; object-src 'none'; ` +
-  `script-src 'self' 'unsafe-inline' 'unsafe-eval' https://va.vercel-scripts.com https://cdn.jsdelivr.net https://static.cloudflareinsights.com; ` +
+  `script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://static.cloudflareinsights.com; ` +
   `style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; ` +
   `img-src 'self' data: https:; ` +
   `media-src 'self' https://res.cloudinary.com https://*.public.blob.vercel-storage.com https://*.vercel-storage.com https://portfolio-hicham-ten.vercel.app https://video.gumlet.io blob:; ` +
   `frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com https://player.vimeo.com https://play.gumlet.io; ` +
-  `connect-src 'self' https://firestore.googleapis.com https://studio-8316917408-a299a.firebaseapp.com https://identitytoolkit.googleapis.com https://res.cloudinary.com https://api.cloudinary.com https://*.public.blob.vercel-storage.com https://*.vercel-storage.com https://portfolio-hicham-ten.vercel.app https://video.gumlet.io https://*.amazonaws.com https://cdn.plyr.io https://va.vercel-scripts.com https://static.cloudflareinsights.com; ` +
+  `connect-src 'self' https://firestore.googleapis.com https://studio-8316917408-a299a.firebaseapp.com https://identitytoolkit.googleapis.com https://res.cloudinary.com https://api.cloudinary.com https://*.public.blob.vercel-storage.com https://*.vercel-storage.com https://portfolio-hicham-ten.vercel.app https://video.gumlet.io https://*.amazonaws.com https://cdn.plyr.io https://static.cloudflareinsights.com; ` +
   `worker-src 'self' blob:`;
 
 export function proxy(request: NextRequest) {
