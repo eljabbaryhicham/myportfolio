@@ -1456,7 +1456,7 @@ function WorkPageContent() {
                 <DialogHeader className="p-4 md:p-6 pb-0 min-w-0">
                     <DialogTitle className="font-headline text-base sm:text-lg md:text-xl break-words leading-tight hyphens-auto">{t('work.details.title').replace('{title}', getLocalizedString(selectedItem.title, lang))}</DialogTitle>
                 </DialogHeader>
-                <ScrollArea className="flex-1 min-w-0 [&>div>div]:!block [&>div>div]:min-w-0 [&>div>div]:w-full">
+                <ScrollArea className="flex-1 min-w-0">
                     <div className="project-details prose prose-sm sm:prose-base dark:prose-invert max-w-full w-full min-w-0 overflow-hidden break-words space-y-4 text-xs sm:text-sm text-foreground/80 p-3 sm:p-4 md:p-6 box-border prose-p:my-2 prose-p:leading-relaxed prose-headings:break-words prose-h1:text-lg sm:prose-h1:text-xl prose-h2:text-base sm:prose-h2:text-lg prose-h3:text-sm sm:prose-h3:text-base prose-li:text-xs sm:prose-li:text-sm prose-a:break-all">
                         <ProjectDetailsContent details={getLocalizedString(selectedItem.details, lang)} playerType={workPagePlayer} onImageFullscreen={setFullscreenImageUrl} mediaWidth={homeSettings?.mediaWidth} showMediaTitles={homeSettings?.showMediaTitles ?? true} watermark={watermarkLogoUrl} watermarkSize={watermarkSize} watermarkOpacity={watermarkOpacity} watermarkPosition={watermarkPosition} />
                     </div>
