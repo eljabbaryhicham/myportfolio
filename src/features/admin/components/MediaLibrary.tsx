@@ -571,7 +571,15 @@ export default forwardRef<MediaLibraryRef, MediaLibraryProps>(function MediaLibr
   // ---- Auto-open full library after upload completes ----
   useEffect(() => {
     if (!completedUpload) return;
-    if (provider === 'cloudinary' && completedUpload.libraryId === 'vercel_blob') return;
+    // Only act on uploads owned by this provider. Appwrite/Gumlet uploads are
+    // surfaced (and owned) by the admin page and their own libraries. A stale
+    // `completedUpload` left over from one of those would otherwise clear the
+    // weak cloudinary guard below and auto-open this popup when switching to
+    // this tab, so consume it instead.
+    if (provider === 'cloudinary' && completedUpload.libraryId !== 'primary' && completedUpload.libraryId !== 'extented') {
+      consumeCompletedUpload();
+      return;
+    }
     if (provider === 'vercel_blob' && completedUpload.libraryId !== 'vercel_blob') return;
     // When the upload originated from the media picker, don't pop the full
     // library dialog over the top of it — the picker surfaces the new file
