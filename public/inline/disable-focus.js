@@ -13,20 +13,9 @@
     } catch (e) {}
   }
 
-  // Disable elements already in the DOM, then watch for newly added ones
-  // (e.g. after React hydrates or renders dialogs/menus).
   disable(document);
 
-  if (window.MutationObserver) {
-    var mo = new MutationObserver(function (mutations) {
-      for (var m = 0; m < mutations.length; m++) {
-        var added = mutations[m].addedNodes;
-        for (var n = 0; n < added.length; n++) {
-          var node = added[n];
-          if (node && node.nodeType === 1) disable(node);
-        }
-      }
-    });
-    mo.observe(document.documentElement, { childList: true, subtree: true });
-  }
+  document.addEventListener('focusin', function (e) {
+    if (e && e.target && e.target.setAttribute) e.target.setAttribute('tabindex', '-1');
+  }, true);
 })();
