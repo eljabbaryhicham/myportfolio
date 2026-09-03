@@ -835,7 +835,7 @@ export default function HomeAdmin() {
                                                         value={[field.value ?? 0]}
                                                         onValueChange={(value) => field.onChange(value[0])}
                                                         min={-100}
-                                                        max={100}
+                                                        max={150}
                                                         step={5}
                                                     />
                                                 </FormControl>
