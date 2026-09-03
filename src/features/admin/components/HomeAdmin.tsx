@@ -68,6 +68,7 @@ const settingsSchema = z.object({
                                         homePageLogoScale: z.number().min(0.1).max(5).optional(),
   homePageLogoOpacity: z.number().min(0).max(100).optional(),
   homePageLogoColor: z.string().optional(),
+  homePageLogoOffset: z.number().min(-200).max(200).optional(),
   themeColor: z.string().optional(),
   homePageBackgroundType: z.enum(['video', 'image']).optional(),
   homePageBackgroundMediaId: z.string().optional(),
@@ -327,6 +328,7 @@ export default function HomeAdmin() {
       homePageLogoScale: 1,
       homePageLogoOpacity: 100,
       homePageLogoColor: '',
+      homePageLogoOffset: 0,
       themeColor: '#d81e38',
       heroVideoUrl: '',
       preloaderType: 'none',
@@ -391,6 +393,7 @@ export default function HomeAdmin() {
         homePageLogoScale: homeSettings.homePageLogoScale || 1,
         homePageLogoOpacity: homeSettings.homePageLogoOpacity ?? 100,
         homePageLogoColor: homeSettings.homePageLogoColor || '',
+        homePageLogoOffset: homeSettings.homePageLogoOffset || 0,
         themeColor: homeSettings.themeColor || '#d81e38',
         heroVideoUrl: homeSettings.heroVideoUrl || '',
         preloaderType: ((homeSettings.preloaderType as string) === 'default'
@@ -816,6 +819,28 @@ export default function HomeAdmin() {
                                                 </div>
                                                 <FormDescription>
                                                     {t('homeAdmin.logoColorDescription') || 'Leave empty or white for original logo color'}
+                                                </FormDescription>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                    <FormField
+                                        control={control}
+                                        name="homePageLogoOffset"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>{t('homeAdmin.logoPosition') || 'Logo Vertical Position'} — {field.value ?? 0}px</FormLabel>
+                                                <FormControl>
+                                                    <Slider
+                                                        value={[field.value ?? 0]}
+                                                        onValueChange={(value) => field.onChange(value[0])}
+                                                        min={-100}
+                                                        max={100}
+                                                        step={5}
+                                                    />
+                                                </FormControl>
+                                                <FormDescription>
+                                                    {t('homeAdmin.logoPositionDescription') || 'Negative moves the logo up, positive moves it down (px)'}
                                                 </FormDescription>
                                                 <FormMessage />
                                             </FormItem>

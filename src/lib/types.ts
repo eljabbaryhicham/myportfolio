@@ -23,6 +23,7 @@ export interface HomePageSettings {
   homePageLogoScale?: number;
   homePageLogoOpacity?: number;
   homePageLogoColor?: string;
+  homePageLogoOffset?: number;
   faviconUrl?: string;
   languageToggleColor?: string;
   bodyFontFamily?: string;
