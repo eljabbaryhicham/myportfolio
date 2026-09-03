@@ -1,12 +1,13 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useAuth, useCollection, useFirestore, useMemoFirebase } from '@/firebase';
-import { collection, orderBy, query } from 'firebase/firestore';
+import { addDoc, collection, deleteDoc, doc, orderBy, query, updateDoc } from 'firebase/firestore';
 import { getMediaCapabilities } from '@/features/admin/lib/media-capabilities';
 import { toMediaLibraryAsset, type MediaLibraryAsset } from '@/features/admin/lib/media-asset';
 import { useMediaMeta } from '@/features/admin/hooks/use-media-meta';
 import { gumletImageDeliveryFormatUrl } from '@/lib/gumlet-image';
 import { type MediaMetaProvider, type MediaMetaTag } from '@/lib/media-meta';
 import type { MediaProvider, ProviderAssetRecord } from '@/lib/media-providers';
+import { IMAGEKIT_MEDIA_COLLECTION, type ImageKitMediaAsset } from '@/lib/imagekit';
 import { useUploadProgress, type MediaProviderKey } from '@/components/upload-progress-context';
 
 // Map the hook's MediaProvider value to the notification system's provider key.
@@ -65,6 +66,10 @@ interface GumletImageAssetLike {
   createdAt?: string;
 }
 
+interface ImageKitAssetDoc extends ImageKitMediaAsset {
+  id: string;
+}
+
 export interface ProviderMediaApi {
   provider: MediaProvider;
   capabilities: ReturnType<typeof getMediaCapabilities>;
@@ -91,6 +96,7 @@ const API_ROUTE: Record<MediaProvider, string | null> = {
   appwrite: '/api/appwrite/media',
   gumlet_video: '/api/gumlet/video',
   gumlet_image: '/api/gumlet/image',
+  imagekit: '/api/imagekit/media',
   cloudinary: null,
   vercel_blob: null,
 };
@@ -168,13 +174,19 @@ export function useProviderMedia(provider: MediaProvider): ProviderMediaApi {
   // ---- Firebase-backed list (Cloudinary/Vercel) ----
   const colRef = useMemoFirebase(() => {
     if (!firestore || isManaged) return null;
-    const target = provider === 'cloudinary' ? 'media' : 'vercel_blobs';
-    const orderField = provider === 'cloudinary' ? 'created_at' : 'uploadedAt';
+    const target = provider === 'cloudinary'
+      ? 'media'
+      : provider === 'imagekit'
+        ? IMAGEKIT_MEDIA_COLLECTION
+        : 'vercel_blobs';
+    const orderField = provider === 'cloudinary' ? 'created_at' : provider === 'imagekit' ? 'createdAt' : 'uploadedAt';
     return query(collection(firestore, target), orderBy(orderField, 'desc'));
   }, [firestore, provider, isManaged]);
-  const { data: firebaseDocs, isLoading: isFirebaseLoading } = useCollection<CloudinaryAssetDoc | VercelBlobDoc>(colRef as any);
+  const { data: firebaseDocs, isLoading: isFirebaseLoading } = useCollection<CloudinaryAssetDoc | VercelBlobDoc | ImageKitAssetDoc>(colRef as any);
   const firebaseAssets = useMemo<MediaLibraryAsset[]>(
-    () => (isManaged || !firebaseDocs ? [] : firebaseDocs.map((doc) => toMediaLibraryAsset(provider, doc))),
+    () => (isManaged || !firebaseDocs ? [] : firebaseDocs.map((asset) => provider === 'imagekit'
+      ? imageKitToAsset(asset as ImageKitAssetDoc)
+      : toMediaLibraryAsset(provider, asset as CloudinaryAssetDoc | VercelBlobDoc))),
     [firebaseDocs, provider, isManaged]
   );
 
@@ -190,6 +202,15 @@ export function useProviderMedia(provider: MediaProvider): ProviderMediaApi {
         if (!token) {
           finishGlobalUpload(toProviderKey(provider));
           return { ok: false, error: 'Not authenticated.' };
+        }
+
+        if (provider === 'imagekit') {
+          if (!firestore) throw new Error('Firestore is unavailable.');
+          const uploaded = await uploadImageKitAsset(file, file.name, token, (progress) => setUploadProgress(progress), activeXhrRef);
+          const record = imageKitRecord(uploaded);
+          const ref = await addDoc(collection(firestore, IMAGEKIT_MEDIA_COLLECTION), record);
+          signalCompletedUpload(ref.id, record.fileType === 'image' ? 'image' : record.fileType === 'video' ? 'video' : 'raw', 'imagekit', 'imagekit', file.name);
+          return { ok: true, url: record.url };
         }
 
         if (provider === 'gumlet_video') {
@@ -243,7 +264,7 @@ export function useProviderMedia(provider: MediaProvider): ProviderMediaApi {
         finishGlobalUpload(toProviderKey(provider));
       }
     },
-    [getToken, provider, startGlobalUpload, updateGlobalProgress, finishGlobalUpload, signalCompletedUpload]
+    [getToken, provider, firestore, startGlobalUpload, updateGlobalProgress, finishGlobalUpload, signalCompletedUpload]
   );
 
   // ---- uploadByLink ----
@@ -261,7 +282,14 @@ export function useProviderMedia(provider: MediaProvider): ProviderMediaApi {
         }
         let created: MediaLibraryAsset | null = null;
 
-        if (provider === 'appwrite') {
+        if (provider === 'imagekit') {
+          if (!firestore) throw new Error('Firestore is unavailable.');
+          const imported = await uploadImageKitAsset(url, filename || filenameFromUrl(url), token, (progress) => setUploadProgress(progress), activeXhrRef);
+          const record = imageKitRecord(imported);
+          const ref = await addDoc(collection(firestore, IMAGEKIT_MEDIA_COLLECTION), record);
+          created = imageKitToAsset({ id: ref.id, ...record });
+          signalCompletedUpload(ref.id, created.resourceType, 'imagekit', 'imagekit', created.filename);
+        } else if (provider === 'appwrite') {
           const response = await fetch('/api/appwrite/media', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
@@ -313,7 +341,7 @@ export function useProviderMedia(provider: MediaProvider): ProviderMediaApi {
         finishGlobalUpload(toProviderKey(provider));
       }
     },
-    [getToken, provider, startGlobalUpload, updateGlobalProgress, finishGlobalUpload, signalCompletedUpload]
+    [getToken, provider, firestore, startGlobalUpload, updateGlobalProgress, finishGlobalUpload, signalCompletedUpload]
   );
 
   // ---- deleteAsset ----
@@ -323,7 +351,9 @@ export function useProviderMedia(provider: MediaProvider): ProviderMediaApi {
       if (!token) return { ok: false, error: 'Not authenticated.' };
       const route = API_ROUTE[provider];
       if (!route) return { ok: false, error: 'Delete not available for this provider.' };
-      const body = provider === 'appwrite' ? { fileId: asset.id } : provider === 'gumlet_video' ? { assetId: asset.id } : { id: asset.id };
+      const body = provider === 'imagekit'
+        ? { fileId: asset.providerAssetKey }
+        : provider === 'appwrite' ? { fileId: asset.id } : provider === 'gumlet_video' ? { assetId: asset.id } : { id: asset.id };
       try {
         const response = await fetch(route, {
           method: 'DELETE',
@@ -332,6 +362,7 @@ export function useProviderMedia(provider: MediaProvider): ProviderMediaApi {
         });
         const data = await response.json();
         if (!response.ok || !data.success) throw new Error(data.message || 'Delete failed.');
+        if (provider === 'imagekit' && firestore) await deleteDoc(doc(firestore, IMAGEKIT_MEDIA_COLLECTION, asset.id));
         setManagedAssets((current) => current.filter((a) => a.id !== asset.id));
         const meta = managedMetaKey(provider, asset.id);
         if (meta) await setMetaTag(meta.provider, meta.assetId, null);
@@ -340,12 +371,21 @@ export function useProviderMedia(provider: MediaProvider): ProviderMediaApi {
         return { ok: false, error: error instanceof Error ? error.message : 'Delete failed.' };
       }
     },
-    [getToken, provider, setMetaTag]
+    [getToken, provider, setMetaTag, firestore]
   );
 
   // ---- setTag ----
   const setTag = useCallback(
     async (asset: MediaLibraryAsset, tag: MediaMetaTag | null): Promise<{ ok: boolean; error?: string }> => {
+      if (provider === 'imagekit') {
+        if (!firestore) return { ok: false, error: 'Firestore is unavailable.' };
+        try {
+          await updateDoc(doc(firestore, IMAGEKIT_MEDIA_COLLECTION, asset.id), { tag });
+          return { ok: true };
+        } catch (error) {
+          return { ok: false, error: error instanceof Error ? error.message : 'Could not update tag.' };
+        }
+      }
       const meta = managedMetaKey(provider, asset.id);
       if (!meta) return { ok: false, error: 'Tags are not supported for this provider.' };
       const result = await setMetaTag(meta.provider, meta.assetId, tag);
@@ -354,7 +394,7 @@ export function useProviderMedia(provider: MediaProvider): ProviderMediaApi {
       }
       return result;
     },
-    [provider, setMetaTag]
+    [provider, setMetaTag, firestore]
   );
 
   // ---- copyUrl ----
@@ -427,6 +467,41 @@ function managedMetaKey(provider: MediaProvider, assetId: string): { provider: M
     return { provider, assetId };
   }
   return null;
+}
+
+interface ImageKitUploadResponse {
+  fileId: string; url: string; name: string; fileType: 'image' | 'video' | 'non-image';
+  filePath?: string; thumbnailUrl?: string; size?: number;
+}
+
+function filenameFromUrl(url: string): string {
+  try { return new URL(url).pathname.split('/').pop() || 'imported-file'; } catch { return 'imported-file'; }
+}
+
+function imageKitRecord(asset: ImageKitUploadResponse): ImageKitMediaAsset {
+  return { provider: 'imagekit', fileId: asset.fileId, url: asset.url, name: asset.name, fileType: asset.fileType, filePath: asset.filePath, thumbnailUrl: asset.thumbnailUrl, size: asset.size, createdAt: new Date().toISOString() };
+}
+
+function imageKitToAsset(asset: ImageKitAssetDoc): MediaLibraryAsset {
+  return { id: asset.id, provider: 'imagekit', providerAssetKey: asset.fileId, url: asset.url, filename: asset.name, resourceType: asset.fileType === 'image' ? 'image' : asset.fileType === 'video' ? 'video' : 'raw', size: asset.size, createdAt: asset.createdAt, tag: asset.tag };
+}
+
+async function uploadImageKitAsset(file: File | string, fileName: string, token: string, onProgress: (percent: number) => void, activeXhrRef: { current: XMLHttpRequest | null }): Promise<ImageKitUploadResponse> {
+  const authResponse = await fetch('/api/imagekit/auth', { headers: { Authorization: `Bearer ${token}` } });
+  const auth = await authResponse.json();
+  if (!authResponse.ok || !auth.success) throw new Error(auth.message || 'Could not authorize ImageKit upload.');
+  const data = new FormData();
+  data.append('file', file); data.append('fileName', fileName.replace(/[^a-zA-Z0-9._-]/g, '_'));
+  data.append('publicKey', auth.publicKey); data.append('token', auth.token); data.append('signature', auth.signature); data.append('expire', String(auth.expire));
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest(); activeXhrRef.current = xhr;
+    xhr.open('POST', 'https://upload.imagekit.io/api/v1/files/upload');
+    xhr.upload.onprogress = (event) => { if (event.lengthComputable) onProgress(Math.round(event.loaded / event.total * 100)); };
+    xhr.onload = () => { activeXhrRef.current = null; try { const payload = JSON.parse(xhr.responseText); xhr.status >= 200 && xhr.status < 300 ? resolve(payload) : reject(new Error(payload.message || `ImageKit upload failed (${xhr.status}).`)); } catch { reject(new Error(`ImageKit upload failed (${xhr.status}).`)); } };
+    xhr.onerror = () => { activeXhrRef.current = null; reject(new Error('Network error during ImageKit upload.')); };
+    xhr.onabort = () => { activeXhrRef.current = null; reject(new Error('Upload cancelled.')); };
+    xhr.send(data);
+  });
 }
 
 // ---- Gumlet Video direct upload (create intent, then PUT) ----

@@ -101,7 +101,7 @@ function formatOptionsFor(provider: MediaProvider): string[] {
   return ['original'];
 }
 
-type ManagedProvider = 'appwrite' | 'gumlet_video' | 'gumlet_image';
+type ManagedProvider = 'appwrite' | 'gumlet_video' | 'gumlet_image' | 'imagekit';
 
 type FailedUpload = {
   id: number;
@@ -169,8 +169,8 @@ export default function UnifiedMediaLibrary({ provider, onMediaSelect }: {
       const detail = (e as CustomEvent<{ provider?: string; docId?: string; tab?: string }>).detail;
       if (!detail?.provider || !detail.docId) return;
       const appliesHere =
-        provider === 'appwrite'
-          ? detail.provider === 'appwrite'
+        provider === 'appwrite' || provider === 'imagekit'
+          ? detail.provider === provider
           : (provider === 'gumlet_video' || provider === 'gumlet_image') &&
             (detail.provider === 'gumlet_video' || detail.provider === 'gumlet_image');
       if (!appliesHere) return;
@@ -226,13 +226,15 @@ export default function UnifiedMediaLibrary({ provider, onMediaSelect }: {
   const appwriteMedia = useProviderMedia('appwrite');
   const gumletVideoMedia = useProviderMedia('gumlet_video');
   const gumletImageMedia = useProviderMedia('gumlet_image');
+  const imageKitMedia = useProviderMedia('imagekit');
   const mediaByProvider: Record<ManagedProvider, ReturnType<typeof useProviderMedia>> = useMemo(
     () => ({
       appwrite: appwriteMedia,
       gumlet_video: gumletVideoMedia,
       gumlet_image: gumletImageMedia,
+      imagekit: imageKitMedia,
     }),
-    [appwriteMedia, gumletVideoMedia, gumletImageMedia]
+    [appwriteMedia, gumletVideoMedia, gumletImageMedia, imageKitMedia]
   );
   const media = mediaByProvider[effectiveProvider];
   const { capabilities, isUploading, cancelUpload } = media;
@@ -348,12 +350,12 @@ export default function UnifiedMediaLibrary({ provider, onMediaSelect }: {
         setGumletChoiceOpen(true);
         return;
       }
-      // Multi-file queue: process all dropped files sequentially for Appwrite.
+      // Multi-file queue: process all dropped files sequentially.
       for (const file of accepted) {
-        await runTask({ kind: 'file', target: 'appwrite', label: file.name, file });
+        await runTask({ kind: 'file', target: provider === 'imagekit' ? 'imagekit' : 'appwrite', label: file.name, file });
       }
     },
-    [isGumlet, runTask]
+    [isGumlet, runTask, provider]
   );
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop, accept: undefined, disabled: !canUpload || isUploading, multiple: true,
@@ -367,9 +369,9 @@ export default function UnifiedMediaLibrary({ provider, onMediaSelect }: {
         setGumletChoiceOpen(true);
         return;
       }
-      await runTask({ kind: 'file', target: 'appwrite', label: file.name, file });
+      await runTask({ kind: 'file', target: provider === 'imagekit' ? 'imagekit' : 'appwrite', label: file.name, file });
     },
-    [isGumlet, runTask]
+    [isGumlet, runTask, provider]
   );
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -825,10 +827,11 @@ export default function UnifiedMediaLibrary({ provider, onMediaSelect }: {
             setGumletChoiceOpen(true);
             return { ok: true };
           }
-          const result = await appwriteMedia.uploadByLink(url, filename);
+          const target = provider === 'imagekit' ? imageKitMedia : appwriteMedia;
+          const result = await target.uploadByLink(url, filename);
           if (result.ok) {
             setActiveTab('images');
-            appwriteMedia.refresh();
+            target.refresh();
           }
           return result;
         }}

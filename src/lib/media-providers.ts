@@ -12,6 +12,7 @@ export const mediaProviders = [
   'appwrite',
   'gumlet_video',
   'gumlet_image',
+  'imagekit',
 ] as const;
 
 export type MediaProvider = (typeof mediaProviders)[number];
@@ -42,4 +43,5 @@ export const providerLabels: Record<MediaProvider, string> = {
   appwrite: 'Appwrite',
   gumlet_video: 'Gumlet Video',
   gumlet_image: 'Gumlet Image',
+  imagekit: 'ImageKit',
 };

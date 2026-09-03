@@ -14,6 +14,7 @@ const PROVIDER_LABEL: Record<MediaProviderKey, string> = {
   appwrite: 'Appwrite',
   gumlet_video: 'Gumlet Video',
   gumlet_image: 'Gumlet Image',
+  imagekit: 'ImageKit',
 };
 
 // Map each provider to the admin page's media sub-tab it opens.
@@ -21,13 +22,14 @@ const PROVIDER_LABEL: Record<MediaProviderKey, string> = {
 // picks Video vs Image internally (handled by the media library).
 function providerToInnerTab(provider: MediaProviderKey): string {
   if (provider === 'appwrite') return 'appwrite';
+  if (provider === 'imagekit') return 'imagekit';
   if (provider === 'gumlet_video' || provider === 'gumlet_image') return 'gumlet';
   return provider; // 'vercel' | 'cloudinary'
 }
 
 export default function UploadProgressNotification() {
   const {
-    vercel, cloudinary, appwrite, gumlet_video, gumlet_image,
+    vercel, cloudinary, appwrite, gumlet_video, gumlet_image, imagekit,
     activeMediaTab, clearFileName, completedUpload,
   } = useUploadProgress();
   const pathname = usePathname();
@@ -47,8 +49,8 @@ export default function UploadProgressNotification() {
   const openSurfaces = useRef<Set<MediaProviderKey>>(new Set());
 
 const providerStates: Record<MediaProviderKey, { isUploading: boolean; progress: number; fileName: string }> = useMemo(() => ({
-  vercel, cloudinary, appwrite, gumlet_video, gumlet_image,
-}), [vercel, cloudinary, appwrite, gumlet_video, gumlet_image]);
+  vercel, cloudinary, appwrite, gumlet_video, gumlet_image, imagekit,
+}), [vercel, cloudinary, appwrite, gumlet_video, gumlet_image, imagekit]);
   const providerKeys = Object.keys(PROVIDER_LABEL) as MediaProviderKey[];
 
   useEffect(() => {

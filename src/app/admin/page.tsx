@@ -53,14 +53,13 @@ function AdminPage() {
   const [libraryForceProvider, setLibraryForceProvider] = useState<'cloudinary' | 'vercel' | 'appwrite' | 'gumlet_video' | 'gumlet_image' | undefined>(undefined);
   const [activeTab, setActiveTab] = useState('home');
   const [fromMediaLibrary, setFromMediaLibrary] = useState(false);
-  const [innerMediaTab, setInnerMediaTab] = useState<'cloudinary' | 'vercel' | 'appwrite' | 'gumlet'>('cloudinary');
+  const [innerMediaTab, setInnerMediaTab] = useState<'cloudinary' | 'vercel' | 'appwrite' | 'gumlet' | 'imagekit'>('cloudinary');
   
   const [newlyUploadedId, setNewlyUploadedId] = useState<string | null>(null);
   const [isVercelLibraryOpen, setIsVercelLibraryOpen] = useState(false);
   const [vercelActiveTab, setVercelActiveTab] = useState<'images' | 'videos' | 'files'>('images');
   const { setActiveMediaTab, completedUpload, consumeCompletedUpload } = useUploadProgress();
 
-  const initialCompletedUploadRef = useRef(true);
   const timeoutsRef = useRef<ReturnType<typeof setTimeout>[]>([]);
   const safeTimeout = useCallback((fn: () => void, delay: number) => {
     const id = setTimeout(() => {
@@ -87,7 +86,7 @@ function AdminPage() {
       const qs = new URLSearchParams(window.location.search);
       const tabParam = qs.get('tab');
       const innerTabParam = qs.get('innerTab');
-      const validInnerTabs: Array<'cloudinary' | 'vercel' | 'appwrite' | 'gumlet'> = ['cloudinary', 'vercel', 'appwrite', 'gumlet'];
+      const validInnerTabs: Array<'cloudinary' | 'vercel' | 'appwrite' | 'gumlet' | 'imagekit'> = ['cloudinary', 'vercel', 'appwrite', 'gumlet', 'imagekit'];
       if (tabParam === 'media' && innerTabParam && validInnerTabs.includes(innerTabParam as any)) {
         setActiveTab('media');
         setInnerMediaTab(innerTabParam as any);
@@ -95,9 +94,9 @@ function AdminPage() {
         // file. Progress navigation has no docId -> just switch the provider tab.
         const docIdParam = qs.get('docId');
         const mediaTabParam = qs.get('mediaTab') as 'images' | 'videos' | 'files' | null;
-        const mediaProvider = qs.get('mediaProvider') as 'cloudinary' | 'vercel' | 'appwrite' | 'gumlet_video' | 'gumlet_image' | null;
+        const mediaProvider = qs.get('mediaProvider') as 'cloudinary' | 'vercel' | 'appwrite' | 'gumlet_video' | 'gumlet_image' | 'imagekit' | null;
         if (docIdParam && mediaTabParam && ['images', 'videos', 'files'].includes(mediaTabParam)) {
-          if (mediaProvider === 'appwrite' || mediaProvider === 'gumlet_video' || mediaProvider === 'gumlet_image') {
+          if (mediaProvider === 'appwrite' || mediaProvider === 'gumlet_video' || mediaProvider === 'gumlet_image' || mediaProvider === 'imagekit') {
             safeTimeout(() => {
               window.dispatchEvent(new CustomEvent('media-managed-highlight', {
                 detail: {
@@ -142,20 +141,22 @@ function AdminPage() {
   // media library so it opens on the matching images/videos/files view.
   useEffect(() => {
     const handler = (e: Event) => {
-      const detail = (e as CustomEvent).detail as { provider?: 'vercel' | 'cloudinary' | 'appwrite' | 'gumlet_video' | 'gumlet_image'; mode?: string; tab?: string; docId?: string; library?: string } | undefined;
+      const detail = (e as CustomEvent).detail as { provider?: 'vercel' | 'cloudinary' | 'appwrite' | 'gumlet_video' | 'gumlet_image' | 'imagekit'; mode?: string; tab?: string; docId?: string; library?: string } | undefined;
       if (!detail) return;
       setActiveTab('media');
       if (detail.provider === 'appwrite') {
         setInnerMediaTab('appwrite');
       } else if (detail.provider === 'gumlet_video' || detail.provider === 'gumlet_image') {
         setInnerMediaTab('gumlet');
+      } else if (detail.provider === 'imagekit') {
+        setInnerMediaTab('imagekit');
       } else {
         setInnerMediaTab(detail.provider === 'cloudinary' ? 'cloudinary' : 'vercel');
       }
       // Finished mode only: open the media library and highlight the file.
       // Progress mode: just switch to the provider tab.
       if (detail.mode === 'finished' && detail.docId) {
-        if (detail.provider === 'appwrite' || detail.provider === 'gumlet_video' || detail.provider === 'gumlet_image') {
+        if (detail.provider === 'appwrite' || detail.provider === 'gumlet_video' || detail.provider === 'gumlet_image' || detail.provider === 'imagekit') {
           safeTimeout(() => {
             window.dispatchEvent(new CustomEvent('media-managed-highlight', {
               detail: { provider: detail.provider, docId: detail.docId, tab: detail.tab || 'images' },
@@ -208,13 +209,6 @@ function AdminPage() {
 
   useEffect(() => {
     if (!completedUpload) return;
-    // Skip the restored value from localStorage on mount to prevent the media
-    // library popup from opening unexpectedly on page reload.
-    if (initialCompletedUploadRef.current) {
-      initialCompletedUploadRef.current = false;
-      consumeCompletedUpload();
-      return;
-    }
     // Uploads from inside the unified media picker stay inside the picker —
     // don't yank the user out of their current form by switching tabs. The
     // picker surfaces the new file via its own Firestore listener and
@@ -233,6 +227,8 @@ function AdminPage() {
       setInnerMediaTab('appwrite');
     } else if (provider === 'gumlet_video' || provider === 'gumlet_image') {
       setInnerMediaTab('gumlet');
+    } else if (provider === 'imagekit') {
+      setInnerMediaTab('imagekit');
     } else if (libraryId === 'vercel_blob') {
       setInnerMediaTab('vercel');
     } else {
@@ -242,7 +238,7 @@ function AdminPage() {
     // highlight the uploaded file via a dedicated event. Defer the event so the
     // just-switched tab's media library has mounted and registered its listener
     // (it unmounts when inactive, so a synchronous dispatch would be lost).
-    if (provider === 'appwrite' || provider === 'gumlet_video' || provider === 'gumlet_image') {
+    if (provider === 'appwrite' || provider === 'gumlet_video' || provider === 'gumlet_image' || provider === 'imagekit') {
       safeTimeout(() => {
         window.dispatchEvent(new CustomEvent('media-managed-highlight', {
           detail: {
@@ -501,12 +497,13 @@ function AdminPage() {
               </TabsContent>
               {canManageMedia && (
                 <TabsContent value="media" className="flex-1 overflow-auto mt-4">
-                  <Tabs value={innerMediaTab} onValueChange={(v) => setInnerMediaTab(v as 'cloudinary' | 'vercel' | 'appwrite' | 'gumlet')} className="w-full">
+                  <Tabs value={innerMediaTab} onValueChange={(v) => setInnerMediaTab(v as 'cloudinary' | 'vercel' | 'appwrite' | 'gumlet' | 'imagekit')} className="w-full">
                     <TabsList className="mb-4">
                       <TabsTrigger value="cloudinary" className="glass-effect data-[state=active]:bg-destructive">Cloudinary</TabsTrigger>
                       <TabsTrigger value="vercel" className="glass-effect data-[state=active]:bg-destructive">Vercel Blob</TabsTrigger>
                       <TabsTrigger value="appwrite" className="glass-effect data-[state=active]:bg-destructive">Appwrite</TabsTrigger>
                       <TabsTrigger value="gumlet" className="glass-effect data-[state=active]:bg-destructive">Gumlet</TabsTrigger>
+                      <TabsTrigger value="imagekit" className="glass-effect data-[state=active]:bg-destructive">ImageKit</TabsTrigger>
                     </TabsList>
                     <TabsContent value="cloudinary">
                       <MediaAdmin provider="cloudinary" onUploadComplete={handleUploadComplete} onMediaSelect={handleOpenPortfolioFormWithMedia} />
@@ -519,6 +516,9 @@ function AdminPage() {
                     </TabsContent>
                     <TabsContent value="gumlet">
                       <GumletLibrary provider="gumlet_video" onMediaSelect={handleOpenPortfolioFormWithMedia} />
+                    </TabsContent>
+                    <TabsContent value="imagekit">
+                      <AppwriteMediaLibrary provider="imagekit" onMediaSelect={handleOpenPortfolioFormWithMedia} />
                     </TabsContent>
                   </Tabs>
               </TabsContent>

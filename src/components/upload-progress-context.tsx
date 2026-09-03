@@ -2,10 +2,10 @@
 
 import React, { createContext, useContext, useState, useCallback, useEffect, useMemo, useRef } from 'react';
 
-export type MediaProviderKey = 'vercel' | 'cloudinary' | 'appwrite' | 'gumlet_video' | 'gumlet_image';
-export const MEDIA_PROVIDER_KEYS: MediaProviderKey[] = ['vercel', 'cloudinary', 'appwrite', 'gumlet_video', 'gumlet_image'];
+export type MediaProviderKey = 'vercel' | 'cloudinary' | 'appwrite' | 'gumlet_video' | 'gumlet_image' | 'imagekit';
+export const MEDIA_PROVIDER_KEYS: MediaProviderKey[] = ['vercel', 'cloudinary', 'appwrite', 'gumlet_video', 'gumlet_image', 'imagekit'];
 
-export type MediaLibraryId = 'primary' | 'extented' | 'vercel_blob' | 'appwrite' | 'gumlet_video' | 'gumlet_image';
+export type MediaLibraryId = 'primary' | 'extented' | 'vercel_blob' | 'appwrite' | 'gumlet_video' | 'gumlet_image' | 'imagekit';
 export type MediaResourceType = 'image' | 'video' | 'raw';
 
 export type ProviderState = { isUploading: boolean; progress: number; fileName: string };
@@ -30,8 +30,6 @@ type CompletedUpload = {
   fileName?: string;
   source?: 'media-library' | 'media-picker';
 } | null;
-
-const COMPLETED_UPLOAD_KEY = 'mv_completed_upload';
 
 type UploadProgressContextType = UploadProgressState & {
   setUploadProgress: (state: Partial<UploadProgressState>) => void;
@@ -63,13 +61,10 @@ export function UploadProgressProvider({ children }: { children: React.ReactNode
     };
   });
 
-  const [completedUpload, setCompletedUpload] = useState<CompletedUpload>(() => {
-    if (typeof window === 'undefined') return null;
-    try {
-      const stored = localStorage.getItem(COMPLETED_UPLOAD_KEY);
-      return stored ? JSON.parse(stored) : null;
-    } catch { return null; }
-  });
+  // A completion is a transient UI event. Persisting it replays an old upload
+  // after a reload or later navigation, which can show a false notification or
+  // reopen a media library.
+  const [completedUpload, setCompletedUpload] = useState<CompletedUpload>(null);
 
   // Throttle progress updates so a fast onUploadProgress callback (fires on
   // every network chunk) doesn't re-render the whole app shell dozens of times
@@ -119,10 +114,8 @@ export function UploadProgressProvider({ children }: { children: React.ReactNode
   }, []);
 
   const startUpload = useCallback((fileName: string, provider: MediaProviderKey) => {
-    // Clear any stale "completed" upload from a previous run so a failed upload
-    // can never reuse an old success state (which caused a false "Uploaded" card).
+    // Clear a previous in-session completion before beginning a new upload.
     setCompletedUpload(null);
-    try { localStorage.removeItem(COMPLETED_UPLOAD_KEY); } catch {}
     setState((prev) => ({
       ...prev,
       [provider]: { isUploading: true, progress: 0, fileName },
@@ -175,12 +168,10 @@ export function UploadProgressProvider({ children }: { children: React.ReactNode
   const signalCompletedUpload = useCallback((docId: string, resourceType: MediaResourceType, libraryId: MediaLibraryId, provider: MediaProviderKey, fileName?: string, source?: 'media-library' | 'media-picker') => {
     const data = { docId, resourceType, libraryId, provider, fileName, source };
     setCompletedUpload(data);
-    try { localStorage.setItem(COMPLETED_UPLOAD_KEY, JSON.stringify(data)); } catch {}
   }, []);
 
   const consumeCompletedUpload = useCallback(() => {
     setCompletedUpload(null);
-    try { localStorage.removeItem(COMPLETED_UPLOAD_KEY); } catch {}
   }, []);
 
   const value = useMemo(() => ({

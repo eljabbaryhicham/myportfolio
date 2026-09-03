@@ -91,6 +91,16 @@ service cloud.firestore {
         && (request.resource.data.tag == null || request.resource.data.tag in ['green', 'red', 'orange', 'blue']);
     }
 
+    // ImageKit metadata mirror: admin-only, gated by explicit media permissions.
+    match /imagekit_media/{mediaId} {
+      allow list, get: if isAdmin();
+      allow create: if hasPerm('canUploadMedia');
+      allow delete: if hasPerm('canDeleteMedia');
+      allow update: if isAdmin()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['tag'])
+        && (request.resource.data.tag == null || request.resource.data.tag in ['green', 'red', 'orange', 'blue']);
+    }
+
     // Gumlet Image registry: source URLs are admin-only. The Gumlet service
     // remains the delivery layer; this collection never stores image bytes.
     match /gumlet_images/{imageId} {

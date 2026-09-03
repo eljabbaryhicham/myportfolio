@@ -100,6 +100,17 @@ export const mediaCapabilities: Record<MediaProvider, MediaCapabilities> = {
     hasFormats: true,
     hasBulkActions: false,
   },
+  imagekit: {
+    provider: 'imagekit',
+    label: 'ImageKit',
+    canUploadFile: true,
+    canUploadByLink: true,
+    supportedTypes: ['image', 'video', 'raw'],
+    hasLibraries: false,
+    hasTags: true,
+    hasFormats: false,
+    hasBulkActions: true,
+  },
 };
 
 export function getMediaCapabilities(provider: MediaProvider): MediaCapabilities {
