@@ -71,6 +71,12 @@ const providerStates: Record<MediaProviderKey, { isUploading: boolean; progress:
     }
   }, [gumlet_image.isUploading, gumlet_image.fileName]);
 
+  useEffect(() => {
+    if (imagekit.isUploading && imagekit.fileName) {
+      setDismissedActive(prev => prev.filter(p => p !== 'imagekit'));
+    }
+  }, [imagekit.isUploading, imagekit.fileName]);
+
   // Re-show an active upload's card whenever a fresh upload starts for that
   // provider (dismiss only affects the current run, not future uploads).
   useEffect(() => {

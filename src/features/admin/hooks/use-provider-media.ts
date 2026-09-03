@@ -206,10 +206,10 @@ export function useProviderMedia(provider: MediaProvider): ProviderMediaApi {
 
         if (provider === 'imagekit') {
           if (!firestore) throw new Error('Firestore is unavailable.');
-          const uploaded = await uploadImageKitAsset(file, file.name, token, (progress) => setUploadProgress(progress), activeXhrRef);
+          const uploaded = await uploadImageKitAsset(file, file.name, token, (progress) => { setUploadProgress(progress); updateGlobalProgress(progress, 'imagekit'); }, activeXhrRef);
           const record = imageKitRecord(uploaded);
-          const ref = await addDoc(collection(firestore, IMAGEKIT_MEDIA_COLLECTION), record);
-          signalCompletedUpload(ref.id, record.fileType === 'image' ? 'image' : record.fileType === 'video' ? 'video' : 'raw', 'imagekit', 'imagekit', file.name);
+          const ref = await registerImageKitAsset(record, token);
+          signalCompletedUpload(ref, record.fileType === 'image' ? 'image' : record.fileType === 'video' ? 'video' : 'raw', 'imagekit', 'imagekit', file.name);
           return { ok: true, url: record.url };
         }
 
@@ -284,11 +284,11 @@ export function useProviderMedia(provider: MediaProvider): ProviderMediaApi {
 
         if (provider === 'imagekit') {
           if (!firestore) throw new Error('Firestore is unavailable.');
-          const imported = await uploadImageKitAsset(url, filename || filenameFromUrl(url), token, (progress) => setUploadProgress(progress), activeXhrRef);
+          const imported = await uploadImageKitAsset(url, filename || filenameFromUrl(url), token, (progress) => { setUploadProgress(progress); updateGlobalProgress(progress, 'imagekit'); }, activeXhrRef);
           const record = imageKitRecord(imported);
-          const ref = await addDoc(collection(firestore, IMAGEKIT_MEDIA_COLLECTION), record);
-          created = imageKitToAsset({ id: ref.id, ...record });
-          signalCompletedUpload(ref.id, created.resourceType, 'imagekit', 'imagekit', created.filename);
+          const ref = await registerImageKitAsset(record, token);
+          created = imageKitToAsset({ id: ref, ...record });
+          signalCompletedUpload(ref, created.resourceType, 'imagekit', 'imagekit', created.filename);
         } else if (provider === 'appwrite') {
           const response = await fetch('/api/appwrite/media', {
             method: 'POST',
@@ -502,6 +502,19 @@ async function uploadImageKitAsset(file: File | string, fileName: string, token:
     xhr.onabort = () => { activeXhrRef.current = null; reject(new Error('Upload cancelled.')); };
     xhr.send(data);
   });
+}
+
+async function registerImageKitAsset(asset: ImageKitMediaAsset, token: string): Promise<string> {
+  const response = await fetch('/api/imagekit/media', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+    body: JSON.stringify(asset),
+  });
+  const payload = await response.json();
+  if (!response.ok || !payload.success || !payload.id) {
+    throw new Error(payload.message || 'ImageKit uploaded the file, but the media library record could not be created.');
+  }
+  return payload.id;
 }
 
 // ---- Gumlet Video direct upload (create intent, then PUT) ----
