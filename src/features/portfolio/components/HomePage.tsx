@@ -194,6 +194,7 @@ export default function HomePageContent() {
   const aboutRef = useRef<HTMLButtonElement | null>(null);
   const contactRef = useRef<HTMLButtonElement | null>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
+  const logoWrapRef = useRef<HTMLDivElement | null>(null);
 
   // Read from the shared SettingsProvider (seeded server-side, kept live
   // by the provider's own useDoc subscription). This avoids a re-fetch
@@ -292,6 +293,28 @@ export default function HomePageContent() {
   const logoScale = homeSettings?.homePageLogoScale || 1;
   const logoColor = homeSettings?.homePageLogoColor || '';
   const logoOpacity = (homeSettings?.homePageLogoOpacity ?? 100) / 100;
+
+  // The admin "move down" offset can push the logo out of the hero video and
+  // below the title on short screens (especially mobile). Measure the video's
+  // available height and the logo's own height to clamp the downward offset so
+  // the logo's bottom edge never crosses the title's top. Upward movement is
+  // always allowed.
+  const [maxLogoDown, setMaxLogoDown] = useState(0);
+  useEffect(() => {
+    const el = logoWrapRef.current;
+    if (!el) return;
+    const measure = () => {
+      const parent = el.parentElement;
+      if (!parent) return;
+      setMaxLogoDown(Math.max(0, (parent.clientHeight - el.offsetHeight) / 2));
+    };
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    if (el.parentElement) ro.observe(el.parentElement);
+    return () => ro.disconnect();
+  }, []);
+  const logoOffset = (homeSettings?.homePageLogoOffset || 0);
 
   useEffect(() => {
     // Preload the default hero poster with high priority for LCP. Use a
@@ -405,7 +428,7 @@ export default function HomePageContent() {
             </div>
             {isLogoVisible && homeLogoUrl && (
               <div className="absolute inset-0 flex items-center justify-center" style={{ zIndex: 10 }}>
-                <div className="w-full max-w-[min(40vw,250px)] sm:max-w-[min(35vw,300px)] md:max-w-[min(35vw,300px)] lg:max-w-[min(41vw,440px)] xl:max-w-[min(43vw,510px)] px-4" style={{ transform: `translateY(${homeSettings?.homePageLogoOffset || 0}px) scale(${logoScale})`, opacity: logoOpacity }}>
+                <div ref={logoWrapRef} className="w-full max-w-[min(40vw,250px)] sm:max-w-[min(35vw,300px)] md:max-w-[min(35vw,300px)] lg:max-w-[min(41vw,440px)] xl:max-w-[min(43vw,510px)] px-4" style={{ transform: `translateY(${Math.min(logoOffset, maxLogoDown)}px) scale(${logoScale})`, opacity: logoOpacity }}>
                   <Logo src={homeLogoUrl} color={logoColor || undefined} />
                 </div>
               </div>

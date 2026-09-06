@@ -31,22 +31,29 @@ export default function ShareLinkDialog({ isOpen, onClose, url, filename }: Shar
   };
 
   const handleDownload = async () => {
+    let downloadUrl: string | null = null;
+    let a: HTMLAnchorElement | null = null;
     try {
       const response = await fetch(url);
+      if (!response.ok) throw new Error(`Download failed: ${response.status}`);
       const blob = await response.blob();
-      const downloadUrl = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
+      downloadUrl = window.URL.createObjectURL(blob);
+      a = document.createElement('a');
       a.href = downloadUrl;
       a.download = filename;
       document.body.appendChild(a);
       a.click();
-      document.body.removeChild(a);
-      window.URL.revokeObjectURL(downloadUrl);
       toast({ title: 'Download started', description: filename });
     } catch (err) {
-      // Fallback: just open in new tab
       window.open(url, '_blank');
       toast({ title: 'Opening in new tab', description: 'Download may not start automatically.' });
+    } finally {
+      if (a && document.body.contains(a)) {
+        document.body.removeChild(a);
+      }
+      if (downloadUrl) {
+        window.URL.revokeObjectURL(downloadUrl);
+      }
     }
   };
 
@@ -59,8 +66,8 @@ export default function ShareLinkDialog({ isOpen, onClose, url, filename }: Shar
           url: url,
         });
         toast({ title: 'Shared successfully' });
-      } catch (err) {
-        // User cancelled or share failed
+      } catch {
+        // User cancelled or share failed — no action needed
       }
     } else {
       handleCopy();

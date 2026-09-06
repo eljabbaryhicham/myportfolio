@@ -134,9 +134,7 @@ export default function ContactAdmin() {
   
   useEffect(() => {
     if (!canEditContact) {
-      Object.keys(form.getValues()).forEach(key => {
-        form.control.getFieldState(key as keyof ContactInfo).isDirty = false;
-      });
+      form.reset(undefined, { keepValues: true, keepDirty: false });
     }
   }, [canEditContact, form]);
 

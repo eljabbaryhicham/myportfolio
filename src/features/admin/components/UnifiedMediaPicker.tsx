@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
@@ -81,6 +81,8 @@ export default function UnifiedMediaPicker({ isOpen, onOpenChange, onMediaSelect
   const [activeTab, setActiveTab] = useState<'images' | 'videos' | 'files'>('images');
   const [activeLibrary, setActiveLibrary] = useState<'primary' | 'extented'>('primary');
   const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
+  const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [formatChoiceAsset, setFormatChoiceAsset] = useState<{ url: string; resourceType: 'image' | 'video' | 'raw'; filename: string } | null>(null);
   const [isUrlDialogOpen, setIsUrlDialogOpen] = useState(false);
   const [newlyUploadedId, setNewlyUploadedId] = useState<string | null>(null);
@@ -88,6 +90,17 @@ export default function UnifiedMediaPicker({ isOpen, onOpenChange, onMediaSelect
   const [isLoadingProviderAssets, setIsLoadingProviderAssets] = useState(false);
 
   const { completedUpload, consumeCompletedUpload } = useUploadProgress();
+
+  // Debounce search queries for provider API calls
+  useEffect(() => {
+    if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
+    debounceTimerRef.current = setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery);
+    }, 300);
+    return () => {
+      if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
+    };
+  }, [searchQuery]);
 
   // Highlight files uploaded from inside this picker, then clear the marker so
   // we don't re-highlight on subsequent mounts or re-renders.
@@ -128,7 +141,7 @@ export default function UnifiedMediaPicker({ isOpen, onOpenChange, onMediaSelect
   const auth = useAuth();
   const typedUser = user as { email?: string | null; permissions?: { canUploadMedia?: boolean } } | null;
   const isSuperAdmin = isSuperAdminCheck(typedUser);
-  const canUpload = isSuperAdmin || (typedUser?.permissions?.canUploadMedia ?? true);
+  const canUpload = isSuperAdmin || (typedUser?.permissions?.canUploadMedia ?? false);
   const { toast } = useToast();
   const { upload: doUpload, isUploading, progress: uploadProgress, error: uploadError, reset: resetUpload } = useMediaUpload({
     provider: provider as 'cloudinary' | 'vercel',
@@ -224,7 +237,7 @@ export default function UnifiedMediaPicker({ isOpen, onOpenChange, onMediaSelect
       setIsLoadingProviderAssets(true);
       try {
         const endpoint = provider === 'appwrite' ? '/api/appwrite/media' : provider === 'gumlet_video' ? '/api/gumlet/video' : '/api/gumlet/image';
-        const response = await fetch(`${endpoint}?search=${encodeURIComponent(searchQuery.trim())}`, { headers: { Authorization: `Bearer ${idToken}` } });
+        const response = await fetch(`${endpoint}?search=${encodeURIComponent(debouncedSearchQuery.trim())}`, { headers: { Authorization: `Bearer ${idToken}` } });
         const data = await response.json();
         if (!response.ok || !data.success) throw new Error(data.message || 'Could not load media.');
         const assets: PickerAsset[] = provider === 'appwrite'
@@ -241,23 +254,23 @@ export default function UnifiedMediaPicker({ isOpen, onOpenChange, onMediaSelect
     };
     void loadProviderAssets();
     return () => { cancelled = true; };
-  }, [auth, isOpen, provider, searchQuery, toast]);
+  }, [auth, isOpen, provider, debouncedSearchQuery, toast]);
 
-  const handleSelect = (url: string, type: 'image' | 'video' | 'raw', filename: string) => {
+  const handleSelect = useCallback((url: string, type: 'image' | 'video' | 'raw', filename: string) => {
     setFormatChoiceAsset(null);
     onMediaSelect(url, type, filename);
     onOpenChange(false);
-  };
+  }, [onMediaSelect, onOpenChange]);
 
   // Cloudinary items route through a format-choice dialog (image/video formats);
   // Vercel items select directly since their original format is delivered.
-  const handleItemClick = (item: { url: string; resourceType: 'image' | 'video' | 'raw'; filename: string }, itemProvider: 'cloudinary' | 'vercel') => {
+  const handleItemClick = useCallback((item: { url: string; resourceType: 'image' | 'video' | 'raw'; filename: string }, itemProvider: 'cloudinary' | 'vercel') => {
     if (itemProvider === 'cloudinary') {
       setFormatChoiceAsset(item);
     } else {
       handleSelect(item.url, item.resourceType, item.filename);
     }
-  };
+  }, [handleSelect]);
 
   const renderCloudinaryGrid = (type: 'image' | 'video' | 'raw') => {
     if (isLoadingMedia) return <div className="flex justify-center py-12"><Preloader /></div>;

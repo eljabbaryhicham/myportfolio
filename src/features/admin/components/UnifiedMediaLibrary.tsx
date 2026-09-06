@@ -242,9 +242,9 @@ export default function UnifiedMediaLibrary({ provider, onMediaSelect }: {
 
   // ---- Perform a file upload (used for direct Appwrite and Gumlet choice) ----
   const performFileUpload = useCallback(
-    async (file: File, targetProvider: ManagedProvider) => {
+    async (file: File, targetProvider: ManagedProvider, format?: 'ABR' | 'MP4') => {
       const targetMedia = mediaByProvider[targetProvider];
-      const result = await targetMedia.uploadFile(file);
+      const result = await targetMedia.uploadFile(file, format);
       if (result.ok) {
         toast({ title: 'Uploaded', description: file.name });
         setGumletMode(targetProvider === 'gumlet_image' ? 'image' : 'video');
@@ -357,8 +357,8 @@ export default function UnifiedMediaLibrary({ provider, onMediaSelect }: {
     },
     [isGumlet, runTask, provider]
   );
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({
-    onDrop, accept: undefined, disabled: !canUpload || isUploading, multiple: true,
+  const { getRootProps, getInputProps, isDragActive, open: openFilePicker } = useDropzone({
+    onDrop, accept: undefined, disabled: !canUpload || isUploading, multiple: true, noClick: true,
   });
 
   const pickFile = useCallback(
@@ -575,7 +575,7 @@ export default function UnifiedMediaLibrary({ provider, onMediaSelect }: {
     <div className="px-4 pt-3">
       <div className="flex flex-col sm:flex-row gap-2">
         <div
-          {...getRootProps()}
+          {...getRootProps({ onClick: openFilePicker })}
           className={cn(
             'flex-1 border border-dashed rounded-md px-3 py-2 flex items-center justify-center gap-2 cursor-pointer transition-colors text-muted-foreground min-w-0',
             isDragActive && canUpload ? 'border-primary bg-primary/10' : 'border-border hover:border-primary/50',
@@ -617,7 +617,7 @@ export default function UnifiedMediaLibrary({ provider, onMediaSelect }: {
   const uploadStrip = (
     <div className="flex flex-col gap-4">
       <div
-        {...getRootProps()}
+          {...getRootProps({ onClick: openFilePicker })}
         className={cn(
           'flex-1 border-2 border-dashed rounded-lg p-6 text-center transition-colors relative cursor-pointer',
           isDragActive && canUpload ? 'border-primary bg-primary/10' : 'border-border hover:border-primary/50',
@@ -795,7 +795,7 @@ export default function UnifiedMediaLibrary({ provider, onMediaSelect }: {
                 if (!pendingUpload) return;
                 try {
                   if (pendingUpload.kind === 'file') {
-                    await performFileUpload(pendingUpload.file, targetProvider);
+                    await performFileUpload(pendingUpload.file, targetProvider, targetProvider === 'gumlet_video' ? format : undefined);
                   } else {
                     const target = mediaByProvider[targetProvider];
                     const result = await target.uploadByLink(pendingUpload.url, pendingUpload.filename, targetProvider === 'gumlet_video' ? format : undefined);

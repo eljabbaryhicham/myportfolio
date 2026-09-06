@@ -2,37 +2,18 @@ import { type NextRequest, NextResponse } from 'next/server';
 import { revalidatePath, revalidateTag } from 'next/cache';
 import { type App } from 'firebase-admin/app';
 import { getAuth } from 'firebase-admin/auth';
+import { getFirestore } from 'firebase-admin/firestore';
 import { initializeServerApp } from '@/firebase/server-init';
+import { isSuperAdmin } from '@/lib/constants';
 import { logger } from '@/lib/logger';
+import { isRateLimited, clientIp } from '@/lib/rate-limit';
 
-// Rate-limited, token-gated revalidation of the public home page. The admin
-// calls this after saving a hero logo so the statically-prerendered `/` is
+// Rate-limited, permission-gated revalidation of the public home page. The
+// admin calls this after saving a hero logo so the statically-prerendered `/` is
 // regenerated with the new URL server-side (no stale logo in the SSR HTML).
-const RATE_LIMIT_WINDOW_MS = 60_000;
-const RATE_LIMIT_MAX = 30;
-const hits = new Map<string, { count: number; resetAt: number }>();
-
-function isRateLimited(ip: string): boolean {
-  const now = Date.now();
-  const entry = hits.get(ip);
-  if (!entry || entry.resetAt < now) {
-    hits.set(ip, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS });
-    return false;
-  }
-  entry.count += 1;
-  return entry.count > RATE_LIMIT_MAX;
-}
-
-function clientIp(req: NextRequest): string {
-  return (
-    req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
-    req.headers.get('x-real-ip') ||
-    'unknown'
-  );
-}
 
 export async function POST(req: NextRequest) {
-  if (isRateLimited(clientIp(req))) {
+  if (isRateLimited(clientIp(req), 30)) {
     return NextResponse.json({ error: 'Too many requests. Please try again later.' }, { status: 429 });
   }
 
@@ -55,11 +36,29 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Server is not configured.' }, { status: 503 });
   }
 
+  let decoded;
   try {
-    await getAuth(app).verifyIdToken(idToken);
+    decoded = await getAuth(app).verifyIdToken(idToken);
   } catch (e) {
     logger.warn('revalidate-home: token verification failed, denying.', e);
     return NextResponse.json({ error: 'Unauthorized.' }, { status: 401 });
+  }
+
+  // Require superadmin or a user doc with canEditHome permission.
+  if (isSuperAdmin({ email: decoded.email })) {
+    // Superadmin — allowed.
+  } else {
+    try {
+      const db = getFirestore(app);
+      const snap = await db.collection('users').doc(decoded.uid).get();
+      const data = snap.data() as any;
+      if (!snap.exists || data?.permissions?.canEditHome !== true) {
+        return NextResponse.json({ error: 'Forbidden.' }, { status: 403 });
+      }
+    } catch (e) {
+      logger.warn('revalidate-home: Firestore permission check failed, denying', e);
+      return NextResponse.json({ error: 'Forbidden.' }, { status: 403 });
+    }
   }
 
   try {

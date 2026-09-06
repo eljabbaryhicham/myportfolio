@@ -88,9 +88,7 @@ function ClientForm({ client, onSubmit, onCancel, onChooseFromLibrary, canEdit }
 
   useEffect(() => {
     if (!canEdit) {
-      Object.keys(form.getValues()).forEach(key => {
-        form.control.getFieldState(key as keyof ClientFormValues).isDirty = false;
-      });
+      form.reset(undefined, { keepValues: true, keepDirty: false });
     }
   }, [canEdit, form]);
 

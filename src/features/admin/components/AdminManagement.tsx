@@ -20,7 +20,7 @@ import { Button } from '@/components/ui/button';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrash, faShieldHalved, faPlusCircle, faRotate } from '@fortawesome/free-solid-svg-icons';
 import { useToast } from '@/hooks/use-toast';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Separator } from '@/components/ui/separator';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Switch } from '@/components/ui/switch';
@@ -50,6 +50,13 @@ type Permissions = NonNullable<AdminUser['permissions']>;
 function PermissionsDialog({ user, isOpen, onOpenChange, onSave }: { user: AdminUser, isOpen: boolean, onOpenChange: (open: boolean) => void, onSave: (permissions: Permissions) => void }) {
     const { t } = useTranslation();
     const [permissions, setPermissions] = useState<Permissions>(user.permissions ?? ({} as Permissions));
+
+    // Reset local state when the dialog opens for a different user
+    useEffect(() => {
+      if (isOpen) {
+        setPermissions(user.permissions ?? ({} as Permissions));
+      }
+    }, [isOpen, user.id, user.permissions]);
     
     const handlePermissionChange = (permission: keyof Permissions, value: boolean) => {
         setPermissions(prev => ({ ...prev, [permission]: value }));

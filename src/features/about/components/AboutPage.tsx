@@ -21,18 +21,32 @@ import { cn } from '@/lib/utils';
 import { ScrollIndicator } from '@/components/ScrollIndicator';
 import { useTranslation } from '@/lib/i18n/useTranslation';
 import { getLocalizedString } from '@/lib/i18n/multilingual';
-import type { AboutPageContent } from '@/lib/about-content';
+import type { AboutPageContent, AboutService } from '@/lib/about-content';
 import type { TrustedByClient } from '@/lib/types';
 import { useHomePageSettings } from '@/components/settings/home-page-settings-provider';
 import { useTrustedByClients } from '@/components/trusted-by/trusted-by-provider';
 
-const services = [
+// Built-in "What We Provide" cards, shown only when the admin has not saved
+// any custom cards in `about/content.services`.
+const defaultServices = [
     { key: "about.services.brainstorming", icon: BrainCircuit },
     { key: "about.services.voiceover", icon: Mic },
     { key: "about.services.contentCreation", icon: Clapperboard },
     { key: "about.services.socialMedia", icon: Share2 },
     { key: "about.services.webDesign", icon: Code },
 ];
+
+// Preserves the original 3-over-2 layout for the 5 default cards.
+const defaultGridClasses = [
+    'col-span-3 sm:col-span-2',
+    'col-span-3 sm:col-span-2',
+    'col-span-3 sm:col-span-2',
+    'col-span-3',
+    'col-span-3',
+];
+
+const isRenderableService = (s: unknown): s is AboutService =>
+    !!s && typeof s === 'object' && typeof (s as AboutService).iconUrl === 'string' && (s as AboutService).iconUrl.length > 0;
 
 
 const MemoizedImage = memo(Image);
@@ -113,6 +127,12 @@ export default function AboutPage({ initialContent }: { initialContent?: (AboutP
   const showInlinePreloader = !contentFailed && ((isLoadingContent && !aboutContent) || (hasPreloader && !revealReady));
   const logoUrl = aboutContent?.logoUrl;
   const logoScale = aboutContent?.logoScale || 1;
+
+  // Admin-managed cards; falls back to the built-in defaults when none saved.
+  const customServices = useMemo(
+    () => (Array.isArray(aboutContent?.services) ? aboutContent.services.filter(isRenderableService) : []),
+    [aboutContent?.services]
+  );
   
   const [emblaRef] = useEmblaCarousel({ loop: true, align: 'start' }, [
     Autoplay({
@@ -191,30 +211,47 @@ export default function AboutPage({ initialContent }: { initialContent?: (AboutP
                     </div>
                     <div className="w-full landscape:w-1/2 flex flex-col justify-center">
                        <h2 className="text-2xl md:text-3xl font-headline tracking-tight mb-[clamp(1rem,3vh,1.75rem)] text-center">{t('about.whatYouGet')}</h2>
-                       <div className="grid grid-cols-3 sm:grid-cols-6 grid-rows-2 auto-rows-fr gap-[clamp(0.75rem,2vh,1.25rem)] h-full">
-                        {services.map((service, index) => {
-                            let gridClasses = '';
-                            switch(index) {
-                                case 0: gridClasses = 'col-span-3 sm:col-span-2'; break;
-                                case 1: gridClasses = 'col-span-3 sm:col-span-2'; break;
-                                case 2: gridClasses = 'col-span-3 sm:col-span-2'; break;
-                                case 3: gridClasses = 'col-span-3'; break;
-                                case 4: gridClasses = 'col-span-3'; break;
-                            }
-                            return (
-                                <div 
-                                    key={service.key}
-                                    className={cn(
-                                      "glass-effect p-[clamp(1rem,2.5vh,1.5rem)] rounded-lg flex flex-col items-center justify-center text-center",
-                                      gridClasses
-                                    )}
-                                >
-                                    <service.icon className="w-[clamp(2rem,4.5vh,2.5rem)] h-[clamp(2rem,4.5vh,2.5rem)] text-primary mb-[clamp(0.5rem,1.5vh,0.875rem)]" />
-                                    <p className="text-xs md:text-sm font-semibold">{t(service.key)}</p>
-                                </div>
-                            );
-                        })}
-                      </div>
+                       {customServices.length > 0 ? (
+                        <div className="grid grid-cols-1 sm:grid-cols-3 auto-rows-fr gap-[clamp(0.75rem,2vh,1.25rem)] h-full">
+                          {customServices.map((service, index) => {
+                              const title = getLocalizedString(service.title, lang);
+                              const description = getLocalizedString(service.description, lang);
+                              return (
+                                  <div
+                                      key={`${service.iconUrl}-${index}`}
+                                      className="glass-effect p-[clamp(1rem,2.5vh,1.5rem)] rounded-lg flex flex-col items-center justify-center text-center"
+                                  >
+                                      <MemoizedImage
+                                          src={cloudinaryOptimized(service.iconUrl)}
+                                          alt={title || ''}
+                                          width={40}
+                                          height={40}
+                                          sizes="40px"
+                                          loading="lazy"
+                                          className="object-contain w-[clamp(2rem,4.5vh,2.5rem)] h-[clamp(2rem,4.5vh,2.5rem)] mb-[clamp(0.5rem,1.5vh,0.875rem)]"
+                                      />
+                                      {title && <p className="text-xs md:text-sm font-semibold">{title}</p>}
+                                      {description && <p className="mt-1 text-[0.7rem] md:text-xs text-foreground/70 leading-snug">{description}</p>}
+                                  </div>
+                              );
+                          })}
+                        </div>
+                       ) : (
+                        <div className="grid grid-cols-3 sm:grid-cols-6 grid-rows-2 auto-rows-fr gap-[clamp(0.75rem,2vh,1.25rem)] h-full">
+                          {defaultServices.map((service, index) => (
+                              <div 
+                                  key={service.key}
+                                  className={cn(
+                                    "glass-effect p-[clamp(1rem,2.5vh,1.5rem)] rounded-lg flex flex-col items-center justify-center text-center",
+                                    defaultGridClasses[index]
+                                  )}
+                              >
+                                  <service.icon className="w-[clamp(2rem,4.5vh,2.5rem)] h-[clamp(2rem,4.5vh,2.5rem)] text-primary mb-[clamp(0.5rem,1.5vh,0.875rem)]" />
+                                  <p className="text-xs md:text-sm font-semibold">{t(service.key)}</p>
+                              </div>
+                          ))}
+                        </div>
+                       )}
                     </div>
                   </motion.div>
 

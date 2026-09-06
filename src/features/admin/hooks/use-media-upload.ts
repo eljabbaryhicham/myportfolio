@@ -149,6 +149,7 @@ function uploadToCloudinary(
     }
 
     activeXhrRef.current = xhr;
+    xhr.timeout = 120_000;
     xhr.send(formData);
   });
 }
@@ -211,6 +212,8 @@ function uploadToVercel(
   });
 }
 
+const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100 MB
+
 export function useMediaUpload({ provider, libraryId, enabled = true, source }: UseMediaUploadOptions): UseMediaUploadReturn {
   const auth = useAuth();
   const firestore = useFirestore();
@@ -230,6 +233,9 @@ export function useMediaUpload({ provider, libraryId, enabled = true, source }: 
       if (!enabled) throw new Error('Upload is not enabled in this context.');
       if (provider === 'cloudinary' && !libraryId) {
         throw new Error('libraryId is required for Cloudinary uploads.');
+      }
+      if (file.size > MAX_FILE_SIZE) {
+        throw new Error(`File is too large. Maximum size is ${Math.round(MAX_FILE_SIZE / 1024 / 1024)} MB.`);
       }
       const token = await getAuthToken(auth);
       if (!token) throw new Error('You are not signed in.');
@@ -265,7 +271,7 @@ export function useMediaUpload({ provider, libraryId, enabled = true, source }: 
                 created_at: new Date().toISOString(),
                 filename: result.filename,
                 libraryId: result.libraryId,
-              } as any,
+              },
               {}
             );
           } else {
@@ -278,7 +284,7 @@ export function useMediaUpload({ provider, libraryId, enabled = true, source }: 
               filename: result.filename,
               uploadedAt: serverTimestamp(),
               uploadedBy: auth?.currentUser?.uid || null,
-            } as any);
+            });
           }
         } catch (e) {
           // Mirror write failure isn't fatal — the file is already in

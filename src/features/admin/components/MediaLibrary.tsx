@@ -952,7 +952,7 @@ for (const file of files) {
         setIsUploading(false);
         setUploadProgress(0);
         setUploadingFileName('');
-        setTimeout(() => finishUpload(), 1000);
+        setTimeout(() => finishUpload('vercel'), 1000);
       }
     }
   }, [getToken, toast, firestore, auth, finishUpload, startGlobalUpload, updateGlobalProgress, onUploadComplete, setActiveTabFn, signalCompletedUpload]);
@@ -1009,8 +1009,6 @@ for (const file of files) {
     if (!canUpload) { toast({ variant: 'destructive', title: t('mediaAdmin.toast.permissionDenied.title'), description: t('mediaAdmin.toast.permissionDenied.description') }); return; }
     setFilesToUpload(acceptedFiles);
     if (acceptedFiles.some(f => f.type.startsWith('video/'))) {
-      setUploadVideoFormat('mp4');
-    } else {
       setUploadVideoFormat('mp4');
     }
     setIsChoosingLibrary(true);
@@ -1082,8 +1080,13 @@ for (const file of files) {
             if (docRef) signalCompletedUpload(docRef.id, response.resource_type, libraryId, 'cloudinary', file.name, 'media-library');
           }
         } else {
-          const error = JSON.parse(xhr.responseText).error;
-          toast({ variant: 'destructive', title: t('mediaAdmin.toast.uploadFailed.title').replace('{file}', file.name), description: t('mediaAdmin.toast.uploadFailed.description').replace('{error}', error.message || 'Unknown error') });
+          try {
+            const errBody = JSON.parse(xhr.responseText);
+            const errMsg = errBody?.error?.message || errBody?.message || 'Unknown error';
+            toast({ variant: 'destructive', title: t('mediaAdmin.toast.uploadFailed.title').replace('{file}', file.name), description: t('mediaAdmin.toast.uploadFailed.description').replace('{error}', errMsg) });
+          } catch {
+            toast({ variant: 'destructive', title: t('mediaAdmin.toast.uploadFailed.title').replace('{file}', file.name), description: t('mediaAdmin.toast.uploadFailed.description').replace('{error}', `Status ${xhr.status}`) });
+          }
         }
       };
       xhr.onerror = () => { toast({ variant: 'destructive', title: t('mediaAdmin.toast.uploadFailedNetwork.title').replace('{file}', file.name), description: t('mediaAdmin.toast.uploadFailedNetwork.description') }); };

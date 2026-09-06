@@ -56,8 +56,7 @@ export default function PageTextEditor({ titleKey, fields }: PageTextEditorProps
     if (homeSettings) {
       form.reset(Object.fromEntries(fields.map(f => [f.name, ensureMultilingualString(homeSettings[f.name])])));
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [homeSettings]);
+  }, [homeSettings, form, fields]);
 
   useMergedAutosave({
     ref: settingsDocRef,

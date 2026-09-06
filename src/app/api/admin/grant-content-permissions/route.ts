@@ -6,31 +6,7 @@ import { getFirestore } from 'firebase-admin/firestore';
 import { initializeServerApp } from '@/firebase/server-init';
 import { isSuperAdmin } from '@/lib/constants';
 import { logger } from '@/lib/logger';
-
-// Per-IP rate limit (single-instance, in-memory). A leaked superadmin
-// token is the only attack vector here; this blunts bulk grants.
-const RATE_LIMIT_WINDOW_MS = 60_000;
-const RATE_LIMIT_MAX = 10;
-const hits = new Map<string, { count: number; resetAt: number }>();
-
-function isRateLimited(ip: string): boolean {
-  const now = Date.now();
-  const entry = hits.get(ip);
-  if (!entry || entry.resetAt < now) {
-    hits.set(ip, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS });
-    return false;
-  }
-  entry.count += 1;
-  return entry.count > RATE_LIMIT_MAX;
-}
-
-function clientIp(req: NextRequest): string {
-  return (
-    req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
-    req.headers.get('x-real-ip') ||
-    'unknown'
-  );
-}
+import { isRateLimited, clientIp } from '@/lib/rate-limit';
 
 // The four content-editing permissions granted to an existing admin account
 // whose user doc predates the explicit permissions model (role 'admin' with no
@@ -48,7 +24,7 @@ const bodySchema = z.object({
 });
 
 export async function POST(req: NextRequest) {
-  if (isRateLimited(clientIp(req))) {
+  if (isRateLimited(clientIp(req), 10)) {
     return NextResponse.json({ error: 'Too many requests. Please try again later.' }, { status: 429 });
   }
 
@@ -93,7 +69,7 @@ export async function POST(req: NextRequest) {
     userRecord = await getAuth(app).getUserByEmail(email);
   } catch (e: any) {
     if (e?.code === 'auth/user-not-found') {
-      return NextResponse.json({ error: `No user found with email ${email}.` }, { status: 404 });
+      return NextResponse.json({ error: 'No user found with the provided email.' }, { status: 404 });
     }
     logger.error('grant-content-permissions: getUserByEmail failed.', e);
     return NextResponse.json({ error: 'Could not look up user.' }, { status: 500 });

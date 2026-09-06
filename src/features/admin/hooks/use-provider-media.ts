@@ -79,7 +79,7 @@ export interface ProviderMediaApi {
   uploadProgress: number;
   uploadFileName: string;
   /** Upload a local file (file-picker or drag-&-drop). */
-  uploadFile: (file: File) => Promise<{ ok: boolean; url?: string; error?: string }>;
+  uploadFile: (file: File, format?: 'ABR' | 'MP4') => Promise<{ ok: boolean; url?: string; error?: string }>;
   /** Import a remote file by URL. */
   uploadByLink: (url: string, filename?: string, format?: 'ABR' | 'MP4') => Promise<{ ok: boolean; url?: string; error?: string }>;
   /** Delete an asset server-side and from its registry. */
@@ -192,7 +192,7 @@ export function useProviderMedia(provider: MediaProvider): ProviderMediaApi {
 
   // ---- uploadFile ----
   const uploadFile = useCallback(
-    async (file: File): Promise<{ ok: boolean; url?: string; error?: string }> => {
+    async (file: File, format?: 'ABR' | 'MP4'): Promise<{ ok: boolean; url?: string; error?: string }> => {
       setUploadFileName(file.name);
       setIsUploading(true);
       setUploadProgress(5);
@@ -216,7 +216,7 @@ export function useProviderMedia(provider: MediaProvider): ProviderMediaApi {
         if (provider === 'gumlet_video') {
           const result = await uploadGumletVideo(
             file,
-            'ABR',
+            format ?? 'ABR',
             token,
             (p) => { setUploadProgress(p); updateGlobalProgress(p, toProviderKey(provider)); },
             activeXhrRef
@@ -258,6 +258,7 @@ export function useProviderMedia(provider: MediaProvider): ProviderMediaApi {
       } catch (error) {
         return { ok: false, error: error instanceof Error ? error.message : 'Upload failed.' };
       } finally {
+        activeXhrRef.current = null;
         setUploadProgress(0);
         setIsUploading(false);
         setUploadFileName('');
@@ -335,6 +336,7 @@ export function useProviderMedia(provider: MediaProvider): ProviderMediaApi {
       } catch (error) {
         return { ok: false, error: error instanceof Error ? error.message : 'Link import failed.' };
       } finally {
+        activeXhrRef.current = null;
         setUploadProgress(0);
         setIsUploading(false);
         setUploadFileName('');
@@ -414,7 +416,8 @@ export function useProviderMedia(provider: MediaProvider): ProviderMediaApi {
     setIsUploading(false);
     setUploadProgress(0);
     setUploadFileName('');
-  }, []);
+    finishGlobalUpload(toProviderKey(provider));
+  }, [finishGlobalUpload, provider]);
 
   const isLoading = isManaged ? isManagedLoading : isFirebaseLoading;
 

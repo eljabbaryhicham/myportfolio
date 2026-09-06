@@ -12,6 +12,8 @@ import { useToast } from '@/hooks/use-toast';
 import type { GumletVideoAsset, GumletOutputFormat } from '@/lib/gumlet-video';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCopy, faFilm, faRotate, faTrash, faUpload } from '@fortawesome/free-solid-svg-icons';
+import Preloader from '@/components/preloader';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 
 export default function GumletVideoLibrary() {
   const auth = useAuth();
@@ -20,29 +22,38 @@ export default function GumletVideoLibrary() {
   const inputRef = useRef<HTMLInputElement>(null);
   const [assets, setAssets] = useState<GumletVideoAsset[]>([]);
   const [search, setSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+  const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isUploading, setIsUploading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [format, setFormat] = useState<GumletOutputFormat>('ABR');
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
 
   const typedUser = user as AppUser | null;
   const canUpload = isSuperAdmin(typedUser) || (typedUser?.permissions?.canUploadMedia ?? false);
   const canDelete = isSuperAdmin(typedUser) || (typedUser?.permissions?.canDeleteMedia ?? false);
   const token = useCallback(() => auth?.currentUser?.getIdToken() ?? Promise.resolve(null), [auth]);
 
+  useEffect(() => {
+    if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
+    debounceTimerRef.current = setTimeout(() => setDebouncedSearch(search), 300);
+    return () => { if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current); };
+  }, [search]);
+
   const load = useCallback(async () => {
     const idToken = await token();
     if (!idToken) return;
     setIsLoading(true);
     try {
-      const response = await fetch(`/api/gumlet/video?search=${encodeURIComponent(search.trim())}`, { headers: { Authorization: `Bearer ${idToken}` } });
+      const response = await fetch(`/api/gumlet/video?search=${encodeURIComponent(debouncedSearch.trim())}`, { headers: { Authorization: `Bearer ${idToken}` } });
       const data = await response.json();
       if (!response.ok || !data.success) throw new Error(data.message || 'Could not load Gumlet videos.');
       setAssets(data.assets);
     } catch (error) {
       toast({ variant: 'destructive', title: 'Gumlet library unavailable', description: error instanceof Error ? error.message : 'Could not load videos.' });
     } finally { setIsLoading(false); }
-  }, [search, toast, token]);
+  }, [debouncedSearch, toast, token]);
 
   useEffect(() => { void load(); }, [load]);
 
@@ -81,7 +92,9 @@ export default function GumletVideoLibrary() {
       const data = await response.json();
       if (!response.ok || !data.success) throw new Error(data.message || 'Delete failed.');
       setAssets((current) => current.filter((asset) => asset.assetId !== assetId));
+      toast({ title: 'Video deleted' });
     } catch (error) { toast({ variant: 'destructive', title: 'Gumlet delete failed', description: error instanceof Error ? error.message : 'Delete failed.' }); }
+    setDeleteTarget(null);
   };
 
   const copy = async (url?: string) => {
@@ -97,7 +110,7 @@ export default function GumletVideoLibrary() {
       {canUpload && <><input ref={inputRef} type="file" accept="video/*" className="hidden" onChange={(event) => { const file = event.target.files?.[0]; event.currentTarget.value = ''; if (file) void upload(file); }} /><Button size="sm" disabled={isUploading} onClick={() => inputRef.current?.click()}><FontAwesomeIcon icon={faUpload} className="mr-2" />Upload video</Button></>}
     </div>
     {isUploading && <Progress value={progress} aria-label="Gumlet upload progress" />}
-    {isLoading ? <p className="text-sm text-muted-foreground">Loading Gumlet videos…</p> : assets.length === 0 ? <p className="py-10 text-center text-sm text-muted-foreground">No Gumlet videos found.</p> : <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+    {isLoading ? <div className="flex justify-center py-12"><Preloader /></div> : assets.length === 0 ? <p className="py-10 text-center text-sm text-muted-foreground">No Gumlet videos found.</p> : <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
       {assets.map((asset) => <article key={asset.assetId} className="space-y-2 rounded-lg border p-3">
         <div className="flex aspect-video items-center justify-center overflow-hidden rounded bg-muted">{asset.thumbnailUrl ? <>
           {/* Gumlet delivery hosts are account-configured, so static Next Image allowlisting is not safe here. */}
@@ -105,8 +118,20 @@ export default function GumletVideoLibrary() {
           <img src={asset.thumbnailUrl} alt="" className="h-full w-full object-cover" />
         </> : <FontAwesomeIcon icon={faFilm} className="h-10 w-10 text-muted-foreground" />}</div>
         <p className="truncate text-sm font-medium" title={asset.title}>{asset.title}</p><p className="text-xs text-muted-foreground">{asset.status}{asset.format ? ` · ${asset.format}` : ''}</p>
-        <div className="flex gap-2"><Button size="sm" variant="outline" disabled={!asset.playbackUrl} onClick={() => void copy(asset.playbackUrl)}><FontAwesomeIcon icon={faCopy} className="mr-2" />Copy URL</Button>{canDelete && <Button size="sm" variant="destructive" onClick={() => void remove(asset.assetId)}><FontAwesomeIcon icon={faTrash} className="mr-2" />Delete</Button>}</div>
+        <div className="flex gap-2"><Button size="sm" variant="outline" disabled={!asset.playbackUrl} onClick={() => void copy(asset.playbackUrl)}><FontAwesomeIcon icon={faCopy} className="mr-2" />Copy URL</Button>{canDelete && <Button size="sm" variant="destructive" onClick={() => setDeleteTarget(asset.assetId)}><FontAwesomeIcon icon={faTrash} className="mr-2" />Delete</Button>}</div>
       </article>)}
     </div>}
+    <AlertDialog open={!!deleteTarget} onOpenChange={(open) => { if (!open) setDeleteTarget(null); }}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Delete video?</AlertDialogTitle>
+          <AlertDialogDescription>This action cannot be undone. The video will be permanently removed from Gumlet.</AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogAction onClick={() => { if (deleteTarget) void remove(deleteTarget); }}>Delete</AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   </section>;
 }

@@ -97,12 +97,14 @@ export function toMediaLibraryAsset(
   }
 
   const b = native as unknown as VercelBlobLike;
+  const ct = (b.contentType || '').toLowerCase();
+  const resourceType = ct.startsWith('video/') ? 'video' : ct.startsWith('image/') ? 'image' : 'raw';
   return {
     id: b.id,
     provider,
     url: b.url,
     filename: b.filename,
-    resourceType: 'image',
+    resourceType,
     contentType: b.contentType,
     size: b.size,
     createdAt: b.uploadedAt,

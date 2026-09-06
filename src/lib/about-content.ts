@@ -7,12 +7,21 @@ import { getFirestore } from 'firebase-admin/firestore';
 import type { MultilingualString } from '@/lib/i18n/multilingual';
 import { logger } from '@/lib/logger';
 
+/** One card in the "What We Provide" grid on the About page. */
+export interface AboutService {
+  iconUrl: string;
+  title: MultilingualString;
+  description: MultilingualString;
+}
+
 export interface AboutPageContent {
   title: MultilingualString;
   content: MultilingualString;
   imageUrl: string;
   logoUrl?: string;
   logoScale?: number;
+  /** Admin-managed "What We Provide" cards. Absent/empty → built-in defaults. */
+  services?: AboutService[];
 }
 
 /**
