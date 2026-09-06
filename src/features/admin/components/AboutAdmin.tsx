@@ -22,6 +22,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useDoc, useFirestore, useMemoFirebase, setDocumentNonBlocking, useUser, useAuth } from '@/firebase';
 import { doc } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
+import { useFormContext, useWatch } from 'react-hook-form';
 import { revalidateHome } from '@/lib/revalidate-home';
 import Preloader from '@/components/preloader';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -42,10 +43,12 @@ import { Slider } from '@/components/ui/slider';
 import { ensureMultilingualString } from '@/lib/i18n/multilingual';
 import { MultilingualInput } from './MultilingualInput';
 import { Separator } from '@/components/ui/separator';
-import type { AboutPageContent } from '@/lib/about-content';
+import type { AboutPageContent, AboutService } from '@/lib/about-content';
+import { builtinIconMap, cloneDefaultServices, type BuiltinIconName } from '@/lib/about-default-services';
 
 const serviceSchema = z.object({
-  iconUrl: z.string().url({ message: 'Please enter a valid URL.' }),
+  iconUrl: z.string().url({ message: 'Please enter a valid URL.' }).optional().or(z.literal('')),
+  iconName: z.string().optional().or(z.literal('')),
   title: z.object({ en: z.string(), fr: z.string() }),
   description: z.object({ en: z.string(), fr: z.string() }),
 });
@@ -66,9 +69,110 @@ type ImageField = 'imageUrl' | 'logoUrl' | `services.${number}.iconUrl`;
 
 const emptyService = (): AboutFormValues['services'][number] => ({
   iconUrl: '',
+  iconName: '',
   title: { en: '', fr: '' },
   description: { en: '', fr: '' },
 });
+
+/** Shape a stored AboutService into the form's service fields. */
+const toFormService = (s: AboutService): AboutFormValues['services'][number] => ({
+  iconUrl: s.iconUrl ?? '',
+  iconName: s.iconName ?? '',
+  title: { en: s.title?.en ?? '', fr: s.title?.fr ?? '' },
+  description: { en: s.description?.en ?? '', fr: s.description?.fr ?? '' },
+});
+
+const toFormServices = (list: AboutService[]): AboutFormValues['services'] => list.map(toFormService);
+
+/** Small icon preview shown on each card header (image, or built-in icon). */
+function ServiceIconPreview({ iconUrl, iconName }: { iconUrl?: string; iconName?: string }) {
+  if (iconUrl && /^https?:\/\//i.test(iconUrl)) {
+    // Preview only — arbitrary admin-supplied hosts; keep a plain img here.
+    // eslint-disable-next-line @next/next/no-img-element
+    return <img src={iconUrl} alt="" className="h-6 w-6 object-contain" />;
+  }
+  const Icon = iconName ? builtinIconMap[iconName as BuiltinIconName] : undefined;
+  if (Icon) return <Icon className="h-6 w-6 text-primary" />;
+  return null;
+}
+
+function ServiceCardEditor({
+  index,
+  total,
+  canEdit,
+  canManageMedia,
+  onChooseImage,
+  onMoveUp,
+  onMoveDown,
+  onRemove,
+}: {
+  index: number;
+  total: number;
+  canEdit: boolean;
+  canManageMedia: boolean;
+  onChooseImage: (field: ImageField) => void;
+  onMoveUp: () => void;
+  onMoveDown: () => void;
+  onRemove: () => void;
+}) {
+  const { t } = useTranslation();
+  const { control } = useFormContext();
+  // Live values so the header preview reflects the current icon as you type.
+  const card = useWatch({ control, name: `services.${index}` });
+
+  return (
+    <div className="rounded-lg border border-white/10 bg-black/10 p-4 space-y-4">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <ServiceIconPreview iconUrl={card?.iconUrl} iconName={card?.iconName} />
+          <span className="font-medium">{t('aboutAdmin.services.card').replace('{index}', String(index + 1))}</span>
+        </div>
+        <div className="flex items-center gap-1">
+          <Button type="button" variant="ghost" size="icon" onClick={onMoveUp} disabled={!canEdit || index === 0} title={t('aboutAdmin.services.moveUp')} aria-label={t('aboutAdmin.services.moveUp')}>
+            <FontAwesomeIcon icon={faArrowUp} />
+          </Button>
+          <Button type="button" variant="ghost" size="icon" onClick={onMoveDown} disabled={!canEdit || index === total - 1} title={t('aboutAdmin.services.moveDown')} aria-label={t('aboutAdmin.services.moveDown')}>
+            <FontAwesomeIcon icon={faArrowDown} />
+          </Button>
+          <Button type="button" variant="ghost" size="icon" className="text-destructive" onClick={onRemove} disabled={!canEdit} title={t('aboutAdmin.services.remove')} aria-label={t('aboutAdmin.services.remove')}>
+            <FontAwesomeIcon icon={faTrash} />
+          </Button>
+        </div>
+      </div>
+      <FormField
+        control={control}
+        name={`services.${index}.iconUrl`}
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>{t('aboutAdmin.services.iconUrl')}</FormLabel>
+            <div className="flex items-center gap-2">
+              <FormControl>
+                <Input placeholder={t('aboutAdmin.services.iconUrlPlaceholder')} {...field} />
+              </FormControl>
+              <Button type="button" variant="outline" size="icon" onClick={() => onChooseImage(`services.${index}.iconUrl`)} disabled={!canManageMedia}>
+                <FontAwesomeIcon icon={faImages} />
+              </Button>
+            </div>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+      <MultilingualInput
+        name={`services.${index}.title`}
+        label={t('aboutAdmin.services.cardTitle')}
+        placeholder={t('aboutAdmin.services.cardTitlePlaceholder')}
+        disabled={!canEdit}
+      />
+      <MultilingualInput
+        name={`services.${index}.description`}
+        label={t('aboutAdmin.services.cardDescription')}
+        placeholder={t('aboutAdmin.services.cardDescriptionPlaceholder')}
+        type="textarea"
+        disabled={!canEdit}
+      />
+    </div>
+  );
+}
 
 export default function AboutAdmin() {
   const { t } = useTranslation();
@@ -102,7 +206,7 @@ export default function AboutAdmin() {
       imageUrl: '',
       logoUrl: '',
       logoScale: 1,
-      services: [],
+      services: toFormServices(cloneDefaultServices()),
     },
   });
 
@@ -120,12 +224,8 @@ export default function AboutAdmin() {
         logoUrl: aboutContent.logoUrl || '',
         logoScale: aboutContent.logoScale || 1,
         services: Array.isArray(aboutContent.services)
-          ? aboutContent.services.map((s) => ({
-              iconUrl: s?.iconUrl || '',
-              title: ensureMultilingualString(s?.title),
-              description: ensureMultilingualString(s?.description),
-            }))
-          : [],
+          ? aboutContent.services.map((s) => toFormService(s))
+          : toFormServices(cloneDefaultServices()),
       });
     }
   }, [aboutContent, form]);
@@ -143,7 +243,8 @@ export default function AboutAdmin() {
       logoUrl: values.logoUrl || '', // Ensure logoUrl is not undefined
       logoScale: values.logoScale || 1,
       services: values.services.map((s) => ({
-        iconUrl: s.iconUrl,
+        iconUrl: s.iconUrl || '',
+        iconName: s.iconName || '',
         title: ensureMultilingualString(s.title),
         description: ensureMultilingualString(s.description),
       })),
@@ -304,60 +405,18 @@ export default function AboutAdmin() {
                                 </Button>
                               </div>
 
-                              {serviceFields.length === 0 && (
-                                <p className="text-sm text-muted-foreground text-center py-6 rounded-lg border border-dashed border-white/10">
-                                  {t('aboutAdmin.services.empty')}
-                                </p>
-                              )}
-
                               {serviceFields.map((serviceField, index) => (
-                                <div key={serviceField.id} className="rounded-lg border border-white/10 bg-black/10 p-4 space-y-4">
-                                  <div className="flex items-center justify-between">
-                                    <span className="font-medium">{t('aboutAdmin.services.card').replace('{index}', String(index + 1))}</span>
-                                    <div className="flex items-center gap-1">
-                                      <Button type="button" variant="ghost" size="icon" onClick={() => moveService(index, index - 1)} disabled={!canEditAbout || index === 0} title={t('aboutAdmin.services.moveUp')} aria-label={t('aboutAdmin.services.moveUp')}>
-                                        <FontAwesomeIcon icon={faArrowUp} />
-                                      </Button>
-                                      <Button type="button" variant="ghost" size="icon" onClick={() => moveService(index, index + 1)} disabled={!canEditAbout || index === serviceFields.length - 1} title={t('aboutAdmin.services.moveDown')} aria-label={t('aboutAdmin.services.moveDown')}>
-                                        <FontAwesomeIcon icon={faArrowDown} />
-                                      </Button>
-                                      <Button type="button" variant="ghost" size="icon" className="text-destructive" onClick={() => removeService(index)} disabled={!canEditAbout} title={t('aboutAdmin.services.remove')} aria-label={t('aboutAdmin.services.remove')}>
-                                        <FontAwesomeIcon icon={faTrash} />
-                                      </Button>
-                                    </div>
-                                  </div>
-                                  <FormField
-                                    control={form.control}
-                                    name={`services.${index}.iconUrl`}
-                                    render={({ field }) => (
-                                      <FormItem>
-                                        <FormLabel>{t('aboutAdmin.services.iconUrl')}</FormLabel>
-                                        <div className="flex items-center gap-2">
-                                          <FormControl>
-                                            <Input placeholder={t('aboutAdmin.services.iconUrlPlaceholder')} {...field} />
-                                          </FormControl>
-                                          <Button type="button" variant="outline" size="icon" onClick={() => handleChooseImage(`services.${index}.iconUrl`)} disabled={!canManageMedia}>
-                                            <FontAwesomeIcon icon={faImages} />
-                                          </Button>
-                                        </div>
-                                        <FormMessage />
-                                      </FormItem>
-                                    )}
-                                  />
-                                  <MultilingualInput
-                                    name={`services.${index}.title`}
-                                    label={t('aboutAdmin.services.cardTitle')}
-                                    placeholder={t('aboutAdmin.services.cardTitlePlaceholder')}
-                                    disabled={!canEditAbout}
-                                  />
-                                  <MultilingualInput
-                                    name={`services.${index}.description`}
-                                    label={t('aboutAdmin.services.cardDescription')}
-                                    placeholder={t('aboutAdmin.services.cardDescriptionPlaceholder')}
-                                    type="textarea"
-                                    disabled={!canEditAbout}
-                                  />
-                                </div>
+                                <ServiceCardEditor
+                                  key={serviceField.id}
+                                  index={index}
+                                  total={serviceFields.length}
+                                  canEdit={canEditAbout}
+                                  canManageMedia={canManageMedia}
+                                  onChooseImage={(field) => handleChooseImage(field)}
+                                  onMoveUp={() => moveService(index, index - 1)}
+                                  onMoveDown={() => moveService(index, index + 1)}
+                                  onRemove={() => removeService(index)}
+                                />
                               ))}
                             </div>
 

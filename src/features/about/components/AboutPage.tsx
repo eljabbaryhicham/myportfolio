@@ -13,7 +13,6 @@ import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEnvelope, faArrowRight } from '@fortawesome/free-solid-svg-icons';
-import { BrainCircuit, Mic, Clapperboard, Share2, Code } from 'lucide-react';
 import useEmblaCarousel from 'embla-carousel-react'
 import Autoplay from 'embla-carousel-autoplay'
 import { motion } from 'framer-motion';
@@ -22,31 +21,61 @@ import { ScrollIndicator } from '@/components/ScrollIndicator';
 import { useTranslation } from '@/lib/i18n/useTranslation';
 import { getLocalizedString } from '@/lib/i18n/multilingual';
 import type { AboutPageContent, AboutService } from '@/lib/about-content';
+import { DEFAULT_SERVICES, builtinIconMap, type BuiltinIconName } from '@/lib/about-default-services';
 import type { TrustedByClient } from '@/lib/types';
 import { useHomePageSettings } from '@/components/settings/home-page-settings-provider';
 import { useTrustedByClients } from '@/components/trusted-by/trusted-by-provider';
 
-// Built-in "What We Provide" cards, shown only when the admin has not saved
-// any custom cards in `about/content.services`.
-const defaultServices = [
-    { key: "about.services.brainstorming", icon: BrainCircuit },
-    { key: "about.services.voiceover", icon: Mic },
-    { key: "about.services.contentCreation", icon: Clapperboard },
-    { key: "about.services.socialMedia", icon: Share2 },
-    { key: "about.services.webDesign", icon: Code },
-];
+/**
+ * A card is renderable if it carries a title, a custom icon image, or a
+ * built-in icon name — i.e. anything the admin actually gave it.
+ */
+const isRenderableService = (s: unknown): s is AboutService => {
+  if (!s || typeof s !== 'object') return false;
+  const c = s as AboutService;
+  return (
+    (typeof c.iconUrl === 'string' && c.iconUrl.length > 0) ||
+    (typeof c.iconName === 'string' && c.iconName.length > 0) ||
+    (typeof c.title?.en === 'string' && c.title.en.trim().length > 0) ||
+    (typeof c.title?.fr === 'string' && c.title.fr.trim().length > 0)
+  );
+};
 
-// Preserves the original 3-over-2 layout for the 5 default cards.
-const defaultGridClasses = [
-    'col-span-3 sm:col-span-2',
-    'col-span-3 sm:col-span-2',
-    'col-span-3 sm:col-span-2',
-    'col-span-3',
-    'col-span-3',
-];
+/**
+ * Generalizes the original grid: 3 cards per row (grid-cols-6, each spanning
+ * 2). A leftover row of 2 cards widens each to half (span 3) and a lone card
+ * is centered — mirroring the original 3-over-2 default layout for 5 cards.
+ */
+const serviceColumnClass = (index: number, count: number): string => {
+  if (count <= 0) return 'col-span-1 sm:col-span-2';
+  const rem = count % 3 || 3;
+  if (index >= count - rem) {
+    if (rem === 2) return 'col-span-1 sm:col-span-3';
+    if (rem === 1) return 'col-span-1 sm:col-span-3 sm:col-start-2';
+  }
+  return 'col-span-1 sm:col-span-2';
+};
 
-const isRenderableService = (s: unknown): s is AboutService =>
-    !!s && typeof s === 'object' && typeof (s as AboutService).iconUrl === 'string' && (s as AboutService).iconUrl.length > 0;
+function ServiceIcon({ service }: { service: AboutService }) {
+  if (service.iconUrl && /^https?:\/\//i.test(service.iconUrl)) {
+    return (
+      <MemoizedImage
+        src={cloudinaryOptimized(service.iconUrl)}
+        alt=""
+        width={40}
+        height={40}
+        sizes="40px"
+        loading="lazy"
+        className="object-contain w-[clamp(2rem,4.5vh,2.5rem)] h-[clamp(2rem,4.5vh,2.5rem)] mb-[clamp(0.5rem,1.5vh,0.875rem)]"
+      />
+    );
+  }
+  const Icon = service.iconName ? builtinIconMap[service.iconName as BuiltinIconName] : undefined;
+  if (Icon) {
+    return <Icon className="w-[clamp(2rem,4.5vh,2.5rem)] h-[clamp(2rem,4.5vh,2.5rem)] text-primary mb-[clamp(0.5rem,1.5vh,0.875rem)]" />;
+  }
+  return null;
+}
 
 
 const MemoizedImage = memo(Image);
@@ -128,11 +157,15 @@ export default function AboutPage({ initialContent }: { initialContent?: (AboutP
   const logoUrl = aboutContent?.logoUrl;
   const logoScale = aboutContent?.logoScale || 1;
 
-  // Admin-managed cards; falls back to the built-in defaults when none saved.
-  const customServices = useMemo(
-    () => (Array.isArray(aboutContent?.services) ? aboutContent.services.filter(isRenderableService) : []),
-    [aboutContent?.services]
-  );
+  // Admin-managed cards; falls back to the built-in defaults when the admin
+  // has not saved any. Once saved, the saved list is authoritative — an empty
+  // saved list hides the section entirely.
+  const hasSavedServices = Array.isArray(aboutContent?.services);
+  const renderedServices = useMemo(() => {
+    const services = aboutContent?.services;
+    if (!Array.isArray(services)) return DEFAULT_SERVICES;
+    return services.filter(isRenderableService);
+  }, [aboutContent?.services]);
   
   const [emblaRef] = useEmblaCarousel({ loop: true, align: 'start' }, [
     Autoplay({
@@ -186,7 +219,7 @@ export default function AboutPage({ initialContent }: { initialContent?: (AboutP
                     variants={itemVariants}
                     className="flex flex-col gap-[clamp(1.5rem,4vh,3rem)] items-center justify-center landscape:flex-row landscape:items-stretch"
                   >
-                    <div className="w-full landscape:w-1/2 text-center p-4 sm:p-6 md:p-8 flex flex-col justify-center">
+                    <div className={cn('w-full text-center p-4 sm:p-6 md:p-8 flex flex-col justify-center', renderedServices.length > 0 && 'landscape:w-1/2')}>
                         {logoUrl && (
                             <div className="w-32 mx-auto mb-4" style={{ transform: `scale(${logoScale})` }}>
                                 <Logo src={logoUrl} />
@@ -209,50 +242,30 @@ export default function AboutPage({ initialContent }: { initialContent?: (AboutP
                             </Button>
                         </div>
                     </div>
+                    {renderedServices.length > 0 && (
                     <div className="w-full landscape:w-1/2 flex flex-col justify-center">
                        <h2 className="text-2xl md:text-3xl font-headline tracking-tight mb-[clamp(1rem,3vh,1.75rem)] text-center">{t('about.whatYouGet')}</h2>
-                       {customServices.length > 0 ? (
-                        <div className="grid grid-cols-1 sm:grid-cols-3 auto-rows-fr gap-[clamp(0.75rem,2vh,1.25rem)] h-full">
-                          {customServices.map((service, index) => {
+                        <div className={cn('grid auto-rows-fr gap-[clamp(0.75rem,2vh,1.25rem)] h-full', hasSavedServices ? 'grid-cols-1 sm:grid-cols-6' : 'grid-cols-3 sm:grid-cols-6')}>
+                          {renderedServices.map((service, index) => {
                               const title = getLocalizedString(service.title, lang);
                               const description = getLocalizedString(service.description, lang);
                               return (
                                   <div
-                                      key={`${service.iconUrl}-${index}`}
-                                      className="glass-effect p-[clamp(1rem,2.5vh,1.5rem)] rounded-lg flex flex-col items-center justify-center text-center"
+                                      key={`${index}-${service.iconUrl || service.iconName || ''}`}
+                                      className={cn(
+                                        "glass-effect p-[clamp(1rem,2.5vh,1.5rem)] rounded-lg flex flex-col items-center justify-center text-center",
+                                        serviceColumnClass(index, renderedServices.length)
+                                      )}
                                   >
-                                      <MemoizedImage
-                                          src={cloudinaryOptimized(service.iconUrl)}
-                                          alt={title || ''}
-                                          width={40}
-                                          height={40}
-                                          sizes="40px"
-                                          loading="lazy"
-                                          className="object-contain w-[clamp(2rem,4.5vh,2.5rem)] h-[clamp(2rem,4.5vh,2.5rem)] mb-[clamp(0.5rem,1.5vh,0.875rem)]"
-                                      />
+                                      <ServiceIcon service={service} />
                                       {title && <p className="text-xs md:text-sm font-semibold">{title}</p>}
                                       {description && <p className="mt-1 text-[0.7rem] md:text-xs text-foreground/70 leading-snug">{description}</p>}
                                   </div>
                               );
                           })}
                         </div>
-                       ) : (
-                        <div className="grid grid-cols-3 sm:grid-cols-6 grid-rows-2 auto-rows-fr gap-[clamp(0.75rem,2vh,1.25rem)] h-full">
-                          {defaultServices.map((service, index) => (
-                              <div 
-                                  key={service.key}
-                                  className={cn(
-                                    "glass-effect p-[clamp(1rem,2.5vh,1.5rem)] rounded-lg flex flex-col items-center justify-center text-center",
-                                    defaultGridClasses[index]
-                                  )}
-                              >
-                                  <service.icon className="w-[clamp(2rem,4.5vh,2.5rem)] h-[clamp(2rem,4.5vh,2.5rem)] text-primary mb-[clamp(0.5rem,1.5vh,0.875rem)]" />
-                                  <p className="text-xs md:text-sm font-semibold">{t(service.key)}</p>
-                              </div>
-                          ))}
-                        </div>
-                       )}
                     </div>
+                    )}
                   </motion.div>
 
                 {clientsError !== null && clients.length === 0 ? (

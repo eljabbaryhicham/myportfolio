@@ -9,7 +9,10 @@ import { logger } from '@/lib/logger';
 
 /** One card in the "What We Provide" grid on the About page. */
 export interface AboutService {
-  iconUrl: string;
+  /** Built-in line icon name (see BUILTIN_ICONS). Used when iconUrl is empty. */
+  iconName?: string;
+  /** Custom icon image URL; takes precedence over iconName. */
+  iconUrl?: string;
   title: MultilingualString;
   description: MultilingualString;
 }

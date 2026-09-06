@@ -467,7 +467,7 @@ const en: Record<string, string> = {
   'aboutAdmin.toast.invalidFileType.title': 'Invalid File Type',
   'aboutAdmin.toast.invalidFileType.description': 'Please select an image.',
   'aboutAdmin.services.title': 'What We Provide Cards',
-  'aboutAdmin.services.description': 'Cards shown in the "What We Provide" section. Leave empty to show the built-in defaults.',
+  'aboutAdmin.services.description': 'Cards shown in the "What We Provide" section. Edit, reorder or remove them; a card without an image keeps its built-in icon.',
   'aboutAdmin.services.add': 'Add Card',
   'aboutAdmin.services.card': 'Card {index}',
   'aboutAdmin.services.iconUrl': 'Icon Image URL',
@@ -479,7 +479,6 @@ const en: Record<string, string> = {
   'aboutAdmin.services.moveUp': 'Move up',
   'aboutAdmin.services.moveDown': 'Move down',
   'aboutAdmin.services.remove': 'Remove card',
-  'aboutAdmin.services.empty': 'No custom cards yet. The default cards are shown on the public page.',
 
   /* ClientAdmin */
   'clientAdmin.name': 'Client Name',
@@ -1099,7 +1098,7 @@ const fr: Record<string, string> = {
   'aboutAdmin.toast.invalidFileType.title': 'Type de fichier invalide',
   'aboutAdmin.toast.invalidFileType.description': 'Veuillez sélectionner une image.',
   'aboutAdmin.services.title': 'Cartes « Ce que nous offrons »',
-  'aboutAdmin.services.description': 'Cartes affichées dans la section « Ce que nous offrons ». Laissez vide pour afficher les cartes par défaut.',
+  'aboutAdmin.services.description': 'Cartes affichées dans la section « Ce que nous offrons ». Modifiez, réorganisez ou supprimez-les ; une carte sans image conserve son icône intégrée.',
   'aboutAdmin.services.add': 'Ajouter une carte',
   'aboutAdmin.services.card': 'Carte {index}',
   'aboutAdmin.services.iconUrl': 'URL de l\'icône',
@@ -1111,7 +1110,6 @@ const fr: Record<string, string> = {
   'aboutAdmin.services.moveUp': 'Monter',
   'aboutAdmin.services.moveDown': 'Descendre',
   'aboutAdmin.services.remove': 'Supprimer la carte',
-  'aboutAdmin.services.empty': 'Aucune carte personnalisée. Les cartes par défaut sont affichées sur la page publique.',
 
   /* ClientAdmin */
   'clientAdmin.name': 'Nom du client',
