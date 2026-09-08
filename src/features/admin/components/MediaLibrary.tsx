@@ -18,6 +18,11 @@ import { cn } from '@/lib/utils';
 import Preloader from '@/components/preloader';
 import { useCollection, useFirestore, useMemoFirebase, addDocumentNonBlocking, deleteDocumentNonBlocking, useUser, useAuth, setDocumentNonBlocking } from '@/firebase';
 import { logger } from '@/lib/logger';
+import {
+  isCloudinaryLibraryId,
+  cloudinaryClientUploadEnv,
+  type CloudinaryLibraryId,
+} from '@/lib/cloudinary-libraries';
 import { revalidateHome } from '@/lib/revalidate-home';
 import {
   saveUploadProgress,
@@ -57,7 +62,7 @@ export interface MediaAsset {
   resource_type: 'image' | 'video' | 'raw';
   created_at: string;
   filename: string;
-  libraryId?: 'primary' | 'extented';
+  libraryId?: CloudinaryLibraryId;
   videoFormat?: 'mp4' | 'm3u8' | 'webm';
   title?: string;
   tag?: MediaTag;
@@ -86,7 +91,7 @@ type UnifiedFile = {
   contentType?: string;
   // Cloudinary-specific (kept for delete/copy operations)
   public_id?: string;
-  libraryId?: 'primary' | 'extented';
+  libraryId?: CloudinaryLibraryId;
   videoFormat?: 'mp4' | 'm3u8' | 'webm';
   tag?: MediaTag;
   // Raw Firestore doc reference for deletion
@@ -178,8 +183,8 @@ interface DialogMediaLibraryProps extends MediaLibraryBaseProps {
   onSelectionComplete: () => void;
   activeTab: 'images' | 'videos' | 'files';
   setActiveTab: (tab: 'images' | 'videos' | 'files') => void;
-  activeLibrary: 'primary' | 'extented';
-  setActiveLibrary: (library: 'primary' | 'extented') => void;
+  activeLibrary: CloudinaryLibraryId;
+  setActiveLibrary: (library: CloudinaryLibraryId) => void;
   newlyUploadedId: string | null;
   onUploadComplete?: never;
 }
@@ -189,7 +194,7 @@ type MediaLibraryProps = StandaloneMediaLibraryProps | DialogMediaLibraryProps;
 const noopSetActiveTab = (_tab: 'images' | 'videos' | 'files') => {};
 
 export interface MediaLibraryRef {
-  openFullLibrary: (tab: 'images' | 'videos' | 'files', library: 'primary' | 'extented') => void;
+  openFullLibrary: (tab: 'images' | 'videos' | 'files', library: CloudinaryLibraryId) => void;
 }
 
 // ---------------------------------------------------------------------------
@@ -509,7 +514,7 @@ export default forwardRef<MediaLibraryRef, MediaLibraryProps>(function MediaLibr
   // Full library dialog (standalone mode)
   const [isFullLibraryOpen, setIsFullLibraryOpen] = useState(false);
   const [fullLibraryActiveTab, setFullLibraryActiveTab] = useState<'images' | 'videos' | 'files'>('images');
-  const [fullLibraryActiveLibrary, setFullLibraryActiveLibrary] = useState<'primary' | 'extented'>('primary');
+  const [fullLibraryActiveLibrary, setFullLibraryActiveLibrary] = useState<CloudinaryLibraryId>('primary');
   const [localNewlyUploadedId, setLocalNewlyUploadedId] = useState<string | null>(null);
 
   // ---- Permissions (Cloudinary checks; Vercel implicitly allows all) ----
@@ -532,7 +537,7 @@ export default forwardRef<MediaLibraryRef, MediaLibraryProps>(function MediaLibr
 
   // ---- Ref: openFullLibrary ----
   useImperativeHandle(ref, () => ({
-    openFullLibrary: (tab: 'images' | 'videos' | 'files', library: 'primary' | 'extented') => {
+    openFullLibrary: (tab: 'images' | 'videos' | 'files', library: CloudinaryLibraryId) => {
       setFullLibraryActiveTab(tab);
       setFullLibraryActiveLibrary(library);
       setIsFullLibraryOpen(true);
@@ -576,7 +581,7 @@ export default forwardRef<MediaLibraryRef, MediaLibraryProps>(function MediaLibr
     // `completedUpload` left over from one of those would otherwise clear the
     // weak cloudinary guard below and auto-open this popup when switching to
     // this tab, so consume it instead.
-    if (provider === 'cloudinary' && completedUpload.libraryId !== 'primary' && completedUpload.libraryId !== 'extented') {
+    if (provider === 'cloudinary' && !isCloudinaryLibraryId(completedUpload.libraryId)) {
       consumeCompletedUpload();
       return;
     }
@@ -592,7 +597,7 @@ export default forwardRef<MediaLibraryRef, MediaLibraryProps>(function MediaLibr
     const tab = resourceType === 'video' ? 'videos' : resourceType === 'raw' ? 'files' : 'images';
     if (provider === 'cloudinary') {
       setFullLibraryActiveTab(tab);
-      setFullLibraryActiveLibrary((libraryId === 'primary' || libraryId === 'extented') ? libraryId : 'primary');
+      setFullLibraryActiveLibrary(isCloudinaryLibraryId(libraryId) ? libraryId : 'primary');
     } else {
       setFullLibraryActiveTab(tab);
     }
@@ -1014,18 +1019,14 @@ for (const file of files) {
     setIsChoosingLibrary(true);
   }, [canUpload, toast, t]);
 
-  const handleCloudinaryLibraryChoiceAndUpload = useCallback(async (libraryId: 'primary' | 'extented') => {
+  const handleCloudinaryLibraryChoiceAndUpload = useCallback(async (libraryId: CloudinaryLibraryId) => {
     setIsChoosingLibrary(false);
-    let cloudName: string | undefined, uploadPreset: string | undefined;
-    if (libraryId === 'primary') {
-      cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME_1;
-      uploadPreset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET_1;
-    } else {
-      cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME_2;
-      uploadPreset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET_2;
-    }
+    const { cloudName, uploadPreset } = cloudinaryClientUploadEnv(libraryId);
     if (!cloudName || !uploadPreset || uploadPreset.includes("your_unsigned_preset")) {
-      toast({ variant: 'destructive', title: t('mediaAdmin.toast.configError.title'), description: t('mediaAdmin.toast.configError.description').replace('{library}', libraryId === 'primary' ? 'Library Primary' : 'Library Extented'), duration: 10000 });
+      const libraryLabel = libraryId === 'primary'
+        ? t('mediaAdmin.libraryPrimary')
+        : libraryId === 'extented' ? t('mediaAdmin.libraryExtented') : t('mediaAdmin.libraryExtented2');
+      toast({ variant: 'destructive', title: t('mediaAdmin.toast.configError.title'), description: t('mediaAdmin.toast.configError.description').replace('{library}', libraryLabel), duration: 10000 });
       setFilesToUpload([]);
       return;
     }
@@ -1330,7 +1331,7 @@ for (const file of files) {
   const handleBulkDelete = provider === 'cloudinary' ? handleCloudinaryBulkDelete : handleVercelBulkDelete;
 
   // ---- URL upload complete callback (Cloudinary AddFromUrlDialog) ----
-  const handleCloudinaryUrlUploadComplete = (mediaId: string, resourceType: 'image' | 'video' | 'raw', libraryId: 'primary' | 'extented') => {
+  const handleCloudinaryUrlUploadComplete = (mediaId: string, resourceType: 'image' | 'video' | 'raw', libraryId: CloudinaryLibraryId) => {
     if (!isDialog && onUploadComplete) onUploadComplete(mediaId, resourceType, libraryId);
     signalCompletedUpload(mediaId, resourceType, libraryId, 'cloudinary', undefined, 'media-library');
   };
@@ -1432,6 +1433,7 @@ for (const file of files) {
             <div className="flex justify-center gap-4 py-2">
               <Button onClick={() => handleCloudinaryLibraryChoiceAndUpload('primary')} size="lg" className="w-48"><FontAwesomeIcon icon={faUniversity} className="mr-2" /> {t('mediaAdmin.libraryPrimary')}</Button>
               <Button onClick={() => handleCloudinaryLibraryChoiceAndUpload('extented')} size="lg" className="w-48"><FontAwesomeIcon icon={faUniversity} className="mr-2" /> {t('mediaAdmin.libraryExtented')}</Button>
+              <Button onClick={() => handleCloudinaryLibraryChoiceAndUpload('extented2')} size="lg" className="w-48"><FontAwesomeIcon icon={faUniversity} className="mr-2" /> {t('mediaAdmin.libraryExtented2')}</Button>
             </div>
           </div>
           <DialogFooter>
@@ -1598,10 +1600,11 @@ for (const file of files) {
 
   // ---- Library tabs (Cloudinary only) ----
   const libraryTabs = provider === 'cloudinary' ? (
-    <Tabs value={activeLibrary} onValueChange={(value) => setActiveLibraryFn(value as 'primary' | 'extented')} className='px-4 pt-4'>
+    <Tabs value={activeLibrary} onValueChange={(value) => setActiveLibraryFn(value as CloudinaryLibraryId)} className='px-4 pt-4'>
       <TabsList>
         <TabsTrigger value="primary" className="py-2 px-4 text-base glass-effect data-[state=active]:bg-destructive">{t('mediaAdmin.tab.libraryPrimary')}</TabsTrigger>
         <TabsTrigger value="extented" className="py-2 px-4 text-base glass-effect data-[state=active]:bg-destructive">{t('mediaAdmin.tab.libraryExtented')}</TabsTrigger>
+        <TabsTrigger value="extented2" className="py-2 px-4 text-base glass-effect data-[state=active]:bg-destructive">{t('mediaAdmin.tab.libraryExtented2')}</TabsTrigger>
       </TabsList>
     </Tabs>
   ) : null;
@@ -1798,10 +1801,11 @@ for (const file of files) {
           <DialogDescription>{t('mediaAdmin.description')}</DialogDescription>
         </DialogHeader>
         {provider === 'cloudinary' && (
-          <Tabs value={fullLibraryActiveLibrary} onValueChange={(value) => setFullLibraryActiveLibrary(value as 'primary' | 'extented')} className='px-4 pt-4'>
+          <Tabs value={fullLibraryActiveLibrary} onValueChange={(value) => setFullLibraryActiveLibrary(value as CloudinaryLibraryId)} className='px-4 pt-4'>
             <TabsList>
               <TabsTrigger value="primary" className="py-2 px-4 text-base glass-effect data-[state=active]:bg-destructive">{t('mediaAdmin.tab.libraryPrimary')}</TabsTrigger>
               <TabsTrigger value="extented" className="py-2 px-4 text-base glass-effect data-[state=active]:bg-destructive">{t('mediaAdmin.tab.libraryExtented')}</TabsTrigger>
+              <TabsTrigger value="extented2" className="py-2 px-4 text-base glass-effect data-[state=active]:bg-destructive">{t('mediaAdmin.tab.libraryExtented2')}</TabsTrigger>
             </TabsList>
           </Tabs>
         )}

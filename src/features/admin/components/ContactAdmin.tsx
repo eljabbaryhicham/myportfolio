@@ -3,6 +3,7 @@
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import PageTextEditor from '@/features/admin/components/PageTextEditor';
+import type { CloudinaryLibraryId } from '@/lib/cloudinary-libraries';
 import { useForm } from 'react-hook-form';
 import * as z from 'zod';
 import { Button } from '@/components/ui/button';
@@ -96,7 +97,7 @@ export default function ContactAdmin() {
 
   const [isLibraryOpen, setIsLibraryOpen] = useState(false);
   const [libraryTab, setLibraryTab] = useState<'images' | 'videos' | 'files'>('images');
-  const [libraryCollection, setLibraryCollection] = useState<'primary' | 'extented'>('primary');
+  const [libraryCollection, setLibraryCollection] = useState<CloudinaryLibraryId>('primary');
 
   const form = useForm<ContactInfo>({
     resolver: zodResolver(formSchema),

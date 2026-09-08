@@ -22,10 +22,11 @@ import { Progress } from '@/components/ui/progress';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useUploadProgress } from '@/components/upload-progress-context';
+import type { CloudinaryLibraryId } from '@/lib/cloudinary-libraries';
 
 const formSchema = z.object({
   mediaUrl: z.string().url({ message: 'Please enter a valid URL.' }),
-  libraryId: z.enum(['primary', 'extented']),
+  libraryId: z.enum(['primary', 'extented', 'extented2']),
   videoFormat: z.enum(['mp4', 'm3u8', 'webm']).optional(),
 });
 
@@ -34,7 +35,7 @@ type FormValues = z.infer<typeof formSchema>;
 interface AddFromUrlDialogProps {
   isOpen: boolean;
   onOpenChange: (isOpen: boolean) => void;
-  onUploadComplete: (mediaId: string, resourceType: 'image' | 'video', libraryId: 'primary' | 'extented') => void;
+  onUploadComplete: (mediaId: string, resourceType: 'image' | 'video', libraryId: CloudinaryLibraryId) => void;
 }
 
 export default function AddFromUrlDialog({ isOpen, onOpenChange, onUploadComplete }: AddFromUrlDialogProps) {
@@ -192,6 +193,7 @@ export default function AddFromUrlDialog({ isOpen, onOpenChange, onUploadComplet
                         <SelectContent>
                             <SelectItem value="primary">{t('addFromUrl.libraryPrimary')}</SelectItem>
                             <SelectItem value="extented">{t('addFromUrl.libraryExtented')}</SelectItem>
+                            <SelectItem value="extented2">{t('addFromUrl.libraryExtented2')}</SelectItem>
                         </SelectContent>
                     </Select>
                     <FormMessage />

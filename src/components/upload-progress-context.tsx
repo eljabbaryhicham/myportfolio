@@ -5,7 +5,7 @@ import React, { createContext, useContext, useState, useCallback, useEffect, use
 export type MediaProviderKey = 'vercel' | 'cloudinary' | 'appwrite' | 'gumlet_video' | 'gumlet_image' | 'imagekit';
 export const MEDIA_PROVIDER_KEYS: MediaProviderKey[] = ['vercel', 'cloudinary', 'appwrite', 'gumlet_video', 'gumlet_image', 'imagekit'];
 
-export type MediaLibraryId = 'primary' | 'extented' | 'vercel_blob' | 'appwrite' | 'gumlet_video' | 'gumlet_image' | 'imagekit';
+export type MediaLibraryId = 'primary' | 'extented' | 'extented2' | 'vercel_blob' | 'appwrite' | 'gumlet_video' | 'gumlet_image' | 'imagekit';
 export type MediaResourceType = 'image' | 'video' | 'raw';
 
 export type ProviderState = { isUploading: boolean; progress: number; fileName: string };

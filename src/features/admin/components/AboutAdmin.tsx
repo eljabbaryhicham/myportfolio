@@ -4,6 +4,7 @@
 import { useTranslation } from '@/lib/i18n/useTranslation';
 import { isSuperAdmin as isSuperAdminCheck, hasMediaAccess } from '@/lib/constants';
 import PageTextEditor from '@/features/admin/components/PageTextEditor';
+import type { CloudinaryLibraryId } from '@/lib/cloudinary-libraries';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm, useFieldArray } from 'react-hook-form';
 import * as z from 'zod';
@@ -190,7 +191,7 @@ export default function AboutAdmin() {
   const [isLibraryOpen, setIsLibraryOpen] = useState(false);
   const [librarySelectionConfig, setLibrarySelectionConfig] = useState<{ onSelect: (url: string, type: 'image' | 'video' | 'raw', filename: string) => void; field: ImageField } | null>(null);
   const [libraryTab, setLibraryTab] = useState<'images' | 'videos' | 'files'>('images');
-  const [libraryCollection, setLibraryCollection] = useState<'primary' | 'extented'>('primary');
+  const [libraryCollection, setLibraryCollection] = useState<CloudinaryLibraryId>('primary');
 
   const aboutContentRef = useMemoFirebase(
     () => (firestore ? doc(firestore, 'about', 'content') : null),

@@ -20,6 +20,7 @@ import { useDropzone } from 'react-dropzone';
 import { useToast } from '@/hooks/use-toast';
 import { useMediaUpload } from '@/features/admin/hooks/use-media-upload';
 import { isSuperAdmin as isSuperAdminCheck } from '@/lib/constants';
+import type { CloudinaryLibraryId } from '@/lib/cloudinary-libraries';
 import { Progress } from '@/components/ui/progress';
 import AddFromUrlDialog from './AddFromUrlDialog';
 
@@ -49,7 +50,7 @@ type MediaAsset = {
   public_id: string;
   resource_type: 'image' | 'video' | 'raw';
   filename: string;
-  libraryId?: 'primary' | 'extented';
+  libraryId?: CloudinaryLibraryId;
   title?: string;
 };
 
@@ -79,7 +80,7 @@ export default function UnifiedMediaPicker({ isOpen, onOpenChange, onMediaSelect
     forceProvider || (preferredProvider === 'vercel_blob' ? 'vercel' : preferredProvider)
   );
   const [activeTab, setActiveTab] = useState<'images' | 'videos' | 'files'>('images');
-  const [activeLibrary, setActiveLibrary] = useState<'primary' | 'extented'>('primary');
+  const [activeLibrary, setActiveLibrary] = useState<CloudinaryLibraryId>('primary');
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
   const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -413,10 +414,11 @@ export default function UnifiedMediaPicker({ isOpen, onOpenChange, onMediaSelect
         )}
 
         {provider === 'cloudinary' && (
-          <Tabs value={activeLibrary} onValueChange={v => setActiveLibrary(v as any)} className="px-4 pt-2">
+          <Tabs value={activeLibrary} onValueChange={v => setActiveLibrary(v as CloudinaryLibraryId)} className="px-4 pt-2">
             <TabsList>
               <TabsTrigger value="primary" className="py-1 px-3 text-sm glass-effect data-[state=active]:bg-destructive">{t('mediaAdmin.tab.libraryPrimary')}</TabsTrigger>
               <TabsTrigger value="extented" className="py-1 px-3 text-sm glass-effect data-[state=active]:bg-destructive">{t('mediaAdmin.tab.libraryExtented')}</TabsTrigger>
+              <TabsTrigger value="extented2" className="py-1 px-3 text-sm glass-effect data-[state=active]:bg-destructive">{t('mediaAdmin.tab.libraryExtented2')}</TabsTrigger>
             </TabsList>
           </Tabs>
         )}

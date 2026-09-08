@@ -3,6 +3,7 @@ import { getAuth } from 'firebase-admin/auth';
 import { getFirestore } from 'firebase-admin/firestore';
 import { createHash } from 'node:crypto';
 import { isSuperAdmin } from '@/lib/constants';
+import { cloudinaryEnvSuffix, isCloudinaryLibraryId } from '@/lib/cloudinary-libraries';
 
 export interface DeleteCloudinaryAssetInput {
   publicId?: string;
@@ -79,9 +80,9 @@ export async function deleteCloudinaryAsset(
   const safeResourceType = (['image', 'video', 'raw'].includes(input.resourceType ?? '')
     ? input.resourceType
     : 'image') as 'image' | 'video' | 'raw';
-  const safeLibraryId = input.libraryId === 'extented' ? 'extented' : 'primary';
+  const safeLibraryId = isCloudinaryLibraryId(input.libraryId) ? input.libraryId : 'primary';
 
-  const suffix = safeLibraryId === 'primary' ? '_1' : '_2';
+  const suffix = `_${cloudinaryEnvSuffix(safeLibraryId)}`;
 
   const cloudName = process.env[`CLOUDINARY_CLOUD_NAME${suffix}`];
   const apiKey = process.env[`CLOUDINARY_API_KEY${suffix}`];

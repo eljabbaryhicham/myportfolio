@@ -4,6 +4,11 @@ import { useCallback, useState } from 'react';
 import { useAuth, useFirestore, addDocumentNonBlocking, setDocumentNonBlocking } from '@/firebase';
 import { useUploadProgress } from '@/components/upload-progress-context';
 import { collection, doc, serverTimestamp } from 'firebase/firestore';
+import {
+  cloudinaryClientUploadEnv,
+  cloudinaryEnvSuffix,
+  type CloudinaryLibraryId,
+} from '@/lib/cloudinary-libraries';
 
 // Module-scoped abort handles. Mirrors the pattern in MediaLibrary.tsx so
 // the cancel affordance (and the upload-progress notification) can reach
@@ -13,7 +18,7 @@ const activeBlobAbortRef: { current: AbortController | null } = { current: null 
 const currentUploadFileRef: { current: File | null } = { current: null };
 
 export type MediaProvider = 'cloudinary' | 'vercel';
-export type LibraryId = 'primary' | 'extented';
+export type LibraryId = CloudinaryLibraryId;
 export type ResourceType = 'image' | 'video' | 'raw';
 
 export interface UploadResult {
@@ -82,19 +87,14 @@ function uploadToCloudinary(
     signal: { aborted: boolean };
   }
 ): Promise<UploadResult> {
-  const cloudName = libraryId === 'primary'
-    ? process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME_1
-    : process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME_2;
-  const uploadPreset = libraryId === 'primary'
-    ? process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET_1
-    : process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET_2;
+  const { cloudName, uploadPreset } = cloudinaryClientUploadEnv(libraryId);
 
   if (!cloudName || !uploadPreset || uploadPreset.includes('your_unsigned_preset')) {
     return Promise.reject(
       new Error(
-        `Cloudinary is not configured for the ${libraryId === 'primary' ? 'primary' : 'extented'} library. ` +
-        `Check NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME_${libraryId === 'primary' ? '1' : '2'} and ` +
-        `NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET_${libraryId === 'primary' ? '1' : '2'} in your env vars.`
+        `Cloudinary is not configured for the ${libraryId} library. ` +
+        `Check NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME_${cloudinaryEnvSuffix(libraryId)} and ` +
+        `NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET_${cloudinaryEnvSuffix(libraryId)} in your env vars.`
       )
     );
   }
@@ -300,7 +300,7 @@ export function useMediaUpload({ provider, libraryId, enabled = true, source }: 
         signalCompletedUpload(
           docId,
           result.resourceType,
-          result.provider === 'cloudinary' ? (result.libraryId as 'primary' | 'extented') : 'vercel_blob',
+          result.provider === 'cloudinary' ? (result.libraryId as LibraryId) : 'vercel_blob',
           result.provider,
           result.filename,
           source

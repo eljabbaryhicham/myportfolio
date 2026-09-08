@@ -12,10 +12,11 @@ import { getAuth } from 'firebase-admin/auth';
 import { getFirestore } from 'firebase-admin/firestore';
 import { SUPERADMIN_EMAIL } from '@/lib/constants';
 import { isInternalUrl } from '@/lib/ssrf';
+import { cloudinaryEnvSuffix } from '@/lib/cloudinary-libraries';
 
 const UploadMediaFromUrlInputSchema = z.object({
   mediaUrl: z.string().url(),
-  libraryId: z.enum(['primary', 'extented']),
+  libraryId: z.enum(['primary', 'extented', 'extented2']),
   videoFormat: z.enum(['mp4', 'm3u8', 'webm']).optional(),
   idToken: z.string().optional(),
 });
@@ -27,7 +28,7 @@ const UploadedMediaSchema = z.object({
   resource_type: z.enum(['image', 'video', 'raw']),
   created_at: z.string(),
   filename: z.string(),
-  libraryId: z.enum(['primary', 'extented']),
+  libraryId: z.enum(['primary', 'extented', 'extented2']),
   videoFormat: z.enum(['mp4', 'm3u8', 'webm']).optional(),
 });
 
@@ -83,7 +84,7 @@ const uploadMediaFromUrlFlow = ai.defineFlow(
   async (input): Promise<UploadMediaFromUrlOutput> => {
     try {
       const { libraryId, videoFormat } = input;
-      const suffix = libraryId === 'primary' ? '_1' : '_2';
+      const suffix = `_${cloudinaryEnvSuffix(libraryId)}`;
 
       if (!(await canUploadFromUrl(input.idToken))) {
         return { success: false, message: 'Unauthorized. You are not allowed to upload media.', media: undefined };

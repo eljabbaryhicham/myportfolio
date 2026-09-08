@@ -5,6 +5,7 @@ import { useTranslation } from '@/lib/i18n/useTranslation';
 import { getLocalizedString, ensureMultilingualString, type MultilingualString } from '@/lib/i18n/multilingual';
 import { MultilingualInput } from './MultilingualInput';
 import { isSuperAdmin as isSuperAdminCheck, hasMediaAccess } from '@/lib/constants';
+import type { CloudinaryLibraryId } from '@/lib/cloudinary-libraries';
 import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import {
@@ -162,7 +163,7 @@ export default function ClientAdmin() {
   const [isLibraryOpen, setIsLibraryOpen] = useState(false);
   const [librarySelectionConfig, setLibrarySelectionConfig] = useState<{ onSelect: (url: string, type: 'image' | 'video' | 'raw', filename: string) => void } | null>(null);
   const [libraryTab, setLibraryTab] = useState<'images' | 'videos' | 'files'>('images');
-  const [libraryCollection, setLibraryCollection] = useState<'primary' | 'extented'>('primary');
+  const [libraryCollection, setLibraryCollection] = useState<CloudinaryLibraryId>('primary');
 
   const draggingItem = useRef<string | null>(null);
   const dragOverItem = useRef<string | null>(null);
