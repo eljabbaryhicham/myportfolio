@@ -28,9 +28,26 @@ export function cloudinaryClientUploadEnv(libraryId: CloudinaryLibraryId): {
   cloudName?: string;
   uploadPreset?: string;
 } {
-  const n = cloudinaryEnvSuffix(libraryId);
-  return {
-    cloudName: process.env[`NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME_${n}`],
-    uploadPreset: process.env[`NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET_${n}`],
-  };
+  // NOTE: env vars must be read via literal property names. Next.js only
+  // statically inlines `process.env.NEXT_PUBLIC_*` references into browser
+  // bundles when the variable name is written out explicitly — a computed
+  // key (`process.env[`..._${n}`]`) is evaluated at runtime in the browser
+  // and always comes back undefined.
+  switch (libraryId) {
+    case 'primary':
+      return {
+        cloudName: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME_1,
+        uploadPreset: process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET_1,
+      };
+    case 'extented':
+      return {
+        cloudName: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME_2,
+        uploadPreset: process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET_2,
+      };
+    case 'extented2':
+      return {
+        cloudName: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME_3,
+        uploadPreset: process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET_3,
+      };
+  }
 }
