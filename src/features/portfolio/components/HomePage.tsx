@@ -183,6 +183,10 @@ const contentVariants = {
   visible: { transition: { staggerChildren: 0.15, delayChildren: 0.15 } },
 };
 
+// Small breathing room so the logo hovers just above the title instead of
+// touching it at the clamped position.
+const LOGO_TITLE_GAP = 8;
+
 const itemVariants = {
   hidden: { opacity: 0, y: 24 },
   visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } },
@@ -195,6 +199,7 @@ export default function HomePageContent() {
   const contactRef = useRef<HTMLButtonElement | null>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const logoWrapRef = useRef<HTMLDivElement | null>(null);
+  const heroContentRef = useRef<HTMLDivElement | null>(null);
 
   // Read from the shared SettingsProvider (seeded server-side, kept live
   // by the provider's own useDoc subscription). This avoids a re-fetch
@@ -295,26 +300,48 @@ export default function HomePageContent() {
   const logoOpacity = (homeSettings?.homePageLogoOpacity ?? 100) / 100;
 
   // The admin "move down" offset can push the logo out of the hero video and
-  // below the title on short screens (especially mobile). Measure the video's
-  // available height and the logo's own height to clamp the downward offset so
-  // the logo's bottom edge never crosses the title's top. Upward movement is
-  // always allowed.
+  // below the title on short screens (especially mobile). Clamp the downward
+  // offset to the smaller of: (1) staying inside the video frame, and (2) the
+  // logo's scaled bottom edge never crossing the title block's top. Both are
+  // measured from real element positions so scale, offset and screen size are
+  // all accounted for. Upward movement is always allowed.
+  const logoOffset = homeSettings?.homePageLogoOffset || 0;
   const [maxLogoDown, setMaxLogoDown] = useState(0);
   useEffect(() => {
     const el = logoWrapRef.current;
+    const contentEl = heroContentRef.current;
     if (!el) return;
     const measure = () => {
       const parent = el.parentElement;
       if (!parent) return;
-      setMaxLogoDown(Math.max(0, (parent.clientHeight - el.offsetHeight) / 2));
+      // Keep the logo inside the video frame (existing behavior).
+      const frameLimit = (parent.clientHeight - el.offsetHeight) / 2;
+      // Keep the logo's bottom (scaled about its center) above the title.
+      let titleLimit = Infinity;
+      if (contentEl) {
+        const parentRect = parent.getBoundingClientRect();
+        const contentRect = contentEl.getBoundingClientRect();
+        const scaledBottomOffset = (el.offsetHeight * logoScale) / 2;
+        titleLimit =
+          contentRect.top -
+          LOGO_TITLE_GAP -
+          parentRect.top -
+          parentRect.height / 2 -
+          scaledBottomOffset;
+      }
+      setMaxLogoDown(Math.max(0, Math.min(frameLimit, titleLimit)));
     };
-    measure();
     const ro = new ResizeObserver(measure);
     ro.observe(el);
     if (el.parentElement) ro.observe(el.parentElement);
-    return () => ro.disconnect();
-  }, []);
-  const logoOffset = (homeSettings?.homePageLogoOffset || 0);
+    if (contentEl) ro.observe(contentEl);
+    measure();
+    window.addEventListener('resize', measure);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener('resize', measure);
+    };
+  }, [logoScale, logoOffset]);
 
   useEffect(() => {
     // Preload the default hero poster with high priority for LCP. Use a
@@ -438,6 +465,7 @@ export default function HomePageContent() {
 
           <motion.div
             data-content
+            ref={heroContentRef}
             className="-mt-6 lg:-mt-10 flex flex-col items-center gap-3 sm:gap-4 md:gap-5 lg:gap-6 xl:gap-8 w-full"
             variants={contentVariants}
             initial="hidden"
