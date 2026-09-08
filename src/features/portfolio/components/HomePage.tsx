@@ -520,6 +520,10 @@ export default function HomePageContent() {
             <motion.div variants={itemVariants} className="w-full min-h-[88px] md:min-h-[92px] lg:min-h-[104px]">
               <TrustedBy />
             </motion.div>
+            {/* Reserve the bottom zone occupied by the floating language toggle
+                so the expanded pill (and stacked socials on mobile) never cover
+                the scroll hint / TrustedBy strip. */}
+            <div aria-hidden="true" className="h-[104px] w-full shrink-0" />
           </motion.div>
         </div>
       </div>
