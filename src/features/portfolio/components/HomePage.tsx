@@ -521,6 +521,10 @@ export default function HomePageContent() {
               <TrustedBy />
             </motion.div>
           </motion.div>
+          {/* Reserved bottom strip as real hero content, so the floating
+              language toggle always has its own height and never overlaps
+              the rest of the home content. */}
+          <div aria-hidden="true" className="h-[104px] w-full shrink-0" />
         </div>
       </div>
     </div>
