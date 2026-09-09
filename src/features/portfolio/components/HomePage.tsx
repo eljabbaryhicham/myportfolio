@@ -430,7 +430,7 @@ export default function HomePageContent() {
       <div className="homepage-viewport-fix-inner relative z-10 flex h-full w-full items-center justify-center overflow-auto transition-opacity duration-1000">
         {hasCustomCursor && <CursorArrow targetRefs={[aboutRef, contactRef, ctaRef]} cursorLottieUrl={homeSettings?.cursorLottieUrl} tickLottieUrl={homeSettings?.tickLottieUrl} />}
 
-        <div className="flex flex-col items-center gap-1 sm:gap-2 md:gap-3 lg:gap-4 xl:gap-5 w-full px-4 -translate-y-4">
+        <div className="m-auto flex flex-col items-center gap-1 sm:gap-2 md:gap-3 lg:gap-4 xl:gap-5 w-full px-4 -translate-y-4">
           <div className="translate-y-8 lg:translate-y-14">
             <div
               className="w-[min(82vw,540px)] md:w-[min(72vw,640px)] lg:w-[min(84vw,960px)] xl:w-[min(88vw,1100px)]"
