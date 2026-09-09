@@ -738,6 +738,15 @@ function WorkPageContent() {
   const projectDialogRef = useRef<HTMLDivElement | null>(null);
   const [minimizedProjectSize, setMinimizedProjectSize] = useState<{ w: number; h: number } | null>(null);
   const [squeezeProjectPopup, setSqueezeProjectPopup] = useState(false);
+  const [projectDialogReady, setProjectDialogReady] = useState(false);
+
+  // The project dialog's content mounts only AFTER the dialog's open state
+  // propagates through Radix (a later render cycle), so the squeeze
+  // measurement must wait for it. This callback ref marks readiness.
+  const setProjectDialogRef = useCallback((el: HTMLDivElement | null) => {
+    projectDialogRef.current = el;
+    setProjectDialogReady(!!el);
+  }, []);
 
   const captureMinimizedProjectSize = useCallback(() => {
     if (isProjectMaximized) return;
@@ -780,7 +789,7 @@ function WorkPageContent() {
   // uses INTENTIONAL sizes only (header, buttons, media width scaled to 16:9)
   // — never feedback from the dialog's current height — so it cannot loop.
   useEffect(() => {
-    if (!selectedItem || isProjectMaximized) return;
+    if (!selectedItem || isProjectMaximized || !projectDialogReady) return;
     const header = mediaHeaderRef.current;
     const actions = mediaActionsRef.current;
     const media = mainMediaRef.current;
@@ -803,7 +812,7 @@ function WorkPageContent() {
       observer.disconnect();
       window.removeEventListener('resize', update);
     };
-  }, [selectedItem, isProjectMaximized, popupSizing]);
+  }, [selectedItem, isProjectMaximized, popupSizing, projectDialogReady]);
 
   // The details popup has its own maximize state. Its inline minimized size
   // below uses the saved project-popup dimensions when they are available.
@@ -1317,7 +1326,7 @@ function WorkPageContent() {
 
       <Dialog open={!!selectedItem} onOpenChange={handleMainDialogOpenChange}>
           <DialogContent
-            ref={projectDialogRef}
+            ref={setProjectDialogRef}
             className={cn(
               "glass-effect p-0 flex flex-col group overflow-hidden transition-all duration-500 ease-in-out",
               popupSizing
