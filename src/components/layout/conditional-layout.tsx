@@ -4,7 +4,6 @@
 import { useEffect, useRef } from 'react';
 import { usePathname } from 'next/navigation';
 import { AppNav } from './app-nav';
-import { LanguageToggleToast } from './language-toggle-toast';
 import { HomeReadyProvider } from './home-ready-context';
 import { cn } from '@/lib/utils';
 import { AboutPrefetch } from '@/components/about-prefetch';
@@ -106,10 +105,9 @@ export function ConditionalLayout({ children }: { children: React.ReactNode }) {
         <div className={cn("w-full min-h-0 flex flex-col overflow-hidden relative", isHomePage ? "h-full glass-effect rounded-lg border border-border/50" : "flex-1 glass-effect rounded-lg border border-border/50")}>
           {isHomePage ? (
             <>
-              <div ref={homeScrollRef} className="flex-1 min-h-0 w-full overflow-auto">
+              <div ref={homeScrollRef} className="relative flex-1 min-h-0 w-full overflow-hidden">
                 {children}
               </div>
-              <LanguageToggleToast />
             </>
           ) : (
             <div className="h-full w-full overflow-auto">

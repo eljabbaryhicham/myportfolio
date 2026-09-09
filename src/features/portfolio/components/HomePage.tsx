@@ -12,6 +12,7 @@ import { faArrowRight, faCircleInfo, faEnvelope } from '@fortawesome/free-solid-
 
 import Logo from "@/components/logo";
 import TrustedBy from "./TrustedBy";
+import { LanguageToggleToast } from "@/components/layout/language-toggle-toast";
 import { useTranslation } from "@/lib/i18n/useTranslation";
 import { getLocalizedString } from "@/lib/i18n/multilingual";
 import { cleanVideoUrl } from "@/lib/video";
@@ -200,6 +201,11 @@ export default function HomePageContent() {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const logoWrapRef = useRef<HTMLDivElement | null>(null);
   const heroContentRef = useRef<HTMLDivElement | null>(null);
+  const heroStageRef = useRef<HTMLDivElement | null>(null);
+  const heroColRef = useRef<HTMLDivElement | null>(null);
+  // Scale the whole hero stage (incl. the language toast) so it always fits
+  // the area above the card bottom without scrolling or overlapping.
+  const [heroStageScale, setHeroStageScale] = useState(1);
 
   // Read from the shared SettingsProvider (seeded server-side, kept live
   // by the provider's own useDoc subscription). This avoids a re-fetch
@@ -292,6 +298,43 @@ export default function HomePageContent() {
     const t = setTimeout(notifyReady, 400);
     return () => clearTimeout(t);
   }, [pageReady, notifyReady]);
+
+  // Scale-to-fit the hero stage: measure the natural content height (video,
+  // text rows, TrustedBy, and the language toast) and scale it down to exactly
+  // fit the available area, so nothing scrolls and the toast never overlaps.
+  useEffect(() => {
+    const stage = heroStageRef.current;
+    const col = heroColRef.current;
+    if (!stage || !col) return;
+    let raf = 0;
+    const compute = () => {
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(() => {
+        const available = stage.clientHeight;
+        if (available <= 0) return;
+        const natural = Math.max(col.scrollHeight, col.offsetHeight);
+        if (natural <= 0) return;
+        const fit = Math.min(1, available / natural);
+        setHeroStageScale(fit);
+      });
+    };
+    compute();
+    const ro = new ResizeObserver(compute);
+    ro.observe(col);
+    ro.observe(stage);
+    window.addEventListener('resize', compute);
+    window.addEventListener('orientationchange', compute);
+    const t1 = setTimeout(compute, 400);
+    const t2 = setTimeout(compute, 1200);
+    return () => {
+      cancelAnimationFrame(raf);
+      ro.disconnect();
+      window.removeEventListener('resize', compute);
+      window.removeEventListener('orientationchange', compute);
+      clearTimeout(t1);
+      clearTimeout(t2);
+    };
+  }, [pageReady, lang, isLoading]);
 
   const homeLogoUrl = homeSettings?.homePageLogoUrl;
   const isLogoVisible = homeSettings?.isHomePageLogoVisible ?? true;
@@ -427,13 +470,13 @@ export default function HomePageContent() {
           transform: 'scale(1.2)',
         }}
       />
-      <div className="homepage-viewport-fix-inner relative z-10 flex h-full w-full items-center justify-center overflow-auto transition-opacity duration-1000">
+      <div ref={heroStageRef} className="homepage-viewport-fix-inner relative z-10 flex h-full w-full items-center justify-center overflow-hidden transition-opacity duration-1000">
         {hasCustomCursor && <CursorArrow targetRefs={[aboutRef, contactRef, ctaRef]} cursorLottieUrl={homeSettings?.cursorLottieUrl} tickLottieUrl={homeSettings?.tickLottieUrl} />}
 
-        <div className="flex flex-col items-center gap-1 sm:gap-2 md:gap-3 lg:gap-4 xl:gap-5 w-full px-4 -translate-y-4 [@media(max-height:1060px)]:!gap-2">
-          <div className="translate-y-8 lg:translate-y-14 lg:[@media(max-height:1060px)]:!translate-y-4">
+        <div ref={heroColRef} className="flex flex-col items-center gap-1 sm:gap-2 md:gap-3 lg:gap-4 xl:gap-5 w-full px-4" style={{ transform: `translateY(-1rem) scale(${heroStageScale})`, transformOrigin: 'center center' }}>
+          <div className="translate-y-8 lg:translate-y-14">
             <div
-              className="w-[min(82vw,540px)] md:w-[min(72vw,640px)] lg:w-[min(84vw,960px)] xl:w-[min(88vw,1100px)] lg:[@media(max-height:1060px)]:!w-[min(72vw,760px)] xl:[@media(max-height:1060px)]:!w-[min(64vw,600px)]"
+              className="w-[min(82vw,540px)] md:w-[min(72vw,640px)] lg:w-[min(84vw,960px)] xl:w-[min(88vw,1100px)]"
               style={{ aspectRatio: "16/9", position: "relative" }}
             >
             <div className="absolute inset-0" style={{
@@ -466,7 +509,7 @@ export default function HomePageContent() {
           <motion.div
             data-content
             ref={heroContentRef}
-            className="-mt-6 lg:-mt-10 flex flex-col items-center gap-3 sm:gap-4 md:gap-5 lg:gap-6 xl:gap-8 w-full [@media(max-height:1060px)]:!gap-2"
+            className="-mt-6 lg:-mt-10 flex flex-col items-center gap-3 sm:gap-4 md:gap-5 lg:gap-6 xl:gap-8 w-full"
             variants={contentVariants}
             initial="hidden"
             animate={isLoading ? "hidden" : "visible"}
@@ -477,7 +520,7 @@ export default function HomePageContent() {
                   <div className="h-4 md:h-6 w-56 sm:w-72 animate-pulse rounded bg-white/10" />
                 </div>
               ) : (
-                <h2 className="text-base sm:text-lg md:text-3xl xl:text-4xl font-headline tracking-tight min-h-[1.5rem] md:min-h-[2.5rem] md:[@media(max-height:1060px)]:!min-h-[2rem]" style={{ color: homeSettings?.homePageTitleColor || 'rgba(255,255,255,0.9)' }}>
+                <h2 className="text-base sm:text-lg md:text-3xl xl:text-4xl font-headline tracking-tight min-h-[1.5rem] md:min-h-[2.5rem]" style={{ color: homeSettings?.homePageTitleColor || 'rgba(255,255,255,0.9)' }}>
                   {getLocalizedString(homeSettings?.homePageTitle, lang) || t('home.hero.heading')}
                 </h2>
               )}
@@ -517,10 +560,11 @@ export default function HomePageContent() {
             <motion.div variants={itemVariants} className="text-foreground/40 text-xs md:text-sm lg:text-base animate-pulse" style={{ textShadow: "0 1px 8px rgba(0,0,0,0.5)" }}>
               {t('home.hero.scroll')}
             </motion.div>
-            <motion.div variants={itemVariants} className="w-full min-h-[88px] md:min-h-[92px] lg:min-h-[104px] lg:[@media(max-height:1060px)]:!min-h-[72px]">
+            <motion.div variants={itemVariants} className="w-full min-h-[88px] md:min-h-[92px] lg:min-h-[104px]">
               <TrustedBy />
             </motion.div>
           </motion.div>
+          <LanguageToggleToast />
         </div>
       </div>
     </div>
