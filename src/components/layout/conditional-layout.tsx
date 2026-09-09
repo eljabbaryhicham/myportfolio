@@ -106,7 +106,7 @@ export function ConditionalLayout({ children }: { children: React.ReactNode }) {
         <div className={cn("w-full min-h-0 flex flex-col overflow-hidden relative", isHomePage ? "h-full glass-effect rounded-lg border border-border/50" : "flex-1 glass-effect rounded-lg border border-border/50")}>
           {isHomePage ? (
             <>
-              <div ref={homeScrollRef} className="h-full w-full overflow-auto">
+              <div ref={homeScrollRef} className="h-full w-full overflow-auto pb-[104px]">
                 {children}
               </div>
               <LanguageToggleToast />
