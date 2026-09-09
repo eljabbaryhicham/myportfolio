@@ -207,10 +207,9 @@ export function LanguageToggleToast({ className }: { className?: string }) {
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: 80, opacity: 0 }}
           transition={{ layout: { duration: 0.25, ease: 'easeInOut' }, y: { duration: 0.4, ease: 'easeInOut' }, opacity: { duration: 0.3, ease: 'easeInOut' } }}
-          style={{ translate: '-50% 0' }}
           onMouseLeave={collapsed ? undefined : () => scheduleCollapse(HOVER_LEAVE_MS)}
           className={cn(
-            "absolute bottom-4 left-1/2 z-[100] flex items-center justify-center gap-2",
+            "flex w-full items-center justify-center gap-2 px-4 py-3",
             socialsAboveToast && "flex-col-reverse",
             className
           )}
