@@ -718,6 +718,8 @@ function WorkPageContent() {
   const plyrRef = useRef<any>(null);
   const clapprRef = useRef<any>(null);
   const mainMediaRef = useRef<HTMLDivElement>(null);
+  const mainMediaAreaRef = useRef<HTMLDivElement>(null);
+  const mediaActionsRef = useRef<HTMLDivElement>(null);
   
   const [isLibraryOpen, setIsLibraryOpen] = useState(false);
   const [librarySelectionConfig, setLibrarySelectionConfig] = useState<{ onSelect: (url: string, type: 'image' | 'video' | 'raw', filename: string) => void } | null>(null);
@@ -735,6 +737,7 @@ function WorkPageContent() {
   const isDialogOpen = isDetailsModalOpen || isContactFormOpen;
   const projectDialogRef = useRef<HTMLDivElement | null>(null);
   const [minimizedProjectSize, setMinimizedProjectSize] = useState<{ w: number; h: number } | null>(null);
+  const [minimizedMediaMaxHeight, setMinimizedMediaMaxHeight] = useState<number | null>(null);
 
   const captureMinimizedProjectSize = useCallback(() => {
     if (isProjectMaximized) return;
@@ -760,6 +763,27 @@ function WorkPageContent() {
     observer.observe(project);
     return () => observer.disconnect();
   }, [selectedItem, isProjectMaximized, captureMinimizedProjectSize]);
+
+  // When minimized, cap the media so the video + action buttons always fit
+  // inside the popup's viewport-limited height. A capped aspect-video box
+  // letterboxes (players already contain their content), so nothing distorts.
+  useEffect(() => {
+    if (!selectedItem || isProjectMaximized) return;
+    const area = mainMediaAreaRef.current;
+    const actions = mediaActionsRef.current;
+    if (!area || !actions) return;
+
+    const update = () => {
+      const maxHeight = Math.max(64, area.clientHeight - actions.clientHeight);
+      setMinimizedMediaMaxHeight(prev => (prev === maxHeight ? prev : maxHeight));
+    };
+    update();
+
+    const observer = new ResizeObserver(update);
+    observer.observe(area);
+    observer.observe(actions);
+    return () => observer.disconnect();
+  }, [selectedItem, isProjectMaximized]);
 
   // Both popups use the same standard minimized size, but maximize
   // independently so one popup's current dimensions never affect the other.
@@ -1350,8 +1374,12 @@ function WorkPageContent() {
                       
                       <Separator className="bg-white/10 my-0" />
                       
-                      <div className={cn("relative flex flex-col h-full", !isProjectMaximized && "justify-center")} onPointerDown={(e) => { if (hasMounted && isMobile) dragControls.start(e); }}>
-                        <div className={cn("w-full", isProjectMaximized && "flex-1 min-h-0")} ref={mainMediaRef}>
+                      <div ref={mainMediaAreaRef} className={cn("relative flex flex-col h-full", !isProjectMaximized && "justify-center")} onPointerDown={(e) => { if (hasMounted && isMobile) dragControls.start(e); }}>
+                        <div
+                          className={cn("w-full", isProjectMaximized && "flex-1 min-h-0")}
+                          ref={mainMediaRef}
+                          style={!isProjectMaximized ? { maxHeight: minimizedMediaMaxHeight ?? undefined } : undefined}
+                        >
                           {isClient && (
                             <Suspense fallback={null}>
                                 <MemoizedPortfolioMedia
@@ -1371,7 +1399,7 @@ function WorkPageContent() {
                             </Suspense>
                           )}
                         </div>
-                        <div className="p-4 md:p-6 text-center flex flex-wrap justify-center gap-4 flex-shrink-0">
+                        <div ref={mediaActionsRef} className="p-4 md:p-6 text-center flex flex-wrap justify-center gap-4 flex-shrink-0">
                           {selectedItem.details && (
                             <div className="relative">
                               <Button
