@@ -203,10 +203,11 @@ export function LanguageToggleToast({ className }: { className?: string }) {
         <motion.div
           ref={controlsRef}
           layout
-          initial={{ x: '-50%', y: 80, opacity: 0 }}
-          animate={{ x: '-50%', y: 0, opacity: 1 }}
-          exit={{ x: '-50%', y: 80, opacity: 0 }}
-          transition={{ layout: { duration: 0.25, ease: 'easeInOut' }, x: { duration: 0.4, ease: 'easeInOut' }, y: { duration: 0.4, ease: 'easeInOut' }, opacity: { duration: 0.3, ease: 'easeInOut' } }}
+          initial={{ y: 80, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          exit={{ y: 80, opacity: 0 }}
+          transition={{ layout: { duration: 0.25, ease: 'easeInOut' }, y: { duration: 0.4, ease: 'easeInOut' }, opacity: { duration: 0.3, ease: 'easeInOut' } }}
+          style={{ translate: '-50% 0' }}
           onMouseLeave={collapsed ? undefined : () => scheduleCollapse(HOVER_LEAVE_MS)}
           className={cn(
             "absolute bottom-4 left-1/2 z-[100] flex items-center justify-center gap-2",
