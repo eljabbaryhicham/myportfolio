@@ -57,6 +57,24 @@ describe('getPopupSizing (project dialog)', () => {
       'w-[90vw] max-w-7xl h-[90dvh]'
     );
   });
+
+  it('locks to h-[90dvh] when needsSqueeze is set', () => {
+    expect(getPopupSizing(false, NO_FLAGS, true)).toBe(
+      'w-[90vw] max-w-7xl h-[90dvh]'
+    );
+  });
+
+  it('still ignores needsSqueeze when maximized', () => {
+    expect(getPopupSizing(true, NO_FLAGS, true)).toBe(
+      'w-[98vw] h-[98dvh] max-w-none'
+    );
+  });
+
+  it('treats no-flags content-fit as non-squeezed by default', () => {
+    expect(getPopupSizing(false, NO_FLAGS)).toBe(
+      'w-[90vw] max-w-7xl max-h-[90dvh]'
+    );
+  });
 });
 
 describe('getDetailsSizing (details dialog)', () => {

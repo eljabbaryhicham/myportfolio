@@ -32,14 +32,20 @@ export function getMinimizedPopupSizing(flags: MinimizedPopupFlags): string {
 
 /**
  * Classname for the project popup. Maximized overrides to 98vw / 98dvh with
- * no max-width; otherwise the shared minimized sizing applies.
+ * no max-width; when `needsSqueeze` is set the minimized popup is locked to
+ * exactly 90dvh so the flex chain can shrink overflowing media instead of
+ * being clipped; otherwise the shared minimized sizing applies.
  */
 export function getPopupSizing(
   isProjectMaximized: boolean,
   flags: MinimizedPopupFlags,
+  needsSqueeze = false,
 ): string {
   if (isProjectMaximized) {
     return 'w-[98vw] h-[98dvh] max-w-none';
+  }
+  if (needsSqueeze) {
+    return 'w-[90vw] max-w-7xl h-[90dvh]';
   }
   return getMinimizedPopupSizing(flags);
 }

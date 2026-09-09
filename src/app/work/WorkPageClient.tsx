@@ -718,6 +718,8 @@ function WorkPageContent() {
   const plyrRef = useRef<any>(null);
   const clapprRef = useRef<any>(null);
   const mainMediaRef = useRef<HTMLDivElement>(null);
+  const mediaHeaderRef = useRef<HTMLDivElement>(null);
+  const mediaActionsRef = useRef<HTMLDivElement>(null);
   
   const [isLibraryOpen, setIsLibraryOpen] = useState(false);
   const [librarySelectionConfig, setLibrarySelectionConfig] = useState<{ onSelect: (url: string, type: 'image' | 'video' | 'raw', filename: string) => void } | null>(null);
@@ -735,6 +737,7 @@ function WorkPageContent() {
   const isDialogOpen = isDetailsModalOpen || isContactFormOpen;
   const projectDialogRef = useRef<HTMLDivElement | null>(null);
   const [minimizedProjectSize, setMinimizedProjectSize] = useState<{ w: number; h: number } | null>(null);
+  const [squeezeProjectPopup, setSqueezeProjectPopup] = useState(false);
 
   const captureMinimizedProjectSize = useCallback(() => {
     if (isProjectMaximized) return;
@@ -769,7 +772,38 @@ function WorkPageContent() {
 
   // Sizing for the project popup. Minimized = 90vw/90dvh (content-fit),
   // maximized = 98vw/98dvh.
-  const popupSizing = getPopupSizing(isProjectMaximized, flags);
+  const popupSizing = getPopupSizing(isProjectMaximized, flags, squeezeProjectPopup);
+
+  // When the media is so wide that content-fit sizing (max-h-[90dvh]) would
+  // clip the action buttons, switch the popup to a fixed h-[90dvh] so the
+  // flex chain can shrink the media and keep the buttons visible. The measure
+  // uses INTENTIONAL sizes only (header, buttons, media width scaled to 16:9)
+  // — never feedback from the dialog's current height — so it cannot loop.
+  useEffect(() => {
+    if (!selectedItem || isProjectMaximized) return;
+    const header = mediaHeaderRef.current;
+    const actions = mediaActionsRef.current;
+    const media = mainMediaRef.current;
+    if (!header || !actions || !media) return;
+
+    const update = () => {
+      const natural =
+        header.offsetHeight + 1 + media.clientWidth * (9 / 16) + actions.offsetHeight;
+      const overflow = natural > window.innerHeight * 0.9 + 1;
+      setSqueezeProjectPopup(prev => (prev !== overflow ? overflow : prev));
+    };
+    update();
+
+    const observer = new ResizeObserver(update);
+    observer.observe(header);
+    observer.observe(actions);
+    observer.observe(media);
+    window.addEventListener('resize', update);
+    return () => {
+      observer.disconnect();
+      window.removeEventListener('resize', update);
+    };
+  }, [selectedItem, isProjectMaximized, popupSizing]);
 
   // The details popup has its own maximize state. Its inline minimized size
   // below uses the saved project-popup dimensions when they are available.
@@ -1314,7 +1348,8 @@ function WorkPageContent() {
                     transition={{ type: 'tween', duration: 0.3, ease: 'easeOut' }}
                   >
                     <div className="flex flex-col flex-1 min-h-0 h-full">
-                      <DialogHeader className="p-4 md:p-6 flex-shrink-0 relative">
+                      <div ref={mediaHeaderRef} className="flex-shrink-0">
+                      <DialogHeader className="p-4 md:p-6 relative">
                         <div className="text-center" onPointerDown={(e) => { if (hasMounted && isMobile) dragControls.start(e); }}>
                           <DialogTitle className="text-base md:text-2xl font-headline px-[20%]">
                             {getLocalizedString(selectedItem.title, lang)}
@@ -1347,6 +1382,7 @@ function WorkPageContent() {
                           </Button>
                         </div>
                       </DialogHeader>
+                      </div>
                       
                       <Separator className="bg-white/10 my-0" />
                       
@@ -1371,7 +1407,7 @@ function WorkPageContent() {
                             </Suspense>
                           )}
                         </div>
-                        <div className="p-4 md:p-6 text-center flex flex-wrap justify-center gap-4 flex-shrink-0">
+                        <div ref={mediaActionsRef} className="p-4 md:p-6 text-center flex flex-wrap justify-center gap-4 flex-shrink-0">
                           {selectedItem.details && (
                             <div className="relative">
                               <Button
