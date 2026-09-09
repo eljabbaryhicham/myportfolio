@@ -327,6 +327,7 @@ const MemoizedPortfolioMedia = memo(({
   plyrRef,
   clapprRef,
   maximized = false,
+  maxMediaHeight,
   websiteLogoUrl,
 }: {
   item: PortfolioItem;
@@ -340,6 +341,7 @@ const MemoizedPortfolioMedia = memo(({
   plyrRef: React.Ref<any>;
   clapprRef?: React.Ref<any>;
   maximized?: boolean;
+  maxMediaHeight?: number | null;
   websiteLogoUrl?: string;
 }) => {
   const { t, lang } = useTranslation();
@@ -425,7 +427,7 @@ const MemoizedPortfolioMedia = memo(({
       : cleanVideoUrl(item.sourceUrl);
 
     return (
-      <div ref={containerRef} className={cn("relative bg-black flex items-center justify-center overflow-hidden", maximized ? "w-full h-full min-h-[200px] [&>*]:absolute [&>*]:inset-0" : "aspect-video w-full")}>
+      <div ref={containerRef} style={maximized ? undefined : { maxHeight: maxMediaHeight ?? undefined }} className={cn("relative bg-black flex items-center justify-center overflow-hidden", maximized ? "w-full h-full min-h-[200px] [&>*]:absolute [&>*]:inset-0" : "aspect-video w-full mx-auto")}>
         {item.sourceUrl && (
           (isVimeo || isYoutube) ? (
             <MemoizedPlyrPlayer
@@ -466,7 +468,7 @@ const MemoizedPortfolioMedia = memo(({
   }
   
   return (
-      <div ref={containerRef} className={cn("relative bg-black flex justify-center items-center w-full", maximized ? "h-full min-h-[200px] [&>*]:absolute [&>*]:inset-0 group/media" : "aspect-video group/media")}>
+      <div ref={containerRef} style={maximized ? undefined : { maxHeight: maxMediaHeight ?? undefined }} className={cn("relative bg-black flex justify-center items-center w-full", maximized ? "h-full min-h-[200px] [&>*]:absolute [&>*]:inset-0 group/media" : "aspect-video group/media mx-auto")}>
         {isImageLoading && (
           <div className="absolute inset-0 z-20 flex items-center justify-center transition-opacity duration-300">
             {websiteLogoUrl ? (
@@ -718,7 +720,7 @@ function WorkPageContent() {
   const plyrRef = useRef<any>(null);
   const clapprRef = useRef<any>(null);
   const mainMediaRef = useRef<HTMLDivElement>(null);
-  const mainMediaAreaRef = useRef<HTMLDivElement>(null);
+  const mediaHeaderRef = useRef<HTMLDivElement>(null);
   const mediaActionsRef = useRef<HTMLDivElement>(null);
   
   const [isLibraryOpen, setIsLibraryOpen] = useState(false);
@@ -764,24 +766,32 @@ function WorkPageContent() {
     return () => observer.disconnect();
   }, [selectedItem, isProjectMaximized, captureMinimizedProjectSize]);
 
-  // When minimized, cap the media so the video + action buttons always fit
-  // inside the popup's viewport-limited height. A capped aspect-video box
-  // letterboxes (players already contain their content), so nothing distorts.
+  // When minimized, cap the media's own aspect box to the height left over by
+  // the header and the action buttons, so the video/image + buttons always fit
+  // inside the popup. The cap only applies when the natural 16:9 media is
+  // taller than that space (the aspect box shrinks and letterboxes); when the
+  // media already fits, no cap is set and content-fit behavior is unchanged.
   useEffect(() => {
     if (!selectedItem || isProjectMaximized) return;
-    const area = mainMediaAreaRef.current;
+    const popup = projectDialogRef.current;
+    const header = mediaHeaderRef.current;
     const actions = mediaActionsRef.current;
-    if (!area || !actions) return;
+    const media = mainMediaRef.current;
+    if (!popup || !header || !actions || !media) return;
 
     const update = () => {
-      const maxHeight = Math.max(64, area.clientHeight - actions.clientHeight);
-      setMinimizedMediaMaxHeight(prev => (prev === maxHeight ? prev : maxHeight));
+      const natural = media.clientWidth * (9 / 16);
+      const cap = popup.offsetHeight - header.offsetHeight - actions.offsetHeight;
+      const next = natural > cap ? Math.max(64, Math.round(cap - 8)) : null;
+      setMinimizedMediaMaxHeight(prev => (prev === next ? prev : next));
     };
     update();
 
     const observer = new ResizeObserver(update);
-    observer.observe(area);
+    observer.observe(popup);
+    observer.observe(header);
     observer.observe(actions);
+    observer.observe(media);
     return () => observer.disconnect();
   }, [selectedItem, isProjectMaximized]);
 
@@ -1338,7 +1348,8 @@ function WorkPageContent() {
                     transition={{ type: 'tween', duration: 0.3, ease: 'easeOut' }}
                   >
                     <div className="flex flex-col flex-1 min-h-0 h-full">
-                      <DialogHeader className="p-4 md:p-6 flex-shrink-0 relative">
+                      <div ref={mediaHeaderRef} className="flex-shrink-0">
+                      <DialogHeader className="p-4 md:p-6 relative">
                         <div className="text-center" onPointerDown={(e) => { if (hasMounted && isMobile) dragControls.start(e); }}>
                           <DialogTitle className="text-base md:text-2xl font-headline px-[20%]">
                             {getLocalizedString(selectedItem.title, lang)}
@@ -1371,15 +1382,12 @@ function WorkPageContent() {
                           </Button>
                         </div>
                       </DialogHeader>
+                      </div>
                       
                       <Separator className="bg-white/10 my-0" />
                       
-                      <div ref={mainMediaAreaRef} className={cn("relative flex flex-col h-full", !isProjectMaximized && "justify-center")} onPointerDown={(e) => { if (hasMounted && isMobile) dragControls.start(e); }}>
-                        <div
-                          className={cn("w-full", isProjectMaximized && "flex-1 min-h-0")}
-                          ref={mainMediaRef}
-                          style={!isProjectMaximized ? { maxHeight: minimizedMediaMaxHeight ?? undefined } : undefined}
-                        >
+                      <div className={cn("relative flex flex-col h-full", !isProjectMaximized && "justify-center")} onPointerDown={(e) => { if (hasMounted && isMobile) dragControls.start(e); }}>
+                        <div className={cn("w-full", isProjectMaximized && "flex-1 min-h-0")} ref={mainMediaRef}>
                           {isClient && (
                             <Suspense fallback={null}>
                                 <MemoizedPortfolioMedia
@@ -1392,6 +1400,7 @@ function WorkPageContent() {
                                  playerType={workPagePlayer}
                                  autoPlay={!isDialogOpen}
                                  maximized={isProjectMaximized}
+                                 maxMediaHeight={isProjectMaximized ? undefined : minimizedMediaMaxHeight}
                                  plyrRef={plyrRef}
                                  clapprRef={clapprRef}
                                  websiteLogoUrl={homeSettings?.menubarLogoUrl || homeSettings?.homePageLogoUrl || homeSettings?.faviconUrl || contactInfo?.logoUrl}
